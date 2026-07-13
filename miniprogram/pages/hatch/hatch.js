@@ -1,4 +1,7 @@
 const petStore = require('../../utils/pet-store');
+const analytics = require('../../services/analytics');
+const cloudApi = require('../../services/cloud-api');
+const config = require('../../config/v2');
 
 Page({
   data: {
@@ -22,22 +25,46 @@ Page({
     }
     if (!pet || petStore.getStage(pet) !== 'ready') {
       wx.showToast({ title: '还没到破壳时间', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 600);
+      this.backTimer = setTimeout(() => wx.navigateBack(), 600);
       return;
     }
     this.setData({ pet });
+    analytics.track('hatch_receive_start');
   },
 
   onReveal() {
+    if (this.data.phase !== 'confirm' || !this.data.pet) return;
     this.setData({ phase: 'reveal' });
-    setTimeout(() => {
-      const result = petStore.createCollectionCard();
+    this.revealTimer = setTimeout(() => {
+      if (config.cloudEnabled) {
+        cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
+        return;
+      }
+      this.handleHatchResult(petStore.createCollectionCard());
+    }, 1450);
+  },
+
+  handleHatchResult(result) {
       if (!result.ok) {
+        analytics.track('hatch_card_generate_fail', { error_code: result.reason || 'GENERATE_FAILED' });
         this.setData({ phase: 'confirm' });
         wx.showToast({ title: result.message, icon: 'none' });
         return;
       }
+      if (config.cloudEnabled) {
+        const applied = petStore.applyCloudHatchCard(result.card);
+        if (!applied.ok) {
+          this.setData({ phase: 'confirm' });
+          wx.showToast({ title: applied.message, icon: 'none' });
+          return;
+        }
+      }
+      analytics.track('hatch_card_generated', { card_id: result.card.id, style: result.card.style, rarity: result.card.collectible, mbti: result.card.mbti });
       wx.redirectTo({ url: '/pages/collection-card/collection-card?new=1' });
-    }, 1450);
+  },
+
+  onUnload() {
+    clearTimeout(this.backTimer);
+    clearTimeout(this.revealTimer);
   }
 });

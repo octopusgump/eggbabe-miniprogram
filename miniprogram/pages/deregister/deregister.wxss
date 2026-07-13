@@ -162,7 +162,7 @@
 }
 
 .button-bar {
-  padding: 24rpx 40rpx 48rpx;
+  padding: 24rpx 40rpx calc(48rpx + env(safe-area-inset-bottom));
   background: #FFFFFF;
   display: flex;
   flex-direction: column;

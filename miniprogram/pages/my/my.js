@@ -1,34 +1,22 @@
 const petStore = require('../../utils/pet-store');
+const runtime = require('../../services/runtime-context');
 
 Page({
-  data: { userName: '蛋友3024', eggCount: 0, pet: null, stage: '', statusLine: '', actionLabel: '' },
+  data: { userName: '蛋友3024', eggCount: 0, isDemo: false },
 
   onShow() {
     const user = petStore.getUser();
     const pet = petStore.getPet();
-    if (!pet) {
-      this.setData({ userName: (user && user.nickname) || '蛋友3024', eggCount: 0, pet: null });
-      return;
-    }
-    const stage = petStore.getStage(pet);
-    const presentation = petStore.getStagePresentation(stage);
-    const status = petStore.getDailyStatus();
     this.setData({
-      userName: (user && user.nickname) || '蛋友3024',
-      eggCount: 1,
-      pet,
-      stage,
-      statusLine: stage === 'hatched' ? status.line : petStore.getCountdown(pet),
-      actionLabel: stage === 'hatched' ? '去看看' : presentation.actionLabel,
-      stageLabel: presentation.myStage
+      userName: runtime.getMode() === 'demo' ? '展会体验访客' : ((user && user.nickname) || '蛋友3024'),
+      eggCount: pet ? 1 : 0,
+      isDemo: runtime.getMode() === 'demo'
     });
   },
 
-  onTapUserCard() { wx.navigateTo({ url: '/pages/profile/profile' }); },
-  onPetAction() {
-    if (!this.data.pet) return wx.navigateTo({ url: '/pages/add-device/add-device' });
-    if (this.data.stage === 'ready') return wx.navigateTo({ url: '/pages/hatch/hatch' });
-    wx.switchTab({ url: '/pages/home/home' });
+  onTapUserCard() {
+    if (this.data.isDemo) return wx.showToast({ title: '展会体验不保存账户资料', icon: 'none' });
+    wx.navigateTo({ url: '/pages/profile/profile' });
   },
   onNavAlbum() { wx.navigateTo({ url: '/pages/album/album' }); },
   onNavCodes() { wx.navigateTo({ url: '/pages/invite-codes/invite-codes' }); },

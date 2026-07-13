@@ -30,7 +30,7 @@
 /* 输入栏 */
 .composer {
   display: flex; align-items: center; gap: 20rpx;
-  padding: 20rpx 32rpx; border-top: 1rpx solid #E5E3DF; background: #FFFFFF;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid #E5E3DF; background: #FFFFFF;
 }
 .composer__input {
   flex: 1; height: 80rpx; border-radius: 999rpx; border: 1rpx solid #E5E3DF;

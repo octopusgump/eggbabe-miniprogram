@@ -1,1 +1,35 @@
-<view class="page"><nav-bar title="我的卡册"></nav-bar><view class="content"><view wx:if="{{card}}" class="album-card" bindtap="onOpen"><view class="baby-mark">{{card.prototype === '锦鲤' ? '锦' : '兔'}}</view><view class="copy"><text class="name">{{card.name}}</text><text class="meta">{{card.prototype}} · {{card.style}}</text><text class="serial">{{card.serial}}</text></view><text class="arrow">›</text></view><view wx:else class="empty"><view class="empty-card"></view><text class="empty-title">卡册还是空的</text><text class="empty-desc">到达预设破壳日后，收藏卡会自动收入这里。</text></view></view></view>
+<view class="page">
+  <nav-bar title="我的卡册"></nav-bar>
+  <view class="tabs">
+    <view class="tab {{tab === 'hatch' ? 'tab--active' : ''}}" data-tab="hatch" bindtap="onTab">破壳卡</view>
+    <view class="tab {{tab === 'scene' ? 'tab--active' : ''}}" data-tab="scene" bindtap="onTab">场景卡 {{sceneCards.length}}</view>
+  </view>
+  <scroll-view class="content" scroll-y>
+    <block wx:if="{{tab === 'hatch'}}">
+      <view wx:if="{{card}}" class="album-card" bindtap="onOpen">
+        <view class="baby-mark">{{card.prototype === '锦鲤' ? '锦' : '兔'}}</view>
+        <view class="copy"><text class="name">{{card.name}}</text><text class="meta">{{card.prototype}} · {{card.style}}</text><text class="serial">{{card.serial}}</text></view><text class="arrow">›</text>
+      </view>
+      <view wx:else class="empty"><view class="empty-card"></view><text class="empty-title">还没有破壳卡</text><text class="empty-desc">到达预设破壳日后，身份收藏卡会自动收入这里。</text></view>
+    </block>
+    <block wx:else>
+      <view wx:if="{{sceneCards.length}}" class="scene-grid">
+        <view wx:for="{{sceneCards}}" wx:key="id" class="scene-card">
+          <view class="scene-art" style="background:{{item.tint}};"><text>{{item.mark}}</text></view>
+          <text class="scene-name">{{item.name}}</text><text class="scene-meta">{{item.character}} · {{item.rarity}}</text>
+          <view class="card-actions">
+            <view class="card-action" data-id="{{item.id}}" bindtap="onSaveSceneCard">{{item.saved ? '已保存' : '保存'}}</view>
+            <button class="card-action card-share" open-type="share" data-id="{{item.id}}" bindtap="onSelectShare"><text class="button-label">分享</text></button>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{summary && summary.scenes.length}}" class="set-panel">
+        <text class="set-title">场景套卡进度</text>
+        <view wx:for="{{summary.scenes}}" wx:key="sceneKey" class="set-row"><text>{{item.label}}</text><text>{{item.owned}} / {{item.total}}{{item.complete ? ' · 已集齐' : ''}}</text></view>
+        <view wx:if="{{summary.unlocked}}" class="unlock-cta" bindtap="onEcommerce">已解锁站外购买资格</view>
+      </view>
+      <view wx:else class="empty"><view class="empty-card empty-card--scene"></view><text class="empty-title">场景里藏着惊喜</text><text class="empty-desc">破壳后进入生活场景，和周围的小物件互动，可能遇见一张场景卡。</text></view>
+    </block>
+    <view class="safe-space"></view>
+  </scroll-view>
+</view>

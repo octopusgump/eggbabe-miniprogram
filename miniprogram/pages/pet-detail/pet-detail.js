@@ -1,4 +1,5 @@
 const petStore = require('../../utils/pet-store');
+const analytics = require('../../services/analytics');
 
 Page({
   data: { pet: null, card: null, dailyStatus: null },
@@ -11,11 +12,13 @@ Page({
       return;
     }
     const card = pet.collectionCard;
+    const dailyStatus = petStore.getDailyStatus();
     this.setData({
       pet,
       card,
-      dailyStatus: petStore.getDailyStatus()
+      dailyStatus
     });
+    if (dailyStatus) analytics.track('daily_status_viewed', { where: 'profile', mood_type: dailyStatus.mood });
   },
 
   onChat() { wx.navigateTo({ url: '/pages/chat/chat' }); },

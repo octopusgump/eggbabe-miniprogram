@@ -2,7 +2,7 @@
   <nav-bar title="破壳后的生活"></nav-bar>
   <scroll-view class="content" scroll-y>
     <view class="intro">
-      <view><text class="intro-kicker">EXHIBITION MODE</text><text class="intro-title">月团已经破壳啦</text><text class="intro-desc">选择一个场景，看看它破壳后会怎样陪在你身边。</text></view>
+      <view><text class="intro-kicker">{{introKicker}}</text><text class="intro-title">{{introTitle}}</text><text class="intro-desc">{{introDesc}}</text></view>
       <image class="intro-rabbit" src="/assets/scenes/grass_with_egg.jpg" mode="aspectFill"></image>
     </view>
     <view class="scene-grid">
@@ -13,6 +13,6 @@
       </view>
     </view>
     <view class="tip">每个场景里都有 3 个可点击的小互动</view>
-    <button class="exit-button" bindtap="onExit"><text class="button-label">退出展会体验并恢复数据</text></button>
+    <button wx:if="{{isDemo}}" class="exit-button" bindtap="onExit"><text class="button-label">退出展会体验</text></button>
   </scroll-view>
 </view>

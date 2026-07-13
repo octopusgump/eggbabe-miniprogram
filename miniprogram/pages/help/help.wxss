@@ -63,7 +63,7 @@
 
 .cs-bar {
   border-top: 1rpx solid #E5E3DF;
-  padding: 26rpx 40rpx;
+  padding: 26rpx 40rpx calc(26rpx + env(safe-area-inset-bottom));
   background: #FFFFFF;
   display: flex;
   align-items: center;

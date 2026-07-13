@@ -1,4 +1,8 @@
 const petStore = require('../../utils/pet-store');
+const analytics = require('../../services/analytics');
+const timeService = require('../../services/time-service');
+const sceneConfig = require('../../utils/exhibition-scenes');
+const syncQueue = require('../../services/sync-queue');
 
 const TOUCH_LINES = ['你碰到它啦。', '它轻轻晃了一下。', '它好像听见你了。', '蛋壳里传来小小的声音。'];
 Page({
@@ -11,25 +15,32 @@ Page({
     feedback: '',
     eggMotion: '',
     cuddleProgress: 0,
-    actionLabel: '孵化修炼手册'
+    actionLabel: '孵化修炼手册',
+    hasScenes: false,
+    syncPending: 0
   },
 
   onShow() {
     const pet = petStore.getPet();
     if (!pet) {
-      this.setData({ pet: null, stage: 'empty' });
+      this.setData({ pet: null, stage: 'empty', hasScenes: false, syncPending: syncQueue.pendingCount() });
       return;
     }
     const stage = petStore.getStage(pet);
+    analytics.track(stage === 'hatched' ? 'role_home_view' : 'hatch_home_view');
     const presentation = petStore.getStagePresentation(stage);
+    const dailyStatus = petStore.getDailyStatus();
     this.setData({
       pet,
       stage,
       stageText: presentation.homeText,
       countdown: petStore.getCountdown(pet),
-      dailyStatus: petStore.getDailyStatus(),
-      actionLabel: presentation.actionLabel
+      dailyStatus,
+      actionLabel: presentation.actionLabel,
+      hasScenes: stage === 'hatched' && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
+      syncPending: syncQueue.pendingCount()
     });
+    if (dailyStatus) analytics.track('daily_status_viewed', { where: stage === 'hatched' ? 'role_home' : 'hatch_home', mood_type: dailyStatus.mood });
   },
 
   onAddDevice() {
@@ -53,6 +64,14 @@ Page({
         wx.navigateTo({ url: '/pages/exhibition-scenes/exhibition-scenes' });
       }
     });
+  },
+
+  onOpenExhibitionScene() {
+    wx.navigateTo({ url: '/pages/exhibition-scene/exhibition-scene?scene=grass' });
+  },
+
+  onChangeScene() {
+    wx.navigateTo({ url: '/pages/exhibition-scenes/exhibition-scenes?source=live' });
   },
 
   onExitExhibition() {
@@ -79,33 +98,44 @@ Page({
       this.completedLongPress = false;
       return;
     }
-    const now = Date.now();
+    const now = timeService.now();
     if (this.lastTapAt && now - this.lastTapAt < 2000) return;
     this.lastTapAt = now;
     petStore.recordTouch();
+    analytics.track('egg_tap', { tap_count: 1 });
     this.setData({ eggMotion: 'egg--wobble' });
     this.showFeedback(TOUCH_LINES[Math.floor(Math.random() * TOUCH_LINES.length)]);
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
-    setTimeout(() => this.setData({ eggMotion: '' }), 600);
+    clearTimeout(this.wobbleTimer);
+    this.wobbleTimer = setTimeout(() => this.setData({ eggMotion: '' }), 600);
   },
 
   onTouchStart() {
     if (!this.data.pet || this.data.stage === 'hatched') return;
+    this.clearCuddleTimers();
     this.completedLongPress = false;
-    const started = Date.now();
+    const started = timeService.now();
     this.setData({ eggMotion: 'egg--warming', cuddleProgress: 1 });
     this.cuddleTicker = setInterval(() => {
-      const progress = Math.min(99, Math.round((Date.now() - started) / 30));
+      const progress = Math.min(99, Math.round((timeService.now() - started) / 30));
       this.setData({ cuddleProgress: progress });
     }, 90);
     this.cuddleTimer = setTimeout(() => {
       clearInterval(this.cuddleTicker);
       const result = petStore.completeCuddle();
+      if (!result.ok) {
+        this.clearCuddleTimers();
+        this.setData({ cuddleProgress: 0, eggMotion: '' });
+        this.showFeedback(result.message || '保存失败，请重试');
+        return;
+      }
+      analytics.track('pat_egg_complete');
+      analytics.track('incubation_action', { action_type: 'cuddle', is_first_time: !!result.added, progress_delta: result.added || 0 });
       this.completedLongPress = true;
       this.setData({ cuddleProgress: 100, eggMotion: 'egg--warm' });
       this.showFeedback(result.added ? '它暖起来了 · 孵化进度 +5%' : '它又往你这边靠了靠');
       if (wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
-      setTimeout(() => {
+      this.cuddleResetTimer = setTimeout(() => {
         this.setData({ cuddleProgress: 0, eggMotion: '' });
         this.onShow();
       }, 900);
@@ -116,6 +146,18 @@ Page({
     clearTimeout(this.cuddleTimer);
     clearInterval(this.cuddleTicker);
     if (!this.completedLongPress) this.setData({ cuddleProgress: 0, eggMotion: '' });
+  },
+
+  clearCuddleTimers() {
+    clearTimeout(this.cuddleTimer);
+    clearTimeout(this.cuddleResetTimer);
+    clearInterval(this.cuddleTicker);
+  },
+
+  clearInteractionTimers() {
+    this.clearCuddleTimers();
+    clearTimeout(this.feedbackTimer);
+    clearTimeout(this.wobbleTimer);
   },
 
   onPrimaryAction() {
@@ -135,9 +177,11 @@ Page({
     if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/pet-detail/pet-detail' });
   },
 
-  onUnload() {
-    clearTimeout(this.cuddleTimer);
-    clearTimeout(this.feedbackTimer);
-    clearInterval(this.cuddleTicker);
-  }
+  onHide() {
+    this.clearInteractionTimers();
+    this.completedLongPress = false;
+    this.setData({ cuddleProgress: 0, eggMotion: '', feedback: '' });
+  },
+
+  onUnload() { this.clearInteractionTimers(); }
 });

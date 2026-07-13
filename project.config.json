@@ -2,6 +2,7 @@
   "appid": "wx8dd1f5ce569c04d3",
   "projectname": "eggbaby-mvp-v1-gpt",
   "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
   "compileType": "miniprogram",
   "setting": {
     "urlCheck": false,

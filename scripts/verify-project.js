@@ -54,6 +54,24 @@ for (const image of ['grass_with_egg.jpg', 'snow_with_egg.jpg', 'room_with_egg.j
   if (!fs.existsSync(path.join(miniprogram, 'assets/scenes', image))) errors.push(`展会场景缺少图片：${image}`);
 }
 
+const petStore = require(path.join(miniprogram, 'utils/pet-store'));
+for (const [date, expected] of [['2026-01-19', '摩羯座'], ['2026-02-18', '水瓶座'], ['2026-03-21', '白羊座'], ['2026-08-23', '处女座'], ['2026-12-22', '摩羯座']]) {
+  const actual = petStore.getZodiac(date);
+  if (actual !== expected) errors.push(`星座计算错误：${date} 应为 ${expected}，实际为 ${actual}`);
+}
+
+const exhibitionScenes = require(path.join(miniprogram, 'utils/exhibition-scenes'));
+const sceneEffectStyles = fs.readFileSync(path.join(miniprogram, 'pages/exhibition-scene/exhibition-scene.wxss'), 'utf8');
+const exhibitionPoints = exhibitionScenes.SCENES.flatMap(scene => (exhibitionScenes.HOTSPOTS[scene.key] || []).map(point => ({ scene: scene.label, ...point })));
+if (exhibitionPoints.length !== 18) errors.push(`六个展会场景应有 18 个互动点，实际为 ${exhibitionPoints.length}`);
+for (const point of exhibitionPoints) {
+  const x = parseFloat(point.x);
+  const y = parseFloat(point.y);
+  if (x >= 70 && y <= 30) errors.push(`${point.scene}「${point.label}」位于微信胶囊右上角危险区`);
+  if (x > 84 || y > 82) errors.push(`${point.scene}「${point.label}」过于靠近屏幕边缘：${point.x}, ${point.y}`);
+  if (point.effect && !sceneEffectStyles.includes(`.scene-effect--${point.effect}`)) errors.push(`${point.scene}「${point.label}」缺少特效样式：${point.effect}`);
+}
+
 if (errors.length) {
   console.error(`项目校验失败（${errors.length} 项）：`);
   errors.forEach(error => console.error(`- ${error}`));

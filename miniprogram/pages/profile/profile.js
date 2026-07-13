@@ -1,24 +1,11 @@
 const petStore = require('../../utils/pet-store');
 const PROFILE_KEY = 'eggbaby_profile_v2';
 const MBTI_LIST = ['INFP','INFJ','INTJ','INTP','ENFP','ENFJ','ENTJ','ENTP','ISFP','ISFJ','ISTJ','ISTP','ESFP','ESFJ','ESTJ','ESTP'];
-
-function zodiacForDate(value) {
-  if (!value) return '';
-  const parts = value.split('-');
-  const key = Number(parts[1]) * 100 + Number(parts[2]);
-  if (key >= 120 || key <= 218) return '水瓶座';
-  if (key <= 320) return '双鱼座';
-  if (key <= 419) return '白羊座';
-  if (key <= 520) return '金牛座';
-  if (key <= 621) return '双子座';
-  if (key <= 722) return '巨蟹座';
-  if (key <= 822) return '狮子座';
-  if (key <= 922) return '处女座';
-  if (key <= 1023) return '天秤座';
-  if (key <= 1122) return '天蝎座';
-  if (key <= 1221) return '射手座';
-  return '摩羯座';
-}
+const safeStorage = require('../../services/safe-storage');
+const analytics = require('../../services/analytics');
+const cloudApi = require('../../services/cloud-api');
+const config = require('../../config/v2');
+const syncQueue = require('../../services/sync-queue');
 
 Page({
   data: {
@@ -27,8 +14,8 @@ Page({
   },
 
   onLoad() {
-    const user = petStore.saveUser(petStore.getUser() || {});
-    const profile = wx.getStorageSync(PROFILE_KEY) || {};
+    const user = petStore.saveUser(petStore.getUser() || {}) || petStore.getUser() || {};
+    const profile = safeStorage.get(PROFILE_KEY, {});
     const gender = profile.gender || user.gender || '';
     const birthday = profile.birthday || user.birthday || '';
     this.setData({
@@ -37,7 +24,7 @@ Page({
       avatarUrl: profile.avatarUrl || user.avatarUrl || '',
       gender,
       birthday,
-      zodiac: profile.zodiac || user.zodiac || zodiacForDate(birthday),
+      zodiac: profile.zodiac || user.zodiac || petStore.getZodiac(birthday),
       city: profile.city || user.city || '',
       mbti: profile.mbti || user.mbti || '',
       mbtiDraft: profile.mbti || user.mbti || '',
@@ -49,18 +36,45 @@ Page({
 
   save(changes) {
     const next = Object.assign({}, this.data, changes);
-    this.setData(changes);
-    wx.setStorageSync(PROFILE_KEY, next);
+    const localResult = safeStorage.set(PROFILE_KEY, next, 'profile');
+    if (!localResult.ok) {
+      wx.showToast({ title: localResult.message, icon: 'none' });
+      return false;
+    }
     const user = petStore.getUser() || {};
     const savedUser = petStore.saveUser(Object.assign({}, user, changes));
+    if (!savedUser) {
+      wx.showToast({ title: '资料保存失败，请重试', icon: 'none' });
+      return false;
+    }
+    this.setData(changes);
     this.setData({ publicId: savedUser.publicId });
+    if (config.cloudEnabled) syncQueue.enqueue('updateProfile', { profile: changes });
+    return true;
   },
 
   onChooseAvatar(event) {
     const avatarUrl = event.detail.avatarUrl;
     if (!avatarUrl) return;
-    this.save({ avatarUrl });
-    wx.showToast({ title: '头像已更新', icon: 'success' });
+    analytics.track('avatar_change', { status: 'start' });
+    if (config.cloudEnabled) {
+      wx.showLoading({ title: '正在上传' });
+      cloudApi.uploadAvatar(avatarUrl).then(result => {
+        wx.hideLoading();
+        if (!result.ok || !this.save({ avatarUrl: result.fileID })) {
+          analytics.track('avatar_change', { status: 'fail' });
+          wx.showToast({ title: result.message || '头像上传失败，请重试', icon: 'none' });
+          return;
+        }
+        analytics.track('avatar_change', { status: 'success' });
+        wx.showToast({ title: '头像已更新', icon: 'success' });
+      });
+      return;
+    }
+    if (this.save({ avatarUrl })) {
+      analytics.track('avatar_change', { status: 'success' });
+      wx.showToast({ title: '头像已更新', icon: 'success' });
+    } else analytics.track('avatar_change', { status: 'fail' });
   },
 
   onEditNickname() {
@@ -90,7 +104,7 @@ Page({
     wx.showModal({
       title: '确认生日', content: `${birthday} 设置后不可修改，确认保存吗？`,
       success: (result) => {
-        if (result.confirm) this.save({ birthday, zodiac: zodiacForDate(birthday), birthdayLocked: true });
+        if (result.confirm) this.save({ birthday, zodiac: petStore.getZodiac(birthday), birthdayLocked: true });
       }
     });
   },

@@ -1,11 +1,28 @@
 const DEREGISTER_KEY = 'eggbaby_deregister_request_v1';
+const safeStorage = require('../../services/safe-storage');
+const timeService = require('../../services/time-service');
+const analytics = require('../../services/analytics');
+const cloudApi = require('../../services/cloud-api');
+const config = require('../../config/v2');
 
 Page({
   data: { pending: false, endDate: '' },
 
   onShow() {
-    const request = wx.getStorageSync(DEREGISTER_KEY);
+    if (config.cloudEnabled) {
+      cloudApi.manageDeletion('query').then(result => {
+        if (result.ok && result.request) {
+          safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_query');
+          this.showRequest(result.request);
+        } else if (result.ok) this.setData({ pending: false, endDate: '' });
+      });
+    }
+    const request = safeStorage.get(DEREGISTER_KEY, null);
     if (!request) return this.setData({ pending: false, endDate: '' });
+    this.showRequest(request);
+  },
+
+  showRequest(request) {
     const end = new Date(request.endAt);
     this.setData({
       pending: true,
@@ -24,8 +41,19 @@ Page({
       confirmColor: '#D9463C',
       success: (res) => {
         if (!res.confirm) return;
-        const submittedAt = Date.now();
-        wx.setStorageSync(DEREGISTER_KEY, { submittedAt, endAt: submittedAt + 15 * 24 * 60 * 60 * 1000 });
+        if (config.cloudEnabled) {
+          cloudApi.manageDeletion('request').then(result => {
+            if (!result.ok) return wx.showToast({ title: result.message || '提交失败，请重试', icon: 'none' });
+            const saved = safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_request');
+            if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
+            analytics.track('account_delete_request'); this.onShow(); wx.showToast({ title: '注销申请已提交', icon: 'success' });
+          });
+          return;
+        }
+        const submittedAt = timeService.now();
+        const saved = safeStorage.set(DEREGISTER_KEY, { submittedAt, endAt: submittedAt + 15 * 24 * 60 * 60 * 1000 }, 'account_delete_request');
+        if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
+        analytics.track('account_delete_request');
         this.onShow();
         wx.showToast({ title: '注销申请已提交', icon: 'success' });
       }
@@ -38,7 +66,16 @@ Page({
       content: '取消后账号会恢复正常，可以继续使用蛋宝宝、卡册和对话。',
       success: (res) => {
         if (!res.confirm) return;
-        wx.removeStorageSync(DEREGISTER_KEY);
+        if (config.cloudEnabled) {
+          cloudApi.manageDeletion('cancel').then(result => {
+            if (!result.ok) return wx.showToast({ title: result.message || '取消失败，请重试', icon: 'none' });
+            safeStorage.remove(DEREGISTER_KEY, 'account_delete_cancel'); analytics.track('account_delete_cancel'); this.onShow(); wx.showToast({ title: '已取消注销', icon: 'success' });
+          });
+          return;
+        }
+        const removed = safeStorage.remove(DEREGISTER_KEY, 'account_delete_cancel');
+        if (!removed.ok) return wx.showToast({ title: removed.message, icon: 'none' });
+        analytics.track('account_delete_cancel');
         this.onShow();
         wx.showToast({ title: '已取消注销', icon: 'success' });
       }

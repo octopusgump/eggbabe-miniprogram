@@ -7,9 +7,9 @@
 
 .content {
   flex: 1;
-  overflow: hidden;
-  padding-top: 16rpx;
+  padding: 16rpx 0 calc(40rpx + env(safe-area-inset-bottom));
   background: #FAFAF8;
+  box-sizing: border-box;
 }
 
 .section-label {

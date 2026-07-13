@@ -2,6 +2,11 @@ const PET_KEY = 'eggbaby_mvp_pet_v1';
 const USER_KEY = 'eggbaby_mvp_user_v1';
 const IDENTITY_KEY = 'eggbaby_mvp_identity_v1';
 const EXHIBITION_BACKUP_KEY = 'eggbaby_exhibition_backup_v1';
+const runtime = require('../services/runtime-context');
+const timeService = require('../services/time-service');
+const analytics = require('../services/analytics');
+const config = require('../config/v2');
+const syncQueue = require('../services/sync-queue');
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -23,20 +28,36 @@ const STATUS_LINES = {
 };
 
 function todayKey(now) {
-  const date = now ? new Date(now) : new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return timeService.beijingDateKey(now);
+}
+
+function resolvedKey(key) {
+  return key === PET_KEY || key === EXHIBITION_BACKUP_KEY ? runtime.scopedKey(key) : key;
 }
 
 function read(key) {
-  try { return wx.getStorageSync(key) || null; } catch (error) { return null; }
+  try {
+    const value = wx.getStorageSync(resolvedKey(key));
+    if (value) return value;
+    if (key === PET_KEY && runtime.getMode() === 'live') {
+      const legacy = wx.getStorageSync(PET_KEY);
+      if (legacy) {
+        wx.setStorageSync(resolvedKey(key), legacy);
+        return legacy;
+      }
+    }
+    return null;
+  } catch (error) { return null; }
 }
 
 function write(key, value) {
-  try { wx.setStorageSync(key, value); } catch (error) {}
-  return value;
+  try {
+    wx.setStorageSync(resolvedKey(key), value);
+    return { ok: true, value };
+  } catch (error) {
+    analytics.track('data_write_fail', { where: key, error_code: 'LOCAL_WRITE_FAILED' });
+    return { ok: false, value, message: '数据保存失败，请重试' };
+  }
 }
 
 function getUser() {
@@ -66,12 +87,13 @@ function createPublicUserId(registeredAt) {
 function saveUser(user) {
   const source = user || {};
   const identity = getIdentityRecord();
-  const registeredAt = source.registeredAt || identity.registeredAt || source.authorizedAt || Date.now();
+  const registeredAt = source.registeredAt || identity.registeredAt || source.authorizedAt || timeService.now();
   const id = source.id || identity.id || `user-${registeredAt}-${randomIdToken()}`;
   const publicId = source.publicId || identity.publicId || createPublicUserId(registeredAt);
   const normalized = Object.assign({}, source, { id, publicId, registeredAt });
   write(IDENTITY_KEY, { id, publicId, registeredAt });
-  return write(USER_KEY, normalized);
+  const result = write(USER_KEY, normalized);
+  return result.ok ? result.value : null;
 }
 
 function getIdentityId() {
@@ -90,7 +112,13 @@ function getPet() {
 }
 
 function savePet(pet) {
-  return write(PET_KEY, pet);
+  const result = write(PET_KEY, pet);
+  return result.ok ? pet : null;
+}
+
+function syncIncubationAction(actionType, payload) {
+  if (!config.cloudEnabled || runtime.getMode() !== 'live') return;
+  syncQueue.enqueue('recordIncubationAction', { actionType, payload });
 }
 
 function isBound() {
@@ -125,7 +153,7 @@ function bindPet(code, now) {
   const error = mockCodeError(normalized);
   if (error) return { ok: false, reason: normalized, message: error };
 
-  const createdAt = now || Date.now();
+  const createdAt = now || timeService.now();
   const prototype = normalized.includes('KOI') ? '锦鲤' : '玉兔';
   const hatchAt = normalized === 'HATCH-NOW' ? createdAt : createdAt + 7 * DAY;
   const id = `egg-${createdAt}`;
@@ -153,8 +181,42 @@ function bindPet(code, now) {
     inviteCodes: createInviteCodes(createdAt),
     messages: []
   };
-  savePet(pet);
+  if (!savePet(pet)) return { ok: false, reason: 'WRITE_FAILED', message: '蛋宝宝绑定失败，请重试' };
   return { ok: true, pet };
+}
+
+function importCloudPet(record, mode) {
+  const source = record || {};
+  const createdAt = source.createdAt || timeService.now();
+  const pet = {
+    id: source.pet_id || source.id,
+    ownerId: (getUser() && getUser().id) || '',
+    prototype: source.prototype || '玉兔',
+    name: source.name || '',
+    createdAt,
+    hatchAt: source.hatchAt,
+    progress: source.progress || 0,
+    stage: source.stage || 'waiting',
+    serverBacked: true,
+    lastInteractionAt: createdAt,
+    tasks: source.tasks || { nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', doodleDone: false },
+    preferences: source.preferences || { wishes: [], lessons: [] },
+    shell: source.shell || { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
+    dailyStatus: source.dailyStatus || null,
+    collectionCard: source.collectionCard || null,
+    inviteCodes: source.inviteCodes || createInviteCodes(createdAt),
+    messages: source.messages || []
+  };
+  if (mode) {
+    try {
+      wx.setStorageSync(runtime.scopedKey(PET_KEY, mode), pet);
+      return { ok: true, pet };
+    } catch (error) {
+      analytics.track('data_write_fail', { where: PET_KEY, error_code: 'LOCAL_WRITE_FAILED' });
+      return { ok: false, message: '云端数据缓存失败，请重试' };
+    }
+  }
+  return savePet(pet) ? { ok: true, pet } : { ok: false, message: '云端数据缓存失败，请重试' };
 }
 
 function addProgress(pet, amount) {
@@ -174,8 +236,9 @@ function updateNickname(name) {
   pet.name = value;
   if (first) addProgress(pet, 20);
   pet.tasks.nicknameDone = true;
-  pet.lastInteractionAt = Date.now();
-  savePet(pet);
+  pet.lastInteractionAt = timeService.now();
+  if (!savePet(pet)) return { ok: false, message: '昵称保存失败，请重试' };
+  syncIncubationAction('nickname', { name: value });
   return { ok: true, added: first ? 20 : 0, pet };
 }
 
@@ -189,8 +252,9 @@ function completeDailyTask(task, value) {
   if (task === 'wish') pet.preferences.wishes.push({ date, value });
   if (task === 'lesson') pet.preferences.lessons.push({ date, value });
   addProgress(pet, 5);
-  pet.lastInteractionAt = Date.now();
-  savePet(pet);
+  pet.lastInteractionAt = timeService.now();
+  if (!savePet(pet)) return { ok: false, message: '互动记录保存失败，请重试' };
+  syncIncubationAction(task, { value });
   return { ok: true, added: 5, alreadyDone: false, pet };
 }
 
@@ -213,15 +277,17 @@ function saveDoodle(color, colorName, pattern) {
   pet.shell = { color, colorName, pattern };
   pet.tasks.doodleDone = true;
   if (first) addProgress(pet, 20);
-  pet.lastInteractionAt = Date.now();
-  savePet(pet);
+  pet.lastInteractionAt = timeService.now();
+  if (!savePet(pet)) return { ok: false, message: '蛋壳保存失败，请重试' };
+  syncIncubationAction('doodle', { color, colorName, pattern });
   return { ok: true, added: first ? 20 : 0, pet };
 }
 
 function getStage(pet, now) {
   if (!pet) return 'empty';
   if (pet.collectionCard) return 'hatched';
-  const current = now || Date.now();
+  if (config.cloudEnabled && !timeService.isAuthoritative()) return pet.stage || 'waiting';
+  const current = now || timeService.now();
   if (current >= pet.hatchAt) return 'ready';
   if (pet.hatchAt - current <= DAY) return 'soon';
   if (pet.progress >= 100) return 'prepared';
@@ -243,7 +309,8 @@ function getStagePresentation(stage) {
 
 function getCountdown(pet, now) {
   if (!pet) return '';
-  const remaining = pet.hatchAt - (now || Date.now());
+  if (config.cloudEnabled && !timeService.isAuthoritative()) return '正在同步北京时间…';
+  const remaining = pet.hatchAt - (now || timeService.now());
   if (remaining <= 0) return '破壳时刻已到';
   const days = Math.floor(remaining / DAY);
   const hours = Math.floor((remaining % DAY) / (60 * 60 * 1000));
@@ -257,15 +324,18 @@ function simpleHash(value) {
 function getDailyStatus() {
   const pet = getPet();
   if (!pet) return null;
+  if (config.cloudEnabled && !timeService.isAuthoritative()) {
+    return pet.dailyStatus || { date: '', mood: '平静', line: '正在和北京时间对齐…', source: 'sync-pending', pending: true };
+  }
   const date = todayKey();
   if (pet.dailyStatus && pet.dailyStatus.date === date) return pet.dailyStatus;
-  const inactiveDays = Math.floor((Date.now() - (pet.lastInteractionAt || pet.createdAt)) / DAY);
+  const inactiveDays = Math.floor((timeService.now() - (pet.lastInteractionAt || pet.createdAt)) / DAY);
   const stage = getStage(pet);
   let mood;
   if (inactiveDays >= 4) mood = '低落';
   else if (inactiveDays >= 2) mood = '想念';
   else if (stage === 'soon' || stage === 'ready') mood = '兴奋';
-  else if (Date.now() - (pet.lastInteractionAt || 0) < 12 * 60 * 60 * 1000) mood = '开心';
+  else if (timeService.now() - (pet.lastInteractionAt || 0) < 12 * 60 * 60 * 1000) mood = '开心';
   else if (pet.preferences.wishes.some(item => item.value === '活泼逗你开心')) mood = '兴奋';
   else if (pet.preferences.wishes.some(item => item.value === '安静陪伴你')) mood = '平静';
   else mood = ['开心', '平静'][simpleHash(`${pet.id}-${date}`) % 2];
@@ -273,29 +343,38 @@ function getDailyStatus() {
   const lines = stagePool[mood];
   const line = lines[simpleHash(date) % lines.length];
   pet.dailyStatus = { date, mood, line, source: 'local-fallback' };
-  savePet(pet);
+  if (!savePet(pet)) return null;
+  analytics.track('daily_status_generated', { mood_type: mood, gen_source: 'fallback' });
   return pet.dailyStatus;
 }
 
 function recordTouch() {
   const pet = getPet();
-  if (!pet) return;
-  pet.lastInteractionAt = Date.now();
-  savePet(pet);
+  if (!pet) return { ok: false };
+  pet.lastInteractionAt = timeService.now();
+  return { ok: !!savePet(pet) };
 }
 
 function cardSerial(pet) {
-  const date = new Date(pet.hatchAt);
-  const compact = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+  const compact = todayKey(pet.hatchAt).replace(/-/g, '');
   const prefix = pet.prototype === '锦鲤' ? 'KOI' : 'RABBIT';
   const number = String(simpleHash(pet.id) % 999999).padStart(6, '0');
   return `EGG-${prefix}-${compact}-${number}`;
 }
 
-function getZodiac(timestamp) {
-  const date = new Date(timestamp);
-  const key = (date.getMonth() + 1) * 100 + date.getDate();
-  if (key >= 120 || key <= 218) return '水瓶座';
+function getZodiac(value) {
+  if (!value) return '';
+  const dateOnly = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  let key;
+  if (dateOnly) {
+    key = Number(dateOnly[2]) * 100 + Number(dateOnly[3]);
+  } else {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    key = (date.getMonth() + 1) * 100 + date.getDate();
+  }
+  if (key >= 1222 || key <= 119) return '摩羯座';
+  if (key <= 218) return '水瓶座';
   if (key <= 320) return '双鱼座';
   if (key <= 419) return '白羊座';
   if (key <= 520) return '金牛座';
@@ -305,27 +384,30 @@ function getZodiac(timestamp) {
   if (key <= 922) return '处女座';
   if (key <= 1023) return '天秤座';
   if (key <= 1122) return '天蝎座';
-  if (key <= 1221) return '射手座';
-  return '摩羯座';
+  return '射手座';
 }
 
 function derivePersonality(pet) {
   const latestLesson = pet.preferences.lessons.length ? pet.preferences.lessons[pet.preferences.lessons.length - 1].value : '';
   const latestWish = pet.preferences.wishes.length ? pet.preferences.wishes[pet.preferences.wishes.length - 1].value : '';
-  if (latestLesson === '学会勇敢') return { mbti: 'ENTJ', text: '勇敢、有主见，也会把你护在身后。' };
-  if (latestLesson === '学会讲冷笑话') return { mbti: 'ENFP', text: '热烈又古灵精怪，总想逗你开心。' };
-  if (latestLesson === '学会撒娇') return { mbti: 'ESFP', text: '亲近、柔软，很会表达对你的喜欢。' };
-  if (latestWish === '安静陪伴你') return { mbti: 'INFP', text: '温柔、细腻，擅长安静地陪伴。' };
-  if (latestWish === '聪明帮你出主意') return { mbti: 'INTJ', text: '冷静又聪明，喜欢陪你把事情想清楚。' };
-  return pet.prototype === '锦鲤'
-    ? { mbti: 'ENFP', text: '热烈、好奇，喜欢把好运分给你。' }
-    : { mbti: 'INFP', text: '温柔、细腻，擅长安静地陪伴。' };
+  const preferenceMap = { 学会勇敢: 'ENTJ', 学会讲冷笑话: 'ENFP', 学会撒娇: 'ESFP', 安静陪伴你: 'INFP', 聪明帮你出主意: 'INTJ', 活泼逗你开心: 'ENFP' };
+  const preference = preferenceMap[latestLesson] || preferenceMap[latestWish] || '';
+  const prototype = pet.prototype === '锦鲤' ? 'ENFP' : 'INFP';
+  const randomPool = ['INFP', 'INFJ', 'INTJ', 'INTP', 'ENFP', 'ENFJ', 'ENTJ', 'ENTP', 'ISFP', 'ISFJ', 'ISTJ', 'ISTP', 'ESFP', 'ESFJ', 'ESTJ', 'ESTP'];
+  const random = randomPool[simpleHash(`${pet.id}-mbti`) % randomPool.length];
+  const scores = {};
+  if (preference) scores[preference] = (scores[preference] || 0) + 60;
+  scores[prototype] = (scores[prototype] || 0) + 25;
+  scores[random] = (scores[random] || 0) + 15;
+  const mbti = Object.keys(scores).sort((a, b) => scores[b] - scores[a] || a.localeCompare(b))[0];
+  const descriptions = { ENTJ: '勇敢、有主见，也会把你护在身后。', ENFP: '热烈又古灵精怪，总想逗你开心。', ESFP: '亲近、柔软，很会表达对你的喜欢。', INFP: '温柔、细腻，擅长安静地陪伴。', INTJ: '冷静又聪明，喜欢陪你把事情想清楚。' };
+  return { mbti, text: descriptions[mbti] || '有自己的小脾气，也在慢慢学会陪伴你。' };
 }
 
 function createCollectionCard() {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
-  if (Date.now() < pet.hatchAt) return { ok: false, message: '还没到预设破壳时间' };
+  if (timeService.now() < pet.hatchAt) return { ok: false, message: '还没到预设破壳时间' };
   if (pet.collectionCard) return { ok: true, created: false, card: pet.collectionCard, pet };
   const isKoi = pet.prototype === '锦鲤';
   const personality = derivePersonality(pet);
@@ -346,26 +428,34 @@ function createCollectionCard() {
     originalOwner: (getUser() && getUser().nickname) || '蛋友3024'
   };
   pet.stage = 'hatched';
-  savePet(pet);
+  if (!savePet(pet)) return { ok: false, reason: 'WRITE_FAILED', message: '收藏卡保存失败，请重试' };
   return { ok: true, created: true, card: pet.collectionCard, pet };
+}
+
+function applyCloudHatchCard(card) {
+  const pet = getPet();
+  if (!pet || !card) return { ok: false, message: '收藏卡数据无效' };
+  pet.collectionCard = card;
+  pet.stage = 'hatched';
+  return savePet(pet) ? { ok: true, card, pet } : { ok: false, message: '收藏卡缓存失败，请重试' };
 }
 
 function saveMessage(message) {
   const pet = getPet();
-  if (!pet) return;
+  if (!pet) return { ok: false, message: '还没有蛋宝宝' };
   pet.messages = (pet.messages || []).concat(message).slice(-40);
-  savePet(pet);
+  return savePet(pet) ? { ok: true } : { ok: false, message: '消息保存失败，请重试' };
 }
 
 function resetDemo() {
-  try { wx.removeStorageSync(PET_KEY); wx.removeStorageSync(EXHIBITION_BACKUP_KEY); } catch (error) {}
+  try { wx.removeStorageSync(resolvedKey(PET_KEY)); wx.removeStorageSync(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
 }
 
 function startExhibitionDemo() {
+  runtime.setMode('demo');
   const current = read(PET_KEY);
   if (current && current.demoMode) return current;
-  write(EXHIBITION_BACKUP_KEY, { pet: current || null });
-  const createdAt = Date.now();
+  const createdAt = timeService.now();
   const pet = {
     id: `expo-${createdAt}`,
     ownerId: (getUser() && getUser().id) || '',
@@ -397,12 +487,11 @@ function startExhibitionDemo() {
 }
 
 function endExhibitionDemo() {
-  const backup = read(EXHIBITION_BACKUP_KEY);
   try {
-    if (backup && backup.pet) wx.setStorageSync(PET_KEY, backup.pet);
-    else wx.removeStorageSync(PET_KEY);
-    wx.removeStorageSync(EXHIBITION_BACKUP_KEY);
+    wx.removeStorageSync(resolvedKey(PET_KEY));
+    wx.removeStorageSync(resolvedKey(EXHIBITION_BACKUP_KEY));
   } catch (error) {}
+  runtime.setMode('live');
   return getPet();
 }
 
@@ -415,6 +504,7 @@ module.exports = {
   savePet,
   isBound,
   bindPet,
+  importCloudPet,
   updateNickname,
   completeCuddle,
   completeWish,
@@ -426,9 +516,11 @@ module.exports = {
   getDailyStatus,
   recordTouch,
   createCollectionCard,
+  applyCloudHatchCard,
   saveMessage,
   resetDemo,
   startExhibitionDemo,
   endExhibitionDemo,
-  todayKey
+  todayKey,
+  getZodiac
 };

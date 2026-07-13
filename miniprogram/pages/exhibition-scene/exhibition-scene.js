@@ -1,23 +1,66 @@
 const petStore = require('../../utils/pet-store');
 const exhibitionScenes = require('../../utils/exhibition-scenes');
+const sceneCards = require('../../services/scene-card-store');
+const analytics = require('../../services/analytics');
+const runtime = require('../../services/runtime-context');
+const timeService = require('../../services/time-service');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, sceneKicker: '' },
 
   onLoad(query) {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     let pet = petStore.getPet();
-    if (!pet || !pet.demoMode) pet = petStore.startExhibitionDemo();
+    if (!pet || petStore.getStage(pet) !== 'hatched') pet = petStore.startExhibitionDemo();
     const scene = exhibitionScenes.getScene(query.scene);
-    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [] });
+    this.enteredAt = timeService.now();
+    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
+    analytics.track('scene_enter', { scene_id: scene.key, character: pet.prototype, entry_type: query.entry || 'scene' });
   },
 
   onBack() { wx.navigateBack(); },
-  onChangeScene() { wx.navigateBack(); },
   onTapPet() { this.showReaction(this.data.scene.petLine, '50%', '52%'); },
   onTapHotspot(event) {
     const spot = this.data.hotspots[event.currentTarget.dataset.index];
-    if (spot) this.showReaction(spot.line, spot.x, spot.y);
+    if (!spot) return;
+    analytics.track('interaction_point_tap', { scene_id: this.data.scene.key, point_id: spot.label, character: this.data.pet.prototype });
+    this.showReaction(spot.line, spot.x, spot.y);
+    if (this.data.scene.key === 'grass' && spot.label === '小花') this.showFlowerSway(spot);
+    if (this.data.scene.key === 'grass' && spot.label === '蝴蝶') this.showButterflyFlight(spot);
+    if (spot.effect) this.showSceneEffect(spot);
+    sceneCards.attemptDrop(this.data.scene.key, spot.label, this.data.pet.prototype).then(drop => {
+      if (drop.ok && drop.dropped && this.data.isActive) this.setData({ cardDrop: drop.card });
+    });
+  },
+  onCloseCardDrop() { this.setData({ cardDrop: null }); },
+  noop() {},
+  onOpenAlbum() {
+    this.setData({ cardDrop: null });
+    wx.navigateTo({ url: '/pages/album/album?tab=scene' });
+  },
+  showFlowerSway(spot) {
+    clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
+    this.setData({ flowerEffect: null });
+    this.flowerStartTimer = setTimeout(() => {
+      this.setData({ flowerEffect: { x: spot.x, y: spot.y } });
+      this.flowerHideTimer = setTimeout(() => this.setData({ flowerEffect: null }), 3050);
+    }, 20);
+  },
+  showButterflyFlight(spot) {
+    clearTimeout(this.butterflyStartTimer); clearTimeout(this.butterflyHideTimer);
+    this.setData({ butterflyEffect: null });
+    this.butterflyStartTimer = setTimeout(() => {
+      this.setData({ butterflyEffect: { x: spot.x, y: spot.y } });
+      this.butterflyHideTimer = setTimeout(() => this.setData({ butterflyEffect: null }), 3100);
+    }, 20);
+  },
+  showSceneEffect(spot) {
+    clearTimeout(this.sceneEffectStartTimer); clearTimeout(this.sceneEffectHideTimer);
+    this.setData({ sceneEffect: null });
+    this.sceneEffectStartTimer = setTimeout(() => {
+      this.setData({ sceneEffect: { type: spot.effect, x: spot.x, y: spot.y } });
+      this.sceneEffectHideTimer = setTimeout(() => this.setData({ sceneEffect: null }), 3050);
+    }, 20);
   },
   showReaction(text, x, y) {
     clearTimeout(this.bubbleTimer); clearTimeout(this.rippleTimer);
@@ -26,5 +69,25 @@ Page({
     this.bubbleTimer = setTimeout(() => this.setData({ bubble: '' }), 2800);
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
   },
-  onUnload() { clearTimeout(this.bubbleTimer); clearTimeout(this.rippleTimer); }
+
+  clearEffectTimers() {
+    clearTimeout(this.bubbleTimer); clearTimeout(this.rippleTimer);
+    clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
+    clearTimeout(this.butterflyStartTimer); clearTimeout(this.butterflyHideTimer);
+    clearTimeout(this.sceneEffectStartTimer); clearTimeout(this.sceneEffectHideTimer);
+  },
+
+  onShow() {
+    if (!this.data.isActive) this.setData({ isActive: true });
+  },
+
+  onHide() {
+    this.clearEffectTimers();
+    this.setData({ isActive: false, bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null });
+  },
+
+  onUnload() {
+    this.clearEffectTimers();
+    analytics.track('scene_exit', { scene_id: this.data.scene ? this.data.scene.key : '', dwell_time: Math.max(0, timeService.now() - (this.enteredAt || timeService.now())) });
+  }
 });

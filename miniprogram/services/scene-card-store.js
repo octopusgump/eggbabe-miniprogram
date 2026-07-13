@@ -5,16 +5,17 @@ const config = require('../config/v2');
 const sceneConfig = require('../utils/exhibition-scenes');
 const cloudApi = require('./cloud-api');
 const syncQueue = require('./sync-queue');
+const storage = require('./storage-migration');
 
 function key(name, mode) { return runtime.scopedKey(name, mode); }
 
 function read(name, fallback) {
-  try { return wx.getStorageSync(key(name)) || fallback; } catch (error) { return fallback; }
+  return storage.read(key(name), fallback);
 }
 
 function write(name, value, mode) {
   try {
-    wx.setStorageSync(key(name, mode), value);
+    storage.set(key(name, mode), value);
     return { ok: true, value };
   } catch (error) {
     analytics.track('data_write_fail', { where: `scene_card.${name}`, error_code: 'LOCAL_WRITE_FAILED' });

@@ -1,6 +1,7 @@
 const config = require('../config/v2');
 
-const OFFSET_KEY = 'eggbaby_server_time_offset_v2';
+const storage = require('./storage-migration');
+const OFFSET_KEY = 'eggbabe_server_time_offset_v2';
 let offset = 0;
 let serverBase = 0;
 let monotonicBase = 0;
@@ -13,7 +14,7 @@ function monotonicNow() {
 
 function loadOffset() {
   if (typeof wx === 'undefined') return 0;
-  try { offset = Number(wx.getStorageSync(OFFSET_KEY)) || 0; } catch (error) { offset = 0; }
+  try { offset = Number(storage.read(OFFSET_KEY, 0)) || 0; } catch (error) { offset = 0; }
   return offset;
 }
 
@@ -39,7 +40,7 @@ function sync() {
     serverBase = Number(result.serverTs);
     monotonicBase = monotonicNow();
     authoritative = true;
-    try { wx.setStorageSync(OFFSET_KEY, offset); } catch (error) {}
+    try { storage.set(OFFSET_KEY, offset); } catch (error) {}
     return { ok: true, now: now(), offset };
   }).catch(() => ({ ok: false, fallback: true, now: now() }));
 }

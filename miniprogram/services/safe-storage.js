@@ -1,12 +1,13 @@
 const analytics = require('./analytics');
+const storage = require('./storage-migration');
 
 function get(key, fallback) {
-  try { return wx.getStorageSync(key) || fallback; } catch (error) { return fallback; }
+  return storage.read(key, fallback);
 }
 
 function set(key, value, where) {
   try {
-    wx.setStorageSync(key, value);
+    storage.set(key, value);
     return { ok: true, value };
   } catch (error) {
     analytics.track('data_write_fail', { where: where || key, error_code: 'LOCAL_WRITE_FAILED' });
@@ -16,7 +17,7 @@ function set(key, value, where) {
 
 function remove(key, where) {
   try {
-    wx.removeStorageSync(key);
+    storage.remove(key);
     return { ok: true };
   } catch (error) {
     analytics.track('data_write_fail', { where: where || key, error_code: 'LOCAL_REMOVE_FAILED' });

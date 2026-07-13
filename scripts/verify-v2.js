@@ -11,11 +11,35 @@ const runtime = require('../miniprogram/services/runtime-context');
 const petStore = require('../miniprogram/utils/pet-store');
 const sceneConfig = require('../miniprogram/utils/exhibition-scenes');
 const sceneCards = require('../miniprogram/services/scene-card-store');
+const storageMigration = require('../miniprogram/services/storage-migration');
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
+  const oldBrand = ['egg', 'baby'].join('');
+  const oldKey = `${oldBrand}_migration_test_v1`;
+  const newKey = 'eggbabe_migration_test_v1';
+  wx.setStorageSync(oldKey, { preserved: true });
+  assert.deepEqual(storageMigration.read(newKey, null), { preserved: true }, '品牌纠错后必须自动读取旧存储数据');
+  assert.deepEqual(wx.getStorageSync(newKey), { preserved: true }, '旧存储数据必须迁移到 eggbabe 新键');
+  assert.deepEqual(wx.getStorageSync(oldKey), { preserved: true }, '迁移期必须保留旧键，确保旧版本回退后仍能读取数据');
+  const quotaOldKey = `${oldBrand}_quota_test_v1`;
+  const quotaNewKey = 'eggbabe_quota_test_v1';
+  wx.setStorageSync(quotaOldKey, { stillReadable: true });
+  const originalSetStorage = wx.setStorageSync;
+  wx.setStorageSync = (key, value) => {
+    if (key === quotaNewKey) throw new Error('STORAGE_QUOTA');
+    originalSetStorage(key, value);
+  };
+  assert.deepEqual(storageMigration.read(quotaNewKey, null), { stillReadable: true }, '迁移写入遇到容量限制时仍必须返回旧数据');
+  wx.setStorageSync = originalSetStorage;
+
   runtime.setMode('live');
+  const oldScopedPetKey = `${oldBrand}_live_${oldBrand}_mvp_pet_v1_v2`;
+  wx.setStorageSync(oldScopedPetKey, { id: 'legacy-pet', ownerId: '', prototype: '玉兔' });
+  assert.equal(petStore.getPet().id, 'legacy-pet', '旧品牌命名空间里的宠物数据必须可读取');
+  petStore.resetDemo();
+  assert.equal(petStore.getPet(), null, '迁移后的数据必须可以正常重置，不能从旧键复活');
   petStore.saveUser({ id: 'test-user', nickname: '测试蛋友', registeredAt: Date.now() });
   const bound = petStore.bindPet('DEMO-KOI', Date.now());
   assert.equal(bound.ok, true, '正式模式应能绑定测试蛋');
@@ -49,6 +73,16 @@ async function main() {
   petStore.endExhibitionDemo();
   assert.equal(runtime.getMode(), 'live', '退出展会必须恢复 live');
   assert.equal(petStore.getPet().id, livePetId, '退出展会必须保留原正式宠物');
+
+  const wrongBrand = new RegExp(oldBrand, 'i');
+  const sourceRoots = ['miniprogram', 'cloudfunctions', 'docs', 'README.md', 'project.config.json'];
+  const scan = target => {
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) return fs.readdirSync(target).forEach(name => scan(path.join(target, name)));
+    if (!/\.(js|json|md|wxml|wxss)$/.test(target)) return;
+    assert.equal(wrongBrand.test(fs.readFileSync(target, 'utf8')), false, `仍有错误品牌拼写：${target}`);
+  };
+  sourceRoots.forEach(root => scan(path.join(__dirname, '..', root)));
   console.log('V2 校验通过：数据隔离、角色场景卡池、掉落与每日上限正常。');
 }
 

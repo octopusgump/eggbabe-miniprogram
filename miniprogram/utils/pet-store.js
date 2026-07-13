@@ -1,12 +1,13 @@
-const PET_KEY = 'eggbaby_mvp_pet_v1';
-const USER_KEY = 'eggbaby_mvp_user_v1';
-const IDENTITY_KEY = 'eggbaby_mvp_identity_v1';
-const EXHIBITION_BACKUP_KEY = 'eggbaby_exhibition_backup_v1';
+const PET_KEY = 'eggbabe_mvp_pet_v1';
+const USER_KEY = 'eggbabe_mvp_user_v1';
+const IDENTITY_KEY = 'eggbabe_mvp_identity_v1';
+const EXHIBITION_BACKUP_KEY = 'eggbabe_exhibition_backup_v1';
 const runtime = require('../services/runtime-context');
 const timeService = require('../services/time-service');
 const analytics = require('../services/analytics');
 const config = require('../config/v2');
 const syncQueue = require('../services/sync-queue');
+const storage = require('../services/storage-migration');
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -37,12 +38,13 @@ function resolvedKey(key) {
 
 function read(key) {
   try {
-    const value = wx.getStorageSync(resolvedKey(key));
+    const value = storage.read(resolvedKey(key), null);
     if (value) return value;
     if (key === PET_KEY && runtime.getMode() === 'live') {
-      const legacy = wx.getStorageSync(PET_KEY);
+      const legacy = storage.read(PET_KEY, null);
       if (legacy) {
-        wx.setStorageSync(resolvedKey(key), legacy);
+        storage.set(resolvedKey(key), legacy);
+        storage.remove(PET_KEY);
         return legacy;
       }
     }
@@ -52,7 +54,7 @@ function read(key) {
 
 function write(key, value) {
   try {
-    wx.setStorageSync(resolvedKey(key), value);
+    storage.set(resolvedKey(key), value);
     return { ok: true, value };
   } catch (error) {
     analytics.track('data_write_fail', { where: key, error_code: 'LOCAL_WRITE_FAILED' });
@@ -101,7 +103,7 @@ function getIdentityId() {
 }
 
 function clearUser() {
-  try { wx.removeStorageSync(USER_KEY); } catch (error) {}
+  try { storage.remove(USER_KEY); } catch (error) {}
 }
 
 function getPet() {
@@ -209,7 +211,7 @@ function importCloudPet(record, mode) {
   };
   if (mode) {
     try {
-      wx.setStorageSync(runtime.scopedKey(PET_KEY, mode), pet);
+      storage.set(runtime.scopedKey(PET_KEY, mode), pet);
       return { ok: true, pet };
     } catch (error) {
       analytics.track('data_write_fail', { where: PET_KEY, error_code: 'LOCAL_WRITE_FAILED' });
@@ -448,7 +450,7 @@ function saveMessage(message) {
 }
 
 function resetDemo() {
-  try { wx.removeStorageSync(resolvedKey(PET_KEY)); wx.removeStorageSync(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
+  try { storage.remove(resolvedKey(PET_KEY)); storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
 }
 
 function startExhibitionDemo() {
@@ -488,8 +490,8 @@ function startExhibitionDemo() {
 
 function endExhibitionDemo() {
   try {
-    wx.removeStorageSync(resolvedKey(PET_KEY));
-    wx.removeStorageSync(resolvedKey(EXHIBITION_BACKUP_KEY));
+    storage.remove(resolvedKey(PET_KEY));
+    storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY));
   } catch (error) {}
   runtime.setMode('live');
   return getPet();

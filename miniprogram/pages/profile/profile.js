@@ -1,5 +1,5 @@
 const petStore = require('../../utils/pet-store');
-const PROFILE_KEY = 'eggbaby_profile_v2';
+const PROFILE_KEY = 'eggbabe_profile_v2';
 const MBTI_LIST = ['INFP','INFJ','INTJ','INTP','ENFP','ENFJ','ENTJ','ENTP','ISFP','ISFJ','ISTJ','ISTP','ESFP','ESFJ','ESTJ','ESTP'];
 const safeStorage = require('../../services/safe-storage');
 const analytics = require('../../services/analytics');

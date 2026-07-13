@@ -1,13 +1,14 @@
-const MODE_KEY = 'eggbaby_runtime_mode_v2';
-const SESSION_KEY = 'eggbaby_session_id_v2';
+const storage = require('./storage-migration');
+const MODE_KEY = 'eggbabe_runtime_mode_v2';
+const SESSION_KEY = 'eggbabe_session_id_v2';
 
 function read(key, fallback) {
-  try { return wx.getStorageSync(key) || fallback; } catch (error) { return fallback; }
+  return storage.read(key, fallback);
 }
 
 function write(key, value) {
   try {
-    wx.setStorageSync(key, value);
+    storage.set(key, value);
     return { ok: true, value };
   } catch (error) {
     return { ok: false, error: { code: 'LOCAL_WRITE_FAILED', message: '本地数据保存失败，请重试' } };
@@ -32,7 +33,7 @@ function getSessionId() {
 }
 
 function scopedKey(key, mode) {
-  return `eggbaby_${mode || getMode()}_${key}_v2`;
+  return `eggbabe_${mode || getMode()}_${key}_v2`;
 }
 
 module.exports = { getMode, setMode, getSessionId, scopedKey };

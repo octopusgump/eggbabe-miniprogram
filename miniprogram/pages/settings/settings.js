@@ -1,15 +1,16 @@
-const STORAGE_KEY = 'eggbaby_notification_preferences_v1';
+const storage = require('../../services/storage-migration');
+const STORAGE_KEY = 'eggbabe_notification_preferences_v1';
 const DEFAULTS = { daily: true, hatch: true, growth: true, bday: false };
 
 Page({
   data: { notifs: DEFAULTS },
 
   onLoad() {
-    this.setData({ notifs: wx.getStorageSync(STORAGE_KEY) || DEFAULTS });
+    this.setData({ notifs: storage.read(STORAGE_KEY, DEFAULTS) });
   },
 
   update(key, value) {
-    this.setData({ [`notifs.${key}`]: value }, () => wx.setStorageSync(STORAGE_KEY, this.data.notifs));
+    this.setData({ [`notifs.${key}`]: value }, () => storage.set(STORAGE_KEY, this.data.notifs));
   },
 
   onToggleDaily(e) { this.update('daily', e.detail.value); },

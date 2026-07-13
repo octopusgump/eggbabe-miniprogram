@@ -2,15 +2,16 @@ const config = require('../config/v2');
 const cloudApi = require('./cloud-api');
 const analytics = require('./analytics');
 
-const KEY = 'eggbaby_sync_queue_v2';
+const storage = require('./storage-migration');
+const KEY = 'eggbabe_sync_queue_v2';
 let inFlight = null;
 
 function read() {
-  try { return wx.getStorageSync(KEY) || []; } catch (error) { return []; }
+  return storage.read(KEY, []);
 }
 
 function write(queue) {
-  try { wx.setStorageSync(KEY, queue); return true; } catch (error) { return false; }
+  try { storage.set(KEY, queue); return true; } catch (error) { return false; }
 }
 
 function enqueue(api, data) {

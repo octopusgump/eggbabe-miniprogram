@@ -1,4 +1,4 @@
-const DEREGISTER_KEY = 'eggbaby_deregister_request_v1';
+const DEREGISTER_KEY = 'eggbabe_deregister_request_v1';
 const safeStorage = require('../../services/safe-storage');
 const timeService = require('../../services/time-service');
 const analytics = require('../../services/analytics');

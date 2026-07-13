@@ -15,7 +15,10 @@
     <block wx:else>
       <view wx:if="{{sceneCards.length}}" class="scene-grid">
         <view wx:for="{{sceneCards}}" wx:key="id" class="scene-card">
-          <view class="scene-art" style="background:{{item.tint}};"><text>{{item.mark}}</text></view>
+          <view class="scene-art" style="background:{{item.tint}};">
+            <image wx:if="{{item.image && !item.imageFailed}}" class="scene-card-image" src="{{item.image}}" mode="aspectFill" data-id="{{item.id}}" binderror="onSceneCardImageError"></image>
+            <text wx:else>{{item.mark}}</text>
+          </view>
           <text class="scene-name">{{item.name}}</text><text class="scene-meta">{{item.character}} · {{item.rarity}}</text>
           <view class="card-actions">
             <view class="card-action" data-id="{{item.id}}" bindtap="onSaveSceneCard">{{item.saved ? '已保存' : '保存'}}</view>

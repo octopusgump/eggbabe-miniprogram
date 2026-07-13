@@ -2,7 +2,7 @@
 
 正式卡面统一放在：
 
-`miniprogram/assets/cards/<character>/<scene>/<card-id>.png`
+`miniprogram/assets/cards/<character>/<scene>/<card-id>.<ext>`
 
 当前玉兔建议使用以下目录：
 
@@ -30,6 +30,6 @@
 }
 ```
 
-卡面建议：竖版 PNG 或 JPG，推荐尺寸 `1200 × 1600 px`，同一系列保持相同比例。卡片中不要烘焙按钮、状态栏或小程序界面元素。
+卡面优先使用 PNG；如需控制包体积也可使用 JPG，但必须在卡池的 `image` 字段中写入真实扩展名。推荐尺寸 `1200 × 1600 px`，同一系列保持相同比例。卡片中不要烘焙按钮、状态栏或小程序界面元素。
 
 后续新增角色时建立独立角色目录，例如锦鲤使用 `miniprogram/assets/cards/boon-koi/`，不要把不同角色的卡面混放在同一目录。

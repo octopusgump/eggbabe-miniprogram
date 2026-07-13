@@ -6,9 +6,12 @@ const runtime = require('../../services/runtime-context');
 const timeService = require('../../services/time-service');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', sceneKicker: '' },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', cardImageFailed: false, sceneKicker: '' },
 
   onLoad(query) {
+    this.pageActive = true;
+    this.dropPending = false;
+    this.dropRequestToken = 0;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     let pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') pet = petStore.startExhibitionDemo();
@@ -28,23 +31,31 @@ Page({
     if (this.data.scene.key === 'grass' && spot.label === '小花') this.showFlowerSway(spot);
     if (this.data.scene.key === 'grass' && spot.label === '蝴蝶') this.showButterflyFlight(spot);
     if (spot.effect) this.showSceneEffect(spot);
+    if (this.dropPending || this.data.cardDrop) return;
+    this.dropPending = true;
+    const requestToken = ++this.dropRequestToken;
     sceneCards.attemptDrop(this.data.scene.key, spot.label, this.data.pet.prototype).then(drop => {
-      if (!drop.ok || !drop.dropped || !this.data.isActive) return;
+      if (requestToken !== this.dropRequestToken) return;
+      this.dropPending = false;
+      if (!drop.ok || !drop.dropped || !this.pageActive || !this.data.isActive) return;
       clearTimeout(this.cardRevealTimer);
-      this.setData({ cardDrop: drop.card, cardRevealPhase: 'hint' });
+      this.setData({ cardDrop: drop.card, cardRevealPhase: 'hint', cardImageFailed: false });
       this.cardRevealTimer = setTimeout(() => {
-        if (this.data.cardDrop && this.data.isActive) this.setData({ cardRevealPhase: 'revealed' });
-      }, 760);
+        if (this.data.cardDrop && this.pageActive && this.data.isActive) this.setData({ cardRevealPhase: 'revealed' });
+      }, this.cardRevealDelay || 760);
+    }, () => {
+      if (requestToken === this.dropRequestToken) this.dropPending = false;
     });
   },
   onCloseCardDrop() {
     clearTimeout(this.cardRevealTimer);
-    this.setData({ cardDrop: null, cardRevealPhase: '' });
+    this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
   },
+  onCardImageError() { this.setData({ cardImageFailed: true }); },
   noop() {},
   onOpenAlbum() {
     clearTimeout(this.cardRevealTimer);
-    this.setData({ cardDrop: null, cardRevealPhase: '' });
+    this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
     wx.navigateTo({ url: '/pages/album/album?tab=scene' });
   },
   showFlowerSway(spot) {
@@ -88,15 +99,22 @@ Page({
   },
 
   onShow() {
+    this.pageActive = true;
     if (!this.data.isActive) this.setData({ isActive: true });
   },
 
   onHide() {
+    this.pageActive = false;
+    this.dropPending = false;
+    this.dropRequestToken += 1;
     this.clearEffectTimers();
-    this.setData({ isActive: false, bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, cardDrop: null, cardRevealPhase: '' });
+    this.setData({ isActive: false, bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
   },
 
   onUnload() {
+    this.pageActive = false;
+    this.dropPending = false;
+    this.dropRequestToken += 1;
     this.clearEffectTimers();
     analytics.track('scene_exit', { scene_id: this.data.scene ? this.data.scene.key : '', dwell_time: Math.max(0, timeService.now() - (this.enteredAt || timeService.now())) });
   }

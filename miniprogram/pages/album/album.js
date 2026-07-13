@@ -20,6 +20,10 @@ Page({
     this.onShow();
     wx.showToast({ title: '已标记保存', icon: 'success' });
   },
+  onSceneCardImageError(event) {
+    const cardId = event.currentTarget.dataset.id;
+    this.setData({ sceneCards: this.data.sceneCards.map(card => card.id === cardId ? Object.assign({}, card, { imageFailed: true }) : card) });
+  },
   onSelectShare(event) {
     const card = this.data.sceneCards.find(item => item.id === event.currentTarget.dataset.id);
     this.setData({ shareCard: card || null });

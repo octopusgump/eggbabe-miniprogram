@@ -68,7 +68,7 @@
         <view class="drop-mote drop-mote--two"></view>
         <view class="drop-mote drop-mote--three"></view>
         <view class="drop-card" style="background:{{cardDrop.tint}};">
-          <image wx:if="{{cardDrop.image}}" class="drop-card-image" src="{{cardDrop.image}}" mode="aspectFill"></image>
+          <image wx:if="{{cardDrop.image && !cardImageFailed}}" class="drop-card-image" src="{{cardDrop.image}}" mode="aspectFill" binderror="onCardImageError"></image>
           <text wx:else class="drop-mark">{{cardDrop.mark}}</text>
           <view class="drop-veil"><text>?</text></view>
         </view>

@@ -69,16 +69,71 @@ async function main() {
 
   const scenePage = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.js'), 'utf8');
   assert.equal(scenePage.includes("petStore.getStage(pet) !== 'hatched'"), true, '正式已破壳宠物进入场景时不得切换到 demo');
-  assert.equal(scenePage.includes("cardRevealPhase: ''"), true, '场景页必须维护抽卡揭晓阶段');
-  assert.equal(scenePage.includes("cardRevealPhase: 'hint'"), true, '卡片出现前必须先进入期待提示阶段');
-  assert.equal(scenePage.includes("cardRevealPhase: 'revealed'"), true, '期待提示后必须进入卡面揭晓阶段');
-  assert.equal(scenePage.includes('clearTimeout(this.cardRevealTimer)'), true, '离开页面时必须清理抽卡揭晓计时器');
   const sceneTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.wxml'), 'utf8');
-  assert.equal(sceneTemplate.includes('wx:if="{{cardDrop.image}}"'), true, '掉卡弹层必须优先显示正式卡面图片');
+  assert.equal(sceneTemplate.includes('cardDrop.image && !cardImageFailed'), true, '掉卡弹层必须支持正式图片失败后的占位回退');
   assert.equal(sceneTemplate.includes('drop-panel--{{cardRevealPhase}}'), true, '掉卡弹层必须绑定揭晓阶段样式');
   const sceneStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.wxss'), 'utf8');
   assert.equal(sceneStyles.includes('@keyframes drop-card-wait'), true, '抽卡必须有克制的等待动效');
   assert.equal(sceneStyles.includes('.drop-panel--revealed'), true, '抽卡必须有揭晓完成态');
+  const albumTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/album/album.wxml'), 'utf8');
+  assert.equal(albumTemplate.includes('item.image && !item.imageFailed'), true, '卡册必须显示正式场景卡图片并支持加载失败回退');
+
+  let scenePageDefinition;
+  const scenePagePath = require.resolve('../miniprogram/pages/exhibition-scene/exhibition-scene.js');
+  global.Page = definition => { scenePageDefinition = definition; };
+  delete require.cache[scenePagePath];
+  require(scenePagePath);
+  delete global.Page;
+  const createScenePage = () => {
+    const page = Object.assign({}, scenePageDefinition);
+    page.data = Object.assign({}, scenePageDefinition.data, {
+      scene: { key: 'grass', label: '草地' },
+      pet: { prototype: '玉兔' },
+      hotspots: [{ label: '小花' }, { label: '蝴蝶' }],
+      isActive: true,
+      cardDrop: null
+    });
+    page.setData = changes => { page.data = Object.assign({}, page.data, changes); };
+    page.showReaction = () => {};
+    page.showFlowerSway = () => {};
+    page.showButterflyFlight = () => {};
+    page.showSceneEffect = () => {};
+    page.pageActive = true;
+    page.dropPending = false;
+    page.dropRequestToken = 0;
+    page.cardRevealDelay = 1;
+    return page;
+  };
+  const deferred = () => {
+    let resolve;
+    const promise = new Promise(done => { resolve = done; });
+    return { promise, resolve };
+  };
+  const originalAttemptDrop = sceneCards.attemptDrop;
+  const firstRequest = deferred();
+  let requestCount = 0;
+  sceneCards.attemptDrop = () => { requestCount += 1; return firstRequest.promise; };
+  const revealPage = createScenePage();
+  revealPage.onTapHotspot({ currentTarget: { dataset: { index: 0 } } });
+  revealPage.onTapHotspot({ currentTarget: { dataset: { index: 1 } } });
+  assert.equal(requestCount, 1, '掉卡请求完成前必须锁定后续抽卡请求，避免卡片互相覆盖');
+  firstRequest.resolve({ ok: true, dropped: true, card: { id: 'card-1', image: '/missing.png', mark: '草' } });
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(revealPage.data.cardRevealPhase, 'revealed', '掉卡必须从期待提示进入正式揭晓态');
+  revealPage.onCardImageError();
+  assert.equal(revealPage.data.cardImageFailed, true, '正式卡图加载失败时必须切换到字标占位');
+  revealPage.onCloseCardDrop();
+
+  const staleRequest = deferred();
+  sceneCards.attemptDrop = () => staleRequest.promise;
+  const lifecyclePage = createScenePage();
+  lifecyclePage.onTapHotspot({ currentTarget: { dataset: { index: 0 } } });
+  lifecyclePage.onHide();
+  lifecyclePage.onShow();
+  staleRequest.resolve({ ok: true, dropped: true, card: { id: 'stale-card' } });
+  await Promise.resolve();
+  assert.equal(lifecyclePage.data.cardDrop, null, '页面隐藏前发出的旧掉卡请求不得在返回页面后重新弹出');
+  sceneCards.attemptDrop = originalAttemptDrop;
 
   petStore.endExhibitionDemo();
   assert.equal(runtime.getMode(), 'live', '退出展会必须恢复 live');

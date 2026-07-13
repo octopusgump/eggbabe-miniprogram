@@ -69,6 +69,16 @@ async function main() {
 
   const scenePage = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.js'), 'utf8');
   assert.equal(scenePage.includes("petStore.getStage(pet) !== 'hatched'"), true, '正式已破壳宠物进入场景时不得切换到 demo');
+  assert.equal(scenePage.includes("cardRevealPhase: ''"), true, '场景页必须维护抽卡揭晓阶段');
+  assert.equal(scenePage.includes("cardRevealPhase: 'hint'"), true, '卡片出现前必须先进入期待提示阶段');
+  assert.equal(scenePage.includes("cardRevealPhase: 'revealed'"), true, '期待提示后必须进入卡面揭晓阶段');
+  assert.equal(scenePage.includes('clearTimeout(this.cardRevealTimer)'), true, '离开页面时必须清理抽卡揭晓计时器');
+  const sceneTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.wxml'), 'utf8');
+  assert.equal(sceneTemplate.includes('wx:if="{{cardDrop.image}}"'), true, '掉卡弹层必须优先显示正式卡面图片');
+  assert.equal(sceneTemplate.includes('drop-panel--{{cardRevealPhase}}'), true, '掉卡弹层必须绑定揭晓阶段样式');
+  const sceneStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.wxss'), 'utf8');
+  assert.equal(sceneStyles.includes('@keyframes drop-card-wait'), true, '抽卡必须有克制的等待动效');
+  assert.equal(sceneStyles.includes('.drop-panel--revealed'), true, '抽卡必须有揭晓完成态');
 
   petStore.endExhibitionDemo();
   assert.equal(runtime.getMode(), 'live', '退出展会必须恢复 live');

@@ -59,14 +59,26 @@
   </view>
   <view class="scene-title"><text class="kicker">{{sceneKicker}}</text><text class="name">{{scene.label}}</text></view>
   <view wx:if="{{bubble}}" class="bubble">{{bubble}}</view>
-  <view wx:if="{{cardDrop}}" class="drop-mask" catchtap="onCloseCardDrop">
-    <view class="drop-panel" catchtap="noop">
-      <text class="drop-kicker">意外发现一张场景卡</text>
-      <view class="drop-card" style="background:{{cardDrop.tint}};"><text class="drop-mark">{{cardDrop.mark}}</text></view>
-      <text class="drop-name">{{cardDrop.name}}</text>
-      <text class="drop-meta">{{scene.label}} · {{cardDrop.rarity}}</text>
-      <view class="drop-primary" bindtap="onOpenAlbum">收入卡册并查看</view>
-      <view class="drop-ghost" bindtap="onCloseCardDrop">继续逛逛</view>
+  <view wx:if="{{cardDrop}}" class="drop-mask drop-mask--{{cardRevealPhase}}" catchtap="onCloseCardDrop">
+    <view class="drop-panel drop-panel--{{cardRevealPhase}}" catchtap="noop">
+      <text class="drop-kicker">{{cardRevealPhase === 'hint' ? '好像有什么悄悄出现了…' : '意外发现一张场景卡'}}</text>
+      <view class="drop-stage">
+        <view class="drop-halo"></view>
+        <view class="drop-mote drop-mote--one"></view>
+        <view class="drop-mote drop-mote--two"></view>
+        <view class="drop-mote drop-mote--three"></view>
+        <view class="drop-card" style="background:{{cardDrop.tint}};">
+          <image wx:if="{{cardDrop.image}}" class="drop-card-image" src="{{cardDrop.image}}" mode="aspectFill"></image>
+          <text wx:else class="drop-mark">{{cardDrop.mark}}</text>
+          <view class="drop-veil"><text>?</text></view>
+        </view>
+      </view>
+      <view class="drop-details">
+        <text class="drop-name">{{cardDrop.name}}</text>
+        <text class="drop-meta">{{scene.label}} · {{cardDrop.rarity}}</text>
+        <view class="drop-primary" bindtap="onOpenAlbum">收入卡册并查看</view>
+        <view class="drop-ghost" bindtap="onCloseCardDrop">继续逛逛</view>
+      </view>
     </view>
   </view>
 </view>

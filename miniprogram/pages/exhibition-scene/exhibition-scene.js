@@ -6,7 +6,7 @@ const runtime = require('../../services/runtime-context');
 const timeService = require('../../services/time-service');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, sceneKicker: '' },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', sceneKicker: '' },
 
   onLoad(query) {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -29,13 +29,22 @@ Page({
     if (this.data.scene.key === 'grass' && spot.label === '蝴蝶') this.showButterflyFlight(spot);
     if (spot.effect) this.showSceneEffect(spot);
     sceneCards.attemptDrop(this.data.scene.key, spot.label, this.data.pet.prototype).then(drop => {
-      if (drop.ok && drop.dropped && this.data.isActive) this.setData({ cardDrop: drop.card });
+      if (!drop.ok || !drop.dropped || !this.data.isActive) return;
+      clearTimeout(this.cardRevealTimer);
+      this.setData({ cardDrop: drop.card, cardRevealPhase: 'hint' });
+      this.cardRevealTimer = setTimeout(() => {
+        if (this.data.cardDrop && this.data.isActive) this.setData({ cardRevealPhase: 'revealed' });
+      }, 760);
     });
   },
-  onCloseCardDrop() { this.setData({ cardDrop: null }); },
+  onCloseCardDrop() {
+    clearTimeout(this.cardRevealTimer);
+    this.setData({ cardDrop: null, cardRevealPhase: '' });
+  },
   noop() {},
   onOpenAlbum() {
-    this.setData({ cardDrop: null });
+    clearTimeout(this.cardRevealTimer);
+    this.setData({ cardDrop: null, cardRevealPhase: '' });
     wx.navigateTo({ url: '/pages/album/album?tab=scene' });
   },
   showFlowerSway(spot) {
@@ -75,6 +84,7 @@ Page({
     clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
     clearTimeout(this.butterflyStartTimer); clearTimeout(this.butterflyHideTimer);
     clearTimeout(this.sceneEffectStartTimer); clearTimeout(this.sceneEffectHideTimer);
+    clearTimeout(this.cardRevealTimer);
   },
 
   onShow() {
@@ -83,7 +93,7 @@ Page({
 
   onHide() {
     this.clearEffectTimers();
-    this.setData({ isActive: false, bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null });
+    this.setData({ isActive: false, bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, cardDrop: null, cardRevealPhase: '' });
   },
 
   onUnload() {

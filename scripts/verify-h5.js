@@ -28,6 +28,7 @@ const cloudCardGenerator = read('cloudfunctions/generateHatchCard/index.js');
 const nicknamePage = read('miniprogram/pages/nickname/nickname.js');
 const figureDirectory = path.join(root, 'h5/birth-card/assets/figures');
 const figureCatalog = JSON.parse(read('h5/birth-card/assets/figures/catalog.json'));
+const firstSet = JSON.parse(read('h5/birth-card/assets/sets/YT-S01.json'));
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.wxml').includes('<web-view'), true, 'H5 容器必须使用 web-view');
@@ -64,5 +65,15 @@ assert.deepEqual(actualFigureFiles, catalogFiles, '角色素材文件必须全�
 for (const file of actualFigureFiles) {
   assert.equal(/^(?:YT|KOI)__[a-z0-9-]+__[a-z0-9-]+__v\d{2}\.(?:jpg|png|webp)$/.test(file), true, `角色素材命名不符合统一规范：${file}`);
 }
+assert.equal(firstSet.setSize, firstSet.cards.length, '套装 setSize 必须等于实际清单数量');
+assert.deepEqual(firstSet.treatments, ['BASE'], 'MVP 第一季只能发布 BASE 版本');
+assert.deepEqual(firstSet.cardFaceFields, ['name', 'birthday', 'constellation', 'mbti', 'set_number', 'unique_code'], 'MVP 卡面字段不得加入未确认属性');
+const figureIds = new Set(figureCatalog.assets.map(asset => asset.id));
+firstSet.cards.forEach((card, index) => {
+  assert.equal(card.collectorNumber, index + 1, '套装清单编号必须连续且不可重排');
+  assert.equal(card.collectorLabel, `${String(index + 1).padStart(3, '0')}/${String(firstSet.setSize).padStart(3, '0')}`, 'collectorLabel 格式错误');
+  assert.equal(card.treatment, 'BASE', 'MVP 卡片不得提前引入 parallel');
+  assert.equal(figureIds.has(card.heroAssetId), true, `套装引用了未登记 Hero：${card.heroAssetId}`);
+});
 
 console.log('H5 工程校验通过：数据注入、70/30 卡面、web-view 接入与导出能力完整。');

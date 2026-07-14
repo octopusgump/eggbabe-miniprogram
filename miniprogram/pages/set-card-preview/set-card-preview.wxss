@@ -13,12 +13,18 @@
 .brand-name { display: block; font-size: 38rpx; font-weight: 600; line-height: 1; letter-spacing: .01em; }
 .brand-type { display: block; margin-top: 6rpx; font-size: 18rpx; letter-spacing: .18em; color: rgba(255,255,255,.72); }
 .collect-badge { position: absolute; z-index: 5; right: 40rpx; top: 44rpx; min-width: 104rpx; padding: 14rpx 20rpx; border-radius: 999rpx; box-sizing: border-box; background: rgba(255,255,255,.9); color: #263229; text-align: center; font-size: 24rpx; font-weight: 600; }
-.card-data { height: 30%; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 26rpx 44rpx 24rpx; box-sizing: border-box; background: #FFFDF7; }
-.card-name { display: block; font-size: 45rpx; line-height: 1.15; font-weight: 600; color: #172018; }
-.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20rpx; margin-top: 28rpx; }
-.stat-grid > view { min-width: 0; }
-.stat-label { display: block; font-size: 16rpx; color: #898B86; }
-.stat-value { display: block; margin-top: 4rpx; overflow: hidden; font-size: 20rpx; font-weight: 600; color: #172018; white-space: nowrap; text-overflow: ellipsis; }
+.card-data { height: 30%; min-height: 0; display: flex; flex-direction: column; padding: 18rpx 28rpx; box-sizing: border-box; background: #FFFDF7; }
+.card-name { display: block; margin-left: 6rpx; font-size: 42rpx; line-height: 1.1; font-weight: 600; color: #172018; }
+.stat-grid { overflow: hidden; margin-top: 14rpx; border: 3rpx solid #94AB61; border-radius: 24rpx; }
+.stat-row { height: 72rpx; display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx 0 12rpx; box-sizing: border-box; }
+.stat-row + .stat-row { border-top: 3rpx solid #A7B978; }
+.stat-leading { display: flex; align-items: center; gap: 16rpx; }
+.stat-icon { width: 46rpx; height: 46rpx; display: flex; align-items: center; justify-content: center; border: 2rpx solid; border-radius: 50%; box-sizing: border-box; color: #172018; font-size: 22rpx; font-weight: 600; }
+.stat-icon--mbti { border-color: #8DA85D; background: #DDE9B8; }
+.stat-icon--constellation { border-color: #BD7796; background: #F2D2DF; }
+.stat-icon--birthday { border-color: #8176B5; background: #DDD9F2; }
+.stat-label { font-size: 24rpx; font-weight: 600; color: #172018; }
+.stat-value { max-width: 290rpx; overflow: hidden; color: #172018; font-size: 24rpx; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
 .pager { width: 650rpx; margin: 28rpx auto 0; display: flex; gap: 18rpx; }
 .pager-button { flex: 1; height: 82rpx; display: flex; align-items: center; justify-content: center; border: 1rpx solid #CDD2CC; border-radius: 999rpx; background: #FFF; color: #3F5A47; font-size: 25rpx; }
 .pager-button::after, .album-button::after { border: 0; }

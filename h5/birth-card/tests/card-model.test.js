@@ -1,6 +1,7 @@
 const assert = require('assert');
 const model = require('../card-model');
 const assets = require('../asset-config');
+const faceContract = require('../card-face-contract.json');
 
 const normalized = model.normalizeCard({
   card_id: 'card-1', mode: 'demo', prototype: '玉兔', style: '月白桂花款', name: '',
@@ -27,6 +28,9 @@ assert.equal(collectible.cardTitle, '月下冥想', '收藏卡必须保留固定
 assert.equal(collectible.collectorLabel, '007/010', '收藏卡必须保留 checklist 编号');
 assert.equal(collectible.figureKey, 'YT__watercolor__meditate', '收藏卡必须映射固定完整 Hero');
 assert.equal(collectible.bloodType, '', '收藏卡不得要求或补造血型');
+assert.equal(collectible.birthdayLabel, faceContract.displayExamples.birthday.label, '收藏卡生日短格式必须服从共享卡面契约');
+assert.equal(collectible.constellationLabel, faceContract.displayExamples.constellation.label, '收藏卡星座符号必须服从共享卡面契约');
+assert.deepEqual(collectible.statRows.map(row => row.key), faceContract.statOrder, 'H5 卡片模型信息行顺序必须服从共享卡面契约');
 
 assert.throws(() => model.normalizeCard({ card_id: 'card-2', mode: 'live' }), /INVALID_CARD/, '缺少固定卡面字段必须拒绝渲染');
 assert.throws(() => model.normalizeCard(Object.assign({}, {

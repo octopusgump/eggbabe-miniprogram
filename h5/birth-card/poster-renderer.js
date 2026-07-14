@@ -63,6 +63,53 @@
     context.fillText(value, x, y + 48);
   }
 
+  function drawCollectibleStats(context, card) {
+    const x = 72;
+    const y = HERO_HEIGHT + 155;
+    const width = 700;
+    const rowHeight = 104;
+    const rowStyles = {
+      mbti: { icon: '人', fill: '#DDE9B8', stroke: '#8DA85D' },
+      constellation: { icon: '★', fill: '#F2D2DF', stroke: '#BD7796' },
+      birthday: { icon: '礼', fill: '#DDD9F2', stroke: '#8176B5' }
+    };
+    const rows = card.statRows.map(row => Object.assign({}, row, rowStyles[row.key]));
+    drawRoundedRect(context, x, y, width, rowHeight * rows.length, 30);
+    context.strokeStyle = '#94AB61';
+    context.lineWidth = 4;
+    context.stroke();
+    rows.forEach((row, index) => {
+      const rowTop = y + rowHeight * index;
+      if (index) {
+        context.beginPath();
+        context.moveTo(x, rowTop);
+        context.lineTo(x + width, rowTop);
+        context.strokeStyle = '#A7B978';
+        context.lineWidth = 3;
+        context.stroke();
+      }
+      const iconX = x + 52;
+      const centerY = rowTop + rowHeight / 2;
+      context.beginPath();
+      context.arc(iconX, centerY, 30, 0, Math.PI * 2);
+      context.fillStyle = row.fill;
+      context.fill();
+      context.strokeStyle = row.stroke;
+      context.lineWidth = 3;
+      context.stroke();
+      context.fillStyle = '#172018';
+      context.font = '600 25px sans-serif';
+      context.textAlign = 'center';
+      context.fillText(row.icon, iconX, centerY + 9);
+      context.font = '600 30px sans-serif';
+      context.textAlign = 'left';
+      context.fillText(row.label, x + 102, centerY + 10);
+      context.textAlign = 'right';
+      context.fillText(row.value, x + width - 28, centerY + 10);
+    });
+    context.textAlign = 'left';
+  }
+
   function drawCodePlaceholder(context, x, y, size) {
     context.fillStyle = '#F0F0EA';
     context.fillRect(x, y, size, size);
@@ -133,10 +180,13 @@
       context.fillText(`${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
     }
 
-    const statsY = HERO_HEIGHT + (isCollectible ? 250 : 230);
-    drawStat(context, '生日', card.birthday, 74, statsY);
-    drawStat(context, '星座', card.constellation, 390, statsY);
-    drawStat(context, 'MBTI', card.mbti, 730, statsY);
+    if (isCollectible) drawCollectibleStats(context, card);
+    else {
+      const statsY = HERO_HEIGHT + 230;
+      drawStat(context, '生日', card.birthday, 74, statsY);
+      drawStat(context, '星座', card.constellation, 390, statsY);
+      drawStat(context, 'MBTI', card.mbti, 730, statsY);
+    }
 
     if (!isCollectible) {
       context.strokeStyle = '#E6E5DE';

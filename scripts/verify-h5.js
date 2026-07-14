@@ -30,6 +30,7 @@ const nicknamePage = read('miniprogram/pages/nickname/nickname.js');
 const figureDirectory = path.join(root, 'h5/birth-card/assets/figures');
 const figureCatalog = JSON.parse(read('h5/birth-card/assets/figures/catalog.json'));
 const firstSet = JSON.parse(read('h5/birth-card/assets/sets/YT-S01.json'));
+const faceContract = JSON.parse(read('h5/birth-card/card-face-contract.json'));
 const cardFace = html.match(/<section id="card-view"[\s\S]*?<\/section>/)[0];
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
@@ -40,6 +41,16 @@ assert.equal(html.includes('eggbabe'), true, 'H5 卡面必须使用 eggbabe 品�
 assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须显示生日');
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
 assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显示 MBTI');
+const h5Bindings = { mbti: 'data-field="mbti"', constellation: 'data-field="constellation"', birthday: 'data-field="birthday"' };
+const h5StatPositions = faceContract.statOrder.map(field => cardFace.indexOf(h5Bindings[field]));
+assert.equal(h5StatPositions.every((position, index) => position >= 0 && (!index || position > h5StatPositions[index - 1])), true, 'H5 信息顺序必须服从共享卡面契约');
+['stat-row', 'stat-icon--mbti', 'stat-icon--constellation', 'stat-icon--birthday'].forEach(className => {
+  assert.equal(cardFace.includes(className), true, `H5 卡面缺少参考图信息行 ${className}`);
+});
+assert.equal(css.includes('.birth-card.is-collectible .stat-grid'), true, 'H5 收藏卡必须使用三行信息牌布局');
+assert.equal(css.toLowerCase().includes('border: 1.5px solid #94ab61'), true, 'H5 信息牌必须使用参考图的绿色圆角边框');
+assert.equal(poster.includes('drawCollectibleStats'), true, '分享海报必须使用与卡面一致的三行信息牌');
+assert.equal(poster.includes('card.statRows.map'), true, '分享海报必须消费卡片模型中已经按契约排序的信息行');
 assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不得显示血型');
 assert.equal(cardFace.includes('data-field="signature"'), false, 'MVP 正面不得显示性格长句');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');

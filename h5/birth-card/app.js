@@ -88,6 +88,10 @@
     byId('card-kind').textContent = isCollectible ? 'COLLECTIBLE CARD' : 'BIRTH CARD';
     cardSubtitle.hidden = isCollectible;
     cardFooter.hidden = isCollectible;
+    if (isCollectible) {
+      byId('card-birthday').textContent = card.birthdayLabel;
+      byId('card-constellation').textContent = card.constellationLabel;
+    }
     if (!isCollectible) {
       cardSubtitle.textContent = `${card.prototypeLabel} · ${card.style} · ${card.gender}`;
       byId('card-set-line').textContent = '唯一身份收藏卡';

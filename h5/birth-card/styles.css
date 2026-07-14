@@ -49,6 +49,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .stat-grid div { min-width: 0; }
 .stat-grid dt { color: #898b86; font-size: 8px; }
 .stat-grid dd { overflow: hidden; margin: 2px 0 0; font-size: 10px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.stat-icon { display: none; }
+.birth-card.is-collectible .card-data { padding: 9px 16px 8px; }
+.birth-card.is-collectible .stat-grid { overflow: hidden; display: block; margin: 7px 0 0; border: 1.5px solid #94ab61; border-radius: 12px; }
+.birth-card.is-collectible .stat-row { min-height: 37px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 6px; }
+.birth-card.is-collectible .stat-row + .stat-row { border-top: 1.5px solid #a7b978; }
+.birth-card.is-collectible .stat-row dt { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12px; font-weight: 650; }
+.birth-card.is-collectible .stat-row dd { max-width: 145px; margin: 0; color: var(--ink); text-align: right; font-size: 12px; }
+.birth-card.is-collectible .stat-icon { width: 23px; height: 23px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid; border-radius: 50%; color: var(--ink); font-size: 11px; }
+.birth-card.is-collectible .stat-icon--mbti { border-color: #8da85d; background: #dde9b8; }
+.birth-card.is-collectible .stat-icon--constellation { border-color: #bd7796; background: #f2d2df; }
+.birth-card.is-collectible .stat-icon--birthday { border-color: #8176b5; background: #ddd9f2; }
 .card-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); }
 .meta-line { display: flex; justify-content: space-between; gap: 8px; color: #4d5c50; font-size: 9px; letter-spacing: .04em; }
 .meta-line b { font-weight: 600; }

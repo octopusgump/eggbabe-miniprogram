@@ -16,9 +16,9 @@
       <view class="card-data">
         <view class="identity-row"><text class="card-name">{{current.name}}</text></view>
         <view class="stat-grid">
-          <view><text class="stat-label">生日</text><text class="stat-value">{{current.birthday}}</text></view>
-          <view><text class="stat-label">星座</text><text class="stat-value">{{current.constellation}}</text></view>
-          <view><text class="stat-label">MBTI</text><text class="stat-value">{{current.mbti}}</text></view>
+          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--mbti">人</view><text class="stat-label">MBTI</text></view><text class="stat-value">{{current.mbti}}</text></view>
+          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--constellation">★</view><text class="stat-label">星座</text></view><text class="stat-value">{{current.constellationLabel}}</text></view>
+          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--birthday">礼</view><text class="stat-label">生日</text></view><text class="stat-value">{{current.birthdayLabel}}</text></view>
         </view>
       </view>
     </view>

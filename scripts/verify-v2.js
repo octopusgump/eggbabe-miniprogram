@@ -47,6 +47,7 @@ async function main() {
   const livePetId = bound.pet.id;
 
   const demoPet = petStore.startExhibitionDemo();
+  const faceContract = JSON.parse(fs.readFileSync(path.join(__dirname, '../h5/birth-card/card-face-contract.json'), 'utf8'));
   assert.equal(runtime.getMode(), 'demo', '展会体验必须切换到 demo');
   assert.equal(demoPet.demoMode, true, '展会宠物必须标记 demoMode');
   assert.notEqual(demoPet.id, livePetId, '展会宠物不得复用正式宠物 ID');
@@ -55,7 +56,11 @@ async function main() {
   assert.equal(previewCards.length, 10, '展会模式必须可以预览 YT-S01 全部十张完整卡面');
   assert.equal(previewCards[0].name, '月团', '预览卡必须使用当前展会角色名');
   assert.equal(previewCards[0].birthday, demoPet.collectionCard.birthday, '预览卡必须使用已生成的生日');
+  assert.equal(setCardPreview.formatBirthday(faceContract.displayExamples.birthday.raw), faceContract.displayExamples.birthday.label, '卡面生日格式器必须服从共享示例契约');
+  assert.equal(previewCards[0].birthdayLabel, setCardPreview.formatBirthday(previewCards[0].birthday), '展会卡生日标签必须从当前真实生日动态生成');
   assert.equal(previewCards[0].constellation, demoPet.collectionCard.zodiac, '预览卡必须使用已生成的星座');
+  assert.equal(setCardPreview.formatConstellation(faceContract.displayExamples.constellation.raw), faceContract.displayExamples.constellation.label, '卡面星座格式器必须服从共享示例契约');
+  assert.equal(previewCards[0].constellationLabel, setCardPreview.formatConstellation(previewCards[0].constellation), '展会卡星座标签必须从当前真实星座动态生成');
   assert.equal(previewCards[0].mbti, demoPet.collectionCard.mbti, '预览卡必须使用已生成的 MBTI');
 
   for (const scene of sceneConfig.getScenesForCharacter('玉兔')) {
@@ -137,9 +142,8 @@ async function main() {
   const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../miniprogram/app.json'), 'utf8'));
   assert.equal(appConfig.pages.includes('pages/set-card-preview/set-card-preview'), true, '小程序必须注册展会完整卡面预览页');
   const previewTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxml'), 'utf8');
-  const faceContract = JSON.parse(fs.readFileSync(path.join(__dirname, '../h5/birth-card/card-face-contract.json'), 'utf8'));
   assert.deepEqual(faceContract.fields, ['name', 'birthday', 'constellation', 'mbti', 'collectorLabel'], '收藏卡正面字段契约必须保持精简');
-  faceContract.fields.map(field => `current.${field}`).concat('current.image').forEach(field => {
+  ['current.name', 'current.mbti', 'current.constellationLabel', 'current.birthdayLabel', 'current.collectorLabel', 'current.image'].forEach(field => {
     assert.equal(previewTemplate.includes(field), true, `完整卡面预览缺少 ${field}`);
   });
   assert.equal(previewTemplate.includes(faceContract.brandName), true, '小程序完整卡面品牌名必须服从 H5 卡面契约');
@@ -149,12 +153,19 @@ async function main() {
   ['card-dots', 'set-number', 'card-footer', 'current.statusLabel', 'current.uniqueCode'].forEach(content => {
     assert.equal(previewTemplate.includes(content), false, `完整卡面不得继续显示 ${content}`);
   });
+  const miniBindings = { mbti: 'current.mbti', constellation: 'current.constellationLabel', birthday: 'current.birthdayLabel' };
+  const miniStatPositions = faceContract.statOrder.map(field => previewTemplate.indexOf(miniBindings[field]));
+  assert.equal(miniStatPositions.every((position, index) => position >= 0 && (!index || position > miniStatPositions[index - 1])), true, '小程序信息顺序必须服从共享卡面契约');
+  ['stat-row', 'stat-icon--mbti', 'stat-icon--constellation', 'stat-icon--birthday'].forEach(className => {
+    assert.equal(previewTemplate.includes(className), true, `小程序卡面缺少参考图信息行 ${className}`);
+  });
   const previewStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxss'), 'utf8');
   const h5Template = fs.readFileSync(path.join(__dirname, '../h5/birth-card/index.html'), 'utf8');
   const h5Styles = fs.readFileSync(path.join(__dirname, '../h5/birth-card/styles.css'), 'utf8');
   assert.match(previewStyles, new RegExp(`\\.card-hero\\s*\\{[^}]*height:\\s*${faceContract.heroRatio}`), '完整卡面必须保持 H5 契约的 Hero 比例');
   assert.match(previewStyles, new RegExp(`\\.card-data\\s*\\{[^}]*height:\\s*${faceContract.dataRatio}`), '完整卡面必须保持 H5 契约的信息区比例');
   assert.equal(previewStyles.includes('width: 675rpx; height: 1200rpx'), true, '小程序完整卡面必须保持 H5 契约的 9:16 比例');
+  assert.equal(previewStyles.toLowerCase().includes('border: 3rpx solid #94ab61'), true, '信息区必须使用参考图的绿色圆角边框');
   ['card-hero', 'hero-depth', 'hero-figure', 'brand-lockup', 'collect-badge', 'card-data', 'identity-row', 'stat-grid'].forEach(className => {
     assert.equal(previewTemplate.includes(className), true, `小程序卡面缺少 H5 对齐结构 ${className}`);
     assert.equal(h5Template.includes(className), true, `H5 卡面缺少共享结构 ${className}`);

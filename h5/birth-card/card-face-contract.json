@@ -7,5 +7,10 @@
   "cardKind": "COLLECTIBLE CARD",
   "fields": ["name", "birthday", "constellation", "mbti", "collectorLabel"],
   "recordFields": ["setCode", "uniqueCode"],
-  "colors": ["#172018", "#fffdf7", "#f7f3ea", "#898b86"]
+  "statOrder": ["mbti", "constellation", "birthday"],
+  "displayExamples": {
+    "birthday": { "raw": "2026-07-14", "label": "7月14日" },
+    "constellation": { "raw": "巨蟹座", "label": "巨蟹座 ♋" }
+  },
+  "colors": ["#172018", "#fffdf7", "#f7f3ea", "#94ab61", "#dde9b8", "#f2d2df", "#ddd9f2"]
 }

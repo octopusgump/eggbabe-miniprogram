@@ -26,6 +26,8 @@ const miniBridge = read('miniprogram/services/birth-card-h5.js');
 const localPetStore = read('miniprogram/utils/pet-store.js');
 const cloudCardGenerator = read('cloudfunctions/generateHatchCard/index.js');
 const nicknamePage = read('miniprogram/pages/nickname/nickname.js');
+const figureDirectory = path.join(root, 'h5/birth-card/assets/figures');
+const figureCatalog = JSON.parse(read('h5/birth-card/assets/figures/catalog.json'));
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.wxml').includes('<web-view'), true, 'H5 容器必须使用 web-view');
@@ -55,5 +57,12 @@ function extractNamePools(source) {
   }, {});
 }
 assert.deepEqual(extractNamePools(localPetStore), extractNamePools(cloudCardGenerator), '本地与云端角色名字池及顺序必须完全一致');
+
+const catalogFiles = figureCatalog.assets.map(asset => asset.file).sort();
+const actualFigureFiles = fs.readdirSync(figureDirectory).filter(file => /\.(?:jpg|png|webp)$/i.test(file)).sort();
+assert.deepEqual(actualFigureFiles, catalogFiles, '角色素材文件必须全部登记到 figures/catalog.json，且目录表不得引用缺失文件');
+for (const file of actualFigureFiles) {
+  assert.equal(/^(?:YT|KOI)__[a-z0-9-]+__[a-z0-9-]+__v\d{2}\.(?:jpg|png|webp)$/.test(file), true, `角色素材命名不符合统一规范：${file}`);
+}
 
 console.log('H5 工程校验通过：数据注入、70/30 卡面、web-view 接入与导出能力完整。');

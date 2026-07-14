@@ -23,24 +23,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 @keyframes egg-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.025); } }
 .mode-chip { width: fit-content; margin: 0 auto 12px; padding: 7px 12px; border-radius: 999px; background: #fff0c8; color: #604812; font-size: 12px; font-weight: 600; letter-spacing: .06em; }
 
-.birth-card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; border: 7px solid rgba(255, 255, 255, .96); border-radius: 28px; background: var(--paper); box-shadow: 0 20px 60px rgba(25, 34, 27, .18); }
-.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: flex; align-items: center; justify-content: center; flex: 0 0 var(--title-ratio); padding: 12px 58px 7px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
+.birth-card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; padding: 14px; gap: 8px; border-radius: 28px; background: var(--paper); box-shadow: 0 20px 60px rgba(25, 34, 27, .18); }
+.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: flex; align-items: center; justify-content: center; flex: 0 0 var(--title-ratio); padding: 0 76px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
 .card-title-copy { min-width: 0; }
-.card-wordmark { display: block; margin-bottom: 2px; color: #65705f; font-size: 8px; font-weight: 600; letter-spacing: .16em; text-transform: lowercase; }
 .card-title-section h1 { overflow: hidden; margin: 0; color: #3c2d24; font-family: var(--name-font); font-size: clamp(28px, 8vw, 42px); font-weight: 400; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-.title-star { position: absolute; top: 50%; color: #efc84b; font-size: 19px; transform: translateY(-42%) rotate(5deg); }
-.title-star--left { left: 26px; }
-.title-star--right { right: 26px; transform: translateY(-42%) rotate(-6deg); }
-.collect-badge { position: absolute; right: 13px; bottom: 8px; padding: 4px 7px; border-radius: 999px; background: #f6f5ee; color: #526054; font-size: 9px; font-weight: 600; }
+.collect-badge { position: absolute; right: 0; top: 50%; padding: 6px 10px; border-radius: 999px; background: #f6f5ee; color: #526054; font-size: 13px; font-weight: 600; transform: translateY(-50%); }
 
-.card-illustration-section { flex: 0 0 auto; padding: 0 18px 8px; background: var(--paper); }
+.card-illustration-section { flex: 0 0 auto; background: var(--paper); }
 .illustration-frame { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 18px; background: linear-gradient(155deg, #eaf3f4, #f5f0dd 58%, #ece7f5); }
 .hero-background, .hero-figure, .fallback-mark { position: absolute; inset: 0; }
 .hero-background { width: 100%; height: 100%; object-fit: cover; opacity: .82; }
 .hero-figure { z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .fallback-mark { display: grid; place-items: center; color: rgba(63, 90, 71, .32); font-family: serif; font-size: clamp(140px, 48vw, 240px); text-shadow: 0 0 70px rgba(255, 255, 255, .9); }
 
-.card-data-section { min-height: 0; flex: 1 1 auto; padding: 10px 20px 18px; background: var(--paper); }
+.card-data-section { min-height: 0; flex: 1 1 auto; background: var(--paper); }
 .stat-grid { overflow: hidden; height: 100%; display: grid; grid-template-rows: repeat(3, 1fr); margin: 0; border: 1.5px solid #94ab61; border-radius: 14px; }
 .stat-row { min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 14px 0 8px; }
 .stat-row + .stat-row { border-top: 1.5px solid #a7b978; }
@@ -82,9 +78,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 
 @media (max-width: 360px) {
   .app-shell { padding-right: 10px; padding-left: 10px; }
-  .birth-card { border-width: 6px; border-radius: 22px; }
-  .card-title-section { padding-right: 48px; padding-left: 48px; }
-  .card-data-section { padding-right: 16px; padding-left: 16px; }
+  .birth-card { border-radius: 22px; }
   .stat-row dt, .stat-row dd { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .loading-egg { animation: none; } }

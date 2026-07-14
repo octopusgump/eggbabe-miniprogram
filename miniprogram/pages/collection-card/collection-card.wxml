@@ -3,7 +3,7 @@
   <scroll-view class="content" scroll-y>
     <view wx:if="{{isNew}}" class="new-banner">获得第一张收藏卡 · 已自动收入我的收藏卡</view>
     <view class="card">
-      <view class="card-title-section"><text class="title-star">★</text><view><text class="card-wordmark">eggbabe</text><text class="name">{{card.name}}</text></view><text class="title-star">★</text></view>
+      <view class="card-title-section"><text class="name">{{card.name}}</text></view>
       <view class="card-illustration-section"><image wx:if="{{illustration}}" class="illustration" src="{{illustration}}" mode="aspectFill"></image><pet-avatar wx:else pet-type="{{card.prototype}}" size="{{250}}"></pet-avatar></view>
       <view class="card-data-section">
         <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--mbti">人</text><text>MBTI</text></view><text class="stat-value">{{card.mbti}}</text></view>

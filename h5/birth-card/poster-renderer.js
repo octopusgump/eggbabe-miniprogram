@@ -6,9 +6,11 @@
   const WIDTH = 1080;
   const CARD_HEIGHT = 1920;
   const HEIGHT = 2160;
+  const CARD_INSET = 54;
+  const SECTION_GAP = 24;
   const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.105);
-  const ILLUSTRATION_HEIGHT = Math.round((WIDTH - 108) * 5 / 4) + 24;
-  const DATA_HEIGHT = CARD_HEIGHT - TITLE_HEIGHT - ILLUSTRATION_HEIGHT;
+  const ILLUSTRATION_HEIGHT = Math.round((WIDTH - CARD_INSET * 2) * 5 / 4);
+  const DATA_HEIGHT = CARD_HEIGHT - CARD_INSET * 2 - TITLE_HEIGHT - ILLUSTRATION_HEIGHT - SECTION_GAP * 2;
 
   function loadImage(src) {
     if (!src || typeof Image === 'undefined') return Promise.resolve(null);
@@ -47,33 +49,30 @@
 
   function drawTitle(context, card) {
     context.fillStyle = '#FFFCF4';
-    context.fillRect(0, 0, WIDTH, TITLE_HEIGHT);
-    context.fillStyle = '#EFC84B';
-    context.font = '52px sans-serif';
-    context.textAlign = 'center';
-    context.fillText('★', 112, 122);
-    context.fillText('★', WIDTH - 112, 122);
-    context.fillStyle = '#65705F';
-    context.font = '600 22px sans-serif';
-    context.fillText('eggbabe', WIDTH / 2, 48);
+    context.fillRect(CARD_INSET, CARD_INSET, WIDTH - CARD_INSET * 2, TITLE_HEIGHT);
     context.fillStyle = '#3C2D24';
     context.font = '400 84px "ZCOOL KuaiLe", "PingFang SC", sans-serif';
-    context.fillText(card.name, WIDTH / 2, 142, 680);
+    context.textAlign = 'center';
+    context.fillText(card.name, WIDTH / 2, CARD_INSET + 132, 620);
     if (card.cardType === 'collectible') {
-      roundedRect(context, WIDTH - 184, TITLE_HEIGHT - 62, 128, 42, 21);
+      const badgeWidth = 160;
+      const badgeHeight = 60;
+      const badgeX = WIDTH - CARD_INSET - badgeWidth;
+      const badgeY = CARD_INSET + (TITLE_HEIGHT - badgeHeight) / 2;
+      roundedRect(context, badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
       context.fillStyle = '#F1F1EA';
       context.fill();
       context.fillStyle = '#526054';
-      context.font = '600 20px sans-serif';
-      context.fillText(card.collectorLabel, WIDTH - 120, TITLE_HEIGHT - 33);
+      context.font = '600 28px sans-serif';
+      context.fillText(card.collectorLabel, badgeX + badgeWidth / 2, badgeY + 39);
     }
   }
 
   function drawIllustration(context, card, assets, background, figure) {
-    const x = 54;
-    const y = TITLE_HEIGHT;
-    const width = WIDTH - 108;
-    const height = ILLUSTRATION_HEIGHT - 24;
+    const x = CARD_INSET;
+    const y = CARD_INSET + TITLE_HEIGHT + SECTION_GAP;
+    const width = WIDTH - CARD_INSET * 2;
+    const height = ILLUSTRATION_HEIGHT;
     roundedRect(context, x, y, width, height, 34);
     context.save();
     context.clip();
@@ -95,10 +94,10 @@
   }
 
   function drawCollectibleStats(context, card) {
-    const x = 64;
-    const y = TITLE_HEIGHT + ILLUSTRATION_HEIGHT + 30;
-    const width = WIDTH - 128;
-    const height = DATA_HEIGHT - 66;
+    const x = CARD_INSET;
+    const y = CARD_INSET + TITLE_HEIGHT + SECTION_GAP + ILLUSTRATION_HEIGHT + SECTION_GAP;
+    const width = WIDTH - CARD_INSET * 2;
+    const height = DATA_HEIGHT;
     const rowHeight = height / 3;
     const styles = {
       mbti: { icon: '人', fill: '#DDE9B8', stroke: '#8DA85D' },
@@ -173,5 +172,5 @@
     return target.toDataURL('image/png', 1);
   }
 
-  return { WIDTH, HEIGHT, CARD_HEIGHT, TITLE_HEIGHT, ILLUSTRATION_HEIGHT, DATA_HEIGHT, drawCollectibleStats, generatePoster };
+  return { WIDTH, HEIGHT, CARD_HEIGHT, CARD_INSET, SECTION_GAP, TITLE_HEIGHT, ILLUSTRATION_HEIGHT, DATA_HEIGHT, drawCollectibleStats, generatePoster };
 }));

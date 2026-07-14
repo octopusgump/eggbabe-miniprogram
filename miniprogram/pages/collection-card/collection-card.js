@@ -73,16 +73,14 @@ Page({
     }
     const context = wx.createCanvasContext('shareCanvas', this);
     context.setFillStyle('#FFFDF7'); context.fillRect(0, 0, 600, 1067);
-    context.setTextAlign('center'); context.setFillStyle('#65705F'); context.setFontSize(12); context.fillText('eggbabe', 300, 30);
-    context.setFillStyle('#EFC84B'); context.setFontSize(25); context.fillText('★', 70, 76); context.fillText('★', 530, 76);
-    context.setFillStyle('#3C2D24'); context.setFontSize(42); context.fillText(card.name, 300, 88);
+    context.setTextAlign('center'); context.setFillStyle('#3C2D24'); context.setFontSize(42); context.fillText(card.name, 300, 78);
     context.setFillStyle('#EAF3F4'); context.fillRect(32, 112, 536, 670);
     drawCover(context, illustrationImage, 32, 112, 536, 670);
     const rows = [['人', 'MBTI', card.mbti], ['★', '星座', `${card.zodiac} ${this.data.zodiacSymbol}`], ['礼', '生日', this.data.birthdayLabel]];
-    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(38, 800, 524, 192);
+    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(32, 800, 536, 192);
     rows.forEach((row, index) => {
       const y = 832 + index * 64;
-      if (index) { context.beginPath(); context.moveTo(38, 800 + index * 64); context.lineTo(562, 800 + index * 64); context.stroke(); }
+      if (index) { context.beginPath(); context.moveTo(32, 800 + index * 64); context.lineTo(568, 800 + index * 64); context.stroke(); }
       context.setTextAlign('left'); context.setFillStyle('#2D251F'); context.setFontSize(18); context.fillText(`${row[0]}  ${row[1]}`, 62, y);
       context.setTextAlign('right'); context.fillText(row[2], 538, y);
     });

@@ -146,7 +146,9 @@ async function main() {
   ['current.name', 'current.mbti', 'current.constellationLabel', 'current.birthdayLabel', 'current.collectorLabel', 'current.image'].forEach(field => {
     assert.equal(previewTemplate.includes(field), true, `完整卡面预览缺少 ${field}`);
   });
-  assert.equal(previewTemplate.includes(faceContract.brandName), true, '小程序完整卡面品牌名必须服从 H5 卡面契约');
+  assert.equal(previewTemplate.includes(faceContract.brandName), false, '小程序完整卡面标题区不得再显示品牌小字');
+  assert.equal(previewTemplate.includes('title-star'), false, '收藏卡顶部不得继续显示两颗星星');
+  assert.equal(previewTemplate.includes('brand-name'), false, '收藏卡名字上方不得继续显示 eggbabe 小字');
   assert.equal(previewTemplate.includes('mode="aspectFill"'), true, '完整卡面的 4:5 Hero 必须铺满插画视口');
   assert.equal(previewTemplate.includes('bloodType'), false, '完整套卡正面不得显示血型');
   ['card-dots', 'set-number', 'card-footer', 'current.statusLabel', 'current.uniqueCode'].forEach(content => {
@@ -162,6 +164,8 @@ async function main() {
   const h5Template = fs.readFileSync(path.join(__dirname, '../h5/birth-card/index.html'), 'utf8');
   const h5Styles = fs.readFileSync(path.join(__dirname, '../h5/birth-card/styles.css'), 'utf8');
   assert.equal(previewStyles.includes('width: 675rpx; height: 1200rpx'), true, '小程序完整卡面必须为 4:5 插画留出竖版空间');
+  assert.match(previewStyles, /\.preview-card\s*\{[^}]*padding:\s*24rpx;[^}]*gap:\s*16rpx;/s, '小程序卡面内容必须使用统一四周留白');
+  assert.match(previewStyles, /\.collect-badge\s*\{[^}]*padding:\s*10rpx 16rpx;[^}]*font-size:\s*24rpx;/s, '右侧系列序号必须放大');
   assert.match(previewStyles, /\.card-illustration-section\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '小程序插画视口必须锁定 4:5');
   assert.equal(/\.preview-card\s*\{[^}]*outline:/s.test(previewStyles), false, '完整卡面不得显示黑色内描边');
   assert.equal(previewStyles.toLowerCase().includes('border: 3rpx solid #94ab61'), true, '信息区必须使用参考图的绿色圆角边框');
@@ -176,6 +180,7 @@ async function main() {
     assert.equal(normalizedH5Styles.includes(color), true, `H5 卡面缺少共享颜色 ${color}`);
   });
   assert.match(h5Styles, /\.birth-card\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/, 'H5 卡面必须为 4:5 插画留出竖版空间');
+  assert.match(h5Styles, /\.birth-card\s*\{[^}]*padding:\s*14px;[^}]*gap:\s*8px;/s, 'H5 卡面内容必须使用统一四周留白');
   assert.match(h5Styles, /\.illustration-frame\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, 'H5 插画视口必须锁定 4:5');
   assert.equal(/\.birth-card\s*\{[^}]*outline:/s.test(h5Styles), false, 'H5 卡面不得显示黑色内描边');
   const previewPageSource = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.js'), 'utf8');

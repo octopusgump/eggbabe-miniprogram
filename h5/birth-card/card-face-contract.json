@@ -1,8 +1,11 @@
 {
-  "version": "eggbabe-card-face-v2.12",
+  "version": "eggbabe-card-face-v2.13",
   "aspectRatio": "9 / 16",
   "titleRatio": "10.5%",
   "illustrationAspectRatio": "4 / 5",
+  "contentInset": { "h5": "14px", "miniProgram": "24rpx" },
+  "headerDecorations": [],
+  "collectorBadgeSize": "large",
   "brandName": "eggbabe",
   "fields": ["name", "birthday", "constellation", "mbti", "collectorLabel"],
   "recordFields": ["setCode", "uniqueCode"],

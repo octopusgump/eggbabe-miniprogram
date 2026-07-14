@@ -41,6 +41,12 @@ assert.equal(/\.birth-card\s*\{[^}]*outline:/s.test(css), false, '卡面不得�
 assert.match(css, /\.hero-figure\s*\{[^}]*object-fit:\s*cover/, '4:5 插画必须铺满视口，不得留白');
 ['card-title-section', 'card-illustration-section', 'card-data-section'].forEach(className => assert.equal(cardFace.includes(className), true, `H5 卡面缺少三段式结构 ${className}`));
 assert.equal(html.includes('eggbabe'), true, 'H5 卡面必须使用 eggbabe 品牌字标');
+assert.equal(cardFace.includes('title-star'), false, 'H5 收藏卡顶部不得显示星星');
+assert.equal(cardFace.includes('card-wordmark'), false, 'H5 收藏卡名字上方不得显示 eggbabe 小字');
+assert.match(css, /\.birth-card\s*\{[^}]*padding:\s*14px;[^}]*gap:\s*8px;/s, 'H5 收藏卡内容必须四周等距');
+assert.match(css, /\.collect-badge\s*\{[^}]*padding:\s*6px 10px;[^}]*font-size:\s*13px;/s, 'H5 系列序号必须放大');
+assert.equal(/@media \(max-width: 360px\)[\s\S]*?\.card-data-section\s*\{[^}]*padding/.test(css), false, 'H5 小屏不得破坏卡片内容的四边等距');
+assert.equal(/@media \(max-width: 360px\)[\s\S]*?\.card-title-section\s*\{[^}]*padding/.test(css), false, 'H5 小屏必须保留名字与放大序号的安全间距');
 assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须显示生日');
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
 assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显示 MBTI');
@@ -55,6 +61,9 @@ assert.equal(css.toLowerCase().includes('border: 1.5px solid #94ab61'), true, 'H
 assert.equal(poster.includes('drawCollectibleStats'), true, '分享海报必须使用与卡面一致的三行信息牌');
 assert.equal(poster.includes('card.statRows.map'), true, '分享海报必须消费卡片模型中已经按契约排序的信息行');
 assert.equal(poster.includes('const CARD_HEIGHT = 1920'), true, '分享长图的卡面必须同步为 9:16 竖版');
+const posterTitle = poster.match(/function drawTitle[\s\S]*?\n  }/)[0];
+assert.equal(posterTitle.includes("fillText('★'"), false, '分享长图顶部不得显示星星');
+assert.equal(posterTitle.includes("fillText('eggbabe'"), false, '分享长图名字上方不得显示品牌小字');
 assert.equal(poster.includes('CARD_HEIGHT * 0.105'), true, '分享长图标题区必须与屏显 10.5% 契约一致');
 assert.equal(poster.includes("if (figure) drawCover(context, figure"), true, '分享长图的 4:5 插画必须铺满视口');
 assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不得显示血型');

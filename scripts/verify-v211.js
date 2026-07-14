@@ -49,8 +49,14 @@ assert.match(nativeCardCss, /\.card\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/, '原�
 assert.match(nativeCardCss, /\.card-illustration-section\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '原生收藏卡插画视口必须锁定 4:5');
 assert.equal(/\.card\s*\{[^}]*outline:/s.test(nativeCardCss), false, '原生收藏卡不得显示黑色描边');
 assert.equal(nativeCardTemplate.includes('mode="aspectFill"'), true, '原生收藏卡插画必须铺满 4:5 视口');
+assert.equal(nativeCardTemplate.includes('title-star'), false, '原生收藏卡顶部不得显示星星');
+assert.equal(nativeCardTemplate.includes('card-wordmark'), false, '原生收藏卡名字上方不得显示 eggbabe 小字');
+assert.match(nativeCardCss, /\.card\s*\{[^}]*padding:\s*24rpx;[^}]*gap:\s*16rpx;/s, '原生收藏卡内容必须四周等距');
 assert.equal(nativeCardLogic.includes('height: 1067'), true, '原生分享图必须同步为 9:16 竖版');
 assert.equal(nativeCardLogic.includes('drawCover(context, illustrationImage, 32, 112, 536, 670)'), true, '原生分享图的 4:5 插画必须铺满视口');
+const nativePoster = nativeCardLogic.match(/async drawShareCard\(\)[\s\S]*?\n  },/)[0];
+assert.equal(nativePoster.includes("fillText('eggbabe'"), false, '原生分享图名字上方不得显示品牌小字');
+assert.equal(nativePoster.includes("fillText('★'"), false, '原生分享图顶部不得显示装饰星星');
 assert.equal(h5App.includes('fonts.googleapis.com/css2?family=ZCOOL+KuaiLe'), true, '名字必须按需加载 Google Fonts OFL 版站酷快乐体');
 assert.equal(h5App.includes('&text='), true, '名字字体请求必须使用 text 子集化');
 assert.equal(/Math\.random/.test(h5App), false, 'H5 只能渲染服务端结果，不得生成随机值');

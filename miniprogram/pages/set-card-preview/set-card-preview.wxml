@@ -8,9 +8,7 @@
 
     <view wx:if="{{current}}" class="preview-card birth-card">
       <view class="card-title-section">
-        <text class="title-star">★</text>
-        <view class="title-copy"><text class="brand-name">eggbabe</text><text class="card-name">{{current.name}}</text></view>
-        <text class="title-star">★</text>
+        <view class="title-copy"><text class="card-name">{{current.name}}</text></view>
         <text class="collect-badge">{{current.collectorLabel}}</text>
       </view>
       <view class="card-illustration-section"><image class="hero-image hero-figure" src="{{current.image}}" mode="aspectFill"></image></view>

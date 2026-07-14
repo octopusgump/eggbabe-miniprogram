@@ -38,4 +38,14 @@ assert.equal(liveUrl.includes('card_data='), false, '正式卡不得通过可编
 assert.equal(liveUrl.includes('api_base='), false, '正式卡 API 必须固定在 H5 部署配置中');
 assert.equal(bridge.toH5Card(Object.assign({}, pet, { collectionCard: Object.assign({}, pet.collectionCard, { id: '', _id: 'cloud-card-id' }) })).card_id, 'cloud-card-id');
 
+const collectibleData = bridge.toH5CollectibleCard(pet, {
+  id: 'copy-7', cardId: 'yt-s01-007', name: '月下冥想', setCode: 'YT-S01', setName: '玉兔初见·水彩日常',
+  collectorLabel: '007/010', treatment: 'BASE', heroAssetId: 'YT__watercolor__meditate', uniqueCode: 'EGG-YT-20260714-000007', mode: 'demo'
+}, {});
+assert.equal(collectibleData.card_type, 'collectible', '套装卡必须使用收藏卡数据类型');
+assert.equal(collectibleData.name, '月团', '套装卡正面显示用户确定的角色名');
+assert.equal(collectibleData.card_title, '月下冥想', '套装卡必须保留固定卡名');
+assert.equal(collectibleData.birthday, '2026-07-14', '套装卡动态信息来自已生成的破壳身份');
+assert.equal(collectibleData.hero_asset_id, 'YT__watercolor__meditate', '套装卡必须关联固定完整 Hero');
+
 console.log('H5 小程序桥接校验通过。');

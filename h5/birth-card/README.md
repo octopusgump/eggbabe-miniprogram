@@ -1,6 +1,6 @@
-# eggbabe 破壳卡 H5
+# eggbabe 收藏卡 H5
 
-本目录包含破壳收藏卡和角色档案两个移动端 H5 视图。H5 只负责展示、切换档案和生成分享长图，不在浏览器内随机生成姓名、编号或角色属性。
+本目录包含破壳身份卡、角色档案和套装收藏卡三个移动端 H5 视图。H5 只负责展示、切换档案和生成分享长图，不在浏览器内随机生成姓名、编号或角色属性。
 
 角色档案里的“修改名字”会通过微信 H5 桥回到小程序昵称页；保存后本地卡面与云端卡片记录会同步更新。
 
@@ -12,13 +12,19 @@
 
 档案页把 `view` 改为 `profile`。预览固定读取 `sample/card.json`。
 
+第一季套装收藏卡预览：
+
+`/h5/birth-card/index.html?preview=collectible`
+
+该预览读取 `sample/collectible-card.json`，只在正面显示名字、生日、星座、MBTI、套装/清单号和唯一副本编号。
+
 ## 数据入口
 
 页面按以下顺序读取数据：
 
 1. `card_data`：仅供 `demo` 展会体验注入的 URL 编码 JSON。
 2. `card_id`：正式卡通过 `runtime-config.js` 固定的可信 API 读取 `GET {apiBase}/cards/{card_id}?mode=live`。页面不接受 URL 传入 API 地址，防止切换到伪造服务。
-3. `preview=1`：仅本地预览固定样例。
+3. `preview=1` 或 `preview=collectible`：仅本地预览固定样例。
 
 字段契约和合法性由 `card-model.js` 统一校验；姓名为空时只展示“未命名”，不会在 H5 随机起名。
 

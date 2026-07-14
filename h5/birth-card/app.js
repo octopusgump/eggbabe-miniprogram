@@ -54,15 +54,16 @@
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
     byId('profile-mark').textContent = mark;
+    byId('birth-card').querySelector('.card-hero').classList.toggle('is-composite', Boolean(resolvedAssets.fullHero));
     setImage(byId('hero-background'), resolvedAssets.background);
     setImage(byId('hero-figure'), resolvedAssets.figure);
   }
 
   function setView(view, updateHistory) {
-    const isProfile = view === 'profile';
+    const isProfile = view === 'profile' && card.cardType === 'birth';
     cardView.hidden = isProfile;
     profileView.hidden = !isProfile;
-    document.title = isProfile ? `${card.name}的角色档案 · eggbabe` : `${card.name}的破壳收藏卡 · eggbabe`;
+    document.title = isProfile ? `${card.name}的角色档案 · eggbabe` : `${card.name}的${card.cardType === 'collectible' ? '套装收藏卡' : '破壳收藏卡'} · eggbabe`;
     if (updateHistory && window.history && window.history.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.set('view', isProfile ? 'profile' : 'card');
@@ -78,13 +79,18 @@
     fillFields(card);
     applyTheme(assets);
     const badge = byId('collect-badge');
-    badge.textContent = card.collectAttr;
-    badge.classList.toggle('is-limited', card.collectAttr === '限定');
+    const isCollectible = card.cardType === 'collectible';
+    badge.textContent = isCollectible ? card.collectorLabel : card.collectAttr;
+    badge.classList.toggle('is-limited', !isCollectible && card.collectAttr === '限定');
+    byId('card-kind').textContent = isCollectible ? 'COLLECTIBLE CARD' : 'BIRTH CARD';
+    byId('card-subtitle').textContent = isCollectible ? `${card.setCode} · ${card.collectorLabel}` : `${card.prototypeLabel} · ${card.style} · ${card.gender}`;
+    byId('card-set-line').textContent = isCollectible ? '唯一数字副本' : '唯一身份收藏卡';
+    byId('profile-button').hidden = isCollectible;
     byId('mode-chip').hidden = card.mode !== 'demo';
     loading.hidden = true;
     error.hidden = true;
     content.hidden = false;
-    setView(params.get('view') === 'profile' ? 'profile' : 'card', false);
+    setView(!isCollectible && params.get('view') === 'profile' ? 'profile' : 'card', false);
   }
 
   function parseInjectedCard() {
@@ -108,8 +114,9 @@
   async function loadCard() {
     const injected = parseInjectedCard();
     if (injected && injected.mode === 'demo') return injected;
-    if (params.get('preview') === '1') {
-      const response = await fetch('./sample/card.json', { cache: 'no-store' });
+    if (params.get('preview') === '1' || params.get('preview') === 'collectible') {
+      const sample = params.get('preview') === 'collectible' ? './sample/collectible-card.json' : './sample/card.json';
+      const response = await fetch(sample, { cache: 'no-store' });
       if (!response.ok) throw new Error('预览数据读取失败');
       return response.json();
     }

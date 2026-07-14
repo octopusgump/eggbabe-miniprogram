@@ -54,6 +54,35 @@ async function main() {
     assert.equal(sceneConfig.getCardPool('玉兔', scene.key).length > 0, true, `${scene.label}必须配置场景卡池`);
   }
 
+  const firstSet = sceneConfig.getCardSet('YT-S01');
+  const h5Set = JSON.parse(fs.readFileSync(path.join(__dirname, '../h5/birth-card/assets/sets/YT-S01.json'), 'utf8'));
+  const cloudSet = require('../cloudfunctions/sceneCardDrop/card-catalog').SET;
+  assert.equal(firstSet.setName, '玉兔初见·水彩日常', '第一季套卡名称必须固定');
+  assert.equal(firstSet.cards.length, 10, 'YT-S01 必须恰好包含 10 张基础卡');
+  assert.deepEqual(firstSet.cards.map(card => card.collectorNumber), [1,2,3,4,5,6,7,8,9,10], '清单编号必须连续且不可复用');
+  assert.equal(firstSet.cards.every(card => card.treatment === 'BASE' && !card.rarity), true, 'MVP 只能使用 BASE，不得显示人为稀有度');
+  assert.equal(firstSet.cards.every(card => card.checklistNumber === card.collectorNumber && card.checklistTotal === 10), true, '每张副本定义必须独立保存 checklist 数值字段');
+  const frozenIdentity = cards => cards.map(card => [card.cardId || card.card_key || card.cardDefinitionId, card.collectorNumber || card.collector_number, card.collectorLabel || card.collector_label, card.name || card.title, card.heroAssetId || card.hero_asset_id, card.treatment]);
+  const runtimeIdentity = cards => cards.map(card => ({
+    cardId: card.cardId || card.card_key,
+    collectorNumber: card.collectorNumber || card.collector_number,
+    collectorLabel: card.collectorLabel || card.collector_label,
+    checklistNumber: card.checklistNumber || card.checklist_number,
+    checklistTotal: card.checklistTotal || card.checklist_total,
+    name: card.name,
+    heroAssetId: card.heroAssetId || card.hero_asset_id,
+    treatment: card.treatment,
+    setCode: card.setCode || card.set_code,
+    image: card.image,
+    mark: card.mark,
+    sceneKeys: (card.sceneKeys || card.scene_keys || []).slice().sort()
+  }));
+  assert.deepEqual(frozenIdentity(firstSet.cards), frozenIdentity(h5Set.cards), '小程序卡池必须与 H5 冻结 checklist 身份完全一致');
+  assert.deepEqual(runtimeIdentity(firstSet.cards), runtimeIdentity(cloudSet.cards), '云端卡池必须与小程序完整运行时清单一致');
+  firstSet.cards.forEach(card => {
+    assert.equal(fs.existsSync(path.join(__dirname, '../miniprogram', card.image)), true, `${card.collectorLabel} 必须有可打包的小程序预览图`);
+  });
+
   await sceneCards.attemptDrop('grass', '小花', '玉兔');
   await sceneCards.attemptDrop('grass', '蝴蝶', '玉兔');
   assert.equal(sceneCards.list().length >= 1, true, '展会第二次互动前必须至少掉落一张场景卡');
@@ -64,8 +93,20 @@ async function main() {
   for (let index = 0; index < 20; index += 1) await sceneCards.attemptDrop('grass', `互动${index}`, '玉兔');
   assert.equal(sceneCards.list().length <= 2, true, '场景卡每日掉落不得超过 2 张');
   const firstCard = sceneCards.list()[0];
+  assert.equal(firstCard.setCode, 'YT-S01', '掉落卡必须记录套装代码');
+  assert.match(firstCard.uniqueCode, /^EGG-YT-\d{8}-[A-Z0-9]{6}$/, '掉落副本必须生成稳定格式的唯一编号');
   assert.equal(sceneCards.markSaved(firstCard.id).ok, true, '场景卡必须可以标记保存');
   assert.equal(sceneCards.list()[0].saved, true, '保存状态必须写入当前模式卡册');
+  const summary = sceneCards.collectionSummary('玉兔');
+  assert.equal(summary.setCode, 'YT-S01', '收藏完成度必须按套装统计');
+  assert.equal(summary.slots.length, 10, '卡册必须保留十个固定卡位');
+  assert.equal(summary.ownedUnique, new Set(sceneCards.list().map(card => card.cardId)).size, '重复副本不得重复计算套装完成度');
+  assert.equal(summary.total, 10, 'YT-S01 完成目标必须固定为 10');
+  const beforeDuplicate = sceneCards.list();
+  wx.setStorageSync(runtime.scopedKey('scene_cards'), beforeDuplicate.concat(Object.assign({}, firstCard, { id: `${firstCard.id}-duplicate`, uniqueCode: 'EGG-YT-20260714-999999' })));
+  const duplicatedSummary = sceneCards.collectionSummary('玉兔');
+  assert.equal(duplicatedSummary.ownedUnique, summary.ownedUnique, '重复副本不得增加 checklist 完成度');
+  assert.equal(duplicatedSummary.duplicateCount, summary.duplicateCount + 1, '重复副本必须折叠并单独计数');
 
   const scenePage = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/exhibition-scene/exhibition-scene.js'), 'utf8');
   assert.equal(scenePage.includes("petStore.getStage(pet) !== 'hatched'"), true, '正式已破壳宠物进入场景时不得切换到 demo');
@@ -77,6 +118,19 @@ async function main() {
   assert.equal(sceneStyles.includes('.drop-panel--revealed'), true, '抽卡必须有揭晓完成态');
   const albumTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/album/album.wxml'), 'utf8');
   assert.equal(albumTemplate.includes('item.image && !item.imageFailed'), true, '卡册必须显示正式场景卡图片并支持加载失败回退');
+  assert.equal(albumTemplate.includes('setSlots'), true, '卡册必须渲染固定 checklist 卡位，而不是只显示已拥有副本');
+  assert.equal(albumTemplate.includes('summary.ownedUnique'), true, '卡册必须显示去重后的套装完成度');
+  assert.equal(albumTemplate.includes('item.obtainedLabel'), true, '已拥有卡位必须显示获得时间');
+  assert.equal(albumTemplate.includes('onOpenCopies'), true, '重复副本必须可以查看折叠明细');
+  assert.equal(albumTemplate.includes('mode="aspectFit"'), true, '固定完整 Hero 不得在卡册中被裁切');
+  const cloudDrop = fs.readFileSync(path.join(__dirname, '../cloudfunctions/sceneCardDrop/index.js'), 'utf8');
+  assert.equal(cloudDrop.includes('unique_code'), true, '正式模式掉落也必须生成唯一副本编号');
+  assert.equal(cloudDrop.includes('set_code'), true, '正式模式掉落必须写入套装身份');
+  assert.equal(cloudDrop.includes("rarity: template.rarity"), false, '正式模式不得继续写入旧的人为稀有度');
+  assert.equal(cloudDrop.includes("collection('scene_card_pools')"), false, '冻结 checklist 不得被运营数据库覆盖卡牌定义');
+  ['checklist_number', 'checklist_total', 'hero_asset_version', 'card_template_version', 'card_snapshot_hash', 'provenance_events', 'owner_id'].forEach(field => {
+    assert.equal(cloudDrop.includes(field), true, `正式副本必须从第一天保存 ${field}`);
+  });
 
   let scenePageDefinition;
   const scenePagePath = require.resolve('../miniprogram/pages/exhibition-scene/exhibition-scene.js');

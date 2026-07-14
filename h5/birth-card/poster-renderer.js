@@ -99,7 +99,8 @@
     depthGradient.addColorStop(1, 'rgba(5,8,20,.55)');
     context.fillStyle = depthGradient;
     context.fillRect(0, 0, WIDTH, HERO_HEIGHT);
-    if (figure) drawContain(context, figure, 90, 180, 900, HERO_HEIGHT - 180);
+    if (figure && assets.fullHero) drawContain(context, figure, 0, 0, WIDTH, HERO_HEIGHT);
+    else if (figure) drawContain(context, figure, 90, 180, 900, HERO_HEIGHT - 180);
     else drawFallbackFigure(context, card, assets);
 
     context.textAlign = 'left';
@@ -108,53 +109,49 @@
     context.fillText('eggbabe', 72, 92);
     context.font = '400 24px sans-serif';
     context.fillStyle = 'rgba(255,255,255,.72)';
-    context.fillText('BIRTH CARD', 74, 130);
+    context.fillText(card.cardType === 'collectible' ? 'COLLECTIBLE CARD' : 'BIRTH CARD', 74, 130);
     context.font = '600 28px sans-serif';
-    const badgeWidth = card.collectAttr === '限定' ? 128 : 110;
+    const badgeText = card.cardType === 'collectible' ? card.collectorLabel : card.collectAttr;
+    const badgeWidth = card.cardType === 'collectible' ? 150 : (card.collectAttr === '限定' ? 128 : 110);
     drawRoundedRect(context, WIDTH - badgeWidth - 70, 56, badgeWidth, 64, 32);
     context.fillStyle = card.collectAttr === '限定' ? '#F1D384' : 'rgba(255,255,255,.88)';
     context.fill();
     context.fillStyle = '#263229';
     context.textAlign = 'center';
-    context.fillText(card.collectAttr, WIDTH - badgeWidth / 2 - 70, 98);
+    context.fillText(badgeText, WIDTH - badgeWidth / 2 - 70, 98);
 
     context.fillStyle = '#FFFDF7';
     context.fillRect(0, HERO_HEIGHT, WIDTH, HEIGHT - HERO_HEIGHT);
     context.textAlign = 'left';
     context.fillStyle = '#172018';
     context.font = '600 68px sans-serif';
-    context.fillText(`${card.name}  ${card.genderSymbol}`, 72, HERO_HEIGHT + 105);
+    context.fillText(card.name, 72, HERO_HEIGHT + 105);
     context.font = '500 28px sans-serif';
     context.fillStyle = '#687069';
-    context.fillText(`${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
-    context.fillStyle = '#303A31';
-    context.font = '400 30px sans-serif';
-    context.fillText(`“${card.signature || '它把今天安静地收进了心里。'}”`, 74, HERO_HEIGHT + 216);
+    context.fillText(card.cardType === 'collectible' ? `${card.setCode} · ${card.collectorLabel}` : `${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
 
-    const statsY = HERO_HEIGHT + 290;
+    const statsY = HERO_HEIGHT + 230;
     drawStat(context, '生日', card.birthday, 74, statsY);
-    drawStat(context, '星座', card.constellation, 328, statsY);
-    drawStat(context, 'MBTI', card.mbti, 574, statsY);
-    drawStat(context, '血型', card.bloodType, 810, statsY);
+    drawStat(context, '星座', card.constellation, 390, statsY);
+    drawStat(context, 'MBTI', card.mbti, 730, statsY);
 
     context.strokeStyle = '#E6E5DE';
     context.lineWidth = 2;
     context.beginPath();
-    context.moveTo(74, HERO_HEIGHT + 412);
-    context.lineTo(WIDTH - 74, HERO_HEIGHT + 412);
+    context.moveTo(74, HERO_HEIGHT + 350);
+    context.lineTo(WIDTH - 74, HERO_HEIGHT + 350);
     context.stroke();
     context.font = '500 27px sans-serif';
     context.fillStyle = '#4D5C50';
-    context.fillText(card.incubationLevel, 74, HERO_HEIGHT + 470);
-    context.fillText(`初始主人 · ${card.initialOwner}`, 276, HERO_HEIGHT + 470);
+    context.fillText(card.cardType === 'collectible' ? '唯一数字副本' : '唯一身份收藏卡', 74, HERO_HEIGHT + 410);
     context.font = '500 25px monospace';
     context.fillStyle = '#242B25';
-    context.fillText(card.code, 74, HERO_HEIGHT + 542);
+    context.fillText(card.code, 74, HERO_HEIGHT + 482);
     context.font = '400 22px sans-serif';
     context.fillStyle = '#8C918D';
-    context.fillText(card.mode === 'demo' ? '展会体验卡 · 不进入正式收藏' : '唯一身份收藏卡', 74, HERO_HEIGHT + 584);
-    if (miniCode) drawContain(context, miniCode, WIDTH - 206, HERO_HEIGHT + 430, 138, 138);
-    else drawCodePlaceholder(context, WIDTH - 206, HERO_HEIGHT + 430, 138);
+    context.fillText(card.mode === 'demo' ? '展会体验卡 · 不进入正式收藏' : (card.cardType === 'collectible' ? '唯一数字副本' : '唯一身份收藏卡'), 74, HERO_HEIGHT + 524);
+    if (miniCode) drawContain(context, miniCode, WIDTH - 206, HERO_HEIGHT + 370, 138, 138);
+    else drawCodePlaceholder(context, WIDTH - 206, HERO_HEIGHT + 370, 138);
 
     return target.toDataURL('image/png', 1);
   }

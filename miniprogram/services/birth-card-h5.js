@@ -44,6 +44,31 @@ function toH5Card(pet, options) {
   };
 }
 
+function toH5CollectibleCard(pet, sceneCard, options) {
+  if (!pet || !pet.collectionCard || !sceneCard) return null;
+  const identity = pet.collectionCard;
+  const config = options || {};
+  return {
+    card_id: String(sceneCard.id || sceneCard._id || ''),
+    card_type: 'collectible',
+    mode: sceneCard.mode === 'demo' || sceneCard.mode === 'live' ? sceneCard.mode : runtime.getMode(),
+    prototype: prototypeCode(sceneCard.character || identity.prototype || pet.prototype),
+    name: String(identity.name || pet.name || sceneCard.name || ''),
+    card_title: String(sceneCard.name || ''),
+    birthday: String(identity.birthday || ''),
+    constellation: String(identity.constellation || identity.zodiac || ''),
+    mbti: String(identity.mbti || ''),
+    code: String(sceneCard.uniqueCode || sceneCard.unique_code || ''),
+    set_code: String(sceneCard.setCode || sceneCard.set_code || ''),
+    set_name: String(sceneCard.setName || sceneCard.set_name || ''),
+    collector_label: String(sceneCard.collectorLabel || sceneCard.collector_label || ''),
+    card_definition_id: String(sceneCard.cardId || sceneCard.card_key || sceneCard.cardDefinitionId || sceneCard.card_definition_id || ''),
+    treatment: String(sceneCard.treatment || 'BASE'),
+    hero_asset_id: String(sceneCard.heroAssetId || sceneCard.hero_asset_id || ''),
+    mini_program_code_url: String(sceneCard.mini_program_code_url || config.miniProgramCodeUrl || '')
+  };
+}
+
 function isValidH5BaseUrl(value) {
   return /^https:\/\/[^\s/?#]+(?:[/?#]|$)/i.test(String(value || ''));
 }
@@ -60,4 +85,4 @@ function buildH5Url(baseUrl, view, cardData, apiBase) {
   return `${String(baseUrl).replace(/[?&]$/, '')}${String(baseUrl).includes('?') ? '&' : '?'}${query.join('&')}`;
 }
 
-module.exports = { toH5Card, isValidH5BaseUrl, buildH5Url };
+module.exports = { toH5Card, toH5CollectibleCard, isValidH5BaseUrl, buildH5Url };

@@ -15,6 +15,19 @@ assert.equal(normalized.name, '未命名', 'H5 不得自行随机生成名字');
 assert.equal(normalized.constellation, '巨蟹座', 'H5 必须直接展示生成层固定的星座值');
 assert.equal(normalized.mode, 'demo', 'demo 标记必须保留');
 
+const collectible = model.normalizeCard({
+  card_id: 'copy-1', card_type: 'collectible', mode: 'demo', prototype: '玉兔', name: '月团', card_title: '月下冥想',
+  birthday: '2026-07-14', constellation: '巨蟹座', mbti: 'INFP', code: 'EGG-YT-20260714-000007',
+  set_code: 'YT-S01', set_name: '玉兔初见·水彩日常', collector_label: '007/010',
+  card_definition_id: 'yt-s01-007', treatment: 'BASE', hero_asset_id: 'YT__watercolor__meditate'
+});
+assert.equal(collectible.cardType, 'collectible', '套卡副本必须使用独立收藏卡模型');
+assert.equal(collectible.setCode, 'YT-S01', '收藏卡必须保留套装代码');
+assert.equal(collectible.cardTitle, '月下冥想', '收藏卡必须保留固定卡名');
+assert.equal(collectible.collectorLabel, '007/010', '收藏卡必须保留 checklist 编号');
+assert.equal(collectible.figureKey, 'YT__watercolor__meditate', '收藏卡必须映射固定完整 Hero');
+assert.equal(collectible.bloodType, '', '收藏卡不得要求或补造血型');
+
 assert.throws(() => model.normalizeCard({ card_id: 'card-2', mode: 'live' }), /INVALID_CARD/, '缺少固定卡面字段必须拒绝渲染');
 assert.throws(() => model.normalizeCard(Object.assign({}, {
   card_id: 'card-3', mode: 'preview', prototype: 'FOX', style: '未知款', birthday: '2026-07-13', constellation: '巨蟹座',

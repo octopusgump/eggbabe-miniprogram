@@ -1,0 +1,19 @@
+{
+  "card_id": "copy-preview-yt-s01-007",
+  "card_type": "collectible",
+  "mode": "demo",
+  "prototype": "YT",
+  "name": "月团",
+  "card_title": "月下冥想",
+  "birthday": "2026-07-14",
+  "constellation": "巨蟹座",
+  "mbti": "INFP",
+  "code": "EGG-YT-20260714-000007",
+  "set_code": "YT-S01",
+  "set_name": "玉兔初见·水彩日常",
+  "collector_label": "007/010",
+  "card_definition_id": "yt-s01-007",
+  "treatment": "BASE",
+  "hero_asset_id": "YT__watercolor__meditate",
+  "mini_program_code_url": ""
+}

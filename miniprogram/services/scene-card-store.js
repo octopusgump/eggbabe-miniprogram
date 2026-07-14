@@ -25,21 +25,35 @@ function write(name, value, mode) {
 
 function list() { return read('scene_cards', []); }
 
-function importCloudCards(cards) {
-  const normalized = (cards || []).map(card => Object.assign({}, card, {
+function normalizeSceneCard(card) {
+  return Object.assign({}, card, {
     id: card.id || card._id,
     cardId: card.cardId || card.card_key,
     templateId: card.templateId || card.template_id,
     sceneKey: card.sceneKey || card.scene_id,
     pointId: card.pointId || card.point_id,
-    obtainedAt: card.obtainedAt || card.obtained_at
-  }));
+    obtainedAt: card.obtainedAt || card.obtained_at,
+    setCode: card.setCode || card.set_code,
+    setName: card.setName || card.set_name,
+    collectorNumber: card.collectorNumber || card.collector_number,
+    collectorLabel: card.collectorLabel || card.collector_label,
+    checklistNumber: card.checklistNumber || card.checklist_number,
+    checklistTotal: card.checklistTotal || card.checklist_total,
+    uniqueCode: card.uniqueCode || card.unique_code,
+    copyCount: card.copyCount || card.copy_count,
+    isNewDefinition: card.isNewDefinition === undefined ? card.is_new_definition : card.isNewDefinition,
+    heroAssetId: card.heroAssetId || card.hero_asset_id
+  });
+}
+
+function importCloudCards(cards) {
+  const normalized = (cards || []).map(normalizeSceneCard);
   return write('scene_cards', normalized, 'live');
 }
 
 function cacheCloudCard(card) {
   const current = list();
-  const normalized = Object.assign({}, card, { id: card.id || card._id, cardId: card.cardId || card.card_key, templateId: card.templateId || card.template_id, sceneKey: card.sceneKey || card.scene_id, pointId: card.pointId || card.point_id });
+  const normalized = normalizeSceneCard(card);
   if (!current.some(item => item.id === normalized.id)) write('scene_cards', current.concat(normalized));
   return normalized;
 }
@@ -67,24 +81,39 @@ function markShared(cardId) {
 }
 
 function collectionSummary(character) {
-  const cards = list().filter(card => card.character === character);
-  const scenes = sceneConfig.getScenesForCharacter(character).map(scene => {
-    const pool = sceneConfig.getCardPool(character, scene.key);
-    const owned = new Set(cards.filter(card => card.sceneKey === scene.key || card.scene_id === scene.key).map(card => card.cardId || card.templateId || card.template_id));
-    return { sceneKey: scene.key, label: scene.label, owned: pool.filter(item => owned.has(item.cardId)).length, total: pool.length, complete: pool.length > 0 && pool.every(item => owned.has(item.cardId)) };
+  const set = sceneConfig.getCardSetForCharacter(character);
+  if (!set) return { setCode: '', setName: '', slots: [], ownedUnique: 0, total: 0, duplicateCount: 0, complete: false, unlocked: false };
+  const definitions = new Set(set.cards.map(card => card.cardId));
+  const cards = list().filter(card => card.character === character && definitions.has(card.cardId || card.card_key || card.templateId || card.template_id));
+  const slots = set.cards.map(definition => {
+    const copies = cards
+      .filter(card => (card.cardId || card.card_key || card.templateId || card.template_id) === definition.cardId)
+      .map(normalizeSceneCard)
+      .map(card => Object.assign({}, card, { obtainedLabel: formatObtainedAt(card.obtainedAt), uniqueCode: card.uniqueCode || card.unique_code || '' }))
+      .sort((left, right) => timestamp(right.obtainedAt) - timestamp(left.obtainedAt));
+    const latestCopy = copies[0] || null;
+    return Object.assign({}, definition, {
+      owned: copies.length > 0,
+      quantity: copies.length,
+      copies,
+      latestCopy,
+      instanceId: latestCopy ? latestCopy.id : '',
+      saved: latestCopy ? Boolean(latestCopy.saved) : false,
+      uniqueCode: latestCopy ? (latestCopy.uniqueCode || latestCopy.unique_code || '') : '',
+      obtainedAt: latestCopy ? (latestCopy.obtainedAt || latestCopy.obtained_at || 0) : 0,
+      obtainedLabel: latestCopy ? latestCopy.obtainedLabel : ''
+    });
   });
-  const completed = scenes.filter(scene => scene.complete);
-  const tracked = read('completed_scene_sets', []);
-  const nextTracked = tracked.slice();
-  completed.forEach(scene => {
-    const setId = `${character}:${scene.sceneKey}`;
-    if (nextTracked.includes(setId)) return;
-    nextTracked.push(setId);
-    analytics.track('card_set_complete', { set_id: setId, set_type: 'single_scene' });
-    analytics.track('ecommerce_unlock', { set_id: setId, unlock_sku: 'scene-set-access' });
-  });
-  if (nextTracked.length !== tracked.length) write('completed_scene_sets', nextTracked);
-  return { scenes, completed, unlocked: completed.length > 0, completedCount: completed.length };
+  const ownedUnique = slots.filter(slot => slot.owned).length;
+  const duplicateCount = slots.reduce((total, slot) => total + Math.max(0, slot.quantity - 1), 0);
+  const complete = set.cards.length > 0 && ownedUnique === set.cards.length;
+  const tracked = read('completed_card_sets', []);
+  if (complete && !tracked.includes(set.setCode)) {
+    write('completed_card_sets', tracked.concat(set.setCode));
+    analytics.track('card_set_complete', { set_id: set.setCode, set_type: 'checklist' });
+    analytics.track('ecommerce_unlock', { set_id: set.setCode, unlock_sku: 'scene-set-access' });
+  }
+  return { setCode: set.setCode, setName: set.setName, slots, ownedUnique, total: set.cards.length, duplicateCount, complete, unlocked: complete };
 }
 
 function dailyState() {
@@ -96,6 +125,36 @@ function dailyState() {
 function deterministicRoll(seed) {
   const value = Array.from(seed).reduce((sum, char) => ((sum * 31) + char.charCodeAt(0)) % 10000, 17);
   return value / 10000;
+}
+
+function timestamp(value) {
+  if (!value) return 0;
+  if (typeof value === 'number') return value;
+  if (value instanceof Date) return value.getTime();
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function formatObtainedAt(value) {
+  const valueTimestamp = timestamp(value);
+  if (!valueTimestamp) return '';
+  const date = new Date(valueTimestamp);
+  const pad = number => String(number).padStart(2, '0');
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
+}
+
+function snapshotHash(value) {
+  const hash = Array.from(String(value)).reduce((total, char) => ((total * 31) + char.charCodeAt(0)) >>> 0, 2166136261);
+  return `demo-${hash.toString(16).padStart(8, '0')}`;
+}
+
+function nextLocalUniqueCode(character, obtainedAt) {
+  const date = time.beijingDateKey(obtainedAt).replace(/-/g, '');
+  const state = read('scene_card_issue_counter', { date, count: 0 });
+  const next = state.date === date ? Number(state.count || 0) + 1 : 1;
+  write('scene_card_issue_counter', { date, count: next });
+  const characterCode = character === '锦鲤' ? 'KOI' : 'YT';
+  return `EGG-${characterCode}-${date}-${String(next).padStart(6, '0')}`;
 }
 
 function localAttemptDrop(sceneKey, pointId, character) {
@@ -122,13 +181,27 @@ function localAttemptDrop(sceneKey, pointId, character) {
   if (!pool.length) return { ok: true, dropped: false };
   const template = pool[Math.floor(deterministicRoll(`${seed}-card`) * pool.length)];
   const obtainedAt = time.now();
+  const uniqueCode = nextLocalUniqueCode(character || '玉兔', obtainedAt);
+  const existingCopyCount = list().filter(item => (item.cardId || item.card_key) === template.cardId).length;
+  const copyId = `${template.cardId}-${obtainedAt}-${state.attempts}`;
+  const cardSnapshotHash = snapshotHash([copyId, uniqueCode, template.cardId, template.setCode, template.collectorNumber, template.treatment, template.heroAssetId, 1, 1].join('|'));
   const card = Object.assign({}, template, {
-    id: `${template.cardId}-${obtainedAt}`,
+    id: copyId,
+    copyId,
     sceneKey,
     character: character || '玉兔',
     pointId,
     obtainedAt,
     obtainedDate: time.beijingDateKey(obtainedAt),
+    issuedAt: obtainedAt,
+    issuedMode: mode,
+    heroAssetVersion: 1,
+    cardTemplateVersion: 1,
+    cardSnapshotHash,
+    provenanceEvents: [{ type: 'issued', mode, date: time.beijingDateKey(obtainedAt), sceneKey, pointId }],
+    uniqueCode,
+    copyCount: existingCopyCount + 1,
+    isNewDefinition: existingCopyCount === 0,
     mode,
     saved: false,
     shared: false
@@ -138,7 +211,7 @@ function localAttemptDrop(sceneKey, pointId, character) {
   if (!saved.ok) return saved;
   state.count += 1;
   write('scene_card_daily', state);
-  analytics.track('scene_card_drop', { card_id: card.id, scene_id: sceneKey, character: card.character, rarity: card.rarity, point_id: pointId });
+  analytics.track('scene_card_drop', { card_id: card.id, card_definition_id: card.cardId, set_code: card.setCode, scene_id: sceneKey, character: card.character, treatment: card.treatment, point_id: pointId });
   return { ok: true, dropped: true, card, dailyCount: state.count, dailyLimit: config.sceneCardDailyLimit };
 }
 
@@ -147,7 +220,7 @@ function attemptDrop(sceneKey, pointId, character) {
     return cloudApi.evaluateSceneCardDrop({ scene_id: sceneKey, point_id: pointId, character }).then(result => {
       if (result.ok && result.dropped) {
         result.card = cacheCloudCard(result.card);
-        analytics.track('scene_card_drop', { card_id: result.card.id, scene_id: sceneKey, character, rarity: result.card.rarity, point_id: pointId });
+        analytics.track('scene_card_drop', { card_id: result.card.id, card_definition_id: result.card.cardId, set_code: result.card.setCode || result.card.set_code, scene_id: sceneKey, character, treatment: result.card.treatment || 'BASE', point_id: pointId });
       }
       return result;
     });

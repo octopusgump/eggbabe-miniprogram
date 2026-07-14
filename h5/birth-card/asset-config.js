@@ -9,6 +9,16 @@
       KOI: { background: '', figure: '', accent: '#F6C989', heroStart: '#1E1220', heroEnd: '#6A2B35', fallbackMark: '鲤' }
     },
     cards: {
+      'YT__watercolor__hi': { figure: './assets/figures/YT__watercolor__hi__v01.jpg', fullHero: true },
+      'YT__watercolor__salute': { figure: './assets/figures/YT__watercolor__salute__v01.jpg', fullHero: true },
+      'YT__watercolor__dance': { figure: './assets/figures/YT__watercolor__dance__v01.jpg', fullHero: true },
+      'YT__watercolor__box': { figure: './assets/figures/YT__watercolor__box__v01.jpg', fullHero: true },
+      'YT__watercolor__cycle': { figure: './assets/figures/YT__watercolor__cycle__v01.jpg', fullHero: true },
+      'YT__watercolor__newspaper': { figure: './assets/figures/YT__watercolor__newspaper__v01.jpg', fullHero: true },
+      'YT__watercolor__meditate': { figure: './assets/figures/YT__watercolor__meditate__v01.jpg', fullHero: true },
+      'YT__watercolor__skateboard': { figure: './assets/figures/YT__watercolor__skateboard__v01.jpg', fullHero: true },
+      'YT__watercolor__chemistry': { figure: './assets/figures/YT__watercolor__chemistry__v01.jpg', fullHero: true },
+      'YT__watercolor__bath': { figure: './assets/figures/YT__watercolor__bath__v01.jpg', fullHero: true }
       /* 新款式只需增加配置，例如：
       'KOI__好运红白款': {
         background: './assets/posters/KOI__好运红白款.jpg',
@@ -28,7 +38,7 @@
     const batch = card.limitedBatch || card.limited_batch || '';
     const limitedKey = batch ? `${styleKey}__${batch}` : '';
     const limitedAssets = limitedKey && source.cards ? source.cards[limitedKey] || {} : {};
-    return Object.assign({}, defaults, styleAssets, {
+    return Object.assign({}, defaults, styleAssets, figureAssets, {
       figure: figureAssets.figure || styleAssets.figure || defaults.figure || ''
     }, limitedAssets);
   }

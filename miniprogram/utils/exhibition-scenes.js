@@ -18,16 +18,34 @@ const HOTSPOTS = {
 
 const CHARACTER_SCENE_GROUPS = { 玉兔: SCENES.map(scene => scene.key) };
 
-const CARD_POOLS = {
-  玉兔: {
-    grass: [{ cardId: 'rabbit-grass-sun', name: '草叶上的午后', rarity: '普通', tint: '#DDE9B9', mark: '草' }, { cardId: 'rabbit-grass-butterfly', name: '蝴蝶来信', rarity: '普通', tint: '#F1EC9A', mark: '蝶' }],
-    snow: [{ cardId: 'rabbit-snow-footprint', name: '雪地小脚印', rarity: '普通', tint: '#DCEBF0', mark: '雪' }, { cardId: 'rabbit-snow-breath', name: '冬日白气', rarity: '普通', tint: '#E8EEF7', mark: '冬' }],
-    room: [{ cardId: 'rabbit-room-window', name: '窗边慢时光', rarity: '普通', tint: '#F3DFCC', mark: '窗' }, { cardId: 'rabbit-room-blanket', name: '被窝里的秘密', rarity: '普通', tint: '#FFC5BA', mark: '暖' }],
-    seaside: [{ cardId: 'rabbit-sea-wave', name: '海浪来过', rarity: '普通', tint: '#CDE8EA', mark: '浪' }, { cardId: 'rabbit-sea-shell', name: '发光的贝壳', rarity: '普通', tint: '#F4D9C9', mark: '贝' }],
-    desk: [{ cardId: 'rabbit-desk-note', name: '写给今天', rarity: '普通', tint: '#F1EC9A', mark: '笺' }, { cardId: 'rabbit-desk-tea', name: '一杯热气', rarity: '普通', tint: '#E8D7C8', mark: '茶' }],
-    roof: [{ cardId: 'rabbit-roof-cloud', name: '路过的云', rarity: '普通', tint: '#DDE7F0', mark: '云' }, { cardId: 'rabbit-roof-plane', name: '纸飞机远行', rarity: '普通', tint: '#FFC5BA', mark: '飞' }]
+const CARD_SETS = {
+  'YT-S01': {
+    setCode: 'YT-S01',
+    setName: '玉兔初见·水彩日常',
+    character: '玉兔',
+    status: 'frozen-mvp',
+    treatment: 'BASE',
+    cards: [
+      { cardId: 'yt-s01-001', cardDefinitionId: 'yt-s01-001', collectorNumber: 1, collectorLabel: '001/010', name: '花间初见', heroAssetId: 'YT__watercolor__hi', image: '/assets/cards/YT-S01/yt-s01-001.webp', mark: '花', sceneKeys: ['grass'] },
+      { cardId: 'yt-s01-002', cardDefinitionId: 'yt-s01-002', collectorNumber: 2, collectorLabel: '002/010', name: '竹林问候', heroAssetId: 'YT__watercolor__salute', image: '/assets/cards/YT-S01/yt-s01-002.webp', mark: '竹', sceneKeys: ['grass', 'roof'] },
+      { cardId: 'yt-s01-003', cardDefinitionId: 'yt-s01-003', collectorNumber: 3, collectorLabel: '003/010', name: '轻盈起舞', heroAssetId: 'YT__watercolor__dance', image: '/assets/cards/YT-S01/yt-s01-003.webp', mark: '舞', sceneKeys: ['grass'] },
+      { cardId: 'yt-s01-004', cardDefinitionId: 'yt-s01-004', collectorNumber: 4, collectorLabel: '004/010', name: '纸箱躲猫猫', heroAssetId: 'YT__watercolor__box', image: '/assets/cards/YT-S01/yt-s01-004.webp', mark: '箱', sceneKeys: ['room'] },
+      { cardId: 'yt-s01-005', cardDefinitionId: 'yt-s01-005', collectorNumber: 5, collectorLabel: '005/010', name: '古镇骑行', heroAssetId: 'YT__watercolor__cycle', image: '/assets/cards/YT-S01/yt-s01-005.webp', mark: '骑', sceneKeys: ['seaside', 'roof'] },
+      { cardId: 'yt-s01-006', cardDefinitionId: 'yt-s01-006', collectorNumber: 6, collectorLabel: '006/010', name: '晨间读报', heroAssetId: 'YT__watercolor__newspaper', image: '/assets/cards/YT-S01/yt-s01-006.webp', mark: '报', sceneKeys: ['room', 'desk'] },
+      { cardId: 'yt-s01-007', cardDefinitionId: 'yt-s01-007', collectorNumber: 7, collectorLabel: '007/010', name: '月下冥想', heroAssetId: 'YT__watercolor__meditate', image: '/assets/cards/YT-S01/yt-s01-007.webp', mark: '月', sceneKeys: ['snow', 'roof'] },
+      { cardId: 'yt-s01-008', cardDefinitionId: 'yt-s01-008', collectorNumber: 8, collectorLabel: '008/010', name: '初次滑板', heroAssetId: 'YT__watercolor__skateboard', image: '/assets/cards/YT-S01/yt-s01-008.webp', mark: '滑', sceneKeys: ['seaside', 'roof'] },
+      { cardId: 'yt-s01-009', cardDefinitionId: 'yt-s01-009', collectorNumber: 9, collectorLabel: '009/010', name: '月宫实验', heroAssetId: 'YT__watercolor__chemistry', image: '/assets/cards/YT-S01/yt-s01-009.webp', mark: '试', sceneKeys: ['desk'] },
+      { cardId: 'yt-s01-010', cardDefinitionId: 'yt-s01-010', collectorNumber: 10, collectorLabel: '010/010', name: '月夜泡泡浴', heroAssetId: 'YT__watercolor__bath', image: '/assets/cards/YT-S01/yt-s01-010.webp', mark: '浴', sceneKeys: ['room', 'snow'] }
+    ]
   }
 };
+
+Object.keys(CARD_SETS).forEach(setCode => {
+  const set = CARD_SETS[setCode];
+  set.cards = set.cards.map(card => Object.assign({ setCode, setName: set.setName, treatment: set.treatment, tint: '#F6F2E8', checklistNumber: card.collectorNumber, checklistTotal: set.cards.length }, card));
+});
+
+const CHARACTER_CARD_SETS = { 玉兔: 'YT-S01' };
 
 function getScene(key) {
   return SCENES.find(scene => scene.key === key) || SCENES[0];
@@ -39,8 +57,17 @@ function getScenesForCharacter(character) {
 }
 
 function getCardPool(character, sceneKey) {
-  const characterPools = CARD_POOLS[character] || CARD_POOLS.玉兔;
-  return characterPools[sceneKey] || [];
+  const setCode = CHARACTER_CARD_SETS[character] || CHARACTER_CARD_SETS.玉兔;
+  const set = CARD_SETS[setCode];
+  return set ? set.cards.filter(card => card.sceneKeys.includes(sceneKey)) : [];
 }
 
-module.exports = { SCENES, HOTSPOTS, CHARACTER_SCENE_GROUPS, CARD_POOLS, getScene, getScenesForCharacter, getCardPool };
+function getCardSet(setCode) {
+  return CARD_SETS[setCode] || null;
+}
+
+function getCardSetForCharacter(character) {
+  return getCardSet(CHARACTER_CARD_SETS[character] || CHARACTER_CARD_SETS.玉兔);
+}
+
+module.exports = { SCENES, HOTSPOTS, CHARACTER_SCENE_GROUPS, CHARACTER_CARD_SETS, CARD_SETS, getScene, getScenesForCharacter, getCardPool, getCardSet, getCardSetForCharacter };

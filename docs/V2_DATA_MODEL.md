@@ -10,9 +10,10 @@
 | `pets` | `user_id`、`mode`、`prototype`、`stage`、`progress`、`hatch_at` | `user_id + mode=live` 最多一只 |
 | `activation_codes` | `code_hash`、`type`、`usage_limit`、`used_count`、`prototype`、`status` | 只保存 SHA-256，不保存明文；`code_hash` 唯一 |
 | `hatch_cards` | `pet_id`、`serial`、`style`、`mbti`、`rarity`、`batch` | `pet_id`、`serial` 唯一；生成幂等 |
-| `scene_card_pools` | `card_key`、`character`、`scene_id`、`name`、`rarity`、`limited_batch`、`active` | `card_key` 与客户端卡池配置一致且唯一 |
-| `scene_cards` | `user_id`、`pet_id`、`mode`、`template_id`、`scene_id`、`point_id` | 仅服务器写入 |
+| `scene_card_pools` | 后续套装运营卡池 | `YT-S01` 不从该集合读取定义；冻结清单以随代码发布的版本为准 |
+| `scene_cards` | `copy_id`、`owner_id`、`user_id`、`pet_id`、`mode`、`card_definition_id`、`set_code`、`collector_number`、`checklist_number`、`checklist_total`、`unique_code`、`treatment`、`hero_asset_version`、`card_template_version`、`card_snapshot_hash`、`provenance_events`、`issued_at` | 仅服务器写入；`copy_id`、`unique_code` 全局唯一且不可复用 |
 | `scene_card_daily` | `user_id`、`date`、`count`、`attempts` | `user_id + date` 唯一；每日上限 2 |
+| `scene_card_issue_counters` | `character`、`date`、`count` | `character + date` 唯一；在掉落事务内生成副本流水号 |
 | `daily_status` | `pet_id`、`date`、`mood`、`text`、`source` | `pet_id + date` 唯一 |
 | `messages` | `pet_id`、`session_id`、`role`、`text`、`created_at` | 服务端审查及存储 |
 | `analytics_events` | 通用事件属性 + 事件专属属性 | 指标查询必须过滤 `mode=live` |
@@ -26,3 +27,5 @@
 - 激活码核销和场景卡掉落放在事务内，重复请求保持幂等。
 - 头像选择后上传云存储，只将永久 `fileID` 落库。
 - `demo` 数据不消耗激活码、不写用户偏好、不进入正式指标。
+- `YT-S01` checklist 发布后冻结；清单编号不是稀有度或限量序列号。
+- 数据库运营配置不得覆盖 `YT-S01` 的卡牌名称、编号、Hero 或 `BASE` treatment。

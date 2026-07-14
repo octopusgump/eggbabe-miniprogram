@@ -1,35 +1,32 @@
-# 场景卡资源投放规范
+# 收藏套卡资源投放规范
 
-正式卡面统一放在：
+## 当前第一季
 
-`miniprogram/assets/cards/<character>/<scene>/<card-id>.<ext>`
+- 套装：`YT-S01`（玉兔初见·水彩日常）
+- 清单：固定 10 张，全部 `BASE`
+- 卡牌定义：`miniprogram/utils/exhibition-scenes.js`
+- H5 原始 Hero：`h5/birth-card/assets/figures/`
+- H5 套装清单：`h5/birth-card/assets/sets/YT-S01.json`
+- 小程序轻量预览：`miniprogram/assets/cards/YT-S01/`
 
-当前玉兔建议使用以下目录：
+H5 原图采用统一素材名，例如：
 
-- `miniprogram/assets/cards/jade-rabbit/grass/`
-- `miniprogram/assets/cards/jade-rabbit/snow/`
-- `miniprogram/assets/cards/jade-rabbit/room/`
-- `miniprogram/assets/cards/jade-rabbit/seaside/`
-- `miniprogram/assets/cards/jade-rabbit/desk/`
-- `miniprogram/assets/cards/jade-rabbit/roof/`
+`YT__watercolor__hi__v01.jpg`
 
-文件名必须与 `miniprogram/utils/exhibition-scenes.js` 中的 `cardId` 保持一致，例如：
+小程序预览图采用卡牌定义 ID，例如：
 
-`miniprogram/assets/cards/jade-rabbit/grass/rabbit-grass-sun.png`
+`yt-s01-001.webp`
 
-对应卡池配置：
+两者通过 `heroAssetId` 关联，不依赖文件名猜测。小程序预览图只用于抽卡揭晓和卡册缩略展示；分享长图与 H5 卡面继续使用 H5 原图，避免为主包重复打包大图。
 
-```js
-{
-  cardId: 'rabbit-grass-sun',
-  name: '草叶上的午后',
-  rarity: '普通',
-  image: '/assets/cards/jade-rabbit/grass/rabbit-grass-sun.png',
-  tint: '#DDE9B9',
-  mark: '草'
-}
-```
+## 当前交付规则
 
-卡面优先使用 PNG；如需控制包体积也可使用 JPG，但必须在卡池的 `image` 字段中写入真实扩展名。推荐尺寸 `1200 × 1600 px`，同一系列保持相同比例。卡片中不要烘焙按钮、状态栏或小程序界面元素。
+1. 不拆角色、道具和背景，不建立独立道具层。
+2. 原图保持约 `850×1070`，不插值放大。
+3. 小程序预览统一导出为约 360px 宽 WebP，控制主包体积。
+4. 不在 Hero 中烘焙按钮、状态栏、FUN FACT、STRENGTH 或动态用户信息。
+5. 卡框、套装代码、清单号、名字、生日、星座、MBTI 和唯一副本编号由界面层生成。
 
-后续新增角色时建立独立角色目录，例如锦鲤使用 `miniprogram/assets/cards/boon-koi/`，不要把不同角色的卡面混放在同一目录。
+## 下一版本
+
+下一版 Hero 可从高分辨率源统一导出 `1600×2000`、sRGB、4:5；不要把当前低分辨率文件直接放大。新增套装必须建立新的套装代码和冻结 checklist，不得修改 `YT-S01` 已发布清单。

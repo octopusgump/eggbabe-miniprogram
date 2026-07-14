@@ -29,7 +29,7 @@
             <div class="hero-depth"></div>
             <header class="brand-lockup">
               <strong>eggbabe</strong>
-              <span>BIRTH CARD</span>
+              <span id="card-kind">BIRTH CARD</span>
             </header>
             <span id="collect-badge" class="collect-badge">普通</span>
             <div id="fallback-mark" class="fallback-mark" aria-hidden="true">兔</div>
@@ -39,19 +39,17 @@
           <div class="card-data">
             <div class="identity-row">
               <div>
-                <h1><span data-field="name">—</span> <span data-field="genderSymbol"></span></h1>
-                <p><span data-field="prototypeLabel">—</span> · <span data-field="style">—</span> · <span data-field="gender">—</span></p>
+                <h1 data-field="name">—</h1>
+                <p id="card-subtitle">—</p>
               </div>
             </div>
-            <p class="signature">“<span data-field="signature">—</span>”</p>
             <dl class="stat-grid">
               <div><dt>生日</dt><dd data-field="birthday">—</dd></div>
               <div><dt>星座</dt><dd data-field="constellation">—</dd></div>
               <div><dt>MBTI</dt><dd data-field="mbti">—</dd></div>
-              <div><dt>血型</dt><dd data-field="bloodType">—</dd></div>
             </dl>
             <div class="card-footer">
-              <div class="meta-line"><span data-field="incubationLevel">—</span><span>初始主人 · <b data-field="initialOwner">—</b></span></div>
+              <div id="card-set-line" class="meta-line">唯一身份收藏卡</div>
               <code data-field="code">—</code>
             </div>
           </div>

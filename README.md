@@ -1,6 +1,8 @@
-# 蛋宝宝小程序 V2 Preview · GPT
+# eggbabe 蛋宝宝小程序 V2 Preview
 
 这是基于现有 MVP 增量升级的微信小程序 V2.11 Preview，可直接将本文件夹导入微信开发者工具。最新规格见 `docs/蛋宝宝小程序_V2_PRD.md`，数据结构与云端接入见 `docs/V2_DATA_MODEL.md`、`docs/V2_CLOUD_SCHEMA.json` 和 `docs/V2_IMPLEMENTATION.md`。
+
+公开仓库：<https://github.com/octopusgump/eggbabe-miniprogram>
 
 ## 已完成的核心闭环
 
@@ -12,11 +14,12 @@
 
 ```text
 project.config.json          微信开发者工具项目配置
-project.private.config.json  本机私有配置
 miniprogram/                 小程序源码
 docs/                        PRD 与实现说明
 scripts/                     项目完整性校验
 ```
+
+`project.private.config.json` 属于微信开发者工具的本机配置，已加入 `.gitignore`，不会提交到公开仓库。
 
 ## 本地预览
 

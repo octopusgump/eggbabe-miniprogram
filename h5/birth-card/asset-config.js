@@ -18,7 +18,17 @@
       'YT__watercolor__meditate': { figure: './assets/figures/YT__watercolor__meditate__v01.jpg', fullHero: true },
       'YT__watercolor__skateboard': { figure: './assets/figures/YT__watercolor__skateboard__v01.jpg', fullHero: true },
       'YT__watercolor__chemistry': { figure: './assets/figures/YT__watercolor__chemistry__v01.jpg', fullHero: true },
-      'YT__watercolor__bath': { figure: './assets/figures/YT__watercolor__bath__v01.jpg', fullHero: true }
+      'YT__watercolor__bath': { figure: './assets/figures/YT__watercolor__bath__v01.jpg', fullHero: true },
+      'KOI__watercolor__bath-tub': { figure: './assets/figures/KOI__watercolor__bath-tub__v01.png', fullHero: true },
+      'KOI__watercolor__beach-chair': { figure: './assets/figures/KOI__watercolor__beach-chair__v01.png', fullHero: true },
+      'KOI__watercolor__diving-goggles': { figure: './assets/figures/KOI__watercolor__diving-goggles__v01.png', fullHero: true },
+      'KOI__watercolor__flag': { figure: './assets/figures/KOI__watercolor__flag__v01.png', fullHero: true },
+      'KOI__watercolor__holding-fish': { figure: './assets/figures/KOI__watercolor__holding-fish__v01.png', fullHero: true },
+      'KOI__watercolor__running': { figure: './assets/figures/KOI__watercolor__running__v01.png', fullHero: true },
+      'KOI__watercolor__scooter': { figure: './assets/figures/KOI__watercolor__scooter__v01.png', fullHero: true },
+      'KOI__watercolor__standing': { figure: './assets/figures/KOI__watercolor__standing__v01.png', fullHero: true },
+      'KOI__watercolor__umbrella-walk': { figure: './assets/figures/KOI__watercolor__umbrella-walk__v01.png', fullHero: true },
+      'KOI__watercolor__watering-plant': { figure: './assets/figures/KOI__watercolor__watering-plant__v01.png', fullHero: true }
       /* 新款式只需增加配置，例如：
       'KOI__好运红白款': {
         background: './assets/posters/KOI__好运红白款.jpg',

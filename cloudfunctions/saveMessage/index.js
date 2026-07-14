@@ -16,6 +16,6 @@ exports.main = async event => {
   if (!pet) return { ok: false, code: 'PET_NOT_HATCHED', message: '破壳后才可以对话' };
   const duplicate = await db.collection('messages').where({ pet_id: pet._id, client_id: String(message.id || '') }).limit(1).get();
   if (duplicate.data.length) return { ok: true, duplicated: true };
-  await db.collection('messages').add({ data: { pet_id: pet._id, user_id: user._id, mode: 'live', client_id: String(message.id || ''), role, text, created_at: db.serverDate() } });
+  await db.collection('messages').add({ data: { pet_id: pet._id, user_id: user._id, mode: 'live', session_id: String(message.sessionId || ''), client_id: String(message.id || ''), role, text, created_at: db.serverDate() } });
   return { ok: true };
 };

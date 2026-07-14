@@ -339,6 +339,7 @@
   .butterfly-effect,
   .scene-effect { display: none; }
 }
+.placed-decoration { position: absolute; z-index: 6; right: 14%; bottom: 17%; width: 86rpx; height: 86rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx; background: rgba(255,253,247,.88); color: #536448; font-size: 42rpx; box-shadow: 0 10rpx 28rpx rgba(30,50,35,.16); }
 
 .drop-mask { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; padding: 32rpx 28rpx calc(32rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: rgba(20,28,23,.42); backdrop-filter: blur(10rpx); animation: drop-mask-in .3s ease-out both; }
 .drop-panel { width: 100%; min-height: 820rpx; padding: 42rpx 36rpx 24rpx; box-sizing: border-box; border-radius: 40rpx; overflow: hidden; background: linear-gradient(180deg,#FFFEF8 0%,#FFF 64%); text-align: center; box-shadow: 0 28rpx 80rpx rgba(13,31,20,.2); animation: drop-panel-in .52s cubic-bezier(.22,.61,.36,1) both; }

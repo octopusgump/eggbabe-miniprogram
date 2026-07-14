@@ -34,7 +34,7 @@ Page({
     const pages = getCurrentPages();
     const previous = pages.length > 1 ? pages[pages.length - 2] : null;
     if (previous && previous.route === 'pages/album/album') return wx.navigateBack();
-    return wx.redirectTo({ url: '/pages/album/album?tab=scene' });
+    return wx.redirectTo({ url: '/pages/album/album' });
   },
 
   onShareAppMessage() {

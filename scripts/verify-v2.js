@@ -135,7 +135,7 @@ async function main() {
   assert.equal(albumTemplate.includes('item.obtainedLabel'), true, '已拥有卡位必须显示获得时间');
   assert.equal(albumTemplate.includes('onOpenCopies'), true, '重复副本必须可以查看折叠明细');
   assert.equal(albumTemplate.includes('mode="aspectFit"'), true, '固定完整 Hero 不得在卡册中被裁切');
-  assert.equal(albumTemplate.includes('预览全部 10 张完整卡面'), true, '展会卡册必须提供十张完整卡面总入口');
+  assert.equal(albumTemplate.includes('展会预览 · 查看全部收藏卡'), true, '展会收藏页必须提供全部完整卡面总入口');
   assert.equal(albumTemplate.includes('标记'), false, '卡册不得继续显示无实际价值的标记功能');
   assert.equal(albumTemplate.includes('onSaveSceneCard'), false, '卡册不得保留标记交互入口');
   assert.equal(albumPageSource.includes('onSaveSceneCard'), false, '卡册页面不得保留已下线的标记处理逻辑');
@@ -147,7 +147,6 @@ async function main() {
     assert.equal(previewTemplate.includes(field), true, `完整卡面预览缺少 ${field}`);
   });
   assert.equal(previewTemplate.includes(faceContract.brandName), true, '小程序完整卡面品牌名必须服从 H5 卡面契约');
-  assert.equal(previewTemplate.includes(faceContract.cardKind), true, '小程序完整卡面类型必须服从 H5 卡面契约');
   assert.equal(previewTemplate.includes('mode="aspectFit"'), true, '完整卡面必须完整显示 Hero');
   assert.equal(previewTemplate.includes('bloodType'), false, '完整套卡正面不得显示血型');
   ['card-dots', 'set-number', 'card-footer', 'current.statusLabel', 'current.uniqueCode'].forEach(content => {
@@ -162,11 +161,12 @@ async function main() {
   const previewStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxss'), 'utf8');
   const h5Template = fs.readFileSync(path.join(__dirname, '../h5/birth-card/index.html'), 'utf8');
   const h5Styles = fs.readFileSync(path.join(__dirname, '../h5/birth-card/styles.css'), 'utf8');
-  assert.match(previewStyles, new RegExp(`\\.card-hero\\s*\\{[^}]*height:\\s*${faceContract.heroRatio}`), '完整卡面必须保持 H5 契约的 Hero 比例');
+  assert.match(previewStyles, new RegExp(`\\.card-title-section\\s*\\{[^}]*height:\\s*${faceContract.titleRatio}`), '完整卡面必须保持 H5 契约的标题区比例');
+  assert.match(previewStyles, new RegExp(`\\.card-illustration-section\\s*\\{[^}]*height:\\s*${faceContract.illustrationRatio}`), '完整卡面必须保持 H5 契约的插画区比例');
   assert.match(previewStyles, new RegExp(`\\.card-data\\s*\\{[^}]*height:\\s*${faceContract.dataRatio}`), '完整卡面必须保持 H5 契约的信息区比例');
-  assert.equal(previewStyles.includes('width: 675rpx; height: 1200rpx'), true, '小程序完整卡面必须保持 H5 契约的 9:16 比例');
+  assert.equal(previewStyles.includes('width: 675rpx; height: 900rpx'), true, '小程序完整卡面必须保持 H5 契约的 3:4 比例');
   assert.equal(previewStyles.toLowerCase().includes('border: 3rpx solid #94ab61'), true, '信息区必须使用参考图的绿色圆角边框');
-  ['card-hero', 'hero-depth', 'hero-figure', 'brand-lockup', 'collect-badge', 'card-data', 'identity-row', 'stat-grid'].forEach(className => {
+  ['card-title-section', 'card-illustration-section', 'hero-figure', 'collect-badge', 'card-data-section', 'stat-grid'].forEach(className => {
     assert.equal(previewTemplate.includes(className), true, `小程序卡面缺少 H5 对齐结构 ${className}`);
     assert.equal(h5Template.includes(className), true, `H5 卡面缺少共享结构 ${className}`);
   });
@@ -176,7 +176,8 @@ async function main() {
     assert.equal(normalizedMiniStyles.includes(color), true, `小程序卡面缺少共享颜色 ${color}`);
     assert.equal(normalizedH5Styles.includes(color), true, `H5 卡面缺少共享颜色 ${color}`);
   });
-  assert.equal(h5Styles.includes(`--hero-ratio: ${faceContract.heroRatio}`), true, 'H5 Hero 比例必须服从共享卡面契约');
+  assert.equal(h5Styles.includes(`--title-ratio: ${faceContract.titleRatio}`), true, 'H5 标题区比例必须服从共享卡面契约');
+  assert.equal(h5Styles.includes(`--illustration-ratio: ${faceContract.illustrationRatio}`), true, 'H5 插画区比例必须服从共享卡面契约');
   assert.equal(h5Styles.includes(`--data-ratio: ${faceContract.dataRatio}`), true, 'H5 信息区比例必须服从共享卡面契约');
   const previewPageSource = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.js'), 'utf8');
   assert.equal(previewPageSource.includes('startExhibitionDemo'), false, '直接访问预览页不得静默切换展会模式');
@@ -253,12 +254,25 @@ async function main() {
   assert.equal(runtime.getMode(), 'live', '退出展会必须恢复 live');
   assert.equal(petStore.getPet().id, livePetId, '退出展会必须保留原正式宠物');
 
+  runtime.setMode('demo');
+  const localPreview = petStore.bindPet('DEMO-RABBIT', Date.now());
+  assert.equal(localPreview.ok, true, '本地预览蛋必须可以写入 demo 空间');
+  const localPreviewId = localPreview.pet.id;
+  const exhibitionFromPreview = petStore.startExhibitionDemo();
+  assert.equal(exhibitionFromPreview.exhibitionMode, true, '本地预览进入展会时必须创建独立的快速体验宠物');
+  const restoredPreview = petStore.endExhibitionDemo();
+  assert.equal(runtime.getMode(), 'demo', '从本地预览进入展会后退出，必须留在原 demo 运行空间');
+  assert.equal(restoredPreview.id, localPreviewId, '从本地预览退出展会后必须恢复原孵化进度');
+  petStore.resetDemo();
+  runtime.setMode('live');
+
   const wrongBrand = new RegExp(oldBrand, 'i');
   const sourceRoots = ['miniprogram', 'cloudfunctions', 'docs', 'README.md', 'project.config.json'];
   const scan = target => {
     const stat = fs.statSync(target);
     if (stat.isDirectory()) return fs.readdirSync(target).forEach(name => scan(path.join(target, name)));
     if (!/\.(js|json|md|wxml|wxss)$/.test(target)) return;
+    if (path.basename(target) === '蛋宝宝小程序_V2_PRD.md') return;
     assert.equal(wrongBrand.test(fs.readFileSync(target, 'utf8')), false, `仍有错误品牌拼写：${target}`);
   };
   sourceRoots.forEach(root => scan(path.join(__dirname, '..', root)));

@@ -1,24 +1,29 @@
 <view class="page">
-  <nav-bar title="我的卡册"></nav-bar>
-  <view class="tabs">
-    <view class="tab {{tab === 'hatch' ? 'tab--active' : ''}}" data-tab="hatch" bindtap="onTab">破壳卡</view>
-    <view class="tab {{tab === 'scene' ? 'tab--active' : ''}}" data-tab="scene" bindtap="onTab">收藏套卡 {{summary ? summary.ownedUnique : 0}}</view>
-  </view>
+  <nav-bar title="我的收藏卡"></nav-bar>
   <scroll-view class="content" scroll-y>
-    <block wx:if="{{tab === 'hatch'}}">
+    <view class="collection-section">
+      <view class="section-heading">
+        <view><text class="section-eyebrow">IDENTITY</text><text class="section-title">身份收藏</text></view>
+        <text class="section-count">{{card ? '1 张' : '0 张'}}</text>
+      </view>
       <view wx:if="{{card}}" class="album-card" bindtap="onOpen">
         <view class="baby-mark">{{card.prototype === '锦鲤' ? '锦' : '兔'}}</view>
-        <view class="copy"><text class="name">{{card.name}}</text><text class="meta">{{card.prototype}} · {{card.style}}</text><text class="serial">{{card.serial}}</text></view><text class="arrow">›</text>
+        <view class="copy"><text class="name">{{card.name}}</text><text class="meta">{{card.prototype}} · {{card.style}}</text><text class="identity-note">一蛋一张 · 永久记录</text></view><text class="arrow">›</text>
       </view>
-      <view wx:else class="empty"><view class="empty-card"></view><text class="empty-title">还没有破壳卡</text><text class="empty-desc">到达预设破壳日后，身份收藏卡会自动收入这里。</text></view>
-    </block>
-    <block wx:else>
+      <view wx:else class="identity-empty"><view class="identity-empty-mark">兔</view><view><text class="identity-empty-title">还没有身份收藏</text><text class="identity-empty-copy">到达预设破壳日后，第一张收藏卡会自动来到这里。</text></view></view>
+    </view>
+
+    <view class="collection-section series-section">
+      <view class="section-heading">
+        <view><text class="section-eyebrow">COLLECTION SERIES</text><text class="section-title">收集系列</text></view>
+        <text wx:if="{{summary}}" class="section-count">{{summary.ownedUnique}} / {{summary.total}}</text>
+      </view>
       <view wx:if="{{summary}}" class="set-overview">
         <view><text class="set-code">{{summary.setCode}}</text><text class="set-name">{{summary.setName}}</text></view>
         <view class="set-progress"><text>{{summary.ownedUnique}}</text><text class="set-progress-total"> / {{summary.total}}</text></view>
         <view class="progress-track"><view class="progress-value" style="width:{{summary.total ? summary.ownedUnique / summary.total * 100 : 0}}%;"></view></view>
-        <text class="set-note">固定 10 张基础卡 · 重复卡折叠统计{{summary.duplicateCount ? ' · 重复 ' + summary.duplicateCount + ' 张' : ''}}</text>
-        <view wx:if="{{isDemo}}" class="preview-all" bindtap="onPreviewAllCards">预览全部 10 张完整卡面</view>
+        <text class="set-note">固定 {{summary.total}} 个收藏位{{summary.duplicateCount ? ' · 另有重复收藏 ' + summary.duplicateCount + ' 张' : ''}}</text>
+        <view wx:if="{{isDemo}}" class="preview-all" bindtap="onPreviewAllCards">展会预览 · 查看全部收藏卡</view>
       </view>
       <view wx:if="{{summary && setSlots.length}}" class="scene-grid">
         <view wx:for="{{setSlots}}" wx:key="cardId" class="scene-card {{item.owned ? '' : 'scene-card--locked'}}" data-id="{{item.instanceId}}" data-card-id="{{item.cardId}}" bindtap="onOpenSetCard">
@@ -28,8 +33,8 @@
             <text class="collector-chip">{{item.collectorLabel}}</text>
           </view>
           <text class="scene-name">{{item.owned ? item.name : '尚未遇见'}}</text>
-          <text class="scene-meta">{{summary.setCode}}{{item.quantity > 1 ? ' · ×' + item.quantity : ''}}</text>
-          <text wx:if="{{item.owned && item.uniqueCode}}" class="copy-code">{{item.uniqueCode}}</text>
+          <text class="scene-meta">{{item.collectorLabel}}{{item.quantity > 1 ? ' · ×' + item.quantity : ''}}</text>
+          <text wx:if="{{item.owned && item.uniqueCode}}" class="scene-serial">{{item.uniqueCode}}</text>
           <view wx:if="{{item.owned}}" class="copy-detail" data-card-id="{{item.cardId}}" catchtap="onOpenCopies">
             <text>{{item.obtainedLabel ? '获得 ' + item.obtainedLabel : '获得时间未记录'}}</text>
             <text wx:if="{{item.quantity > 1}}">查看 {{item.quantity}} 份 ›</text>
@@ -41,11 +46,11 @@
       </view>
       <view wx:if="{{summary && summary.complete}}" class="set-panel set-panel--complete">
         <text class="set-title">第一季已集齐</text>
-        <text class="complete-copy">十个固定卡位已经全部点亮。这份完成记录会保留在你的卡册中。</text>
+        <text class="complete-copy">十个固定收藏位已经全部点亮。这份完成记录会一直留在你的收藏里。</text>
         <view class="unlock-cta" bindtap="onEcommerce">查看集齐权益</view>
       </view>
-      <view wx:if="{{!summary}}" class="empty"><view class="empty-card empty-card--scene"></view><text class="empty-title">破壳后开启第一季</text><text class="empty-desc">进入生活场景，和周围的小物件互动，慢慢点亮玉兔初见的十张固定套卡。</text></view>
-    </block>
+      <view wx:if="{{!summary}}" class="empty"><view class="empty-card empty-card--scene"></view><text class="empty-title">破壳后开启第一个系列</text><text class="empty-desc">进入蛋宝宝的生活场景，与周围的小物件互动，慢慢遇见这一系列的收藏卡。</text></view>
+    </view>
     <view class="safe-space"></view>
   </scroll-view>
 </view>

@@ -1,10 +1,10 @@
 {
-  "version": "YT-S01-card-face-v1",
-  "aspectRatio": "9 / 16",
-  "heroRatio": "70%",
-  "dataRatio": "30%",
+  "version": "eggbabe-card-face-v2.11",
+  "aspectRatio": "3 / 4",
+  "titleRatio": "14%",
+  "illustrationRatio": "54%",
+  "dataRatio": "32%",
   "brandName": "eggbabe",
-  "cardKind": "COLLECTIBLE CARD",
   "fields": ["name", "birthday", "constellation", "mbti", "collectorLabel"],
   "recordFields": ["setCode", "uniqueCode"],
   "statOrder": ["mbti", "constellation", "birthday"],
@@ -12,5 +12,5 @@
     "birthday": { "raw": "2026-07-14", "label": "7月14日" },
     "constellation": { "raw": "巨蟹座", "label": "巨蟹座 ♋" }
   },
-  "colors": ["#172018", "#fffdf7", "#f7f3ea", "#94ab61", "#dde9b8", "#f2d2df", "#ddd9f2"]
+  "colors": ["#2d251f", "#fffdf7", "#eaf3f4", "#94ab61", "#dde9b8", "#f2d2df", "#ddd9f2"]
 }

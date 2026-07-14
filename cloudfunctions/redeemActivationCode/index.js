@@ -15,7 +15,7 @@ exports.main = async event => {
     if (!user) return { ok: false, code: 'LOGIN_REQUIRED', message: '请重新登录后再试' };
     const bound = await transaction.collection('pets').where({ user_id: user._id, mode: 'live' }).limit(1).get();
     if (bound.data.length) return { ok: false, code: 'BOUND', message: '当前版本一个账号只能绑定 1 只蛋宝宝，本次激活码未被消耗' };
-    const codeResult = await transaction.collection('activation_codes').where({ code_hash: codeHash(normalized) }).limit(1).get();
+    const codeResult = await transaction.collection('activation_codes').where({ code_hash: codeHash(normalized), mode: 'live' }).limit(1).get();
     const record = codeResult.data[0];
     if (!record) return { ok: false, code: 'INVALID', message: '激活码无效，请检查后重试' };
     if (record.status === 'paused') return { ok: false, code: 'PAUSED', message: '该激活码暂不可用' };

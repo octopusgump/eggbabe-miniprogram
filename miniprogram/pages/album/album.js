@@ -5,8 +5,7 @@ const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
 const runtime = require('../../services/runtime-context');
 Page({
-  data: { card: null, sceneCards: [], setSlots: [], tab: 'hatch', summary: null, shareCard: null, isDemo: false },
-  onLoad(query) { this.setData({ tab: query.tab === 'scene' ? 'scene' : 'hatch' }); },
+  data: { card: null, sceneCards: [], setSlots: [], summary: null, shareCard: null, isDemo: false },
   onShow() {
     const pet = petStore.getPet();
     const summary = pet ? sceneCardStore.collectionSummary(pet.prototype) : null;
@@ -17,12 +16,8 @@ Page({
       summary,
       isDemo: runtime.getMode() === 'demo'
     });
-    analytics.track('card_album_view', { album_tab: this.data.tab });
-  },
-  onTab(event) {
-    const tab = event.currentTarget.dataset.tab;
-    this.setData({ tab });
-    analytics.track('album_view', { album_tab: tab });
+    analytics.track('card_album_view', { collection_view: 'unified' });
+    analytics.track('album_view', { collection_view: 'unified' });
   },
   onSceneCardImageError(event) {
     const cardId = event.currentTarget.dataset.cardId;
@@ -51,7 +46,7 @@ Page({
     }
     const card = this.data.sceneCards.find(item => item.id === event.currentTarget.dataset.id);
     if (!card) {
-      wx.showToast({ title: '先去场景里遇见这张卡吧', icon: 'none' });
+      wx.showToast({ title: '先去蛋宝宝的世界里遇见它吧', icon: 'none' });
       return;
     }
     const pet = petStore.getPet();
@@ -70,7 +65,7 @@ Page({
   },
   onShareAppMessage() {
     const card = this.data.shareCard;
-    return { title: card ? `我在${card.name}里遇见了蛋宝宝` : '我的蛋宝宝场景卡册', path: '/pages/welcome/welcome' };
+    return { title: card ? `我遇见了「${card.name}」收藏卡` : '我的 eggbabe 收藏卡', path: '/pages/welcome/welcome' };
   },
   onOpen() { wx.navigateTo({ url: '/pages/collection-card/collection-card' }); }
 });

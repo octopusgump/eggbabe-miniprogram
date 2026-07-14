@@ -6,6 +6,31 @@ const db = cloud.database();
 
 function beijingDateKey() { return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10); }
 function roll() { return crypto.randomBytes(4).readUInt32BE(0) / 0xFFFFFFFF; }
+async function awardSceneDew(transaction, userId, date) {
+  const earnCounterId = `${userId}-live-${date}-scene_interaction`;
+  const counters = await transaction.collection('daily_earn_counters').where({ counter_id: earnCounterId, mode: 'live' }).limit(1).get();
+  const currentEarned = Number((counters.data[0] || {}).amount || 0);
+  if (currentEarned >= 5) return 0;
+  const balances = await transaction.collection('currency_balances').where({ user_id: userId, mode: 'live' }).limit(1).get();
+  const currentBalance = Number((balances.data[0] || {}).amount || 0);
+  const nextBalance = currentBalance + 1;
+  if (balances.data[0]) await transaction.collection('currency_balances').doc(balances.data[0]._id).update({ data: { amount: nextBalance, updated_at: db.serverDate() } });
+  else await transaction.collection('currency_balances').add({ data: { user_id: userId, mode: 'live', amount: nextBalance, created_at: db.serverDate(), updated_at: db.serverDate() } });
+  if (counters.data[0]) await transaction.collection('daily_earn_counters').doc(counters.data[0]._id).update({ data: { amount: db.command.inc(1), server_ts: db.serverDate() } });
+  else await transaction.collection('daily_earn_counters').add({ data: { counter_id: earnCounterId, user_id: userId, mode: 'live', date, source: 'scene_interaction', amount: 1, server_ts: db.serverDate() } });
+  await transaction.collection('currency_ledger').add({ data: { user_id: userId, mode: 'live', direction: 'earn', source: 'scene_interaction', amount: 1, balance_after: nextBalance, server_ts: db.serverDate() } });
+  await transaction.collection('analytics_events').add({ data: {
+    event_id: `currency-earned-${earnCounterId}-${currentEarned + 1}`,
+    event_name: 'currency_earned',
+    user_id: userId,
+    mode: 'live',
+    source: 'scene_interaction',
+    amount: 1,
+    server_ts: db.serverDate(),
+    received_at: db.serverDate()
+  } });
+  return 1;
+}
 
 exports.main = async event => {
   const { OPENID } = cloud.getWXContext();
@@ -29,11 +54,12 @@ exports.main = async event => {
     const attemptedPoints = counter ? counter.attempted_points || [] : [];
     if (attemptedPoints.includes(attemptKey)) return { ok: true, dropped: false, repeated: true, dailyCount: count, dailyLimit: 2 };
     attemptedPoints.push(attemptKey);
-    if (count >= 2) return { ok: true, dropped: false, capped: true, dailyCount: count, dailyLimit: 2 };
+    const dewEarned = await awardSceneDew(transaction, user._id, date);
+    if (count >= 2) return { ok: true, dropped: false, capped: true, dewEarned, dailyCount: count, dailyLimit: 2 };
     if (roll() >= 0.28) {
-      if (counter) await transaction.collection('scene_card_daily').doc(counterId).update({ data: { attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
-      else await transaction.collection('scene_card_daily').doc(counterId).set({ data: { user_id: user._id, date, count: 0, attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
-      return { ok: true, dropped: false, dailyCount: count, dailyLimit: 2 };
+      if (counter) await transaction.collection('scene_card_daily').doc(counterId).update({ data: { mode: 'live', attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
+      else await transaction.collection('scene_card_daily').doc(counterId).set({ data: { user_id: user._id, mode: 'live', date, count: 0, attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
+      return { ok: true, dropped: false, dewEarned, dailyCount: count, dailyLimit: 2 };
     }
     const pool = catalog.getCardPool(pet.prototype, sceneId);
     if (!pool.length) return { ok: true, dropped: false, code: 'EMPTY_POOL' };
@@ -44,8 +70,8 @@ exports.main = async event => {
     let issueCounter;
     try { issueCounter = (await transaction.collection('scene_card_issue_counters').doc(issueCounterId).get()).data; } catch (error) { issueCounter = null; }
     const issueNumber = (issueCounter ? Number(issueCounter.count || 0) : 0) + 1;
-    if (issueCounter) await transaction.collection('scene_card_issue_counters').doc(issueCounterId).update({ data: { count: issueNumber, updated_at: db.serverDate() } });
-    else await transaction.collection('scene_card_issue_counters').doc(issueCounterId).set({ data: { character: pet.prototype, date, count: issueNumber, updated_at: db.serverDate() } });
+    if (issueCounter) await transaction.collection('scene_card_issue_counters').doc(issueCounterId).update({ data: { mode: 'live', count: issueNumber, updated_at: db.serverDate() } });
+    else await transaction.collection('scene_card_issue_counters').doc(issueCounterId).set({ data: { mode: 'live', character: pet.prototype, date, count: issueNumber, updated_at: db.serverDate() } });
     const existingCopies = await transaction.collection('scene_cards').where({ user_id: user._id, mode: 'live', card_key: cardKey }).get();
     const copyId = crypto.randomBytes(16).toString('hex');
     const uniqueCode = `EGG-YT-${issueDay}-${String(issueNumber).padStart(6, '0')}`;
@@ -100,9 +126,10 @@ exports.main = async event => {
       shared: false
     };
     await transaction.collection('scene_cards').doc(copyId).set({ data: cardData });
-    if (counter) await transaction.collection('scene_card_daily').doc(counterId).update({ data: { count: db.command.inc(1), attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
-    else await transaction.collection('scene_card_daily').doc(counterId).set({ data: { user_id: user._id, date, count: 1, attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
+    if (counter) await transaction.collection('scene_card_daily').doc(counterId).update({ data: { mode: 'live', count: db.command.inc(1), attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
+    else await transaction.collection('scene_card_daily').doc(counterId).set({ data: { user_id: user._id, mode: 'live', date, count: 1, attempts, attempted_points: attemptedPoints, updated_at: db.serverDate() } });
+    await transaction.collection('preference_events').add({ data: { user_id: user._id, pet_id: pet._id, mode: 'live', event_type: 'interaction_point_tap', scene_id: sceneId, point_id: pointId, card_id: copyId, server_ts: db.serverDate() } });
     const responseTimestamp = Date.now();
-    return { ok: true, dropped: true, card: Object.assign({ id: copyId }, cardData, { issued_at: responseTimestamp, obtained_at: responseTimestamp }), dailyCount: count + 1, dailyLimit: 2 };
+    return { ok: true, dropped: true, card: Object.assign({ id: copyId }, cardData, { issued_at: responseTimestamp, obtained_at: responseTimestamp }), dewEarned, dailyCount: count + 1, dailyLimit: 2 };
   });
 };

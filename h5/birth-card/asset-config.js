@@ -5,8 +5,8 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   const manifest = {
     defaults: {
-      YT: { background: '', figure: '', accent: '#D9E7FF', heroStart: '#121934', heroEnd: '#4C315F', fallbackMark: '兔' },
-      KOI: { background: '', figure: '', accent: '#F6C989', heroStart: '#1E1220', heroEnd: '#6A2B35', fallbackMark: '鲤' }
+      YT: { background: '', figure: '', accent: '#D9E7E4', heroStart: '#EAF3F4', heroEnd: '#ECE7F5', fallbackMark: '兔' },
+      KOI: { background: '', figure: '', accent: '#F6D8C9', heroStart: '#F8E8D8', heroEnd: '#F2DFD9', fallbackMark: '鲤' }
     },
     cards: {
       'YT__watercolor__hi': { figure: './assets/figures/YT__watercolor__hi__v01.jpg', fullHero: true },

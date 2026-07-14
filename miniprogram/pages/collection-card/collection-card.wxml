@@ -1,18 +1,17 @@
 <view class="page">
-  <nav-bar title="破壳收藏卡"></nav-bar>
+  <nav-bar title="收藏卡"></nav-bar>
   <scroll-view class="content" scroll-y>
-    <view wx:if="{{isNew}}" class="new-banner">获得第一张破壳收藏卡 · 已自动收入卡册</view>
+    <view wx:if="{{isNew}}" class="new-banner">获得第一张收藏卡 · 已自动收入我的收藏卡</view>
     <view class="card">
-      <view class="card-top"><text class="card-kicker">EGGBABE · BIRTH CARD</text><text class="collectible">{{card.collectible}}</text></view>
-      <view class="portrait"><view class="portrait-aura"></view><pet-avatar pet-type="{{card.prototype}}" size="{{250}}"></pet-avatar></view>
-      <text class="name">{{card.name}} <text class="gender">{{card.gender}}</text></text>
-      <text class="style">{{card.prototype}} · {{card.style}}</text>
-      <text class="personality">“{{card.personality}}”</text>
-      <view class="stats"><view><text class="stat-label">生日</text><text class="stat-value">{{card.birthday}}</text></view><view><text class="stat-label">星座</text><text class="stat-value">{{card.zodiac}}</text></view><view><text class="stat-label">MBTI</text><text class="stat-value">{{card.mbti}}</text></view><view><text class="stat-label">血型</text><text class="stat-value">{{card.bloodType}}</text></view></view>
-      <view class="record"><text>{{card.hatchQuality}}</text><text>初始主人 · {{card.originalOwner}}</text></view>
-      <view class="serial-row"><text class="serial">{{card.serial}}</text><view class="mini-code"><view></view><view></view><view></view><view></view></view></view>
+      <view class="card-title-section"><text class="title-star">★</text><view><text class="card-wordmark">eggbabe</text><text class="name">{{card.name}}</text></view><text class="title-star">★</text></view>
+      <view class="card-illustration-section"><image wx:if="{{illustration}}" class="illustration" src="{{illustration}}" mode="aspectFit"></image><pet-avatar wx:else pet-type="{{card.prototype}}" size="{{250}}"></pet-avatar></view>
+      <view class="card-data-section">
+        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--mbti">人</text><text>MBTI</text></view><text class="stat-value">{{card.mbti}}</text></view>
+        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--zodiac">★</text><text>星座</text></view><text class="stat-value">{{card.zodiac}} {{zodiacSymbol}}</text></view>
+        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--birthday">礼</text><text>生日</text></view><text class="stat-value">{{birthdayLabel}}</text></view>
+      </view>
     </view>
-    <view class="actions"><button class="primary" bindtap="onProfile"><text class="button-label">查看它的档案</text></button><view class="action-row"><button class="secondary" bindtap="onSave"><text class="button-label">保存图片</text></button><button class="secondary" open-type="share"><text class="button-label">分享给好友</text></button></view><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的卡册</text></button></view>
+    <view class="actions"><button class="primary" bindtap="onProfile"><text class="button-label">查看它的档案</text></button><view class="action-row"><button class="secondary" disabled="{{!posterReady}}" bindtap="onSave"><text class="button-label">{{posterReady ? '保存图片' : '待接入小程序码'}}</text></button><button class="secondary" open-type="share"><text class="button-label">分享给好友</text></button></view><text wx:if="{{posterUnavailableReason}}" class="poster-note">{{posterUnavailableReason}}</text><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的收藏卡</text></button></view>
     <canvas canvas-id="shareCanvas" class="share-canvas"></canvas>
   </scroll-view>
 </view>

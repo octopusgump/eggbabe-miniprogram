@@ -21,6 +21,8 @@ function saveMessage(message) { return call('saveMessage', { message }); }
 function updateSceneCard(cardId, changes) { return call('updateSceneCard', { cardId, changes }); }
 function recordIncubationAction(actionType, payload) { return call('recordIncubationAction', { actionType, payload: payload || {} }); }
 function manageDeletion(action) { return call('manageDeletion', { action }); }
+function currencyAccount(action, itemId) { return call('currencyAccount', { action, itemId }); }
+function recordEngagement(source) { return call('recordEngagement', { source }); }
 function uploadAvatar(localPath) {
   if (!config.cloudEnabled || !wx.cloud) return Promise.resolve({ ok: false, code: 'CLOUD_NOT_CONFIGURED', message: '云服务尚未配置' });
   const suffix = String(localPath).split('.').pop().replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
@@ -28,4 +30,4 @@ function uploadAvatar(localPath) {
   return wx.cloud.uploadFile({ cloudPath, filePath: localPath }).then(result => updateProfile({ avatar_url: result.fileID }).then(saved => saved.ok ? { ok: true, fileID: result.fileID } : saved)).catch(() => ({ ok: false, code: 'UPLOAD_FAILED', message: '头像上传失败，请重试' }));
 }
 
-module.exports = { call, bootstrap, redeemActivationCode, evaluateSceneCardDrop, generateHatchCard, updateProfile, saveMessage, updateSceneCard, recordIncubationAction, manageDeletion, uploadAvatar };
+module.exports = { call, bootstrap, redeemActivationCode, evaluateSceneCardDrop, generateHatchCard, updateProfile, saveMessage, updateSceneCard, recordIncubationAction, manageDeletion, currencyAccount, recordEngagement, uploadAvatar };

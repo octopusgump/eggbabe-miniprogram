@@ -1,20 +1,20 @@
 <view class="page">
   <nav-bar title="完整卡面预览"></nav-bar>
   <scroll-view class="content" scroll-y>
-    <view class="demo-note">按 H5 规格还原 · 非正式发行副本</view>
+    <view class="demo-note">按 H5 规格还原 · 展会预览</view>
     <view wx:if="{{current}}" class="preview-heading">
       <view><text class="heading-kicker">{{current.setName}}</text><text class="heading-title">{{current.cardTitle}}</text></view>
     </view>
 
     <view wx:if="{{current}}" class="preview-card birth-card">
-      <view class="card-hero is-composite">
-        <image class="hero-image hero-figure" src="{{current.image}}" mode="aspectFit"></image>
-        <view class="hero-depth"></view>
-        <view class="brand-lockup"><text class="brand-name">eggbabe</text><text class="brand-type">COLLECTIBLE CARD</text></view>
+      <view class="card-title-section">
+        <text class="title-star">★</text>
+        <view class="title-copy"><text class="brand-name">eggbabe</text><text class="card-name">{{current.name}}</text></view>
+        <text class="title-star">★</text>
         <text class="collect-badge">{{current.collectorLabel}}</text>
       </view>
-      <view class="card-data">
-        <view class="identity-row"><text class="card-name">{{current.name}}</text></view>
+      <view class="card-illustration-section"><image class="hero-image hero-figure" src="{{current.image}}" mode="aspectFit"></image></view>
+      <view class="card-data card-data-section">
         <view class="stat-grid">
           <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--mbti">人</view><text class="stat-label">MBTI</text></view><text class="stat-value">{{current.mbti}}</text></view>
           <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--constellation">★</view><text class="stat-label">星座</text></view><text class="stat-value">{{current.constellationLabel}}</text></view>
@@ -24,7 +24,7 @@
     </view>
 
     <view class="pager"><button class="pager-button" bindtap="onPrevious"><text class="button-label">上一张</text></button><button class="pager-button pager-button--primary" bindtap="onNext"><text class="button-label">下一张</text></button></view>
-    <button class="album-button" bindtap="onOpenAlbum"><text class="button-label">返回收藏套卡</text></button>
+    <button class="album-button" bindtap="onOpenAlbum"><text class="button-label">返回我的收藏卡</text></button>
     <view class="safe-space"></view>
   </scroll-view>
 </view>

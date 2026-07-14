@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#131a34">
-  <title>eggbabe 破壳收藏卡</title>
+  <title>eggbabe 收藏卡</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -23,35 +23,28 @@
       <div id="mode-chip" class="mode-chip" hidden>展会体验 · DEMO</div>
 
       <section id="card-view" class="view-section">
-        <article id="birth-card" class="birth-card" aria-label="蛋宝宝破壳收藏卡">
-          <div class="card-hero">
-            <img id="hero-background" class="hero-background" alt="" hidden>
-            <div class="hero-depth"></div>
-            <header class="brand-lockup">
-              <strong>eggbabe</strong>
-              <span id="card-kind">BIRTH CARD</span>
-            </header>
-            <span id="collect-badge" class="collect-badge">普通</span>
-            <div id="fallback-mark" class="fallback-mark" aria-hidden="true">兔</div>
-            <img id="hero-figure" class="hero-figure" alt="蛋宝宝角色形象" hidden>
+        <article id="birth-card" class="birth-card" aria-label="蛋宝宝收藏卡">
+          <header class="card-title-section">
+            <span class="title-star title-star--left" aria-hidden="true">★</span>
+            <div class="card-title-copy"><span class="card-wordmark">eggbabe</span><h1 data-field="name">—</h1></div>
+            <span class="title-star title-star--right" aria-hidden="true">★</span>
+            <span id="collect-badge" class="collect-badge" hidden>001/010</span>
+          </header>
+
+          <div class="card-illustration-section">
+            <div class="illustration-frame">
+              <img id="hero-background" class="hero-background" alt="" hidden>
+              <div id="fallback-mark" class="fallback-mark" aria-hidden="true">兔</div>
+              <img id="hero-figure" class="hero-figure" alt="蛋宝宝角色形象" hidden>
+            </div>
           </div>
 
-          <div class="card-data">
-            <div class="identity-row">
-              <div>
-                <h1 data-field="name">—</h1>
-                <p id="card-subtitle">—</p>
-              </div>
-            </div>
+          <div class="card-data card-data-section">
             <dl class="stat-grid">
               <div class="stat-row"><dt><span class="stat-icon stat-icon--mbti" aria-hidden="true">人</span><span>MBTI</span></dt><dd data-field="mbti">—</dd></div>
               <div class="stat-row"><dt><span class="stat-icon stat-icon--constellation" aria-hidden="true">★</span><span>星座</span></dt><dd id="card-constellation" data-field="constellation">—</dd></div>
               <div class="stat-row"><dt><span class="stat-icon stat-icon--birthday" aria-hidden="true">礼</span><span>生日</span></dt><dd id="card-birthday" data-field="birthday">—</dd></div>
             </dl>
-            <div id="card-footer" class="card-footer">
-              <div id="card-set-line" class="meta-line">唯一身份收藏卡</div>
-              <code data-field="code">—</code>
-            </div>
           </div>
         </article>
 
@@ -84,7 +77,7 @@
           <div><dt>初始主人</dt><dd data-field="initialOwner">—</dd></div>
         </dl>
         <div class="actions">
-          <button id="card-button" class="primary-button" type="button">查看破壳收藏卡</button>
+          <button id="card-button" class="primary-button" type="button">查看收藏卡</button>
           <button id="rename-button" class="secondary-button" type="button">修改名字</button>
           <p id="profile-action-message" class="action-message" role="status" hidden></p>
         </div>
@@ -97,7 +90,7 @@
       <button id="poster-close" class="close-button" type="button" aria-label="关闭">×</button>
       <h2 id="poster-title">分享长图已生成</h2>
       <p>在微信内长按图片，可保存到手机相册。</p>
-      <img id="poster-image" alt="蛋宝宝破壳收藏卡分享长图">
+      <img id="poster-image" alt="蛋宝宝收藏卡分享长图">
       <a id="poster-download" class="download-link" download="eggbabe-birth-card.png">在浏览器中下载图片</a>
     </div>
   </div>

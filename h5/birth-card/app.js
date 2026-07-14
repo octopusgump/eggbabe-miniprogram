@@ -47,23 +47,28 @@
   }
 
   function applyTheme(resolvedAssets) {
-    const root = document.documentElement;
-    root.style.setProperty('--hero-start', resolvedAssets.heroStart || '#121934');
-    root.style.setProperty('--hero-end', resolvedAssets.heroEnd || '#4c315f');
-    root.style.setProperty('--accent', resolvedAssets.accent || '#d9e7ff');
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
     byId('profile-mark').textContent = mark;
-    byId('birth-card').querySelector('.card-hero').classList.toggle('is-composite', Boolean(resolvedAssets.fullHero));
     setImage(byId('hero-background'), resolvedAssets.background);
     setImage(byId('hero-figure'), resolvedAssets.figure);
+  }
+
+  function loadNameFont(name) {
+    const oldLink = byId('card-name-font');
+    if (oldLink) oldLink.remove();
+    const link = document.createElement('link');
+    link.id = 'card-name-font';
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap&text=${encodeURIComponent(String(name || ''))}`;
+    document.head.appendChild(link);
   }
 
   function setView(view, updateHistory) {
     const isProfile = view === 'profile' && card.cardType === 'birth';
     cardView.hidden = isProfile;
     profileView.hidden = !isProfile;
-    document.title = isProfile ? `${card.name}的角色档案 · eggbabe` : `${card.name}的${card.cardType === 'collectible' ? '套装收藏卡' : '破壳收藏卡'} · eggbabe`;
+    document.title = isProfile ? `${card.name}的角色档案 · eggbabe` : `${card.name}的收藏卡 · eggbabe`;
     if (updateHistory && window.history && window.history.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.set('view', isProfile ? 'profile' : 'card');
@@ -76,26 +81,16 @@
   function render(raw) {
     card = model.normalizeCard(raw);
     assets = assetConfig.resolveAssets(card, runtimeConfig.assetManifest || assetConfig.manifest);
+    loadNameFont(card.name);
     fillFields(card);
     applyTheme(assets);
     const badge = byId('collect-badge');
     const isCollectible = card.cardType === 'collectible';
-    const cardSubtitle = byId('card-subtitle');
-    const cardFooter = byId('card-footer');
     byId('birth-card').classList.toggle('is-collectible', isCollectible);
-    badge.textContent = isCollectible ? card.collectorLabel : card.collectAttr;
-    badge.classList.toggle('is-limited', !isCollectible && card.collectAttr === '限定');
-    byId('card-kind').textContent = isCollectible ? 'COLLECTIBLE CARD' : 'BIRTH CARD';
-    cardSubtitle.hidden = isCollectible;
-    cardFooter.hidden = isCollectible;
-    if (isCollectible) {
-      byId('card-birthday').textContent = card.birthdayLabel;
-      byId('card-constellation').textContent = card.constellationLabel;
-    }
-    if (!isCollectible) {
-      cardSubtitle.textContent = `${card.prototypeLabel} · ${card.style} · ${card.gender}`;
-      byId('card-set-line').textContent = '唯一身份收藏卡';
-    }
+    badge.hidden = !isCollectible;
+    badge.textContent = isCollectible ? card.collectorLabel : '';
+    byId('card-birthday').textContent = card.birthdayLabel;
+    byId('card-constellation').textContent = card.constellationLabel;
     byId('profile-button').hidden = isCollectible;
     byId('mode-chip').hidden = card.mode !== 'demo';
     loading.hidden = true;
@@ -164,7 +159,7 @@
       notifyMiniProgram('h5_birth_card_poster_generated', { mode: card.mode });
     } catch (posterError) {
       const message = posterError.message === 'MINI_CODE_REQUIRED'
-        ? '正式分享图需要先接入真实小程序码。'
+        ? '分享图需要先接入真实小程序码。'
         : '长图生成失败，请检查角色素材是否允许跨域读取后重试。';
       byId('action-message').textContent = message;
       byId('action-message').hidden = false;

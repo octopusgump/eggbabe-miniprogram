@@ -37,7 +37,9 @@ function toH5Card(pet, options) {
     collect_attr: card.collect_attr || card.collectible || '普通',
     incubation_level: card.incubation_level || card.hatchQuality || '',
     initial_owner: card.initial_owner || card.originalOwner || '蛋友',
-    figure_key: String(card.figure_key || `${prototype}__${card.style || ''}`),
+    illustration_id: String(card.illustration_id || ''),
+    illustration_context: card.illustration_context || null,
+    figure_key: String(card.illustration_id || card.figure_key || `${prototype}__${card.style || ''}`),
     bg_key: String(card.bg_key || `${prototype}__${card.style || ''}`),
     limited_batch: card.limited_batch || null,
     mini_program_code_url: String(card.mini_program_code_url || config.miniProgramCodeUrl || '')

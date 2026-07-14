@@ -17,7 +17,7 @@ function getContext() {
   return {
     user_id: mode === 'demo' ? '' : (user ? user.id : ''),
     mode,
-    server_ts: time.now(),
+    server_ts: time.isAuthoritative() || mode === 'demo' ? time.now() : null,
     session_id: runtime.getSessionId(),
     egg_id: pet ? pet.id : '',
     pet_id: pet && pet.collectionCard ? pet.id : '',

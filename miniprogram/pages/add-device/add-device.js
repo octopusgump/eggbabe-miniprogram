@@ -2,6 +2,7 @@ const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
+const runtime = require('../../services/runtime-context');
 
 Page({
   data: { code: '', error: '', canSubmit: false, success: null, submitting: false },
@@ -16,6 +17,7 @@ Page({
   onValidate() {
     if (!this.data.canSubmit || this.data.submitting) return;
     this.setData({ submitting: true, error: '' });
+    if (!config.cloudEnabled) runtime.setMode('demo');
     analytics.track('activation_submit', { code_type: 'preview' });
     if (config.cloudEnabled) {
       cloudApi.redeemActivationCode(this.data.code).then(result => this.handleResult(result));

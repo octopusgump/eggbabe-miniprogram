@@ -5,6 +5,7 @@ const cloudApi = require('./services/cloud-api');
 const petStore = require('./utils/pet-store');
 const sceneCardStore = require('./services/scene-card-store');
 const syncQueue = require('./services/sync-queue');
+const runtime = require('./services/runtime-context');
 
 App({
   globalData: {
@@ -13,6 +14,7 @@ App({
   },
 
   onLaunch() {
+    if (!config.cloudEnabled) runtime.setMode('demo');
     if (config.cloudEnabled && wx.cloud) {
       wx.cloud.init({ env: config.cloudEnv || undefined, traceUser: true });
       this.globalData.cloudReady = true;

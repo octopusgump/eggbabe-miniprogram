@@ -7,7 +7,7 @@ exports.main = async event => {
   const users = await db.collection('users').where({ openid: OPENID }).limit(1).get();
   const user = users.data[0];
   if (!user) return { ok: false, code: 'LOGIN_REQUIRED' };
-  const requests = await db.collection('deletion_requests').where({ user_id: user._id, status: 'pending' }).limit(1).get();
+  const requests = await db.collection('deletion_requests').where({ user_id: user._id, mode: 'live', status: 'pending' }).limit(1).get();
   const pending = requests.data[0];
   if (event.action === 'query') return { ok: true, request: pending || null, serverTs: Date.now() };
   if (event.action === 'cancel') {
@@ -16,7 +16,7 @@ exports.main = async event => {
   }
   if (pending) return { ok: true, request: pending, duplicated: true, serverTs: Date.now() };
   const submittedAt = Date.now();
-  const request = { user_id: user._id, status: 'pending', submittedAt, endAt: submittedAt + 15 * 24 * 60 * 60 * 1000, created_at: db.serverDate() };
+  const request = { user_id: user._id, mode: 'live', status: 'pending', submittedAt, endAt: submittedAt + 15 * 24 * 60 * 60 * 1000, created_at: db.serverDate() };
   const created = await db.collection('deletion_requests').add({ data: request });
   return { ok: true, request: Object.assign({ _id: created._id }, request), serverTs: submittedAt };
 };

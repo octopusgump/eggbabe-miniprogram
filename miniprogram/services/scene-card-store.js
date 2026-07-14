@@ -151,6 +151,8 @@ function nextLocalUniqueCode(character, obtainedAt) {
 }
 
 function localAttemptDrop(sceneKey, pointId, character) {
+  const timeGate = time.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
   const state = dailyState();
   state.attemptedPoints = state.attemptedPoints || [];
   const attemptKey = `${sceneKey}:${pointId}`;
@@ -217,6 +219,7 @@ function attemptDrop(sceneKey, pointId, character) {
       return result;
     });
   }
+  if (runtime.getMode() === 'live') return Promise.resolve({ ok: false, code: 'SERVER_DECISION_REQUIRED', message: '正在连接服务器，请稍后再试' });
   return Promise.resolve(localAttemptDrop(sceneKey, pointId, character));
 }
 

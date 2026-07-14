@@ -1,6 +1,8 @@
 # eggbabe 收藏卡 H5
 
-本目录包含破壳身份卡、角色档案和套装收藏卡三个移动端 H5 视图。H5 只负责展示、切换档案和生成分享长图，不在浏览器内随机生成姓名、编号或角色属性。
+本目录包含收藏卡与角色档案两个移动端 H5 视图。H5 只负责展示、切换档案和生成分享长图，不在浏览器内随机生成姓名、插画、编号或角色属性。
+
+卡面采用三段式 3:4 模板：顶部 14% 为名字标题，中部 54% 为服务端已选定的居中水彩插画，底部 32% 为 MBTI / 星座 / 生日三行信息。名字按需加载 Google Fonts OFL 版 `ZCOOL KuaiLe` 的 `text=` 子集，失败时回退 PingFang SC。
 
 角色档案里的“修改名字”会通过微信 H5 桥回到小程序昵称页；保存后本地卡面与云端卡片记录会同步更新。
 
@@ -12,11 +14,11 @@
 
 档案页把 `view` 改为 `profile`。预览固定读取 `sample/card.json`。
 
-第一季套装收藏卡预览：
+第一季系列收藏卡预览：
 
 `/h5/birth-card/index.html?preview=collectible`
 
-该预览读取 `sample/collectible-card.json`，只在正面显示名字、生日、星座、MBTI、套装/清单号和唯一副本编号。
+该预览读取 `sample/collectible-card.json`，正面显示名字、生日、星座、MBTI 和系列内编号；全局编号只进入分享图脚注。
 
 ## 数据入口
 
@@ -35,6 +37,6 @@
 3. 在 `miniprogram/config/v2.js` 配置 `birthCardH5Url` 和 `birthCardApiBase`；前者用于打开 H5，后者用于正式模式启用前的安全门禁。
 4. 在 H5 的 `runtime-config.js` 固定填写同一可信 `apiBase`，并部署卡片查询接口；正式模式缺少接口时会安全回退原生页或显示错误。
 5. 如需后台更新款式素材，在 `runtime-config.js` 配置 `assetManifestUrl`，返回与 `asset-config.js` 相同结构的 JSON。
-6. 配置 `miniProgramCodeUrl` 或在卡片接口返回 `mini_program_code_url`；正式卡缺少真实小程序码时会阻止导出。
+6. 配置 `miniProgramCodeUrl` 或在卡片接口返回 `mini_program_code_url`；任何模式缺少真实小程序码时都会阻止导出，不生成占位码。
 
 在上述配置未完成前，小程序自动使用原生收藏卡和档案页，不会出现空白 `web-view`。

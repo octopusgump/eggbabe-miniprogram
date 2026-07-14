@@ -23,6 +23,7 @@
   </view>
   <view class="topbar" style="padding-top:{{statusBarHeight}}px;"><view class="round-btn" bindtap="onBack"><view class="back-icon"></view></view></view>
   <view class="pet-hotspot" bindtap="onTapPet"></view>
+  <view wx:for="{{sceneDecorations}}" wx:key="itemId" class="placed-decoration">{{item.icon}}</view>
   <view class="hotspot" wx:for="{{hotspots}}" wx:key="label" style="left:{{item.x}};top:{{item.y}};" data-index="{{index}}" catchtap="onTapHotspot"><view class="hotspot-dot"></view><text>{{item.label}}</text></view>
   <view wx:if="{{ripple}}" class="ripple" style="left:{{ripple.x}};top:{{ripple.y}};"></view>
   <view wx:if="{{flowerEffect}}" class="flower-effect" style="left:{{flowerEffect.x}};top:{{flowerEffect.y}};">
@@ -80,7 +81,7 @@
         <text class="drop-meta">{{cardDrop.setCode}} · {{cardDrop.collectorLabel}}{{cardDrop.copyCount > 1 ? ' · 第 ' + cardDrop.copyCount + ' 份' : ''}}</text>
         <text class="drop-copy-code">{{cardDrop.uniqueCode}}</text>
         <view class="drop-primary" bindtap="onOpenFullCard">查看完整卡面</view>
-        <view class="drop-ghost" bindtap="onOpenAlbum">去收藏套卡</view>
+        <view class="drop-ghost" bindtap="onOpenAlbum">去我的收藏卡</view>
       </view>
     </view>
   </view>

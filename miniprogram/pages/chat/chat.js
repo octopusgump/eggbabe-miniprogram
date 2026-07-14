@@ -3,6 +3,7 @@ const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
 const config = require('../../config/v2');
 const syncQueue = require('../../services/sync-queue');
+const runtime = require('../../services/runtime-context');
 const REPLIES = ['我在的，一直都在。', '说给我听吧，我会认真记住。', '今天见到你，我很开心。', '嗯，我在认真听。'];
 const MOOD_REPLIES = {
   开心: ['你一来，我今天就更开心了。', '我就知道你会来找我。'],
@@ -36,7 +37,7 @@ Page({
   onSend() {
     const text = this.data.draft.trim();
     if (!text || this.data.typing) return;
-    const userMessage = { id: `u${timeService.now()}`, from: 'user', text };
+    const userMessage = { id: `u${timeService.now()}`, from: 'user', text, mode: runtime.getMode(), sessionId: runtime.getSessionId() };
     const messages = this.data.messages.concat(userMessage);
     const savedUserMessage = petStore.saveMessage(userMessage);
     if (!savedUserMessage.ok) {
@@ -44,13 +45,13 @@ Page({
       return;
     }
     analytics.track('chat_message_sent', { msg_len: Array.from(text).length });
-    if (config.cloudEnabled) syncQueue.enqueue('saveMessage', { message: userMessage });
+    if (config.cloudEnabled && runtime.getMode() === 'live') syncQueue.enqueue('saveMessage', { message: userMessage });
     this.setData({ messages, draft: '', typing: true, scrollAnchor: `msg-${userMessage.id}` });
     this.replyTimer = setTimeout(() => {
       const mood = this.data.dailyStatus ? this.data.dailyStatus.mood : '平静';
       const pool = MOOD_REPLIES[mood] || REPLIES;
       const personalityPrefix = this.data.card.mbti === 'ENFP' && Math.random() > .5 ? '嘿，' : '';
-      const reply = { id: `e${timeService.now()}`, from: 'egg', text: personalityPrefix + pool[Math.floor(Math.random() * pool.length)] };
+      const reply = { id: `e${timeService.now()}`, from: 'egg', text: personalityPrefix + pool[Math.floor(Math.random() * pool.length)], mode: runtime.getMode(), sessionId: runtime.getSessionId() };
       const savedReply = petStore.saveMessage(reply);
       if (!savedReply.ok) {
         this.setData({ typing: false });
@@ -58,7 +59,7 @@ Page({
         return;
       }
       analytics.track('chat_reply', { mood, mbti_context: this.data.card.mbti });
-      if (config.cloudEnabled) syncQueue.enqueue('saveMessage', { message: reply });
+      if (config.cloudEnabled && runtime.getMode() === 'live') syncQueue.enqueue('saveMessage', { message: reply });
       const next = this.data.messages.concat(reply);
       this.setData({ messages: next, typing: false, scrollAnchor: `msg-${reply.id}` });
     }, 900);

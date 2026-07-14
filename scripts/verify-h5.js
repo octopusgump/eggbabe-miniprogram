@@ -35,8 +35,10 @@ const cardFace = html.match(/<section id="card-view"[\s\S]*?<\/section>/)[0];
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.wxml').includes('<web-view'), true, 'H5 容器必须使用 web-view');
-assert.equal(css.includes('--hero-ratio: 70%'), true, '卡面必须明确 70% Hero 区');
-assert.equal(css.includes('--data-ratio: 30%'), true, '卡面必须明确 30% 数据区');
+assert.equal(css.includes('--title-ratio: 14%'), true, '卡面必须明确约 14% 名字标题区');
+assert.equal(css.includes('--illustration-ratio: 54%'), true, '卡面必须明确约 54% 居中插画区');
+assert.equal(css.includes('--data-ratio: 32%'), true, '卡面必须明确约 32% 三行数据区');
+['card-title-section', 'card-illustration-section', 'card-data-section'].forEach(className => assert.equal(cardFace.includes(className), true, `H5 卡面缺少三段式结构 ${className}`));
 assert.equal(html.includes('eggbabe'), true, 'H5 卡面必须使用 eggbabe 品牌字标');
 assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须显示生日');
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
@@ -47,7 +49,7 @@ assert.equal(h5StatPositions.every((position, index) => position >= 0 && (!index
 ['stat-row', 'stat-icon--mbti', 'stat-icon--constellation', 'stat-icon--birthday'].forEach(className => {
   assert.equal(cardFace.includes(className), true, `H5 卡面缺少参考图信息行 ${className}`);
 });
-assert.equal(css.includes('.birth-card.is-collectible .stat-grid'), true, 'H5 收藏卡必须使用三行信息牌布局');
+assert.equal(css.includes('.stat-grid'), true, 'H5 收藏卡必须统一使用三行信息牌布局');
 assert.equal(css.toLowerCase().includes('border: 1.5px solid #94ab61'), true, 'H5 信息牌必须使用参考图的绿色圆角边框');
 assert.equal(poster.includes('drawCollectibleStats'), true, '分享海报必须使用与卡面一致的三行信息牌');
 assert.equal(poster.includes('card.statRows.map'), true, '分享海报必须消费卡片模型中已经按契约排序的信息行');
@@ -55,9 +57,12 @@ assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不�
 assert.equal(cardFace.includes('data-field="signature"'), false, 'MVP 正面不得显示性格长句');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');
 assert.equal(app.includes('card.setCode'), false, '收藏卡名字下方不得再渲染套装编号');
-assert.equal(app.includes('cardSubtitle.hidden = isCollectible'), true, '收藏卡必须隐藏名字下方的副标题编号');
-assert.equal(app.includes('cardFooter.hidden = isCollectible'), true, '收藏卡必须隐藏已获得状态和唯一副本编号区');
-assert.equal(poster.includes('if (!isCollectible)'), true, '收藏卡分享海报也必须隐藏副标题和副本信息');
+assert.equal(cardFace.includes('card-subtitle'), false, '卡面不得显示名字下方的旧副标题');
+assert.equal(cardFace.includes('card-footer'), false, '卡面不得显示状态和唯一副本编号区');
+assert.equal(app.includes('fonts.googleapis.com/css2?family=ZCOOL+KuaiLe'), true, '名字必须加载 Google Fonts OFL 版站酷快乐体');
+assert.equal(app.includes('&text='), true, '名字字体必须按实际名字做 text 子集化');
+assert.equal(poster.includes('card.code'), true, '分享长图脚注必须包含全局编号');
+assert.equal(poster.includes('miniProgramCodeUrl'), true, '分享长图必须消费真实小程序码');
 assert.equal(app.includes('card.setName}'), false, 'MVP 收藏卡正面不得额外显示套装名');
 assert.equal(app.includes('card.treatment}'), false, 'MVP 收藏卡正面不得额外显示 BASE 标签');
 assert.equal(/Math\.random/.test([app, read('h5/birth-card/card-model.js'), read('h5/birth-card/poster-renderer.js')].join('\n')), false, 'H5 不得生成任何随机卡片值');
@@ -102,4 +107,4 @@ firstSet.cards.forEach((card, index) => {
   assert.equal(figureIds.has(card.heroAssetId), true, `套装引用了未登记 Hero：${card.heroAssetId}`);
 });
 
-console.log('H5 工程校验通过：数据注入、70/30 卡面、web-view 接入与导出能力完整。');
+console.log('H5 工程校验通过：数据注入、三段式水彩卡面、web-view 接入与导出能力完整。');

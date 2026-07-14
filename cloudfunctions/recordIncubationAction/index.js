@@ -44,6 +44,33 @@ exports.main = async event => {
     if (action === 'nickname' && pet.hatch_card_id) {
       await transaction.collection('hatch_cards').doc(pet.hatch_card_id).update({ data: { name: updates.name, name_by_user: true, updated_at: db.serverDate() } });
     }
-    return { ok: true, added: delta, progress: updates.progress, serverTs: Date.now() };
+    let dewEarned = 0;
+    if (delta > 0) {
+      const reward = { nickname: 8, cuddle: 3, wish: 3, lesson: 3, doodle: 8 }[action] || 0;
+      const counterId = `${user._id}-live-${date}-incubation-${action}`;
+      const counters = await transaction.collection('daily_earn_counters').where({ counter_id: counterId, mode: 'live' }).limit(1).get();
+      if (!counters.data.length && reward > 0) {
+        const balances = await transaction.collection('currency_balances').where({ user_id: user._id, mode: 'live' }).limit(1).get();
+        const currentBalance = Number((balances.data[0] || {}).amount || 0);
+        const nextBalance = currentBalance + reward;
+        if (balances.data[0]) await transaction.collection('currency_balances').doc(balances.data[0]._id).update({ data: { amount: nextBalance, updated_at: db.serverDate() } });
+        else await transaction.collection('currency_balances').add({ data: { user_id: user._id, mode: 'live', amount: nextBalance, created_at: db.serverDate(), updated_at: db.serverDate() } });
+        await transaction.collection('currency_ledger').add({ data: { user_id: user._id, mode: 'live', direction: 'earn', source: `incubation_${action}`, amount: reward, balance_after: nextBalance, server_ts: db.serverDate() } });
+        await transaction.collection('daily_earn_counters').add({ data: { counter_id: counterId, user_id: user._id, mode: 'live', date, source: `incubation_${action}`, amount: reward, server_ts: db.serverDate() } });
+        await transaction.collection('analytics_events').add({ data: {
+          event_id: `currency-earned-${counterId}`,
+          event_name: 'currency_earned',
+          user_id: user._id,
+          pet_id: pet._id,
+          mode: 'live',
+          source: `incubation_${action}`,
+          amount: reward,
+          server_ts: db.serverDate(),
+          received_at: db.serverDate()
+        } });
+        dewEarned = reward;
+      }
+    }
+    return { ok: true, added: delta, dewEarned, progress: updates.progress, serverTs: Date.now() };
   });
 };

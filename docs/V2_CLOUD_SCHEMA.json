@@ -1,0 +1,25 @@
+{
+  "version": "2.11",
+  "timezone": "Asia/Shanghai",
+  "modeEnum": ["live", "demo"],
+  "collections": {
+    "users": { "required": ["openid", "public_id", "mode", "status"], "uniqueIndexes": [["openid", "mode"], ["public_id", "mode"]] },
+    "pets": { "required": ["user_id", "mode", "prototype", "stage", "hatch_at"], "uniqueIndexes": [["user_id", "mode"]] },
+    "activation_codes": { "required": ["code_hash", "mode", "status", "usage_limit", "used_count"], "uniqueIndexes": [["code_hash", "mode"]] },
+    "hatch_cards": { "required": ["pet_id", "user_id", "mode", "serial", "name", "birthday", "zodiac", "mbti", "illustration_id", "generated_at"], "uniqueIndexes": [["pet_id", "mode"], ["serial"]] },
+    "scene_cards": { "required": ["copy_id", "user_id", "pet_id", "mode", "set_code", "collector_number", "unique_code", "issued_at"], "uniqueIndexes": [["copy_id"], ["unique_code"]] },
+    "scene_card_daily": { "required": ["user_id", "mode", "date", "count", "attempts"], "uniqueIndexes": [["user_id", "mode", "date"]] },
+    "scene_card_issue_counters": { "required": ["character", "mode", "date", "count"], "uniqueIndexes": [["character", "mode", "date"]] },
+    "daily_status": { "required": ["pet_id", "mode", "date", "mood", "text", "source"], "uniqueIndexes": [["pet_id", "mode", "date"]] },
+    "messages": { "required": ["pet_id", "user_id", "mode", "session_id", "role", "text", "created_at"], "indexes": [["pet_id", "mode", "created_at"]] },
+    "analytics_events": { "required": ["event_name", "user_id", "mode", "server_ts", "session_id"], "indexes": [["mode", "event_name", "server_ts"]] },
+    "preference_events": { "required": ["user_id", "pet_id", "mode", "event_type", "server_ts"], "indexes": [["user_id", "mode", "event_type", "server_ts"]] },
+    "festival_configs": { "required": ["date", "mode", "name", "enabled"], "uniqueIndexes": [["date", "mode", "name"]] },
+    "currency_balances": { "required": ["user_id", "mode", "amount", "updated_at"], "uniqueIndexes": [["user_id", "mode"]], "checks": ["amount >= 0"] },
+    "currency_ledger": { "required": ["user_id", "mode", "direction", "source", "amount", "balance_after", "server_ts"], "indexes": [["user_id", "mode", "server_ts"]], "appendOnly": true },
+    "item_catalog": { "required": ["item_id", "mode", "category", "price", "decorative_only", "status"], "uniqueIndexes": [["item_id", "mode"]], "checks": ["category in accessory,snack,scene-decor", "decorative_only = true"] },
+    "user_inventory": { "required": ["user_id", "mode", "item_id", "quantity", "equipped"], "uniqueIndexes": [["user_id", "mode", "item_id"]] },
+    "daily_earn_counters": { "required": ["counter_id", "user_id", "mode", "date", "source", "amount"], "uniqueIndexes": [["counter_id", "mode"]] },
+    "deletion_requests": { "required": ["user_id", "mode", "status", "submittedAt", "endAt"], "indexes": [["user_id", "mode", "status"]] }
+  }
+}

@@ -16,7 +16,9 @@
   "collect_attr": "普通",
   "incubation_level": "完整孵化",
   "initial_owner": "蛋友3024",
-  "figure_key": "YT__月白桂花款",
+  "illustration_id": "YT__watercolor__hi",
+  "illustration_context": { "festival": null, "personality_tag": "I" },
+  "figure_key": "YT__watercolor__hi",
   "bg_key": "YT__月白桂花款",
   "limited_batch": null,
   "mini_program_code_url": ""

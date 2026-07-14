@@ -63,7 +63,7 @@ Page({
   onCancelDeregister() {
     wx.showModal({
       title: '取消注销',
-      content: '取消后账号会恢复正常，可以继续使用蛋宝宝、卡册和对话。',
+      content: '取消后账号会恢复正常，可以继续使用蛋宝宝、收藏卡和对话。',
       success: (res) => {
         if (!res.confirm) return;
         if (config.cloudEnabled) {

@@ -1,11 +1,14 @@
 const config = require('../config/v2');
+const runtime = require('./runtime-context');
 
 const storage = require('./storage-migration');
 const OFFSET_KEY = 'eggbabe_server_time_offset_v2';
+const DEMO_EPOCH_MS = Date.parse('2026-07-14T12:00:00+08:00');
 let offset = 0;
 let serverBase = 0;
 let monotonicBase = 0;
 let authoritative = false;
+const demoMonotonicBase = monotonicNow();
 
 function monotonicNow() {
   if (typeof performance !== 'undefined' && performance.now) return performance.now();
@@ -20,10 +23,17 @@ function loadOffset() {
 
 function now() {
   if (authoritative) return serverBase + (monotonicNow() - monotonicBase);
+  if (runtime.getMode() === 'demo') return DEMO_EPOCH_MS + (monotonicNow() - demoMonotonicBase);
   return Date.now() + offset;
 }
 
 function isAuthoritative() { return authoritative; }
+
+function requireAuthoritative() {
+  if (authoritative) return { ok: true, now: now(), authoritative: true, mode: runtime.getMode() };
+  if (runtime.getMode() === 'demo') return { ok: true, now: now(), authoritative: false, demoFixture: true, mode: 'demo' };
+  return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步北京时间，请稍后再试', mode: 'live' };
+}
 
 function beijingDateKey(timestamp) {
   const date = new Date((timestamp === undefined ? now() : timestamp) + 8 * 60 * 60 * 1000);
@@ -47,4 +57,4 @@ function sync() {
 
 loadOffset();
 
-module.exports = { now, beijingDateKey, sync, isAuthoritative };
+module.exports = { now, beijingDateKey, sync, isAuthoritative, requireAuthoritative };

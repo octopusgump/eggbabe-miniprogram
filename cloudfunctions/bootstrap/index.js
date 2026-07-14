@@ -14,9 +14,12 @@ exports.main = async () => {
   const found = await users.where({ openid: OPENID }).limit(1).get();
   let user = found.data[0];
   if (!user) {
-    const data = { openid: OPENID, public_id: publicId(OPENID), created_at: db.serverDate(), updated_at: db.serverDate(), status: 'active' };
+    const data = { openid: OPENID, public_id: publicId(OPENID), mode: 'live', created_at: db.serverDate(), updated_at: db.serverDate(), status: 'active' };
     const created = await users.add({ data });
     user = Object.assign({ _id: created._id }, data);
+  } else if (!user.mode) {
+    await users.doc(user._id).update({ data: { mode: 'live', updated_at: db.serverDate() } });
+    user.mode = 'live';
   }
   const pets = await db.collection('pets').where({ user_id: user._id, mode: 'live' }).limit(1).get();
   if (pets.data[0] && !pets.data[0].hatch_card_id) {

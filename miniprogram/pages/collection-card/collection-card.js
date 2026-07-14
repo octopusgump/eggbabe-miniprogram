@@ -1,14 +1,34 @@
 const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
+const sceneConfig = require('../../utils/exhibition-scenes');
+
+const ZODIAC_SYMBOLS = { 白羊座: '♈', 金牛座: '♉', 双子座: '♊', 巨蟹座: '♋', 狮子座: '♌', 处女座: '♍', 天秤座: '♎', 天蝎座: '♏', 射手座: '♐', 摩羯座: '♑', 水瓶座: '♒', 双鱼座: '♓' };
+
+function birthdayLabel(value) {
+  const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  return match ? `${Number(match[1])}月${Number(match[2])}日` : String(value || '');
+}
+
+function loadCanvasImage(src) {
+  if (!src) return Promise.reject(new Error('IMAGE_REQUIRED'));
+  return new Promise((resolve, reject) => wx.getImageInfo({ src, success: resolve, fail: reject }));
+}
+
+function drawContain(context, image, x, y, width, height) {
+  const scale = Math.min(width / image.width, height / image.height);
+  const targetWidth = image.width * scale;
+  const targetHeight = image.height * scale;
+  context.drawImage(image.path, x + (width - targetWidth) / 2, y + (height - targetHeight) / 2, targetWidth, targetHeight);
+}
 
 Page({
-  data: { card: null, pet: null, isNew: false, redirectingToH5: false },
+  data: { card: null, pet: null, illustration: '', birthdayLabel: '', zodiacSymbol: '', isNew: false, redirectingToH5: false, posterReady: false, posterUnavailableReason: '' },
 
   onLoad(query) {
     const pet = petStore.getPet();
     if (!pet || !pet.collectionCard) {
-      wx.showToast({ title: '还没有破壳收藏卡', icon: 'none' });
+      wx.showToast({ title: '还没有收藏卡', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 600);
       return;
     }
@@ -17,42 +37,61 @@ Page({
       wx.redirectTo({ url: '/pages/h5-card/h5-card?view=card' });
       return;
     }
-    this.setData({ pet, card: pet.collectionCard, isNew: query.new === '1' });
+    const card = pet.collectionCard;
+    const illustration = ((sceneConfig.getCardSetForCharacter(card.prototype) || {}).cards || []).find(item => item.heroAssetId === card.illustration_id);
+    this.setData({ pet, card, illustration: illustration ? illustration.image : '', birthdayLabel: birthdayLabel(card.birthday), zodiacSymbol: ZODIAC_SYMBOLS[card.zodiac] || '', isNew: query.new === '1' });
   },
 
   onReady() {
     if (!this.data.redirectingToH5 && this.data.card) this.drawShareCard();
   },
 
-  drawShareCard() {
+  async drawShareCard() {
     const card = this.data.card;
-    const context = wx.createCanvasContext('shareCanvas', this);
-    context.setFillStyle('#F8F7EF'); context.fillRect(0, 0, 600, 840);
-    context.setFillStyle('#002900'); context.fillRect(0, 0, 600, 120);
-    context.setFillStyle('#FFFFFF'); context.setFontSize(22); context.fillText('eggbabe · 破壳收藏卡', 42, 72);
-    context.setFillStyle('#FFF9E4'); context.beginPath(); context.arc(300, 290, 106, 0, Math.PI * 2); context.fill();
-    if (card.prototype === '玉兔') {
-      context.setFillStyle('#FFF9E4'); context.fillRect(238, 135, 42, 110); context.fillRect(320, 135, 42, 110);
-      context.setFillStyle('#002900'); context.beginPath(); context.arc(266, 282, 7, 0, Math.PI * 2); context.arc(334, 282, 7, 0, Math.PI * 2); context.fill();
-      context.setFillStyle('#F4B9AE'); context.beginPath(); context.arc(300, 318, 6, 0, Math.PI * 2); context.fill();
-    } else {
-      context.setFillStyle('#F4B9AE'); context.beginPath(); context.arc(340, 270, 48, 0, Math.PI * 2); context.fill();
-      context.setFillStyle('#002900'); context.beginPath(); context.arc(252, 274, 7, 0, Math.PI * 2); context.fill();
+    const miniProgramCodeUrl = card.mini_program_code_url || card.miniProgramCodeUrl || config.miniProgramCodeUrl;
+    if (!miniProgramCodeUrl) {
+      this.setData({ posterReady: false, posterUnavailableReason: '正式分享图需要先配置真实小程序码，当前不会生成占位码。' });
+      return;
     }
-    context.setFillStyle('#002900'); context.setFontSize(38); context.fillText(card.name, 42, 500);
-    context.setFillStyle('#54632C'); context.setFontSize(24); context.fillText(`${card.prototype} · ${card.style}`, 42, 548);
-    context.setFillStyle('#5C5C5C'); context.setFontSize(22); context.fillText(`${card.mbti} · ${card.gender} · ${card.bloodType} 型`, 42, 606);
-    context.setFontSize(20); context.fillText(card.serial, 42, 730);
-    context.setFillStyle('#002900'); context.fillRect(480, 700, 32, 32); context.fillRect(528, 700, 32, 32); context.fillRect(480, 748, 32, 32); context.fillRect(528, 748, 16, 16);
-    context.setFillStyle('#8C8C88'); context.setFontSize(16); context.fillText('小程序码接入位', 450, 808);
-    context.setFontSize(20); context.fillText('来蛋宝宝小程序认识它', 42, 782);
-    context.draw();
+    let illustrationImage;
+    let miniProgramCodeImage;
+    try {
+      [illustrationImage, miniProgramCodeImage] = await Promise.all([
+        loadCanvasImage(this.data.illustration),
+        loadCanvasImage(miniProgramCodeUrl)
+      ]);
+    } catch (error) {
+      this.setData({ posterReady: false, posterUnavailableReason: '分享图素材还未就绪，请检查插画与小程序码配置。' });
+      return;
+    }
+    const context = wx.createCanvasContext('shareCanvas', this);
+    context.setFillStyle('#FFFDF7'); context.fillRect(0, 0, 600, 840);
+    context.setTextAlign('center'); context.setFillStyle('#65705F'); context.setFontSize(12); context.fillText('eggbabe', 300, 30);
+    context.setFillStyle('#EFC84B'); context.setFontSize(25); context.fillText('★', 70, 76); context.fillText('★', 530, 76);
+    context.setFillStyle('#3C2D24'); context.setFontSize(42); context.fillText(card.name, 300, 88);
+    context.setFillStyle('#EAF3F4'); context.fillRect(32, 112, 536, 420);
+    drawContain(context, illustrationImage, 32, 112, 536, 420);
+    const rows = [['人', 'MBTI', card.mbti], ['★', '星座', `${card.zodiac} ${this.data.zodiacSymbol}`], ['礼', '生日', this.data.birthdayLabel]];
+    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(38, 550, 524, 192);
+    rows.forEach((row, index) => {
+      const y = 582 + index * 64;
+      if (index) { context.beginPath(); context.moveTo(38, 550 + index * 64); context.lineTo(562, 550 + index * 64); context.stroke(); }
+      context.setTextAlign('left'); context.setFillStyle('#2D251F'); context.setFontSize(18); context.fillText(`${row[0]}  ${row[1]}`, 62, y);
+      context.setTextAlign('right'); context.fillText(row[2], 538, y);
+    });
+    context.setTextAlign('left'); context.setFillStyle('#5D675F'); context.setFontSize(15); context.fillText(card.serial, 38, 790);
+    drawContain(context, miniProgramCodeImage, 494, 752, 78, 78);
+    context.draw(false, () => this.setData({ posterReady: true, posterUnavailableReason: '' }));
   },
 
   onAlbum() { wx.navigateTo({ url: '/pages/album/album' }); },
   onProfile() { wx.navigateTo({ url: '/pages/pet-detail/pet-detail' }); },
 
   onSave() {
+    if (!this.data.posterReady) {
+      wx.showToast({ title: this.data.posterUnavailableReason || '分享图还未就绪', icon: 'none' });
+      return;
+    }
     wx.canvasToTempFilePath({
       canvasId: 'shareCanvas',
       width: 600,

@@ -4,9 +4,10 @@ const sceneCards = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
 const runtime = require('../../services/runtime-context');
 const timeService = require('../../services/time-service');
+const currency = require('../../services/currency-store');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', cardImageFailed: false, sceneKicker: '' },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], sceneDecorations: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', cardImageFailed: false, sceneKicker: '' },
 
   onLoad(query) {
     this.pageActive = true;
@@ -17,7 +18,9 @@ Page({
     if (!pet || petStore.getStage(pet) !== 'hatched') pet = petStore.startExhibitionDemo();
     const scene = exhibitionScenes.getScene(query.scene);
     this.enteredAt = timeService.now();
-    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
+    const account = currency.getAccount();
+    const sceneDecorations = account.inventory.filter(item => item.equipped && item.category === 'scene-decor').map(owned => Object.assign({}, account.catalog.find(item => item.id === owned.itemId) || {}, owned));
+    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneDecorations, sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
     analytics.track('scene_enter', { scene_id: scene.key, character: pet.prototype, entry_type: query.entry || 'scene' });
   },
 
@@ -27,6 +30,7 @@ Page({
     const spot = this.data.hotspots[event.currentTarget.dataset.index];
     if (!spot) return;
     analytics.track('interaction_point_tap', { scene_id: this.data.scene.key, point_id: spot.label, character: this.data.pet.prototype });
+    currency.earn('scene_interaction', 1, 5);
     this.showReaction(spot.line, spot.x, spot.y);
     if (this.data.scene.key === 'grass' && spot.label === '小花') this.showFlowerSway(spot);
     if (this.data.scene.key === 'grass' && spot.label === '蝴蝶') this.showButterflyFlight(spot);
@@ -67,7 +71,7 @@ Page({
   onOpenAlbum() {
     clearTimeout(this.cardRevealTimer);
     this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
-    wx.navigateTo({ url: '/pages/album/album?tab=scene' });
+    wx.navigateTo({ url: '/pages/album/album' });
   },
   showFlowerSway(spot) {
     clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
@@ -111,6 +115,9 @@ Page({
 
   onShow() {
     this.pageActive = true;
+    const account = currency.getAccount();
+    const sceneDecorations = account.inventory.filter(item => item.equipped && item.category === 'scene-decor').map(owned => Object.assign({}, account.catalog.find(item => item.id === owned.itemId) || {}, owned));
+    this.setData({ sceneDecorations });
     if (!this.data.isActive) this.setData({ isActive: true });
   },
 

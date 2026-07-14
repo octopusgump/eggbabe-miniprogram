@@ -29,9 +29,20 @@ const STATUS_LINES = {
 };
 
 const CARD_NAME_POOLS = {
-  '玉兔': ['月团', '桂圆', '小满', '云朵', '初弦', '白露'],
-  '锦鲤': ['小福', '锦年', '团彩', '好运', '朝朝', '金豆']
+  '玉兔': ['望舒', '皎皎', '阿晚', '素素', '小霁', '拾月', '眠云', '阿念', '白露', '阿晴', '浮白', '霜降', '阿静', '月无缺', '幽幽', '秋实', '云间', '阿迟'],
+  '锦鲤': ['阿金', '流年', '阿悠', '知足', '小润', '自在', '阿顺', '澄澈', '涟涟', '锦程', '阿漫', '泓泓', '春鱼', '小池', '鱼乐', '阿泓', '清波', '丰年']
 };
+const ZODIAC_BOUNDARIES = [
+  ['01-19', '摩羯座'], ['02-18', '水瓶座'], ['03-20', '双鱼座'], ['04-19', '白羊座'],
+  ['05-20', '金牛座'], ['06-21', '双子座'], ['07-22', '巨蟹座'], ['08-22', '狮子座'],
+  ['09-22', '处女座'], ['10-23', '天秤座'], ['11-22', '天蝎座'], ['12-21', '射手座'], ['12-31', '摩羯座']
+];
+const DEMO_ILLUSTRATIONS = [
+  ['YT__watercolor__hi', ['E']], ['YT__watercolor__salute', ['E']], ['YT__watercolor__dance', ['E']],
+  ['YT__watercolor__box', ['I']], ['YT__watercolor__cycle', ['E']], ['YT__watercolor__newspaper', ['I', 'N']],
+  ['YT__watercolor__meditate', ['I', 'N']], ['YT__watercolor__skateboard', ['E']],
+  ['YT__watercolor__chemistry', ['I', 'T']], ['YT__watercolor__bath', ['I']]
+];
 
 function todayKey(now) {
   return timeService.beijingDateKey(now);
@@ -97,7 +108,7 @@ function saveUser(user) {
   const registeredAt = source.registeredAt || identity.registeredAt || source.authorizedAt || timeService.now();
   const id = source.id || identity.id || `user-${registeredAt}-${randomIdToken()}`;
   const publicId = source.publicId || identity.publicId || createPublicUserId(registeredAt);
-  const normalized = Object.assign({}, source, { id, publicId, registeredAt });
+  const normalized = Object.assign({}, source, { id, publicId, registeredAt, mode: source.mode === 'demo' ? 'demo' : runtime.getMode() });
   write(IDENTITY_KEY, { id, publicId, registeredAt });
   const result = write(USER_KEY, normalized);
   return result.ok ? result.value : null;
@@ -166,7 +177,8 @@ function bindPet(code, now) {
   const id = `egg-${createdAt}`;
   const pet = {
     id,
-    ownerId: (getUser() && getUser().id) || '',
+    mode: runtime.getMode(),
+    ownerId: runtime.getMode() === 'demo' ? '' : ((getUser() && getUser().id) || ''),
     prototype,
     name: '',
     createdAt,
@@ -197,6 +209,7 @@ function importCloudPet(record, mode) {
   const createdAt = source.createdAt || timeService.now();
   const pet = {
     id: source.pet_id || source.id,
+    mode: mode || source.mode || runtime.getMode(),
     ownerId: (getUser() && getUser().id) || '',
     prototype: source.prototype || '玉兔',
     name: source.name || '',
@@ -205,6 +218,7 @@ function importCloudPet(record, mode) {
     progress: source.progress || 0,
     stage: source.stage || 'waiting',
     serverBacked: true,
+    demoMode: (mode || source.mode) === 'demo',
     lastInteractionAt: createdAt,
     tasks: source.tasks || { nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', doodleDone: false },
     preferences: source.preferences || { wishes: [], lessons: [] },
@@ -256,6 +270,8 @@ function updateNickname(name) {
 function completeDailyTask(task, value) {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
   const date = todayKey();
   const field = `${task}Date`;
   if (pet.tasks[field] === date) return { ok: true, added: 0, alreadyDone: true, pet };
@@ -297,7 +313,7 @@ function saveDoodle(color, colorName, pattern) {
 function getStage(pet, now) {
   if (!pet) return 'empty';
   if (pet.collectionCard) return 'hatched';
-  if (config.cloudEnabled && !timeService.isAuthoritative()) return pet.stage || 'waiting';
+  if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) return pet.stage || 'waiting';
   const current = now || timeService.now();
   if (current >= pet.hatchAt) return 'ready';
   if (pet.hatchAt - current <= DAY) return 'soon';
@@ -320,7 +336,7 @@ function getStagePresentation(stage) {
 
 function getCountdown(pet, now) {
   if (!pet) return '';
-  if (config.cloudEnabled && !timeService.isAuthoritative()) return '正在同步北京时间…';
+  if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) return '正在同步北京时间…';
   const remaining = pet.hatchAt - (now || timeService.now());
   if (remaining <= 0) return '破壳时刻已到';
   const days = Math.floor(remaining / DAY);
@@ -335,7 +351,7 @@ function simpleHash(value) {
 function getDailyStatus() {
   const pet = getPet();
   if (!pet) return null;
-  if (config.cloudEnabled && !timeService.isAuthoritative()) {
+  if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) {
     return pet.dailyStatus || { date: '', mood: '平静', line: '正在和北京时间对齐…', source: 'sync-pending', pending: true };
   }
   const date = todayKey();
@@ -376,26 +392,18 @@ function cardSerial(pet) {
 function getZodiac(value) {
   if (!value) return '';
   const dateOnly = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  let key;
+  let monthDay;
   if (dateOnly) {
-    key = Number(dateOnly[2]) * 100 + Number(dateOnly[3]);
+    const candidate = new Date(Date.UTC(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3])));
+    if (candidate.getUTCMonth() + 1 !== Number(dateOnly[2]) || candidate.getUTCDate() !== Number(dateOnly[3])) return '';
+    monthDay = `${dateOnly[2]}-${dateOnly[3]}`;
   } else {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    key = (date.getMonth() + 1) * 100 + date.getDate();
+    monthDay = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
-  if (key >= 1222 || key <= 119) return '摩羯座';
-  if (key <= 218) return '水瓶座';
-  if (key <= 320) return '双鱼座';
-  if (key <= 419) return '白羊座';
-  if (key <= 520) return '金牛座';
-  if (key <= 621) return '双子座';
-  if (key <= 722) return '巨蟹座';
-  if (key <= 822) return '狮子座';
-  if (key <= 922) return '处女座';
-  if (key <= 1023) return '天秤座';
-  if (key <= 1122) return '天蝎座';
-  return '射手座';
+  const boundary = ZODIAC_BOUNDARIES.find(([end]) => monthDay <= end);
+  return boundary ? boundary[1] : '';
 }
 
 function derivePersonality(pet) {
@@ -420,19 +428,33 @@ function generatedName(pet) {
   return pool[simpleHash(`${pet.id}-name`) % pool.length];
 }
 
+function demoIllustration(pet, mbti) {
+  const personalityTags = [String(mbti || '').slice(0, 1), String(mbti || '').slice(2, 3)].filter(Boolean);
+  const weighted = DEMO_ILLUSTRATIONS.flatMap(item => {
+    const repeats = personalityTags.some(tag => item[1].includes(tag)) ? 2 : 1;
+    return Array(repeats).fill(item[0]);
+  });
+  return weighted[simpleHash(`${pet.id}-illustration`) % weighted.length];
+}
+
 function createCollectionCard() {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
   if (timeService.now() < pet.hatchAt) return { ok: false, message: '还没到预设破壳时间' };
   if (pet.collectionCard) return { ok: true, created: false, card: pet.collectionCard, pet };
   const isKoi = pet.prototype === '锦鲤';
   const personality = derivePersonality(pet);
+  const illustrationId = isKoi ? '' : demoIllustration(pet, personality.mbti);
   pet.collectionCard = {
     id: `card-${pet.id}`,
     mode: runtime.getMode(),
     serial: cardSerial(pet),
     prototype: pet.prototype,
     style: isKoi ? '好运红白款' : '月白桂花款',
+    illustration_id: illustrationId,
+    illustration_context: { festival: null, personality_tag: personality.mbti.slice(0, 1) },
     name: pet.name || generatedName(pet),
     name_by_user: !!pet.name,
     birthday: todayKey(pet.hatchAt),
@@ -470,13 +492,17 @@ function resetDemo() {
 }
 
 function startExhibitionDemo() {
+  const previousMode = runtime.getMode();
+  const previousPet = getPet();
   runtime.setMode('demo');
   const current = read(PET_KEY);
-  if (current && current.demoMode) return current;
+  if (current && current.exhibitionMode) return current;
+  if (previousMode === 'demo' && previousPet) write(EXHIBITION_BACKUP_KEY, { mode: 'demo', pet: previousPet });
   const createdAt = timeService.now();
   const pet = {
     id: `expo-${createdAt}`,
-    ownerId: (getUser() && getUser().id) || '',
+    mode: 'demo',
+    ownerId: '',
     prototype: '玉兔',
     name: '月团',
     createdAt,
@@ -484,6 +510,7 @@ function startExhibitionDemo() {
     progress: 85,
     stage: 'ready',
     demoMode: true,
+    exhibitionMode: true,
     lastInteractionAt: createdAt,
     tasks: { nicknameDone: true, cuddleDate: todayKey(), wishDate: todayKey(), lessonDate: todayKey(), doodleDone: true },
     preferences: {
@@ -505,6 +532,12 @@ function startExhibitionDemo() {
 }
 
 function endExhibitionDemo() {
+  const backup = read(EXHIBITION_BACKUP_KEY);
+  if (backup && backup.mode === 'demo' && backup.pet) {
+    write(PET_KEY, backup.pet);
+    try { storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
+    return getPet();
+  }
   try {
     storage.remove(resolvedKey(PET_KEY));
     storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY));

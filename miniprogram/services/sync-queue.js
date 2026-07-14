@@ -1,23 +1,25 @@
 const config = require('../config/v2');
 const cloudApi = require('./cloud-api');
 const analytics = require('./analytics');
+const runtime = require('./runtime-context');
+const time = require('./time-service');
 
 const storage = require('./storage-migration');
 const KEY = 'eggbabe_sync_queue_v2';
 let inFlight = null;
 
 function read() {
-  return storage.read(KEY, []);
+  return storage.read(runtime.scopedKey(KEY), []);
 }
 
 function write(queue) {
-  try { storage.set(KEY, queue); return true; } catch (error) { return false; }
+  try { storage.set(runtime.scopedKey(KEY), queue); return true; } catch (error) { return false; }
 }
 
 function enqueue(api, data) {
-  const item = { id: `sync-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, api, data: data || {}, attempts: 0, createdAt: Date.now() };
+  const item = { id: `sync-${time.now()}-${Math.random().toString(36).slice(2, 8)}`, api, data: data || {}, mode: runtime.getMode(), attempts: 0, createdAt: time.now() };
   const ok = write(read().concat(item).slice(-100));
-  if (ok && config.cloudEnabled) flush();
+  if (ok && config.cloudEnabled && runtime.getMode() === 'live') flush();
   return { ok, pending: ok, item };
 }
 
@@ -25,7 +27,7 @@ function pendingCount() { return read().length; }
 
 function flush() {
   if (inFlight) return inFlight;
-  if (!config.cloudEnabled) return Promise.resolve({ ok: false, pending: pendingCount() });
+  if (!config.cloudEnabled || runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: pendingCount() });
   const run = async () => {
     let queue = read();
     while (queue.length) {

@@ -1,0 +1,10 @@
+{
+  "version": "YT-S01-card-face-v1",
+  "aspectRatio": "9 / 16",
+  "heroRatio": "70%",
+  "dataRatio": "30%",
+  "brandName": "eggbabe",
+  "cardKind": "COLLECTIBLE CARD",
+  "fields": ["name", "birthday", "constellation", "mbti", "setCode", "collectorLabel", "uniqueCode"],
+  "colors": ["#172018", "#687069", "#fffdf7", "#e5e4dc", "#f7f3ea", "#242b25"]
+}

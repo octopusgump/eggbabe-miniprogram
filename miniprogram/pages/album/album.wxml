@@ -18,9 +18,10 @@
         <view class="set-progress"><text>{{summary.ownedUnique}}</text><text class="set-progress-total"> / {{summary.total}}</text></view>
         <view class="progress-track"><view class="progress-value" style="width:{{summary.total ? summary.ownedUnique / summary.total * 100 : 0}}%;"></view></view>
         <text class="set-note">固定 10 张基础卡 · 重复卡折叠统计{{summary.duplicateCount ? ' · 重复 ' + summary.duplicateCount + ' 张' : ''}}</text>
+        <view wx:if="{{isDemo}}" class="preview-all" bindtap="onPreviewAllCards">预览全部 10 张完整卡面</view>
       </view>
       <view wx:if="{{summary && setSlots.length}}" class="scene-grid">
-        <view wx:for="{{setSlots}}" wx:key="cardId" class="scene-card {{item.owned ? '' : 'scene-card--locked'}}" data-id="{{item.instanceId}}" bindtap="onOpenSetCard">
+        <view wx:for="{{setSlots}}" wx:key="cardId" class="scene-card {{item.owned ? '' : 'scene-card--locked'}}" data-id="{{item.instanceId}}" data-card-id="{{item.cardId}}" bindtap="onOpenSetCard">
           <view class="scene-art" style="background:{{item.tint}};">
             <image wx:if="{{item.owned && item.image && !item.imageFailed}}" class="scene-card-image" src="{{item.image}}" mode="aspectFit" data-card-id="{{item.cardId}}" binderror="onSceneCardImageError"></image>
             <view wx:else class="locked-art"><text class="locked-number">{{item.collectorLabel}}</text><text class="locked-mark">{{item.owned ? item.mark : '?'}}</text></view>

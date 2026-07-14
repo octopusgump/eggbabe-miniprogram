@@ -53,6 +53,17 @@ Page({
   },
   onCardImageError() { this.setData({ cardImageFailed: true }); },
   noop() {},
+  onOpenFullCard() {
+    const card = this.data.cardDrop;
+    if (!card) return;
+    clearTimeout(this.cardRevealTimer);
+    this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
+    if (runtime.getMode() === 'demo') {
+      wx.navigateTo({ url: `/pages/set-card-preview/set-card-preview?cardId=${encodeURIComponent(card.cardId || '')}` });
+      return;
+    }
+    wx.navigateTo({ url: `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(card.id)}` });
+  },
   onOpenAlbum() {
     clearTimeout(this.cardRevealTimer);
     this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });

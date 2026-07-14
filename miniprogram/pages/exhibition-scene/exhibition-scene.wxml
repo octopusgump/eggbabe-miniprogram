@@ -79,8 +79,8 @@
         <text class="drop-name">{{cardDrop.name}}</text>
         <text class="drop-meta">{{cardDrop.setCode}} · {{cardDrop.collectorLabel}}{{cardDrop.copyCount > 1 ? ' · 第 ' + cardDrop.copyCount + ' 份' : ''}}</text>
         <text class="drop-copy-code">{{cardDrop.uniqueCode}}</text>
-        <view class="drop-primary" bindtap="onOpenAlbum">收入卡册并查看</view>
-        <view class="drop-ghost" bindtap="onCloseCardDrop">继续逛逛</view>
+        <view class="drop-primary" bindtap="onOpenFullCard">查看完整卡面</view>
+        <view class="drop-ghost" bindtap="onOpenAlbum">去收藏套卡</view>
       </view>
     </view>
   </view>

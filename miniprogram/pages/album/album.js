@@ -3,8 +3,9 @@ const sceneCardStore = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
+const runtime = require('../../services/runtime-context');
 Page({
-  data: { card: null, sceneCards: [], setSlots: [], tab: 'hatch', summary: null, shareCard: null },
+  data: { card: null, sceneCards: [], setSlots: [], tab: 'hatch', summary: null, shareCard: null, isDemo: false },
   onLoad(query) { this.setData({ tab: query.tab === 'scene' ? 'scene' : 'hatch' }); },
   onShow() {
     const pet = petStore.getPet();
@@ -13,7 +14,8 @@ Page({
       card: pet && pet.collectionCard ? pet.collectionCard : null,
       sceneCards: sceneCardStore.list(),
       setSlots: summary ? summary.slots : [],
-      summary
+      summary,
+      isDemo: runtime.getMode() === 'demo'
     });
     analytics.track('card_album_view', { album_tab: this.data.tab });
   },
@@ -48,6 +50,11 @@ Page({
     wx.showModal({ title: `${slot.name} · ${slot.quantity} 份副本`, content, showCancel: false, confirmText: '知道了', confirmColor: '#3F5A47' });
   },
   onOpenSetCard(event) {
+    const definitionId = event.currentTarget.dataset.cardId;
+    if (runtime.getMode() === 'demo') {
+      wx.navigateTo({ url: `/pages/set-card-preview/set-card-preview?cardId=${encodeURIComponent(definitionId || '')}` });
+      return;
+    }
     const card = this.data.sceneCards.find(item => item.id === event.currentTarget.dataset.id);
     if (!card) {
       wx.showToast({ title: '先去场景里遇见这张卡吧', icon: 'none' });
@@ -62,6 +69,7 @@ Page({
     }
     wx.navigateTo({ url: `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(card.id)}` });
   },
+  onPreviewAllCards() { wx.navigateTo({ url: '/pages/set-card-preview/set-card-preview' }); },
   onEcommerce() {
     analytics.track('ecommerce_cta_click', { unlock_sku: 'scene-set-access', entry: 'album' });
     wx.showModal({ title: '已解锁站外购买资格', content: '购买仍在线下或品牌私域完成。正式跳转入口将在运营渠道确认后开放。', showCancel: false, confirmText: '知道了', confirmColor: '#3F5A47' });

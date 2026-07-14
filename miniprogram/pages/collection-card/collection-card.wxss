@@ -1,15 +1,15 @@
 .page { height: 100vh; display: flex; flex-direction: column; background: #F3F1E8; }
 .content { flex: 1; padding: 28rpx 36rpx 64rpx; box-sizing: border-box; }
 .new-banner { margin-bottom: 22rpx; padding: 20rpx 24rpx; border-radius: 20rpx; background: #3F5A47; color: #FFF; font-size: 23rpx; text-align: center; }
-.card { aspect-ratio: 3 / 4; overflow: hidden; display: flex; flex-direction: column; border: 8rpx solid #FFF; border-radius: 40rpx; background: #FFFDF7; box-shadow: 0 26rpx 60rpx rgba(0, 41, 0, .16); outline: 2rpx solid rgba(63, 52, 42, .64); outline-offset: -14rpx; }
-.card-title-section { height: 14%; display: flex; align-items: center; justify-content: space-around; flex: 0 0 14%; padding: 18rpx 44rpx 8rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
+.card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; border: 8rpx solid #FFF; border-radius: 40rpx; background: #FFFDF7; box-shadow: 0 26rpx 60rpx rgba(0, 41, 0, .16); }
+.card-title-section { height: 10.5%; display: flex; align-items: center; justify-content: space-around; flex: 0 0 10.5%; padding: 18rpx 44rpx 8rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
 .card-wordmark, .name { display: block; }
 .card-wordmark { color: #65705F; font-size: 16rpx; font-weight: 600; letter-spacing: 3rpx; }
 .name { max-width: 440rpx; overflow: hidden; margin-top: 2rpx; color: #3C2D24; font-family: "PingFang SC", sans-serif; font-size: 50rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .title-star { color: #EFC84B; font-size: 34rpx; }
-.card-illustration-section { height: 54%; display: flex; align-items: center; justify-content: center; flex: 0 0 54%; margin: 0 28rpx 10rpx; overflow: hidden; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
+.card-illustration-section { width: calc(100% - 56rpx); aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; margin: 0 auto 10rpx; overflow: hidden; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
 .illustration { width: 100%; height: 100%; }
-.card-data-section { height: calc(32% - 10rpx); display: grid; grid-template-rows: repeat(3, 1fr); flex: 0 0 calc(32% - 10rpx); margin: 0 30rpx 28rpx; overflow: hidden; border: 3rpx solid #94AB61; border-radius: 24rpx; box-sizing: border-box; }
+.card-data-section { min-height: 0; display: grid; grid-template-rows: repeat(3, 1fr); flex: 1 1 auto; margin: 0 30rpx 28rpx; overflow: hidden; border: 3rpx solid #94AB61; border-radius: 24rpx; box-sizing: border-box; }
 .stat-row { min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx 0 12rpx; }
 .stat-row + .stat-row { border-top: 3rpx solid #A7B978; }
 .stat-label { display: flex; align-items: center; gap: 16rpx; color: #2D251F; font-size: 24rpx; font-weight: 600; }
@@ -27,4 +27,4 @@
 .primary::after, .secondary::after, .text-button::after { border: none; }
 .action-row { display: flex; gap: 18rpx; margin-top: 18rpx; }
 .text-button { margin-top: 12rpx; background: transparent; color: #6F744F; font-size: 24rpx; }
-.share-canvas { position: fixed; top: 0; left: -2000px; width: 600px; height: 840px; }
+.share-canvas { position: fixed; top: 0; left: -2000px; width: 600px; height: 1067px; }

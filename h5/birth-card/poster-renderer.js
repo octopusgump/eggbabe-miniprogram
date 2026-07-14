@@ -4,10 +4,10 @@
   else root.EggbabePosterRenderer = api;
 }(typeof self !== 'undefined' ? self : this, function () {
   const WIDTH = 1080;
-  const CARD_HEIGHT = 1440;
-  const HEIGHT = 1680;
-  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.14);
-  const ILLUSTRATION_HEIGHT = Math.round(CARD_HEIGHT * 0.54);
+  const CARD_HEIGHT = 1920;
+  const HEIGHT = 2160;
+  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.105);
+  const ILLUSTRATION_HEIGHT = Math.round((WIDTH - 108) * 5 / 4) + 24;
   const DATA_HEIGHT = CARD_HEIGHT - TITLE_HEIGHT - ILLUSTRATION_HEIGHT;
 
   function loadImage(src) {
@@ -84,7 +84,7 @@
     context.fillStyle = gradient;
     context.fillRect(x, y, width, height);
     if (background) drawCover(context, background, x, y, width, height);
-    if (figure) drawContain(context, figure, x, y, width, height);
+    if (figure) drawCover(context, figure, x, y, width, height);
     else {
       context.fillStyle = 'rgba(63,90,71,.3)';
       context.font = '400 330px serif';

@@ -35,9 +35,10 @@ const cardFace = html.match(/<section id="card-view"[\s\S]*?<\/section>/)[0];
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.wxml').includes('<web-view'), true, 'H5 容器必须使用 web-view');
-assert.equal(css.includes('--title-ratio: 14%'), true, '卡面必须明确约 14% 名字标题区');
-assert.equal(css.includes('--illustration-ratio: 54%'), true, '卡面必须明确约 54% 居中插画区');
-assert.equal(css.includes('--data-ratio: 32%'), true, '卡面必须明确约 32% 三行数据区');
+assert.match(css, /\.birth-card\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/, '卡面必须使用竖版比例承载 4:5 插画');
+assert.match(css, /\.illustration-frame\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '卡面插画视口必须锁定 4:5');
+assert.equal(/\.birth-card\s*\{[^}]*outline:/s.test(css), false, '卡面不得显示黑色内描边');
+assert.match(css, /\.hero-figure\s*\{[^}]*object-fit:\s*cover/, '4:5 插画必须铺满视口，不得留白');
 ['card-title-section', 'card-illustration-section', 'card-data-section'].forEach(className => assert.equal(cardFace.includes(className), true, `H5 卡面缺少三段式结构 ${className}`));
 assert.equal(html.includes('eggbabe'), true, 'H5 卡面必须使用 eggbabe 品牌字标');
 assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须显示生日');
@@ -53,6 +54,9 @@ assert.equal(css.includes('.stat-grid'), true, 'H5 收藏卡必须统一使用�
 assert.equal(css.toLowerCase().includes('border: 1.5px solid #94ab61'), true, 'H5 信息牌必须使用参考图的绿色圆角边框');
 assert.equal(poster.includes('drawCollectibleStats'), true, '分享海报必须使用与卡面一致的三行信息牌');
 assert.equal(poster.includes('card.statRows.map'), true, '分享海报必须消费卡片模型中已经按契约排序的信息行');
+assert.equal(poster.includes('const CARD_HEIGHT = 1920'), true, '分享长图的卡面必须同步为 9:16 竖版');
+assert.equal(poster.includes('CARD_HEIGHT * 0.105'), true, '分享长图标题区必须与屏显 10.5% 契约一致');
+assert.equal(poster.includes("if (figure) drawCover(context, figure"), true, '分享长图的 4:5 插画必须铺满视口');
 assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不得显示血型');
 assert.equal(cardFace.includes('data-field="signature"'), false, 'MVP 正面不得显示性格长句');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');

@@ -1,9 +1,8 @@
 {
-  "version": "eggbabe-card-face-v2.11",
-  "aspectRatio": "3 / 4",
-  "titleRatio": "14%",
-  "illustrationRatio": "54%",
-  "dataRatio": "32%",
+  "version": "eggbabe-card-face-v2.12",
+  "aspectRatio": "9 / 16",
+  "titleRatio": "10.5%",
+  "illustrationAspectRatio": "4 / 5",
   "brandName": "eggbabe",
   "fields": ["name", "birthday", "constellation", "mbti", "collectorLabel"],
   "recordFields": ["setCode", "uniqueCode"],

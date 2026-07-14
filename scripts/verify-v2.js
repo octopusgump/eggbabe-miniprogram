@@ -147,7 +147,7 @@ async function main() {
     assert.equal(previewTemplate.includes(field), true, `完整卡面预览缺少 ${field}`);
   });
   assert.equal(previewTemplate.includes(faceContract.brandName), true, '小程序完整卡面品牌名必须服从 H5 卡面契约');
-  assert.equal(previewTemplate.includes('mode="aspectFit"'), true, '完整卡面必须完整显示 Hero');
+  assert.equal(previewTemplate.includes('mode="aspectFill"'), true, '完整卡面的 4:5 Hero 必须铺满插画视口');
   assert.equal(previewTemplate.includes('bloodType'), false, '完整套卡正面不得显示血型');
   ['card-dots', 'set-number', 'card-footer', 'current.statusLabel', 'current.uniqueCode'].forEach(content => {
     assert.equal(previewTemplate.includes(content), false, `完整卡面不得继续显示 ${content}`);
@@ -161,10 +161,9 @@ async function main() {
   const previewStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxss'), 'utf8');
   const h5Template = fs.readFileSync(path.join(__dirname, '../h5/birth-card/index.html'), 'utf8');
   const h5Styles = fs.readFileSync(path.join(__dirname, '../h5/birth-card/styles.css'), 'utf8');
-  assert.match(previewStyles, new RegExp(`\\.card-title-section\\s*\\{[^}]*height:\\s*${faceContract.titleRatio}`), '完整卡面必须保持 H5 契约的标题区比例');
-  assert.match(previewStyles, new RegExp(`\\.card-illustration-section\\s*\\{[^}]*height:\\s*${faceContract.illustrationRatio}`), '完整卡面必须保持 H5 契约的插画区比例');
-  assert.match(previewStyles, new RegExp(`\\.card-data\\s*\\{[^}]*height:\\s*${faceContract.dataRatio}`), '完整卡面必须保持 H5 契约的信息区比例');
-  assert.equal(previewStyles.includes('width: 675rpx; height: 900rpx'), true, '小程序完整卡面必须保持 H5 契约的 3:4 比例');
+  assert.equal(previewStyles.includes('width: 675rpx; height: 1200rpx'), true, '小程序完整卡面必须为 4:5 插画留出竖版空间');
+  assert.match(previewStyles, /\.card-illustration-section\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '小程序插画视口必须锁定 4:5');
+  assert.equal(/\.preview-card\s*\{[^}]*outline:/s.test(previewStyles), false, '完整卡面不得显示黑色内描边');
   assert.equal(previewStyles.toLowerCase().includes('border: 3rpx solid #94ab61'), true, '信息区必须使用参考图的绿色圆角边框');
   ['card-title-section', 'card-illustration-section', 'hero-figure', 'collect-badge', 'card-data-section', 'stat-grid'].forEach(className => {
     assert.equal(previewTemplate.includes(className), true, `小程序卡面缺少 H5 对齐结构 ${className}`);
@@ -176,9 +175,9 @@ async function main() {
     assert.equal(normalizedMiniStyles.includes(color), true, `小程序卡面缺少共享颜色 ${color}`);
     assert.equal(normalizedH5Styles.includes(color), true, `H5 卡面缺少共享颜色 ${color}`);
   });
-  assert.equal(h5Styles.includes(`--title-ratio: ${faceContract.titleRatio}`), true, 'H5 标题区比例必须服从共享卡面契约');
-  assert.equal(h5Styles.includes(`--illustration-ratio: ${faceContract.illustrationRatio}`), true, 'H5 插画区比例必须服从共享卡面契约');
-  assert.equal(h5Styles.includes(`--data-ratio: ${faceContract.dataRatio}`), true, 'H5 信息区比例必须服从共享卡面契约');
+  assert.match(h5Styles, /\.birth-card\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/, 'H5 卡面必须为 4:5 插画留出竖版空间');
+  assert.match(h5Styles, /\.illustration-frame\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, 'H5 插画视口必须锁定 4:5');
+  assert.equal(/\.birth-card\s*\{[^}]*outline:/s.test(h5Styles), false, 'H5 卡面不得显示黑色内描边');
   const previewPageSource = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.js'), 'utf8');
   assert.equal(previewPageSource.includes('startExhibitionDemo'), false, '直接访问预览页不得静默切换展会模式');
   assert.equal(previewPageSource.includes("navigateTo({ url: '/pages/album/album?tab=scene'"), false, '从预览返回卡册不得重复压入页面栈');

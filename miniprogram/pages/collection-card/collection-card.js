@@ -22,6 +22,13 @@ function drawContain(context, image, x, y, width, height) {
   context.drawImage(image.path, x + (width - targetWidth) / 2, y + (height - targetHeight) / 2, targetWidth, targetHeight);
 }
 
+function drawCover(context, image, x, y, width, height) {
+  const scale = Math.max(width / image.width, height / image.height);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  context.drawImage(image.path, (image.width - sourceWidth) / 2, (image.height - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
+}
+
 Page({
   data: { card: null, pet: null, illustration: '', birthdayLabel: '', zodiacSymbol: '', isNew: false, redirectingToH5: false, posterReady: false, posterUnavailableReason: '' },
 
@@ -65,22 +72,22 @@ Page({
       return;
     }
     const context = wx.createCanvasContext('shareCanvas', this);
-    context.setFillStyle('#FFFDF7'); context.fillRect(0, 0, 600, 840);
+    context.setFillStyle('#FFFDF7'); context.fillRect(0, 0, 600, 1067);
     context.setTextAlign('center'); context.setFillStyle('#65705F'); context.setFontSize(12); context.fillText('eggbabe', 300, 30);
     context.setFillStyle('#EFC84B'); context.setFontSize(25); context.fillText('★', 70, 76); context.fillText('★', 530, 76);
     context.setFillStyle('#3C2D24'); context.setFontSize(42); context.fillText(card.name, 300, 88);
-    context.setFillStyle('#EAF3F4'); context.fillRect(32, 112, 536, 420);
-    drawContain(context, illustrationImage, 32, 112, 536, 420);
+    context.setFillStyle('#EAF3F4'); context.fillRect(32, 112, 536, 670);
+    drawCover(context, illustrationImage, 32, 112, 536, 670);
     const rows = [['人', 'MBTI', card.mbti], ['★', '星座', `${card.zodiac} ${this.data.zodiacSymbol}`], ['礼', '生日', this.data.birthdayLabel]];
-    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(38, 550, 524, 192);
+    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(38, 800, 524, 192);
     rows.forEach((row, index) => {
-      const y = 582 + index * 64;
-      if (index) { context.beginPath(); context.moveTo(38, 550 + index * 64); context.lineTo(562, 550 + index * 64); context.stroke(); }
+      const y = 832 + index * 64;
+      if (index) { context.beginPath(); context.moveTo(38, 800 + index * 64); context.lineTo(562, 800 + index * 64); context.stroke(); }
       context.setTextAlign('left'); context.setFillStyle('#2D251F'); context.setFontSize(18); context.fillText(`${row[0]}  ${row[1]}`, 62, y);
       context.setTextAlign('right'); context.fillText(row[2], 538, y);
     });
-    context.setTextAlign('left'); context.setFillStyle('#5D675F'); context.setFontSize(15); context.fillText(card.serial, 38, 790);
-    drawContain(context, miniProgramCodeImage, 494, 752, 78, 78);
+    context.setTextAlign('left'); context.setFillStyle('#5D675F'); context.setFontSize(15); context.fillText(card.serial, 38, 1030);
+    drawContain(context, miniProgramCodeImage, 504, 998, 58, 58);
     context.draw(false, () => this.setData({ posterReady: true, posterUnavailableReason: '' }));
   },
 
@@ -95,9 +102,9 @@ Page({
     wx.canvasToTempFilePath({
       canvasId: 'shareCanvas',
       width: 600,
-      height: 840,
+      height: 1067,
       destWidth: 1200,
-      destHeight: 1680,
+      destHeight: 2134,
       success: ({ tempFilePath }) => {
         wx.saveImageToPhotosAlbum({
           filePath: tempFilePath,

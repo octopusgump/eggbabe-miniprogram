@@ -11,7 +11,6 @@ exports.main = async event => {
   if (!cards.data.length) return { ok: false, code: 'CARD_NOT_FOUND' };
   const source = event.changes || {};
   const changes = {};
-  if (source.saved !== undefined) changes.saved = !!source.saved;
   if (source.shared !== undefined) changes.shared = !!source.shared;
   changes.updated_at = db.serverDate();
   await db.collection('scene_cards').doc(cards.data[0]._id).update({ data: changes });

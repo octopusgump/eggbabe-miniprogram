@@ -24,12 +24,6 @@ Page({
     this.setData({ tab });
     analytics.track('album_view', { album_tab: tab });
   },
-  onSaveSceneCard(event) {
-    const result = sceneCardStore.markSaved(event.currentTarget.dataset.id);
-    if (!result.ok) return wx.showToast({ title: result.message, icon: 'none' });
-    this.onShow();
-    wx.showToast({ title: '已在卡册中标记', icon: 'success' });
-  },
   onSceneCardImageError(event) {
     const cardId = event.currentTarget.dataset.cardId;
     this.setData({ setSlots: this.data.setSlots.map(card => card.cardId === cardId ? Object.assign({}, card, { imageFailed: true }) : card) });

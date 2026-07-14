@@ -4,7 +4,6 @@
     <view class="demo-note">按 H5 规格还原 · 非正式发行副本</view>
     <view wx:if="{{current}}" class="preview-heading">
       <view><text class="heading-kicker">{{current.setName}}</text><text class="heading-title">{{current.cardTitle}}</text></view>
-      <text class="heading-count">{{currentIndex + 1}} / {{total}}</text>
     </view>
 
     <view wx:if="{{current}}" class="preview-card birth-card">
@@ -15,19 +14,15 @@
         <text class="collect-badge">{{current.collectorLabel}}</text>
       </view>
       <view class="card-data">
-        <view class="identity-row"><text class="card-name">{{current.name}}</text><text class="set-number">{{current.setCode}} · {{current.collectorLabel}}</text></view>
+        <view class="identity-row"><text class="card-name">{{current.name}}</text></view>
         <view class="stat-grid">
           <view><text class="stat-label">生日</text><text class="stat-value">{{current.birthday}}</text></view>
           <view><text class="stat-label">星座</text><text class="stat-value">{{current.constellation}}</text></view>
           <view><text class="stat-label">MBTI</text><text class="stat-value">{{current.mbti}}</text></view>
         </view>
-        <view class="card-footer"><text class="meta-line">{{current.statusLabel}}</text><text class="copy-code">{{current.uniqueCode}}</text></view>
       </view>
     </view>
 
-    <view class="card-dots">
-      <view wx:for="{{cards}}" wx:key="cardId" class="card-dot {{index === currentIndex ? 'card-dot--active' : ''}}" data-index="{{index}}" bindtap="onSelect"><text>{{index + 1}}</text></view>
-    </view>
     <view class="pager"><button class="pager-button" bindtap="onPrevious"><text class="button-label">上一张</text></button><button class="pager-button pager-button--primary" bindtap="onNext"><text class="button-label">下一张</text></button></view>
     <button class="album-button" bindtap="onOpenAlbum"><text class="button-label">返回收藏套卡</text></button>
     <view class="safe-space"></view>

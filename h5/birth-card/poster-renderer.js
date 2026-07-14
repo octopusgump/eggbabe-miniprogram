@@ -77,6 +77,7 @@
   }
 
   async function generatePoster(card, assets, canvas) {
+    const isCollectible = card.cardType === 'collectible';
     if (card.mode === 'live' && !card.miniProgramCodeUrl) throw new Error('MINI_CODE_REQUIRED');
     const target = canvas || document.createElement('canvas');
     target.width = WIDTH;
@@ -111,8 +112,8 @@
     context.fillStyle = 'rgba(255,255,255,.72)';
     context.fillText(card.cardType === 'collectible' ? 'COLLECTIBLE CARD' : 'BIRTH CARD', 74, 130);
     context.font = '600 28px sans-serif';
-    const badgeText = card.cardType === 'collectible' ? card.collectorLabel : card.collectAttr;
-    const badgeWidth = card.cardType === 'collectible' ? 150 : (card.collectAttr === '限定' ? 128 : 110);
+    const badgeText = isCollectible ? card.collectorLabel : card.collectAttr;
+    const badgeWidth = isCollectible ? 150 : (card.collectAttr === '限定' ? 128 : 110);
     drawRoundedRect(context, WIDTH - badgeWidth - 70, 56, badgeWidth, 64, 32);
     context.fillStyle = card.collectAttr === '限定' ? '#F1D384' : 'rgba(255,255,255,.88)';
     context.fill();
@@ -126,30 +127,34 @@
     context.fillStyle = '#172018';
     context.font = '600 68px sans-serif';
     context.fillText(card.name, 72, HERO_HEIGHT + 105);
-    context.font = '500 28px sans-serif';
-    context.fillStyle = '#687069';
-    context.fillText(card.cardType === 'collectible' ? `${card.setCode} · ${card.collectorLabel}` : `${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
+    if (!isCollectible) {
+      context.font = '500 28px sans-serif';
+      context.fillStyle = '#687069';
+      context.fillText(`${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
+    }
 
-    const statsY = HERO_HEIGHT + 230;
+    const statsY = HERO_HEIGHT + (isCollectible ? 250 : 230);
     drawStat(context, '生日', card.birthday, 74, statsY);
     drawStat(context, '星座', card.constellation, 390, statsY);
     drawStat(context, 'MBTI', card.mbti, 730, statsY);
 
-    context.strokeStyle = '#E6E5DE';
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(74, HERO_HEIGHT + 350);
-    context.lineTo(WIDTH - 74, HERO_HEIGHT + 350);
-    context.stroke();
-    context.font = '500 27px sans-serif';
-    context.fillStyle = '#4D5C50';
-    context.fillText(card.cardType === 'collectible' ? '唯一数字副本' : '唯一身份收藏卡', 74, HERO_HEIGHT + 410);
-    context.font = '500 25px monospace';
-    context.fillStyle = '#242B25';
-    context.fillText(card.code, 74, HERO_HEIGHT + 482);
-    context.font = '400 22px sans-serif';
-    context.fillStyle = '#8C918D';
-    context.fillText(card.mode === 'demo' ? '展会体验卡 · 不进入正式收藏' : (card.cardType === 'collectible' ? '唯一数字副本' : '唯一身份收藏卡'), 74, HERO_HEIGHT + 524);
+    if (!isCollectible) {
+      context.strokeStyle = '#E6E5DE';
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(74, HERO_HEIGHT + 350);
+      context.lineTo(WIDTH - 74, HERO_HEIGHT + 350);
+      context.stroke();
+      context.font = '500 27px sans-serif';
+      context.fillStyle = '#4D5C50';
+      context.fillText('唯一身份收藏卡', 74, HERO_HEIGHT + 410);
+      context.font = '500 25px monospace';
+      context.fillStyle = '#242B25';
+      context.fillText(card.code, 74, HERO_HEIGHT + 482);
+      context.font = '400 22px sans-serif';
+      context.fillStyle = '#8C918D';
+      context.fillText(card.mode === 'demo' ? '展会体验卡 · 不进入正式收藏' : '唯一身份收藏卡', 74, HERO_HEIGHT + 524);
+    }
     if (miniCode) drawContain(context, miniCode, WIDTH - 206, HERO_HEIGHT + 370, 138, 138);
     else drawCodePlaceholder(context, WIDTH - 206, HERO_HEIGHT + 370, 138);
 

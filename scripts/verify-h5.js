@@ -20,6 +20,7 @@ required.forEach(file => assert.equal(fs.existsSync(path.join(root, file)), true
 const html = read('h5/birth-card/index.html');
 const css = read('h5/birth-card/styles.css');
 const app = read('h5/birth-card/app.js');
+const poster = read('h5/birth-card/poster-renderer.js');
 const appJson = JSON.parse(read('miniprogram/app.json'));
 const h5Page = read('miniprogram/pages/h5-card/h5-card.js');
 const miniBridge = read('miniprogram/services/birth-card-h5.js');
@@ -42,6 +43,10 @@ assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显�
 assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不得显示血型');
 assert.equal(cardFace.includes('data-field="signature"'), false, 'MVP 正面不得显示性格长句');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');
+assert.equal(app.includes('card.setCode'), false, '收藏卡名字下方不得再渲染套装编号');
+assert.equal(app.includes('cardSubtitle.hidden = isCollectible'), true, '收藏卡必须隐藏名字下方的副标题编号');
+assert.equal(app.includes('cardFooter.hidden = isCollectible'), true, '收藏卡必须隐藏已获得状态和唯一副本编号区');
+assert.equal(poster.includes('if (!isCollectible)'), true, '收藏卡分享海报也必须隐藏副标题和副本信息');
 assert.equal(app.includes('card.setName}'), false, 'MVP 收藏卡正面不得额外显示套装名');
 assert.equal(app.includes('card.treatment}'), false, 'MVP 收藏卡正面不得额外显示 BASE 标签');
 assert.equal(/Math\.random/.test([app, read('h5/birth-card/card-model.js'), read('h5/birth-card/poster-renderer.js')].join('\n')), false, 'H5 不得生成任何随机卡片值');
@@ -77,7 +82,7 @@ for (const file of actualFigureFiles) {
 }
 assert.equal(firstSet.setSize, firstSet.cards.length, '套装 setSize 必须等于实际清单数量');
 assert.deepEqual(firstSet.treatments, ['BASE'], 'MVP 第一季只能发布 BASE 版本');
-assert.deepEqual(firstSet.cardFaceFields, ['name', 'birthday', 'constellation', 'mbti', 'set_number', 'unique_code'], 'MVP 卡面字段不得加入未确认属性');
+assert.deepEqual(firstSet.cardFaceFields, ['name', 'birthday', 'constellation', 'mbti', 'collector_number'], 'MVP 卡面只保留用户确认的可见字段');
 const figureIds = new Set(figureCatalog.assets.map(asset => asset.id));
 firstSet.cards.forEach((card, index) => {
   assert.equal(card.collectorNumber, index + 1, '套装清单编号必须连续且不可重排');

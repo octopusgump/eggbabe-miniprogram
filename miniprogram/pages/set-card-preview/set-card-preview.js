@@ -1,5 +1,4 @@
 const petStore = require('../../utils/pet-store');
-const sceneCardStore = require('../../services/scene-card-store');
 const previewService = require('../../services/set-card-preview');
 const analytics = require('../../services/analytics');
 
@@ -13,7 +12,7 @@ Page({
       setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 700);
       return;
     }
-    const cards = previewService.buildPreviewCards(pet, sceneCardStore.list());
+    const cards = previewService.buildPreviewCards(pet);
     const requestedIndex = cards.findIndex(card => card.cardId === query.cardId);
     const currentIndex = requestedIndex >= 0 ? requestedIndex : 0;
     this.setData({ cards, current: cards[currentIndex] || null, currentIndex, total: cards.length });
@@ -31,7 +30,6 @@ Page({
 
   onPrevious() { this.setCurrent(this.data.currentIndex - 1); },
   onNext() { this.setCurrent(this.data.currentIndex + 1); },
-  onSelect(event) { this.setCurrent(Number(event.currentTarget.dataset.index)); },
   onOpenAlbum() {
     const pages = getCurrentPages();
     const previous = pages.length > 1 ? pages[pages.length - 2] : null;

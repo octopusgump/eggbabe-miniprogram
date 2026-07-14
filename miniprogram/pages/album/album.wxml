@@ -35,7 +35,6 @@
             <text wx:if="{{item.quantity > 1}}">查看 {{item.quantity}} 份 ›</text>
           </view>
           <view wx:if="{{item.owned}}" class="card-actions">
-            <view class="card-action" data-id="{{item.instanceId}}" catchtap="onSaveSceneCard">{{item.saved ? '已标记' : '标记'}}</view>
             <button class="card-action card-share" open-type="share" data-id="{{item.instanceId}}" catchtap="onSelectShare"><text class="button-label">分享</text></button>
           </view>
         </view>

@@ -97,7 +97,6 @@ exports.main = async event => {
       issued_at: issuedAt,
       obtained_at: issuedAt,
       provenance_events: [{ type: 'issued', mode: 'live', date, scene_id: sceneId, point_id: pointId }],
-      saved: false,
       shared: false
     };
     await transaction.collection('scene_cards').doc(copyId).set({ data: cardData });

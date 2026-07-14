@@ -68,12 +68,6 @@ function updateCard(cardId, changes) {
   return result.ok ? { ok: true, card: cards[index] } : result;
 }
 
-function markSaved(cardId) {
-  const result = updateCard(cardId, { saved: true });
-  if (result.ok) analytics.track('scene_card_save', { card_id: cardId });
-  return result;
-}
-
 function markShared(cardId) {
   const result = updateCard(cardId, { shared: true });
   if (result.ok) analytics.track('scene_card_share', { card_id: cardId });
@@ -98,7 +92,6 @@ function collectionSummary(character) {
       copies,
       latestCopy,
       instanceId: latestCopy ? latestCopy.id : '',
-      saved: latestCopy ? Boolean(latestCopy.saved) : false,
       uniqueCode: latestCopy ? (latestCopy.uniqueCode || latestCopy.unique_code || '') : '',
       obtainedAt: latestCopy ? (latestCopy.obtainedAt || latestCopy.obtained_at || 0) : 0,
       obtainedLabel: latestCopy ? latestCopy.obtainedLabel : ''
@@ -203,7 +196,6 @@ function localAttemptDrop(sceneKey, pointId, character) {
     copyCount: existingCopyCount + 1,
     isNewDefinition: existingCopyCount === 0,
     mode,
-    saved: false,
     shared: false
   });
   const cards = list().concat(card);
@@ -228,4 +220,4 @@ function attemptDrop(sceneKey, pointId, character) {
   return Promise.resolve(localAttemptDrop(sceneKey, pointId, character));
 }
 
-module.exports = { list, importCloudCards, attemptDrop, dailyState, markSaved, markShared, collectionSummary };
+module.exports = { list, importCloudCards, attemptDrop, dailyState, markShared, collectionSummary };

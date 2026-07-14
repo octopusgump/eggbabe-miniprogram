@@ -80,11 +80,18 @@
     applyTheme(assets);
     const badge = byId('collect-badge');
     const isCollectible = card.cardType === 'collectible';
+    const cardSubtitle = byId('card-subtitle');
+    const cardFooter = byId('card-footer');
+    byId('birth-card').classList.toggle('is-collectible', isCollectible);
     badge.textContent = isCollectible ? card.collectorLabel : card.collectAttr;
     badge.classList.toggle('is-limited', !isCollectible && card.collectAttr === '限定');
     byId('card-kind').textContent = isCollectible ? 'COLLECTIBLE CARD' : 'BIRTH CARD';
-    byId('card-subtitle').textContent = isCollectible ? `${card.setCode} · ${card.collectorLabel}` : `${card.prototypeLabel} · ${card.style} · ${card.gender}`;
-    byId('card-set-line').textContent = isCollectible ? '唯一数字副本' : '唯一身份收藏卡';
+    cardSubtitle.hidden = isCollectible;
+    cardFooter.hidden = isCollectible;
+    if (!isCollectible) {
+      cardSubtitle.textContent = `${card.prototypeLabel} · ${card.style} · ${card.gender}`;
+      byId('card-set-line').textContent = '唯一身份收藏卡';
+    }
     byId('profile-button').hidden = isCollectible;
     byId('mode-chip').hidden = card.mode !== 'demo';
     loading.hidden = true;

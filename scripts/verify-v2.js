@@ -51,14 +51,12 @@ async function main() {
   assert.equal(demoPet.demoMode, true, '展会宠物必须标记 demoMode');
   assert.notEqual(demoPet.id, livePetId, '展会宠物不得复用正式宠物 ID');
 
-  const previewCards = setCardPreview.buildPreviewCards(demoPet, []);
+  const previewCards = setCardPreview.buildPreviewCards(demoPet);
   assert.equal(previewCards.length, 10, '展会模式必须可以预览 YT-S01 全部十张完整卡面');
   assert.equal(previewCards[0].name, '月团', '预览卡必须使用当前展会角色名');
   assert.equal(previewCards[0].birthday, demoPet.collectionCard.birthday, '预览卡必须使用已生成的生日');
   assert.equal(previewCards[0].constellation, demoPet.collectionCard.zodiac, '预览卡必须使用已生成的星座');
   assert.equal(previewCards[0].mbti, demoPet.collectionCard.mbti, '预览卡必须使用已生成的 MBTI');
-  assert.equal(previewCards[0].owned, false, '未抽到的展会卡只能标记为预览，不得伪装成已拥有副本');
-  assert.equal(previewCards[0].uniqueCode, '暂无副本编号', '未抽到的预览卡不得生成虚假的唯一副本编号');
 
   for (const scene of sceneConfig.getScenesForCharacter('玉兔')) {
     assert.equal(sceneConfig.getCardPool('玉兔', scene.key).length > 0, true, `${scene.label}必须配置场景卡池`);
@@ -105,11 +103,6 @@ async function main() {
   const firstCard = sceneCards.list()[0];
   assert.equal(firstCard.setCode, 'YT-S01', '掉落卡必须记录套装代码');
   assert.match(firstCard.uniqueCode, /^EGG-YT-\d{8}-[A-Z0-9]{6}$/, '掉落副本必须生成稳定格式的唯一编号');
-  const ownedPreview = setCardPreview.buildPreviewCards(demoPet, sceneCards.list()).find(card => card.cardId === firstCard.cardId);
-  assert.equal(ownedPreview.owned, true, '已抽到的卡在完整预览中必须标记为已获得');
-  assert.equal(ownedPreview.uniqueCode, firstCard.uniqueCode, '已抽到的完整预览必须显示真实展会副本编号');
-  assert.equal(sceneCards.markSaved(firstCard.id).ok, true, '场景卡必须可以标记保存');
-  assert.equal(sceneCards.list()[0].saved, true, '保存状态必须写入当前模式卡册');
   const summary = sceneCards.collectionSummary('玉兔');
   assert.equal(summary.setCode, 'YT-S01', '收藏完成度必须按套装统计');
   assert.equal(summary.slots.length, 10, '卡册必须保留十个固定卡位');
@@ -130,6 +123,7 @@ async function main() {
   assert.equal(sceneStyles.includes('@keyframes drop-card-wait'), true, '抽卡必须有克制的等待动效');
   assert.equal(sceneStyles.includes('.drop-panel--revealed'), true, '抽卡必须有揭晓完成态');
   const albumTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/album/album.wxml'), 'utf8');
+  const albumPageSource = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/album/album.js'), 'utf8');
   assert.equal(albumTemplate.includes('item.image && !item.imageFailed'), true, '卡册必须显示正式场景卡图片并支持加载失败回退');
   assert.equal(albumTemplate.includes('setSlots'), true, '卡册必须渲染固定 checklist 卡位，而不是只显示已拥有副本');
   assert.equal(albumTemplate.includes('summary.ownedUnique'), true, '卡册必须显示去重后的套装完成度');
@@ -137,10 +131,14 @@ async function main() {
   assert.equal(albumTemplate.includes('onOpenCopies'), true, '重复副本必须可以查看折叠明细');
   assert.equal(albumTemplate.includes('mode="aspectFit"'), true, '固定完整 Hero 不得在卡册中被裁切');
   assert.equal(albumTemplate.includes('预览全部 10 张完整卡面'), true, '展会卡册必须提供十张完整卡面总入口');
+  assert.equal(albumTemplate.includes('标记'), false, '卡册不得继续显示无实际价值的标记功能');
+  assert.equal(albumTemplate.includes('onSaveSceneCard'), false, '卡册不得保留标记交互入口');
+  assert.equal(albumPageSource.includes('onSaveSceneCard'), false, '卡册页面不得保留已下线的标记处理逻辑');
   const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../miniprogram/app.json'), 'utf8'));
   assert.equal(appConfig.pages.includes('pages/set-card-preview/set-card-preview'), true, '小程序必须注册展会完整卡面预览页');
   const previewTemplate = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxml'), 'utf8');
   const faceContract = JSON.parse(fs.readFileSync(path.join(__dirname, '../h5/birth-card/card-face-contract.json'), 'utf8'));
+  assert.deepEqual(faceContract.fields, ['name', 'birthday', 'constellation', 'mbti', 'collectorLabel'], '收藏卡正面字段契约必须保持精简');
   faceContract.fields.map(field => `current.${field}`).concat('current.image').forEach(field => {
     assert.equal(previewTemplate.includes(field), true, `完整卡面预览缺少 ${field}`);
   });
@@ -148,13 +146,16 @@ async function main() {
   assert.equal(previewTemplate.includes(faceContract.cardKind), true, '小程序完整卡面类型必须服从 H5 卡面契约');
   assert.equal(previewTemplate.includes('mode="aspectFit"'), true, '完整卡面必须完整显示 Hero');
   assert.equal(previewTemplate.includes('bloodType'), false, '完整套卡正面不得显示血型');
+  ['card-dots', 'set-number', 'card-footer', 'current.statusLabel', 'current.uniqueCode'].forEach(content => {
+    assert.equal(previewTemplate.includes(content), false, `完整卡面不得继续显示 ${content}`);
+  });
   const previewStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/set-card-preview/set-card-preview.wxss'), 'utf8');
   const h5Template = fs.readFileSync(path.join(__dirname, '../h5/birth-card/index.html'), 'utf8');
   const h5Styles = fs.readFileSync(path.join(__dirname, '../h5/birth-card/styles.css'), 'utf8');
   assert.match(previewStyles, new RegExp(`\\.card-hero\\s*\\{[^}]*height:\\s*${faceContract.heroRatio}`), '完整卡面必须保持 H5 契约的 Hero 比例');
   assert.match(previewStyles, new RegExp(`\\.card-data\\s*\\{[^}]*height:\\s*${faceContract.dataRatio}`), '完整卡面必须保持 H5 契约的信息区比例');
   assert.equal(previewStyles.includes('width: 675rpx; height: 1200rpx'), true, '小程序完整卡面必须保持 H5 契约的 9:16 比例');
-  ['card-hero', 'hero-depth', 'hero-figure', 'brand-lockup', 'collect-badge', 'card-data', 'identity-row', 'stat-grid', 'card-footer'].forEach(className => {
+  ['card-hero', 'hero-depth', 'hero-figure', 'brand-lockup', 'collect-badge', 'card-data', 'identity-row', 'stat-grid'].forEach(className => {
     assert.equal(previewTemplate.includes(className), true, `小程序卡面缺少 H5 对齐结构 ${className}`);
     assert.equal(h5Template.includes(className), true, `H5 卡面缺少共享结构 ${className}`);
   });

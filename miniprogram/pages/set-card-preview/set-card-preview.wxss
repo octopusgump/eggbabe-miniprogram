@@ -1,10 +1,9 @@
 .page { height: 100vh; overflow: hidden; background: #F1F0EA; }
 .content { height: calc(100vh - 180rpx); padding: 22rpx 36rpx 0; box-sizing: border-box; }
 .demo-note { width: fit-content; margin: 0 auto 22rpx; padding: 10rpx 18rpx; border-radius: 999rpx; background: #FFF0C8; color: #69531D; font-size: 19rpx; letter-spacing: 1rpx; }
-.preview-heading { width: 650rpx; margin: 0 auto 18rpx; display: flex; align-items: flex-end; justify-content: space-between; }
+.preview-heading { width: 650rpx; margin: 0 auto 18rpx; }
 .heading-kicker { display: block; font-size: 19rpx; color: #7A7C74; }
 .heading-title { display: block; margin-top: 6rpx; font-size: 30rpx; font-weight: 600; color: #26372C; }
-.heading-count { font-size: 22rpx; color: #73776F; }
 .preview-card { width: 675rpx; height: 1200rpx; margin: 0 auto; overflow: hidden; border: 16rpx solid rgba(255,255,255,.92); border-radius: 56rpx; box-sizing: border-box; background: #FFFDF7; box-shadow: 0 40rpx 120rpx rgba(25,34,27,.18); }
 .card-hero { position: relative; height: 70%; overflow: hidden; background: #F7F3EA; }
 .hero-image, .hero-depth { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -14,20 +13,13 @@
 .brand-name { display: block; font-size: 38rpx; font-weight: 600; line-height: 1; letter-spacing: .01em; }
 .brand-type { display: block; margin-top: 6rpx; font-size: 18rpx; letter-spacing: .18em; color: rgba(255,255,255,.72); }
 .collect-badge { position: absolute; z-index: 5; right: 40rpx; top: 44rpx; min-width: 104rpx; padding: 14rpx 20rpx; border-radius: 999rpx; box-sizing: border-box; background: rgba(255,255,255,.9); color: #263229; text-align: center; font-size: 24rpx; font-weight: 600; }
-.card-data { height: 30%; min-height: 0; display: flex; flex-direction: column; padding: 26rpx 44rpx 24rpx; box-sizing: border-box; background: #FFFDF7; }
+.card-data { height: 30%; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 26rpx 44rpx 24rpx; box-sizing: border-box; background: #FFFDF7; }
 .card-name { display: block; font-size: 45rpx; line-height: 1.15; font-weight: 600; color: #172018; }
-.set-number { display: block; margin-top: 6rpx; font-size: 20rpx; color: #687069; }
-.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20rpx; margin-top: 20rpx; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20rpx; margin-top: 28rpx; }
 .stat-grid > view { min-width: 0; }
 .stat-label { display: block; font-size: 16rpx; color: #898B86; }
 .stat-value { display: block; margin-top: 4rpx; overflow: hidden; font-size: 20rpx; font-weight: 600; color: #172018; white-space: nowrap; text-overflow: ellipsis; }
-.card-footer { margin-top: auto; padding-top: 20rpx; border-top: 1rpx solid #E5E4DC; }
-.meta-line { display: block; font-size: 18rpx; color: #4D5C50; letter-spacing: .04em; }
-.copy-code { display: block; margin-top: 12rpx; font-size: 20rpx; color: #242B25; letter-spacing: .02em; }
-.card-dots { width: 650rpx; margin: 28rpx auto 0; display: grid; grid-template-columns: repeat(10, 1fr); gap: 7rpx; }
-.card-dot { height: 44rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #E0E3DB; color: #747A73; font-size: 16rpx; }
-.card-dot--active { background: #3F5A47; color: #FFF; }
-.pager { width: 650rpx; margin: 20rpx auto 0; display: flex; gap: 18rpx; }
+.pager { width: 650rpx; margin: 28rpx auto 0; display: flex; gap: 18rpx; }
 .pager-button { flex: 1; height: 82rpx; display: flex; align-items: center; justify-content: center; border: 1rpx solid #CDD2CC; border-radius: 999rpx; background: #FFF; color: #3F5A47; font-size: 25rpx; }
 .pager-button::after, .album-button::after { border: 0; }
 .pager-button--primary { border-color: #3F5A47; background: #3F5A47; color: #FFF; }

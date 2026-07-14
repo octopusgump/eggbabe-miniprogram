@@ -1,7 +1,9 @@
 const petStore = require('../../utils/pet-store');
+const config = require('../../config/v2');
+const h5Bridge = require('../../services/birth-card-h5');
 
 Page({
-  data: { card: null, pet: null, isNew: false },
+  data: { card: null, pet: null, isNew: false, redirectingToH5: false },
 
   onLoad(query) {
     const pet = petStore.getPet();
@@ -10,11 +12,16 @@ Page({
       setTimeout(() => wx.navigateBack(), 600);
       return;
     }
+    if (query.native !== '1' && h5Bridge.isValidH5BaseUrl(config.birthCardH5Url)) {
+      this.setData({ redirectingToH5: true });
+      wx.redirectTo({ url: '/pages/h5-card/h5-card?view=card' });
+      return;
+    }
     this.setData({ pet, card: pet.collectionCard, isNew: query.new === '1' });
   },
 
   onReady() {
-    if (this.data.card) this.drawShareCard();
+    if (!this.data.redirectingToH5 && this.data.card) this.drawShareCard();
   },
 
   drawShareCard() {
@@ -22,7 +29,7 @@ Page({
     const context = wx.createCanvasContext('shareCanvas', this);
     context.setFillStyle('#F8F7EF'); context.fillRect(0, 0, 600, 840);
     context.setFillStyle('#002900'); context.fillRect(0, 0, 600, 120);
-    context.setFillStyle('#FFFFFF'); context.setFontSize(22); context.fillText('EGGBABE · 破壳收藏卡', 42, 72);
+    context.setFillStyle('#FFFFFF'); context.setFontSize(22); context.fillText('eggbabe · 破壳收藏卡', 42, 72);
     context.setFillStyle('#FFF9E4'); context.beginPath(); context.arc(300, 290, 106, 0, Math.PI * 2); context.fill();
     if (card.prototype === '玉兔') {
       context.setFillStyle('#FFF9E4'); context.fillRect(238, 135, 42, 110); context.fillRect(320, 135, 42, 110);

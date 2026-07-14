@@ -28,6 +28,11 @@ const STATUS_LINES = {
   }
 };
 
+const CARD_NAME_POOLS = {
+  '玉兔': ['月团', '桂圆', '小满', '云朵', '初弦', '白露'],
+  '锦鲤': ['小福', '锦年', '团彩', '好运', '朝朝', '金豆']
+};
+
 function todayKey(now) {
   return timeService.beijingDateKey(now);
 }
@@ -236,6 +241,10 @@ function updateNickname(name) {
   if (['违法', '诈骗', '赌博'].some(word => value.includes(word))) return { ok: false, message: '昵称含有不适合的内容，请换一个' };
   const first = !pet.tasks.nicknameDone;
   pet.name = value;
+  if (pet.collectionCard) {
+    pet.collectionCard.name = value;
+    pet.collectionCard.name_by_user = true;
+  }
   if (first) addProgress(pet, 20);
   pet.tasks.nicknameDone = true;
   pet.lastInteractionAt = timeService.now();
@@ -359,7 +368,7 @@ function recordTouch() {
 
 function cardSerial(pet) {
   const compact = todayKey(pet.hatchAt).replace(/-/g, '');
-  const prefix = pet.prototype === '锦鲤' ? 'KOI' : 'RABBIT';
+  const prefix = pet.prototype === '锦鲤' ? 'KOI' : 'YT';
   const number = String(simpleHash(pet.id) % 999999).padStart(6, '0');
   return `EGG-${prefix}-${compact}-${number}`;
 }
@@ -406,6 +415,11 @@ function derivePersonality(pet) {
   return { mbti, text: descriptions[mbti] || '有自己的小脾气，也在慢慢学会陪伴你。' };
 }
 
+function generatedName(pet) {
+  const pool = CARD_NAME_POOLS[pet.prototype] || CARD_NAME_POOLS['玉兔'];
+  return pool[simpleHash(`${pet.id}-name`) % pool.length];
+}
+
 function createCollectionCard() {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
@@ -415,10 +429,12 @@ function createCollectionCard() {
   const personality = derivePersonality(pet);
   pet.collectionCard = {
     id: `card-${pet.id}`,
+    mode: runtime.getMode(),
     serial: cardSerial(pet),
     prototype: pet.prototype,
     style: isKoi ? '好运红白款' : '月白桂花款',
-    name: pet.name || pet.prototype,
+    name: pet.name || generatedName(pet),
+    name_by_user: !!pet.name,
     birthday: todayKey(pet.hatchAt),
     zodiac: getZodiac(pet.hatchAt),
     gender: simpleHash(pet.id) % 2 ? '♀' : '♂',

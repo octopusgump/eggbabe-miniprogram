@@ -2,6 +2,10 @@ const cloud = require('wx-server-sdk');
 const crypto = require('crypto');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
+const CARD_NAME_POOLS = {
+  '玉兔': ['月团', '桂圆', '小满', '云朵', '初弦', '白露'],
+  '锦鲤': ['小福', '锦年', '团彩', '好运', '朝朝', '金豆']
+};
 
 function hash(value) { return crypto.createHash('sha256').update(String(value)).digest('hex'); }
 function pick(seed, values) { return values[parseInt(hash(seed).slice(0, 8), 16) % values.length]; }
@@ -30,6 +34,9 @@ function personalityFor(pet) {
   const descriptions = { ENTJ: '勇敢、有主见，也会把你护在身后。', ENFP: '热烈又古灵精怪，总想逗你开心。', ESFP: '亲近、柔软，很会表达对你的喜欢。', INFP: '温柔、细腻，擅长安静地陪伴。', INTJ: '冷静又聪明，喜欢陪你把事情想清楚。' };
   return { mbti, text: descriptions[mbti] || '有自己的小脾气，也在慢慢学会陪伴你。' };
 }
+function generatedName(pet) {
+  return pick(`${pet._id}-name`, CARD_NAME_POOLS[pet.prototype] || CARD_NAME_POOLS['玉兔']);
+}
 
 exports.main = async () => {
   const { OPENID } = cloud.getWXContext();
@@ -47,12 +54,21 @@ exports.main = async () => {
     const hatchAt = new Date(pet.hatch_at).getTime();
     if (Date.now() < hatchAt) return { ok: false, code: 'TOO_EARLY', message: '还没到预设破壳时间' };
     const birthday = beijingDate(hatchAt);
-    const prototypeCode = pet.prototype === '锦鲤' ? 'KOI' : 'RABBIT';
+    const prototypeCode = pet.prototype === '锦鲤' ? 'KOI' : 'YT';
     const personality = personalityFor(pet);
+    const counterId = `${prototypeCode}-${birthday.replace(/-/g, '')}`;
+    let dailySequence = 1;
+    const counters = await transaction.collection('hatch_card_counters').where({ _id: counterId }).limit(1).get();
+    if (counters.data.length) {
+      dailySequence = Number(counters.data[0].next_sequence) || 1;
+      await transaction.collection('hatch_card_counters').doc(counterId).update({ data: { next_sequence: dailySequence + 1, updated_at: db.serverDate() } });
+    } else {
+      await transaction.collection('hatch_card_counters').doc(counterId).set({ data: { next_sequence: 2, created_at: db.serverDate(), updated_at: db.serverDate() } });
+    }
     const card = {
       pet_id: pet._id, user_id: user._id, mode: 'live',
-      serial: `EGG-${prototypeCode}-${birthday.replace(/-/g, '')}-${hash(pet._id).slice(0, 6).toUpperCase()}`,
-      prototype: pet.prototype, style: pet.prototype === '锦鲤' ? '好运红白款' : '月白桂花款', name: pet.name || pet.prototype,
+      serial: `EGG-${prototypeCode}-${birthday.replace(/-/g, '')}-${String(dailySequence).padStart(6, '0')}`,
+      prototype: pet.prototype, style: pet.prototype === '锦鲤' ? '好运红白款' : '月白桂花款', name: pet.name || generatedName(pet), name_by_user: !!pet.name,
       birthday, zodiac: zodiac(birthday), gender: pick(`${pet._id}-gender`, ['♀', '♂']), mbti: personality.mbti,
       bloodType: pick(`${pet._id}-blood`, ['A', 'B', 'O', 'AB']), personality: personality.text,
       collectible: pet.limited_batch ? '限定' : '普通', limited_batch: pet.limited_batch || '',

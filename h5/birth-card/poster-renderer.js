@@ -1,0 +1,163 @@
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.EggbabePosterRenderer = api;
+}(typeof self !== 'undefined' ? self : this, function () {
+  const WIDTH = 1080;
+  const HEIGHT = 1920;
+  const HERO_HEIGHT = Math.round(HEIGHT * 0.7);
+
+  function loadImage(src) {
+    if (!src || typeof Image === 'undefined') return Promise.resolve(null);
+    return new Promise(resolve => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => resolve(image);
+      image.onerror = () => resolve(null);
+      image.src = src;
+    });
+  }
+
+  function drawCover(context, image, x, y, width, height) {
+    const scale = Math.max(width / image.width, height / image.height);
+    const sourceWidth = width / scale;
+    const sourceHeight = height / scale;
+    context.drawImage(image, (image.width - sourceWidth) / 2, (image.height - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
+  }
+
+  function drawContain(context, image, x, y, width, height) {
+    const scale = Math.min(width / image.width, height / image.height);
+    const drawWidth = image.width * scale;
+    const drawHeight = image.height * scale;
+    context.drawImage(image, x + (width - drawWidth) / 2, y + height - drawHeight, drawWidth, drawHeight);
+  }
+
+  function drawRoundedRect(context, x, y, width, height, radius) {
+    context.beginPath();
+    context.moveTo(x + radius, y);
+    context.arcTo(x + width, y, x + width, y + height, radius);
+    context.arcTo(x + width, y + height, x, y + height, radius);
+    context.arcTo(x, y + height, x, y, radius);
+    context.arcTo(x, y, x + width, y, radius);
+    context.closePath();
+  }
+
+  function drawFallbackFigure(context, card, assets) {
+    const gradient = context.createRadialGradient(WIDTH / 2, HERO_HEIGHT * 0.48, 20, WIDTH / 2, HERO_HEIGHT * 0.52, 370);
+    gradient.addColorStop(0, assets.accent || '#EDE78E');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 180, WIDTH, HERO_HEIGHT - 180);
+    context.fillStyle = 'rgba(255,255,255,.93)';
+    context.font = '600 340px sans-serif';
+    context.textAlign = 'center';
+    context.fillText(assets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔'), WIDTH / 2, 930);
+  }
+
+  function drawStat(context, label, value, x, y) {
+    context.fillStyle = '#898B86';
+    context.font = '400 28px sans-serif';
+    context.fillText(label, x, y);
+    context.fillStyle = '#1B211C';
+    context.font = '600 38px sans-serif';
+    context.fillText(value, x, y + 48);
+  }
+
+  function drawCodePlaceholder(context, x, y, size) {
+    context.fillStyle = '#F0F0EA';
+    context.fillRect(x, y, size, size);
+    context.strokeStyle = '#667268';
+    context.lineWidth = 6;
+    context.strokeRect(x + 12, y + 12, size - 24, size - 24);
+    context.fillStyle = '#667268';
+    context.font = '500 22px sans-serif';
+    context.textAlign = 'center';
+    context.fillText('小程序码', x + size / 2, y + size / 2 - 4);
+    context.fillText('待接入', x + size / 2, y + size / 2 + 28);
+  }
+
+  async function generatePoster(card, assets, canvas) {
+    if (card.mode === 'live' && !card.miniProgramCodeUrl) throw new Error('MINI_CODE_REQUIRED');
+    const target = canvas || document.createElement('canvas');
+    target.width = WIDTH;
+    target.height = HEIGHT;
+    const context = target.getContext('2d');
+    const [background, figure, miniCode] = await Promise.all([
+      loadImage(assets.background), loadImage(assets.figure), loadImage(card.miniProgramCodeUrl)
+    ]);
+    if (card.mode === 'live' && !miniCode) throw new Error('MINI_CODE_REQUIRED');
+
+    const heroGradient = context.createLinearGradient(0, 0, WIDTH, HERO_HEIGHT);
+    heroGradient.addColorStop(0, assets.heroStart || '#131A34');
+    heroGradient.addColorStop(1, assets.heroEnd || '#553059');
+    context.fillStyle = heroGradient;
+    context.fillRect(0, 0, WIDTH, HERO_HEIGHT);
+    if (background) drawCover(context, background, 0, 0, WIDTH, HERO_HEIGHT);
+    const depthGradient = context.createLinearGradient(0, 0, 0, HERO_HEIGHT);
+    depthGradient.addColorStop(0, 'rgba(5,8,20,.16)');
+    depthGradient.addColorStop(.62, 'rgba(5,8,20,0)');
+    depthGradient.addColorStop(1, 'rgba(5,8,20,.55)');
+    context.fillStyle = depthGradient;
+    context.fillRect(0, 0, WIDTH, HERO_HEIGHT);
+    if (figure) drawContain(context, figure, 90, 180, 900, HERO_HEIGHT - 180);
+    else drawFallbackFigure(context, card, assets);
+
+    context.textAlign = 'left';
+    context.fillStyle = '#FFFFFF';
+    context.font = '600 46px sans-serif';
+    context.fillText('eggbabe', 72, 92);
+    context.font = '400 24px sans-serif';
+    context.fillStyle = 'rgba(255,255,255,.72)';
+    context.fillText('BIRTH CARD', 74, 130);
+    context.font = '600 28px sans-serif';
+    const badgeWidth = card.collectAttr === '限定' ? 128 : 110;
+    drawRoundedRect(context, WIDTH - badgeWidth - 70, 56, badgeWidth, 64, 32);
+    context.fillStyle = card.collectAttr === '限定' ? '#F1D384' : 'rgba(255,255,255,.88)';
+    context.fill();
+    context.fillStyle = '#263229';
+    context.textAlign = 'center';
+    context.fillText(card.collectAttr, WIDTH - badgeWidth / 2 - 70, 98);
+
+    context.fillStyle = '#FFFDF7';
+    context.fillRect(0, HERO_HEIGHT, WIDTH, HEIGHT - HERO_HEIGHT);
+    context.textAlign = 'left';
+    context.fillStyle = '#172018';
+    context.font = '600 68px sans-serif';
+    context.fillText(`${card.name}  ${card.genderSymbol}`, 72, HERO_HEIGHT + 105);
+    context.font = '500 28px sans-serif';
+    context.fillStyle = '#687069';
+    context.fillText(`${card.prototypeLabel} · ${card.style} · ${card.gender}`, 74, HERO_HEIGHT + 154);
+    context.fillStyle = '#303A31';
+    context.font = '400 30px sans-serif';
+    context.fillText(`“${card.signature || '它把今天安静地收进了心里。'}”`, 74, HERO_HEIGHT + 216);
+
+    const statsY = HERO_HEIGHT + 290;
+    drawStat(context, '生日', card.birthday, 74, statsY);
+    drawStat(context, '星座', card.constellation, 328, statsY);
+    drawStat(context, 'MBTI', card.mbti, 574, statsY);
+    drawStat(context, '血型', card.bloodType, 810, statsY);
+
+    context.strokeStyle = '#E6E5DE';
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(74, HERO_HEIGHT + 412);
+    context.lineTo(WIDTH - 74, HERO_HEIGHT + 412);
+    context.stroke();
+    context.font = '500 27px sans-serif';
+    context.fillStyle = '#4D5C50';
+    context.fillText(card.incubationLevel, 74, HERO_HEIGHT + 470);
+    context.fillText(`初始主人 · ${card.initialOwner}`, 276, HERO_HEIGHT + 470);
+    context.font = '500 25px monospace';
+    context.fillStyle = '#242B25';
+    context.fillText(card.code, 74, HERO_HEIGHT + 542);
+    context.font = '400 22px sans-serif';
+    context.fillStyle = '#8C918D';
+    context.fillText(card.mode === 'demo' ? '展会体验卡 · 不进入正式收藏' : '唯一身份收藏卡', 74, HERO_HEIGHT + 584);
+    if (miniCode) drawContain(context, miniCode, WIDTH - 206, HERO_HEIGHT + 430, 138, 138);
+    else drawCodePlaceholder(context, WIDTH - 206, HERO_HEIGHT + 430, 138);
+
+    return target.toDataURL('image/png', 1);
+  }
+
+  return { WIDTH, HEIGHT, HERO_HEIGHT, generatePoster };
+}));

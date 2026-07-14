@@ -16,7 +16,7 @@ exports.main = async event => {
     const pets = await transaction.collection('pets').where({ user_id: user._id, mode: 'live' }).limit(1).get();
     const pet = pets.data[0];
     if (!pet) return { ok: false, code: 'PET_NOT_FOUND' };
-    if (pet.stage === 'hatched') return { ok: false, code: 'ALREADY_HATCHED' };
+    if (pet.stage === 'hatched' && action !== 'nickname') return { ok: false, code: 'ALREADY_HATCHED' };
     const tasks = pet.tasks || { nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', doodleDone: false };
     const preferences = pet.preferences || { wishes: [], lessons: [] };
     const updates = { tasks, preferences, updated_at: db.serverDate() };
@@ -39,8 +39,11 @@ exports.main = async event => {
       }
     }
     updates.progress = Math.min(100, (pet.progress || 0) + delta);
-    updates.stage = updates.progress > 0 ? 'hatching' : 'waiting';
+    updates.stage = pet.stage === 'hatched' ? 'hatched' : (updates.progress > 0 ? 'hatching' : 'waiting');
     await transaction.collection('pets').doc(pet._id).update({ data: updates });
+    if (action === 'nickname' && pet.hatch_card_id) {
+      await transaction.collection('hatch_cards').doc(pet.hatch_card_id).update({ data: { name: updates.name, name_by_user: true, updated_at: db.serverDate() } });
+    }
     return { ok: true, added: delta, progress: updates.progress, serverTs: Date.now() };
   });
 };

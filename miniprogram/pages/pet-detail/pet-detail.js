@@ -1,10 +1,20 @@
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
+const config = require('../../config/v2');
+const h5Bridge = require('../../services/birth-card-h5');
 
 Page({
-  data: { pet: null, card: null, dailyStatus: null },
+  data: { pet: null, card: null, dailyStatus: null, redirectingToH5: false },
+
+  onLoad(query) {
+    if (query.native !== '1' && h5Bridge.isValidH5BaseUrl(config.birthCardH5Url)) {
+      this.setData({ redirectingToH5: true });
+      wx.redirectTo({ url: '/pages/h5-card/h5-card?view=profile' });
+    }
+  },
 
   onShow() {
+    if (this.data.redirectingToH5) return;
     const pet = petStore.getPet();
     if (!pet || !pet.collectionCard) {
       wx.showToast({ title: '破壳后才会生成档案', icon: 'none' });

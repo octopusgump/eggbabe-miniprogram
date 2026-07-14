@@ -1,0 +1,23 @@
+{
+  "card_id": "card-preview-yutu-001",
+  "mode": "demo",
+  "prototype": "YT",
+  "style": "月白桂花款",
+  "name": "月团",
+  "name_by_user": true,
+  "gender": "FEMALE",
+  "signature": "温柔、细腻，擅长安静地陪伴。",
+  "birthday": "2026-07-14",
+  "hatched_at": "2026-07-14T02:30:00.000Z",
+  "constellation": "巨蟹座",
+  "mbti": "INFP",
+  "blood_type": "O",
+  "code": "EGG-YT-20260714-000001",
+  "collect_attr": "普通",
+  "incubation_level": "完整孵化",
+  "initial_owner": "蛋友3024",
+  "figure_key": "YT__月白桂花款",
+  "bg_key": "YT__月白桂花款",
+  "limited_batch": null,
+  "mini_program_code_url": ""
+}

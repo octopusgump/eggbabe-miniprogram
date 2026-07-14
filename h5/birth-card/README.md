@@ -1,0 +1,34 @@
+# eggbabe 破壳卡 H5
+
+本目录包含破壳收藏卡和角色档案两个移动端 H5 视图。H5 只负责展示、切换档案和生成分享长图，不在浏览器内随机生成姓名、编号或角色属性。
+
+角色档案里的“修改名字”会通过微信 H5 桥回到小程序昵称页；保存后本地卡面与云端卡片记录会同步更新。
+
+## 本地预览
+
+在项目根目录启动任意静态文件服务器，然后打开：
+
+`/h5/birth-card/index.html?preview=1&view=card`
+
+档案页把 `view` 改为 `profile`。预览固定读取 `sample/card.json`。
+
+## 数据入口
+
+页面按以下顺序读取数据：
+
+1. `card_data`：仅供 `demo` 展会体验注入的 URL 编码 JSON。
+2. `card_id`：正式卡通过 `runtime-config.js` 固定的可信 API 读取 `GET {apiBase}/cards/{card_id}?mode=live`。页面不接受 URL 传入 API 地址，防止切换到伪造服务。
+3. `preview=1`：仅本地预览固定样例。
+
+字段契约和合法性由 `card-model.js` 统一校验；姓名为空时只展示“未命名”，不会在 H5 随机起名。
+
+## 上线接入
+
+1. 将本目录发布到已备案的 HTTPS 域名。
+2. 在微信公众平台把该域名加入小程序“业务域名”。
+3. 在 `miniprogram/config/v2.js` 配置 `birthCardH5Url` 和 `birthCardApiBase`；前者用于打开 H5，后者用于正式模式启用前的安全门禁。
+4. 在 H5 的 `runtime-config.js` 固定填写同一可信 `apiBase`，并部署卡片查询接口；正式模式缺少接口时会安全回退原生页或显示错误。
+5. 如需后台更新款式素材，在 `runtime-config.js` 配置 `assetManifestUrl`，返回与 `asset-config.js` 相同结构的 JSON。
+6. 配置 `miniProgramCodeUrl` 或在卡片接口返回 `mini_program_code_url`；正式卡缺少真实小程序码时会阻止导出。
+
+在上述配置未完成前，小程序自动使用原生收藏卡和档案页，不会出现空白 `web-view`。

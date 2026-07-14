@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#131a34">
+  <title>eggbabe 破壳收藏卡</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell" aria-live="polite">
+    <section id="loading" class="state-panel">
+      <span class="loading-egg" aria-hidden="true"></span>
+      <p>正在打开这份小小的惊喜…</p>
+    </section>
+
+    <section id="error" class="state-panel" hidden>
+      <p class="state-title">收藏卡暂时没有打开</p>
+      <p id="error-message" class="state-copy">请回到小程序稍后再试。</p>
+    </section>
+
+    <div id="content" hidden>
+      <div id="mode-chip" class="mode-chip" hidden>展会体验 · DEMO</div>
+
+      <section id="card-view" class="view-section">
+        <article id="birth-card" class="birth-card" aria-label="蛋宝宝破壳收藏卡">
+          <div class="card-hero">
+            <img id="hero-background" class="hero-background" alt="" hidden>
+            <div class="hero-depth"></div>
+            <header class="brand-lockup">
+              <strong>eggbabe</strong>
+              <span>BIRTH CARD</span>
+            </header>
+            <span id="collect-badge" class="collect-badge">普通</span>
+            <div id="fallback-mark" class="fallback-mark" aria-hidden="true">兔</div>
+            <img id="hero-figure" class="hero-figure" alt="蛋宝宝角色形象" hidden>
+          </div>
+
+          <div class="card-data">
+            <div class="identity-row">
+              <div>
+                <h1><span data-field="name">—</span> <span data-field="genderSymbol"></span></h1>
+                <p><span data-field="prototypeLabel">—</span> · <span data-field="style">—</span> · <span data-field="gender">—</span></p>
+              </div>
+            </div>
+            <p class="signature">“<span data-field="signature">—</span>”</p>
+            <dl class="stat-grid">
+              <div><dt>生日</dt><dd data-field="birthday">—</dd></div>
+              <div><dt>星座</dt><dd data-field="constellation">—</dd></div>
+              <div><dt>MBTI</dt><dd data-field="mbti">—</dd></div>
+              <div><dt>血型</dt><dd data-field="bloodType">—</dd></div>
+            </dl>
+            <div class="card-footer">
+              <div class="meta-line"><span data-field="incubationLevel">—</span><span>初始主人 · <b data-field="initialOwner">—</b></span></div>
+              <code data-field="code">—</code>
+            </div>
+          </div>
+        </article>
+
+        <div class="actions">
+          <button id="poster-button" class="primary-button" type="button">生成分享长图</button>
+          <button id="profile-button" class="secondary-button" type="button">查看角色档案</button>
+          <p id="action-message" class="action-message" role="status" hidden></p>
+        </div>
+      </section>
+
+      <section id="profile-view" class="view-section profile-view" hidden>
+        <header class="profile-header">
+          <div id="profile-mark" class="profile-mark" aria-hidden="true">兔</div>
+          <div>
+            <p class="eyebrow">eggbabe PROFILE</p>
+            <h1 data-field="name">—</h1>
+            <p><span data-field="prototypeLabel">—</span> · <span data-field="style">—</span></p>
+          </div>
+        </header>
+        <blockquote>“<span data-field="signature">—</span>”</blockquote>
+        <dl class="profile-list">
+          <div><dt>固定性别</dt><dd><span data-field="genderSymbol"></span> <span data-field="gender">—</span></dd></div>
+          <div><dt>出生日期</dt><dd data-field="birthday">—</dd></div>
+          <div><dt>星座</dt><dd data-field="constellation">—</dd></div>
+          <div><dt>MBTI</dt><dd data-field="mbti">—</dd></div>
+          <div><dt>血型</dt><dd><span data-field="bloodType">—</span> 型</dd></div>
+          <div><dt>孵化品质</dt><dd data-field="incubationLevel">—</dd></div>
+          <div><dt>收藏属性</dt><dd data-field="collectAttr">—</dd></div>
+          <div><dt>唯一编号</dt><dd><code data-field="code">—</code></dd></div>
+          <div><dt>初始主人</dt><dd data-field="initialOwner">—</dd></div>
+        </dl>
+        <div class="actions">
+          <button id="card-button" class="primary-button" type="button">查看破壳收藏卡</button>
+          <button id="rename-button" class="secondary-button" type="button">修改名字</button>
+          <p id="profile-action-message" class="action-message" role="status" hidden></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="poster-modal" class="poster-modal" role="dialog" aria-modal="true" aria-labelledby="poster-title" hidden>
+    <div class="poster-sheet">
+      <button id="poster-close" class="close-button" type="button" aria-label="关闭">×</button>
+      <h2 id="poster-title">分享长图已生成</h2>
+      <p>在微信内长按图片，可保存到手机相册。</p>
+      <img id="poster-image" alt="蛋宝宝破壳收藏卡分享长图">
+      <a id="poster-download" class="download-link" download="eggbabe-birth-card.png">在浏览器中下载图片</a>
+    </div>
+  </div>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="./runtime-config.js"></script>
+  <script src="./card-model.js"></script>
+  <script src="./asset-config.js"></script>
+  <script src="./poster-renderer.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

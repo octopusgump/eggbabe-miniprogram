@@ -58,7 +58,14 @@ assert.equal(h5Poster.includes("if (!card.miniProgramCodeUrl) throw new Error('M
 assert.equal(h5Poster.includes("if (!card.shareCode) throw new Error('SHARE_CODE_REQUIRED')"), true, '分享图必须包含分享码');
 assert.equal(nativeTemplate.includes('待接入小程序码'), false, '原生兜底不得显示待接入小程序码按钮');
 assert.equal(nativeTemplate.includes('分享给好友'), false, '原生兜底不得显示分享给好友按钮');
-assert.equal(nativeTemplate.includes('shareCanvas'), false, '移除原生分享按钮后不得保留隐藏分享画布');
+assert.equal(nativeTemplate.includes('shareCanvas'), false, '原生兜底不得恢复旧分享画布');
+assert.equal(nativeTemplate.includes('canvas-id="cardPosterCanvas"'), true, '原生兜底必须提供当前收藏卡保存画布');
+assert.equal(nativeTemplate.includes('<text class="button-label">保存图片</text>'), true, '原生兜底底部必须提供保存图片按钮');
+assert.equal(nativeTemplate.includes('disabled="{{savingImage}}"'), true, '保存按钮不得因首次海报生成失败而永久禁用');
+assert.match(nativeCss, /\.primary\s*\{[^}]*width:\s*100%/s, '原生保存图片按钮必须铺满内容宽度');
+assert.equal(nativeLogic.includes('wx.openSetting'), true, '原生保存图片必须处理相册权限恢复');
+assert.equal(nativeLogic.includes("analytics.track('card_save'"), true, '原生保存成功必须上报 card_save');
+assert.equal(nativeLogic.includes('drawPetAvatar'), true, '原生导出卡面必须与页面 IP 头像一致');
 assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图片回传小程序');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 

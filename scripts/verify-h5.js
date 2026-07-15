@@ -247,15 +247,114 @@ assert.equal(nativeCardTemplate.includes('查看它的档案'), false, '收藏�
 assert.equal(nativeCardTemplate.includes('查看我的收藏卡'), false, '身份收藏卡不得保留查看卡册按钮');
 assert.equal(nativeCardTemplate.includes('wx:if="{{!isCollectible}}" class="actions"'), false, '身份收藏卡不得保留空的底部操作区');
 assert.equal(nativeCardStyles.includes('.text-button'), false, '两个身份卡按钮删除后不得残留文字按钮样式');
-assert.equal(nativeCardTemplate.includes('<text class="button-label">返回</text>'), true, '具体系列收藏卡必须保留返回按钮');
+assert.equal(nativeCardTemplate.includes('<text class="button-label">保存图片</text>'), true, '具体系列收藏卡底部按钮必须改为保存图片');
+assert.equal(nativeCardTemplate.includes('bindtap="onSaveImage"'), true, '保存图片按钮必须绑定真实保存处理器');
+assert.equal(nativeCardTemplate.includes('disabled="{{savingImage}}"'), true, '保存按钮只能在实际保存期间禁用');
+assert.equal(nativeCardTemplate.includes('!posterReady'), false, '海报首次生成失败后必须允许用户重试');
+assert.equal(nativeCardTemplate.includes('canvas-id="cardPosterCanvas"'), true, '原生回退必须提供收藏卡导出画布');
+assert.equal(nativeCardPage.includes('wx.canvasToTempFilePath'), true, '原生回退必须把收藏卡画布导出为临时图片');
+assert.equal(nativeCardPage.includes('wx.saveImageToPhotosAlbum'), true, '原生回退必须把收藏卡保存到相册');
+assert.equal(nativeCardPage.includes('drawPetAvatar'), true, '导出卡面必须使用与当前页面一致的 IP 头像');
+assert.equal(nativeCardPage.includes('wx.openSetting'), true, '相册权限被拒后必须提供设置恢复路径');
+assert.equal(nativeCardPage.includes("analytics.track('card_save'"), true, '成功保存收藏卡必须记录 card_save');
+assert.match(nativeCardStyles, /\.actions\s*\{[^}]*width:\s*100%/s, '收藏卡底部操作区必须占满内容宽度');
+assert.match(nativeCardStyles, /\.primary\s*\{[^}]*width:\s*100%;[^}]*margin:\s*0/s, '保存图片按钮必须 full width 且移除默认外边距');
 assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
 assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
 assert.equal(nativeCardTemplate.includes('待接入小程序码'), false, '原生完整卡面不得显示待接入小程序码按钮');
 assert.equal(nativeCardTemplate.includes('分享给好友'), false, '原生完整卡面不得显示分享给好友按钮');
 assert.equal(nativeCardTemplate.includes('posterUnavailableReason'), false, '移除按钮后不得残留无操作价值的小程序码提示');
-assert.equal(nativeCardTemplate.includes('shareCanvas'), false, '移除原生分享按钮后不得保留隐藏分享画布');
-assert.equal(nativeCardPage.includes('drawShareCard'), false, '移除原生分享按钮后不得继续后台生成分享图');
-assert.equal(nativeCardPage.includes('onSave()'), false, '移除原生保存按钮后不得保留不可达保存处理器');
+assert.equal(nativeCardTemplate.includes('shareCanvas'), false, '不得恢复已删除的旧分享画布');
+assert.equal(nativeCardPage.includes('drawShareCard'), false, '不得恢复依赖分享码与小程序码的旧分享图逻辑');
+assert.equal(nativeCardPage.includes('miniProgramCodeUrl'), false, '原生保存当前卡面不得依赖小程序码');
+let saveCardDefinition;
+let exportedCanvas = '';
+let savedAlbumPath = '';
+let trackedSave = null;
+let toastTitleAfterSave = '';
+const analytics = require('../miniprogram/services/analytics');
+const originalTrack = analytics.track;
+analytics.track = (event, properties) => { trackedSave = { event, properties }; };
+global.wx.canvasToTempFilePath = options => {
+  exportedCanvas = options.canvasId;
+  options.success({ tempFilePath: '/tmp/eggbabe-card.png' });
+};
+global.wx.saveImageToPhotosAlbum = options => {
+  savedAlbumPath = options.filePath;
+  options.success();
+  options.complete();
+};
+global.wx.showToast = ({ title }) => { toastTitleAfterSave = title; };
+global.Page = definition => { saveCardDefinition = definition; };
+delete require.cache[require.resolve('../miniprogram/pages/collection-card/collection-card.js')];
+require('../miniprogram/pages/collection-card/collection-card.js');
+delete global.Page;
+const nativeCardInstance = Object.assign({}, saveCardDefinition, {
+  data: { sceneCard: { id: 'owned-card' }, posterReady: true, savingImage: false, posterError: '' },
+  setData(patch) { this.data = Object.assign({}, this.data, patch); }
+});
+nativeCardInstance.onSaveImage();
+assert.equal(exportedCanvas, 'cardPosterCanvas', '保存图片必须导出当前收藏卡画布');
+assert.equal(savedAlbumPath, '/tmp/eggbabe-card.png', '保存图片必须把导出结果写入系统相册');
+assert.equal(nativeCardInstance.data.savingImage, false, '保存结束后必须恢复按钮状态');
+assert.deepEqual(trackedSave, { event: 'card_save', properties: { card_id: 'owned-card', source: 'native_fallback' } }, '保存成功必须上报当前收藏卡 ID');
+
+let drawAttempts = 0;
+let retryExports = 0;
+const retryCardInstance = Object.assign({}, saveCardDefinition, {
+  data: { sceneCard: { id: 'retry-card' }, posterReady: false, savingImage: false, posterError: '' },
+  setData(patch) { this.data = Object.assign({}, this.data, patch); },
+  drawCardPoster(done) {
+    drawAttempts += 1;
+    if (drawAttempts === 1) {
+      this.setData({ posterReady: false, posterError: '收藏卡图片还未加载完成，请稍后重试' });
+      done(false);
+      return;
+    }
+    this.setData({ posterReady: true, posterError: '' });
+    done(true);
+  },
+  exportCardPoster() { retryExports += 1; }
+});
+retryCardInstance.onSaveImage();
+assert.equal(retryCardInstance.data.savingImage, false, '海报生成失败后必须恢复保存按钮');
+assert.equal(toastTitleAfterSave, '收藏卡图片还未加载完成，请稍后重试', '生成失败必须给出可重试提示');
+retryCardInstance.onSaveImage();
+assert.equal(drawAttempts, 2, '用户再次点击时必须重新生成卡面');
+assert.equal(retryExports, 1, '重试生成成功后必须继续导出图片');
+
+let openedAlbumSettings = false;
+global.wx.saveImageToPhotosAlbum = options => {
+  options.fail({ errMsg: 'saveImageToPhotosAlbum:fail auth deny' });
+  options.complete();
+};
+global.wx.showModal = options => options.success({ confirm: true });
+global.wx.openSetting = options => {
+  openedAlbumSettings = true;
+  options.success({ authSetting: { 'scope.writePhotosAlbum': true } });
+};
+const deniedCardInstance = Object.assign({}, saveCardDefinition, {
+  data: { sceneCard: { id: 'denied-card' }, posterReady: true, savingImage: false, posterError: '' },
+  setData(patch) { this.data = Object.assign({}, this.data, patch); }
+});
+deniedCardInstance.onSaveImage();
+assert.equal(openedAlbumSettings, true, '相册权限被拒后必须可前往设置开启');
+assert.equal(deniedCardInstance.data.savingImage, false, '权限失败后必须恢复保存按钮');
+
+openedAlbumSettings = false;
+global.wx.saveImageToPhotosAlbum = options => {
+  options.fail({ errMsg: 'saveImageToPhotosAlbum:fail system error' });
+  options.complete();
+};
+deniedCardInstance.onSaveImage();
+assert.equal(openedAlbumSettings, false, '非权限错误不得误导用户打开设置');
+assert.equal(toastTitleAfterSave, '保存图片失败，请重试', '系统保存失败必须给出准确提示');
+
+global.wx.canvasToTempFilePath = options => options.fail({ errMsg: 'canvasToTempFilePath:fail' });
+deniedCardInstance.onSaveImage();
+assert.equal(deniedCardInstance.data.savingImage, false, '画布导出失败后必须恢复保存按钮');
+assert.equal(toastTitleAfterSave, '收藏卡图片生成失败，请重试', '画布导出失败必须给出可重试提示');
+analytics.track = originalTrack;
 assert.equal(nativeCardTemplate.includes('sceneCard.collectorLabel'), true, '原生完整卡面必须显示系列编号');
 assert.equal(nativeCardTemplate.includes('sceneCard.setName'), true, '原生完整卡面必须显示收集系列');
 assert.equal(nativeCardTemplate.includes('class="prototype-name"'), false, '原生回退名字下方不得重复显示类型');

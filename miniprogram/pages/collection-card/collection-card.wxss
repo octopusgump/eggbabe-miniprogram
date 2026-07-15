@@ -18,6 +18,8 @@
 .card-signature { margin-top: 4rpx; padding: 0 14rpx; color: #536057; font-size: 25.2rpx; line-height: 1.4; overflow-wrap: break-word; text-align: center; white-space: normal; }
 .card-signature--compact { font-size: 21.6rpx; }
 .card-signature--dense { font-size: 18rpx; line-height: 1.3; }
-.actions { margin-top: 28rpx; }
-.primary { height: 88rpx; border-radius: 999rpx; background: #3F5A47; color: #FFF; font-size: 27rpx; line-height: 88rpx; }
+.actions { width: 100%; margin-top: 28rpx; }
+.primary { width: 100%; height: 88rpx; margin: 0; border-radius: 999rpx; box-sizing: border-box; background: #3F5A47; color: #FFF; font-size: 27rpx; line-height: 88rpx; }
+.primary[disabled] { background: #8B9A8E; color: #FFF; opacity: 1; }
 .primary::after { border: none; }
+.card-poster-canvas { position: fixed; top: 0; left: -2000px; width: 600px; height: 1067px; }

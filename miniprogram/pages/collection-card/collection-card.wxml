@@ -17,6 +17,7 @@
         <text class="card-signature {{signatureClass}}">“{{cardView.signature}}”</text>
       </view>
     </view>
-    <view wx:if="{{isCollectible}}" class="actions"><button class="primary" bindtap="onBack"><text class="button-label">返回</text></button></view>
+    <view wx:if="{{isCollectible}}" class="actions"><button class="primary" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">保存图片</text></button></view>
+    <canvas canvas-id="cardPosterCanvas" class="card-poster-canvas"></canvas>
   </scroll-view>
 </view>

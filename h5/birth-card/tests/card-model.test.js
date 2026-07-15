@@ -16,8 +16,16 @@ assert.equal(normalized.name, '望舒', 'H5 只能展示生成层下发的固定
 assert.equal(normalized.constellation, '巨蟹座', 'H5 必须直接展示生成层固定的星座值');
 assert.equal(normalized.birthdayLabel, '2026年7月13日', '生日必须显示年月日');
 assert.equal(normalized.avatarId, 'YT_avatar_01', '卡面必须保留服务端下发的头像键');
-assert.equal(normalized.signature, '安静地陪你等月亮。', '卡面必须保留不超过 20 字的性情独白');
+assert.equal(normalized.signature, '安静地陪你等月亮。', '卡面必须原样保留性情独白');
 assert.equal(normalized.mode, 'demo', 'demo 标记必须保留');
+
+const completeSignature = '安静、柔软、很会表达对你的喜欢，也愿意一直陪你慢慢长大。';
+const completeSignatureCard = model.normalizeCard({
+  card_id: 'card-complete-signature', mode: 'demo', prototype: '玉兔', prototype_name: '玉兔', avatar_id: 'YT_avatar_01', style: '月白桂花款', name: '眠云',
+  gender: '♀', signature: completeSignature, birthday: '2026-07-14', constellation: '巨蟹座', mbti: 'ESFP',
+  blood_type: 'A', code: 'EGG-RABBIT-20260714-000129'
+});
+assert.equal(completeSignatureCard.signature, completeSignature, 'H5 模型不得截断服务端下发的完整性情独白');
 
 const collectible = model.normalizeCard({
   card_id: 'copy-1', card_type: 'collectible', mode: 'demo', prototype: '玉兔', prototype_name: '玉兔', avatar_id: 'YT_avatar_01', name: '月团', card_title: '月下冥想',
@@ -34,7 +42,7 @@ assert.equal(collectible.bloodType, 'O', '所有收藏卡必须复用固定身�
 assert.equal(collectible.genderSymbol, '♀', '所有收藏卡必须复用固定身份性别符号');
 assert.equal(collectible.birthdayLabel, faceContract.displayExamples.birthday.label, '收藏卡生日年月日格式必须服从共享卡面契约');
 assert.equal(collectible.constellationLabel, faceContract.displayExamples.constellation.label, '收藏卡星座符号必须服从共享卡面契约');
-assert.deepEqual(faceContract.statOrder, ['birthday', 'constellation', 'genderSymbol', 'bloodType', 'mbti', 'signature'], '共享卡面契约必须冻结九字段信息顺序');
+assert.deepEqual(faceContract.statOrder, ['prototypeLabel', 'birthday', 'constellation', 'genderSymbol', 'bloodType', 'mbti', 'signature'], '共享卡面契约必须冻结六块信息与完整独白顺序');
 
 assert.throws(() => model.normalizeCard({ card_id: 'card-2', mode: 'live' }), /INVALID_CARD/, '缺少固定卡面字段必须拒绝渲染');
 assert.throws(() => model.normalizeCard(Object.assign({}, {

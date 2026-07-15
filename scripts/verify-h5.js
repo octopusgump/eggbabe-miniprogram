@@ -61,17 +61,44 @@ assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显�
   assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.17 字段 ${field}`);
 });
 assert.equal(cardFace.includes('card-avatar-image'), true, 'H5 卡面必须显示 IP 形象头像');
+const cardHeader = cardFace.match(/<header class="card-title-section">[\s\S]*?<\/header>/)[0];
+assert.equal(cardHeader.includes('data-field="prototypeLabel"'), false, '类型不得继续重复显示在名字下方');
+const statLabels = Array.from(cardFace.matchAll(/<dt>([^<]+)<\/dt>/g), match => match[1]);
+assert.deepEqual(statLabels, ['类型', '生日', '星座', '性别', '血型', 'MBTI'], '正面必须按类型优先顺序显示六个信息豆腐块');
 assert.equal(cardFace.includes('data-field="setName"'), true, '收集系列卡必须额外显示系列名');
 assert.equal(cardFace.includes('data-field="cardTitle"'), true, '收集系列卡必须额外显示卡名');
-assert.equal(css.includes('.stat-pair'), true, 'H5 收藏卡必须使用收紧的两列信息布局');
+assert.equal(css.includes('.stat-grid'), true, 'H5 收藏卡必须使用收紧的两列信息布局');
 assert.equal(css.includes('.card-signature'), true, '性情独白必须作为独立留白气口');
+assert.match(css, /\.stat-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*\.85fr\)\s*minmax\(0,\s*1\.15fr\)/s, '六个信息豆腐块必须使用两列三行网格，并为完整生日保留足够宽度');
+assert.match(css, /\.stat-grid dt\s*\{[^}]*font-size:\s*12px/s, 'H5 信息标签字号必须放大到可读尺寸');
+assert.match(css, /\.stat-grid dd\s*\{[^}]*font-size:\s*13px/s, 'H5 信息值字号必须放大到可读尺寸');
+assert.match(css, /\.card-signature\s*\{[^}]*white-space:\s*normal/s, 'H5 性情独白必须允许完整换行');
+assert.equal(/\.card-signature\s*\{[^}]*text-overflow:\s*ellipsis/s.test(css), false, 'H5 性情独白不得使用省略号截断');
+assert.equal(app.includes('function fitCardSignature()'), true, 'H5 必须按数据区可用高度缩放长独白');
+assert.equal(app.includes('dataSection.scrollHeight > dataSection.clientHeight'), true, 'H5 长独白适配必须以真实布局溢出为准');
 assert.equal(poster.includes('drawCardData'), true, '分享海报必须使用与卡面一致的九字段信息区');
 assert.equal(poster.includes('const CARD_HEIGHT = 1920'), true, '分享长图的卡面必须同步为 9:16 竖版');
 const posterTitle = poster.match(/function drawTitle[\s\S]*?\n  }/)[0];
 assert.equal(posterTitle.includes("fillText('★'"), false, '分享长图顶部不得显示星星');
 assert.equal(posterTitle.includes("fillText('eggbabe'"), false, '分享长图名字上方不得显示品牌小字');
-assert.equal(poster.includes('CARD_HEIGHT * 0.15'), true, '分享长图标题区必须与屏显 15% 契约一致');
+assert.equal(posterTitle.includes('card.prototypeLabel'), false, '分享长图名字下方不得重复显示类型');
+assert.equal(poster.includes("['类型', card.prototypeLabel]"), true, '分享长图信息区必须把类型放在六块首位');
+assert.equal(poster.includes("['MBTI', card.mbti]"), true, '分享长图 MBTI 必须并入第六个信息块');
+assert.equal(poster.includes('CARD_HEIGHT * 0.11'), true, '分享长图标题区必须与屏显 11% 契约一致');
 assert.equal(poster.includes("if (figure) drawCover(context, figure"), true, '分享长图的 4:5 插画必须铺满视口');
+const posterRenderer = require('../h5/birth-card/poster-renderer');
+const drawnPosterText = [];
+const posterContext = {
+  beginPath() {}, moveTo() {}, arcTo() {}, closePath() {}, fill() {},
+  measureText(value) { return { width: Array.from(String(value)).length * 20 }; },
+  fillText(value) { drawnPosterText.push(String(value)); }
+};
+const posterSignature = '安静、柔软、很会表达对你的喜欢，也愿意一直陪你慢慢长大。';
+posterRenderer.drawCardData(posterContext, {
+  prototypeLabel: '玉兔', birthdayLabel: '2026年7月14日', constellationLabel: '巨蟹座 ♋',
+  genderSymbol: '♀', bloodType: 'A', mbti: 'ESFP', signature: posterSignature
+});
+assert.equal(drawnPosterText.join('').includes(posterSignature), true, '分享长图必须把完整性情独白逐行绘制出来');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');
 assert.equal(app.includes('card.setCode'), false, '收藏卡名字下方不得再渲染套装编号');
 assert.equal(cardFace.includes('card-subtitle'), false, '卡面不得显示名字下方的旧副标题');
@@ -176,10 +203,24 @@ h5FallbackPage.openNativeFallback('card', true);
 assert.equal(redirectedTo, '/pages/collection-card/collection-card?sceneCardId=owned-card&native=1', 'web-view 地址失效时也必须回退到同一张已拥有收藏卡');
 const nativeCardPage = read('miniprogram/pages/collection-card/collection-card.js');
 const nativeCardTemplate = read('miniprogram/pages/collection-card/collection-card.wxml');
+const nativeCardStyles = read('miniprogram/pages/collection-card/collection-card.wxss');
 assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
 assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
+assert.equal(nativeCardPage.includes('fillText(card.prototype'), false, '原生分享图名字下方不得重复显示类型');
+assert.equal(nativeCardPage.includes('function fitCanvasText('), true, '原生分享图必须在脚注前的可用高度内适配长独白');
+assert.equal(nativeCardPage.includes('950 + index * 20'), false, '原生分享图不得用可能撞到脚注的无限固定行坐标');
 assert.equal(nativeCardTemplate.includes('sceneCard.collectorLabel'), true, '原生完整卡面必须显示系列编号');
 assert.equal(nativeCardTemplate.includes('sceneCard.setName'), true, '原生完整卡面必须显示收集系列');
+assert.equal(nativeCardTemplate.includes('class="prototype-name"'), false, '原生回退名字下方不得重复显示类型');
+assert.deepEqual(Array.from(nativeCardTemplate.matchAll(/<text class="stat-label">([^<]+)<\/text>/g), match => match[1]), ['类型', '生日', '星座', '性别', '血型', 'MBTI'], '原生回退必须显示同顺序的六个信息块');
+assert.match(nativeCardStyles, /\.stat-label\s*\{[^}]*font-size:\s*21rpx/s, '原生回退信息标签字号必须放大');
+assert.match(nativeCardStyles, /\.stat-value\s*\{[^}]*font-size:\s*23rpx/s, '原生回退信息值字号必须放大');
+assert.match(nativeCardStyles, /\.card-signature\s*\{[^}]*white-space:\s*normal/s, '原生回退性情独白必须允许完整换行');
+assert.equal(/\.card-signature\s*\{[^}]*text-overflow:\s*ellipsis/s.test(nativeCardStyles), false, '原生回退性情独白不得使用省略号截断');
+assert.equal(nativeCardPage.includes('.slice(0, 20)'), false, '原生分享图不得按 20 字截断性情独白');
+assert.equal(nativeCardTemplate.includes('{{signatureClass}}'), true, '原生回退必须按独白长度应用可读的紧凑字号');
+assert.equal(nativeCardStyles.includes('.card-signature--compact'), true, '原生回退必须提供长独白紧凑样式');
+assert.equal(nativeCardStyles.includes('.card-signature--dense'), true, '原生回退必须提供超长独白密集样式');
 const sceneCardStore = require('../miniprogram/services/scene-card-store');
 const originalListSceneCards = sceneCardStore.list;
 const originalCollectionSummary = sceneCardStore.collectionSummary;

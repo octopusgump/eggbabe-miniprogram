@@ -2,21 +2,22 @@
 .content { flex: 1; padding: 28rpx 36rpx 64rpx; box-sizing: border-box; }
 .new-banner { margin-bottom: 22rpx; padding: 20rpx 24rpx; border-radius: 20rpx; background: #3F5A47; color: #FFF; font-size: 23rpx; text-align: center; }
 .card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; padding: 24rpx; gap: 16rpx; border-radius: 40rpx; box-sizing: border-box; background: #FFFDF7; box-shadow: 0 26rpx 60rpx rgba(0, 41, 0, .16); }
-.card-title-section { height: 15%; display: grid; grid-template-columns: 82rpx minmax(0,1fr) 82rpx; align-items: center; flex: 0 0 15%; gap: 14rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
+.card-title-section { height: 11%; display: grid; grid-template-columns: 82rpx minmax(0,1fr) 82rpx; align-items: center; flex: 0 0 11%; gap: 14rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
 .card-avatar { width: 78rpx; height: 90rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2rpx solid #DCE4D2; border-radius: 50% 50% 46% 46%; background: #F4F7EC; }
 .title-copy { min-width: 0; }
 .name { display: block; overflow: hidden; color: #3C2D24; font-family: "PingFang SC", sans-serif; font-size: 46rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.prototype-name { display: block; margin-top: 8rpx; color: #788078; font-size: 19rpx; }
 .collect-context { display: block; overflow: hidden; margin-top: 5rpx; color: #6E756D; font-size: 17rpx; text-overflow: ellipsis; white-space: nowrap; }
 .collect-badge { justify-self: end; padding: 10rpx 14rpx; border-radius: 999rpx; background: #F0F2E8; color: #65705F; font-size: 20rpx; font-weight: 600; }
 .card-illustration-section { width: 100%; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
 .illustration { width: 100%; height: 100%; }
-.card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 8rpx; box-sizing: border-box; }
-.stat-pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10rpx; }
-.stat-pair > view,.stat-mbti { display: flex; align-items: center; justify-content: space-between; gap: 8rpx; padding: 8rpx 14rpx; border-radius: 15rpx; background: #F6F6F0; color: #7A807A; font-size: 17rpx; }
-.stat-pair text:last-child,.stat-mbti text:last-child { overflow: hidden; color: #2D251F; font-size: 18rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.stat-mbti { width: 52%; box-sizing: border-box; align-self: center; }
-.card-signature { overflow: hidden; color: #536057; font-size: 20rpx; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 5rpx; box-sizing: border-box; }
+.stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5rpx 10rpx; }
+.stat-cell { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8rpx; padding: 4rpx 12rpx; border-radius: 15rpx; background: #F6F6F0; }
+.stat-label { flex: 0 0 auto; color: #7A807A; font-size: 21rpx; line-height: 1.1; }
+.stat-value { overflow: hidden; color: #2D251F; font-size: 23rpx; font-weight: 600; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.card-signature { color: #536057; font-size: 21rpx; line-height: 1.3; overflow-wrap: break-word; text-align: center; white-space: normal; }
+.card-signature--compact { font-size: 18rpx; }
+.card-signature--dense { font-size: 15rpx; line-height: 1.2; }
 .actions { margin-top: 28rpx; }
 .primary, .secondary { height: 88rpx; border-radius: 999rpx; font-size: 27rpx; line-height: 88rpx; }
 .primary { background: #3F5A47; color: #FFF; }

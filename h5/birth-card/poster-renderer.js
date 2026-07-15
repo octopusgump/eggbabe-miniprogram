@@ -8,7 +8,7 @@
   const HEIGHT = 2160;
   const CARD_INSET = 54;
   const SECTION_GAP = 24;
-  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.15);
+  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.11);
   const ILLUSTRATION_HEIGHT = Math.round((WIDTH - CARD_INSET * 2) * 5 / 4);
   const DATA_HEIGHT = CARD_HEIGHT - CARD_INSET * 2 - TITLE_HEIGHT - ILLUSTRATION_HEIGHT - SECTION_GAP * 2;
   const CJK_FONT = '"PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
@@ -50,12 +50,26 @@
     context.closePath();
   }
 
+  function wrapText(context, value, maxWidth) {
+    const lines = [];
+    let line = '';
+    Array.from(String(value || '')).forEach(character => {
+      const candidate = line + character;
+      if (line && context.measureText(candidate).width > maxWidth) {
+        lines.push(line);
+        line = character;
+      } else line = candidate;
+    });
+    if (line) lines.push(line);
+    return lines.length ? lines : [''];
+  }
+
   function drawTitle(context, card, avatar) {
     context.fillStyle = '#FFFCF4';
     context.fillRect(CARD_INSET, CARD_INSET, WIDTH - CARD_INSET * 2, TITLE_HEIGHT);
     context.fillStyle = '#3C2D24';
     const avatarX = CARD_INSET + 16;
-    const avatarY = CARD_INSET + 54;
+    const avatarY = CARD_INSET + 38;
     roundedRect(context, avatarX, avatarY, 116, 136, 56);
     context.save();
     context.clip();
@@ -65,13 +79,11 @@
     context.restore();
     context.font = `400 74px ${NAME_FONT}`;
     context.textAlign = 'center';
-    context.fillText(card.name, WIDTH / 2, CARD_INSET + 112, 560);
-    context.fillStyle = '#788078';
-    context.font = `400 26px ${CJK_FONT}`;
-    context.fillText(card.prototypeLabel, WIDTH / 2, CARD_INSET + 156);
+    context.fillText(card.name, WIDTH / 2, CARD_INSET + 120, 560);
     if (card.cardType === 'collectible') {
+      context.fillStyle = '#667168';
       context.font = `400 21px ${CJK_FONT}`;
-      context.fillText(`${card.setName} · ${card.cardTitle}`, WIDTH / 2, CARD_INSET + 196, 580);
+      context.fillText(`${card.setName} · ${card.cardTitle}`, WIDTH / 2, CARD_INSET + 168, 580);
     }
     if (card.cardType === 'collectible') {
       const badgeWidth = 160;
@@ -121,8 +133,9 @@
     const cellWidth = (width - gap) / 2;
     const rowHeight = 66;
     const cells = [
-      ['生日', card.birthdayLabel], ['星座', card.constellationLabel],
-      ['性别', card.genderSymbol], ['血型', `${card.bloodType} 型`]
+      ['类型', card.prototypeLabel], ['生日', card.birthdayLabel],
+      ['星座', card.constellationLabel], ['性别', card.genderSymbol],
+      ['血型', `${card.bloodType} 型`], ['MBTI', card.mbti]
     ];
     cells.forEach((cell, index) => {
       const column = index % 2;
@@ -133,30 +146,30 @@
       context.fillStyle = '#F6F6F0';
       context.fill();
       context.fillStyle = '#7A807A';
-      context.font = `400 24px ${CJK_FONT}`;
+      context.font = `400 28px ${cell[0] === 'MBTI' ? LATIN_FONT : CJK_FONT}`;
       context.textAlign = 'left';
       context.fillText(cell[0], left + 22, top + 42);
       context.fillStyle = '#2D251F';
-      context.font = `600 27px ${CJK_FONT}`;
+      context.font = `600 31px ${cell[0] === 'MBTI' ? LATIN_FONT : CJK_FONT}`;
       context.textAlign = 'right';
       context.fillText(cell[1], left + cellWidth - 22, top + 42, cellWidth - 112);
     });
-    const mbtiY = y + (rowHeight + 12) * 2;
-    roundedRect(context, x + width * .24, mbtiY, width * .52, 60, 20);
-    context.fillStyle = '#F6F6F0';
-    context.fill();
-    context.fillStyle = '#7A807A';
-    context.font = `400 24px ${LATIN_FONT}`;
-    context.textAlign = 'left';
-    context.fillText('MBTI', x + width * .24 + 24, mbtiY + 39);
-    context.fillStyle = '#2D251F';
-    context.font = `600 29px ${LATIN_FONT}`;
-    context.textAlign = 'right';
-    context.fillText(card.mbti, x + width * .76 - 24, mbtiY + 39);
+    const signatureTop = y + (rowHeight + 12) * 3 + 6;
+    const signatureHeight = Math.max(36, y + height - signatureTop - 6);
+    let signatureSize = 28;
+    let signatureLineHeight = 38;
+    let signatureLines = [];
+    do {
+      context.font = `400 ${signatureSize}px ${NAME_FONT}`;
+      signatureLineHeight = Math.round(signatureSize * 1.35);
+      signatureLines = wrapText(context, `“${card.signature}”`, width - 80);
+      if (signatureLines.length * signatureLineHeight <= signatureHeight || signatureSize <= 16) break;
+      signatureSize -= 2;
+    } while (signatureSize >= 16);
     context.fillStyle = '#536057';
-    context.font = `400 28px ${NAME_FONT}`;
     context.textAlign = 'center';
-    context.fillText(`“${card.signature}”`, WIDTH / 2, Math.min(y + height - 16, mbtiY + 112), width - 80);
+    const signatureStart = signatureTop + Math.max(signatureLineHeight, (signatureHeight - signatureLines.length * signatureLineHeight) / 2 + signatureLineHeight * .8);
+    signatureLines.forEach((line, index) => context.fillText(line, WIDTH / 2, signatureStart + index * signatureLineHeight));
   }
 
   async function generatePoster(card, assets, canvas) {

@@ -60,7 +60,7 @@
       nameByUser: !!input.name_by_user,
       gender,
       genderSymbol: gender === 'FEMALE' ? '♀' : '♂',
-      signature: String(input.signature || input.personality || '').slice(0, 20),
+      signature: String(input.signature || input.personality || '').trim(),
       birthday,
       birthdayLabel: formatBirthdayLabel(birthday),
       hatchedAt: String(input.hatched_at || ''),

@@ -46,6 +46,18 @@
     });
   }
 
+  function fitCardSignature() {
+    const dataSection = document.querySelector('#birth-card .card-data-section');
+    const signature = document.querySelector('#birth-card .card-signature');
+    if (!dataSection || !signature) return;
+    let fontSize = 12;
+    signature.style.fontSize = `${fontSize}px`;
+    while (dataSection.scrollHeight > dataSection.clientHeight && fontSize > 8) {
+      fontSize -= 1;
+      signature.style.fontSize = `${fontSize}px`;
+    }
+  }
+
   function applyTheme(resolvedAssets) {
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
@@ -139,6 +151,8 @@
     error.hidden = true;
     content.hidden = false;
     setView(!isCollectible && params.get('view') === 'profile' ? 'profile' : 'card', false);
+    fitCardSignature();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCardSignature).catch(() => {});
   }
 
   function parseInjectedCard() {

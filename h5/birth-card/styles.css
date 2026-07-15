@@ -1,5 +1,5 @@
 :root {
-  --title-ratio: 15%;
+  --title-ratio: 11%;
   --ink: #2d251f;
   --muted: #77756e;
   --paper: #fffdf7;
@@ -32,7 +32,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .card-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .card-title-copy { min-width: 0; }
 .card-title-section h1 { overflow: hidden; margin: 0; color: #3c2d24; font-family: var(--name-font); font-size: clamp(25px, 7vw, 37px); font-weight: 400; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-.prototype-name { margin: 5px 0 0; color: #788078; font-size: 11px; line-height: 1; }
 .collect-context { overflow: hidden; margin: 4px 0 0; color: #667168; font-size: 9px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
 .collect-badge { position: absolute; right: 0; top: 50%; padding: 6px 10px; border-radius: 999px; background: #f6f5ee; color: #526054; font-size: 13px; font-weight: 600; transform: translateY(-50%); }
 
@@ -43,14 +42,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .hero-figure { z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .fallback-mark { display: grid; place-items: center; color: rgba(63, 90, 71, .32); font-family: serif; font-size: clamp(140px, 48vw, 240px); text-shadow: 0 0 70px rgba(255, 255, 255, .9); }
 
-.card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 7px; background: var(--paper); }
-.stat-grid { display: grid; grid-template-rows: repeat(3, auto); gap: 4px; margin: 0; }
-.stat-pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: 6px; }
-.stat-pair > div, .stat-mbti { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 9px; border-radius: 10px; background: #f6f6f0; }
-.stat-grid dt { color: #7a807a; font-size: 10px; font-weight: 400; }
-.stat-grid dd { overflow: hidden; margin: 0; color: var(--ink); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.stat-mbti { width: 52%; justify-self: center; }
-.card-signature { overflow: hidden; margin: 0; padding: 2px 10px; color: #536057; font-family: var(--name-font); font-size: 12px; line-height: 1.4; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 3px; background: var(--paper); }
+.stat-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 3px 6px; margin: 0; }
+.stat-cell { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 2px 8px; border-radius: 10px; background: #f6f6f0; }
+.stat-grid dt { flex: 0 0 auto; color: #7a807a; font-size: 12px; font-weight: 400; line-height: 1.1; }
+.stat-grid dd { overflow: hidden; margin: 0; color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.card-signature { margin: 0; padding: 2px 8px; color: #536057; font-family: var(--name-font); font-size: 12px; line-height: 1.3; overflow-wrap: anywhere; text-align: center; white-space: normal; }
 
 .actions { display: grid; gap: 10px; margin-top: 22px; }
 .primary-button, .secondary-button { min-height: 50px; border-radius: 16px; font-weight: 600; cursor: pointer; }
@@ -86,6 +83,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
   .birth-card { border-radius: 22px; }
   .card-title-section { grid-template-columns: 42px minmax(0, 1fr) 68px; }
   .card-avatar { width: 40px; height: 47px; }
-  .stat-grid dd { font-size: 10px; }
+  .stat-grid dd { font-size: 12px; }
+  #card-birthday { font-size: 11.5px; letter-spacing: -.04em; }
 }
 @media (prefers-reduced-motion: reduce) { .loading-egg { animation: none; } }

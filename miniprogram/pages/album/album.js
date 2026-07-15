@@ -40,7 +40,7 @@ Page({
     }
     const pet = petStore.getPet();
     const cardData = h5Bridge.toH5CollectibleCard(pet, card, config);
-    const src = h5Bridge.buildH5Url(config.birthCardH5Url, 'card', cardData, config.birthCardApiBase);
+    const src = h5Bridge.buildH5Url(config.birthCardH5Url, cardData, config.birthCardApiBase);
     if (!src) {
       wx.navigateTo({ url: `/pages/collection-card/collection-card?sceneCardId=${encodeURIComponent(card.id)}&native=1` });
       return;

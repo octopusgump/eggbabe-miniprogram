@@ -42,7 +42,7 @@ Page({
       return;
     }
     if (query.native !== '1' && h5Bridge.isValidH5BaseUrl(config.birthCardH5Url)) {
-      wx.redirectTo({ url: sceneCard ? `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(sceneCard.id)}&view=card` : '/pages/h5-card/h5-card?view=card' });
+      wx.redirectTo({ url: sceneCard ? `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(sceneCard.id)}` : '/pages/h5-card/h5-card' });
       return;
     }
     const card = pet.collectionCard;
@@ -73,8 +73,6 @@ Page({
     }
     wx.navigateTo({ url: '/pages/album/album' });
   },
-  onProfile() { wx.navigateTo({ url: '/pages/pet-detail/pet-detail' }); },
-
   onShareAppMessage() {
     const sceneCard = this.data.sceneCard;
     return {

@@ -104,13 +104,12 @@ function isValidH5BaseUrl(value) {
   return /^https:\/\/[^\s/?#]+(?:[/?#]|$)/i.test(String(value || ''));
 }
 
-function buildH5Url(baseUrl, view, cardData, apiBase) {
+function buildH5Url(baseUrl, cardData, apiBase) {
   if (!isValidH5BaseUrl(baseUrl) || !cardData) return '';
   if (cardData.mode === 'live' && !isValidH5BaseUrl(apiBase)) return '';
   const query = [
     `card_id=${encodeURIComponent(cardData.card_id)}`,
-    `mode=${encodeURIComponent(cardData.mode)}`,
-    `view=${view === 'profile' ? 'profile' : 'card'}`
+    `mode=${encodeURIComponent(cardData.mode)}`
   ];
   if (cardData.mode === 'demo') query.push(`card_data=${encodeURIComponent(JSON.stringify(cardData))}`);
   return `${String(baseUrl).replace(/[?&]$/, '')}${String(baseUrl).includes('?') ? '&' : '?'}${query.join('&')}`;

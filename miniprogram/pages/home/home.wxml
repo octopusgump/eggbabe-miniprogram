@@ -19,7 +19,7 @@
         <view class="progress-ring"><text>{{pet.progress}}%</text></view>
       </view>
 
-      <view class="egg-zone" bindtap="onOpenProfile">
+      <view class="egg-zone" bindtap="onOpenCard">
         <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
         <view class="egg-aura {{eggMotion}}"></view>
         <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene" src="{{sceneImage}}" mode="aspectFill" catchtap="onOpenLifeScene"></image>

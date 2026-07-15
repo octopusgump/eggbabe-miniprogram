@@ -146,8 +146,8 @@ Page({
     }
   },
 
-  onOpenProfile() {
-    if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/pet-detail/pet-detail' });
+  onOpenCard() {
+    if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/collection-card/collection-card' });
   },
 
   onHide() {

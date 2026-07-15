@@ -11,8 +11,6 @@
   const loading = byId('loading');
   const error = byId('error');
   const content = byId('content');
-  const cardView = byId('card-view');
-  const profileView = byId('profile-view');
 
   function notifyMiniProgram(eventName, properties) {
     if (!window.wx || !window.wx.miniProgram) return;
@@ -61,7 +59,6 @@
   function applyTheme(resolvedAssets) {
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
-    byId('profile-mark').textContent = mark;
     byId('card-avatar-mark').textContent = mark;
     setImage(byId('hero-background'), resolvedAssets.background);
     setImage(byId('hero-figure'), resolvedAssets.figure);
@@ -117,20 +114,6 @@
     );
   }
 
-  function setView(view, updateHistory) {
-    const isProfile = view === 'profile' && card.cardType === 'birth';
-    cardView.hidden = isProfile;
-    profileView.hidden = !isProfile;
-    document.title = isProfile ? `${card.name}的角色档案 · eggbabe` : `${card.name}的收藏卡 · eggbabe`;
-    if (updateHistory && window.history && window.history.replaceState) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', isProfile ? 'profile' : 'card');
-      window.history.replaceState({}, '', url.toString());
-    }
-    notifyMiniProgram('h5_birth_card_viewed', { view: isProfile ? 'profile' : 'card', mode: card.mode });
-    window.scrollTo(0, 0);
-  }
-
   function render(raw) {
     card = model.normalizeCard(raw);
     assets = assetConfig.resolveAssets(card, runtimeConfig.assetManifest || assetConfig.manifest);
@@ -145,12 +128,12 @@
     badge.textContent = isCollectible ? card.collectorLabel : '';
     byId('card-birthday').textContent = card.birthdayLabel;
     byId('card-constellation').textContent = card.constellationLabel;
-    byId('profile-button').hidden = isCollectible;
     byId('mode-chip').hidden = card.mode !== 'demo';
     loading.hidden = true;
     error.hidden = true;
     content.hidden = false;
-    setView(!isCollectible && params.get('view') === 'profile' ? 'profile' : 'card', false);
+    document.title = `${card.name}的收藏卡 · eggbabe`;
+    notifyMiniProgram('h5_birth_card_viewed', { view: 'card', mode: card.mode });
     fitCardSignature();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCardSignature).catch(() => {});
   }
@@ -231,19 +214,7 @@
     document.body.style.overflow = '';
   }
 
-  function openRename() {
-    if (window.wx && window.wx.miniProgram) {
-      window.wx.miniProgram.navigateTo({ url: '/pages/nickname/nickname' });
-      return;
-    }
-    byId('profile-action-message').textContent = '请回到蛋宝宝小程序内修改名字。';
-    byId('profile-action-message').hidden = false;
-  }
-
   byId('poster-button').addEventListener('click', generatePoster);
-  byId('profile-button').addEventListener('click', () => setView('profile', true));
-  byId('card-button').addEventListener('click', () => setView('card', true));
-  byId('rename-button').addEventListener('click', openRename);
   byId('poster-close').addEventListener('click', closePoster);
   byId('poster-modal').addEventListener('click', event => { if (event.target === byId('poster-modal')) closePoster(); });
 

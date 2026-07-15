@@ -159,6 +159,45 @@ function nextLocalUniqueCode(character, obtainedAt) {
   return `EGG-${characterCode}-${date}-${String(next).padStart(6, '0')}`;
 }
 
+function seedFullDemoCollection(pet) {
+  if (runtime.getMode() !== 'demo' || !pet || !pet.collectionCard) {
+    return { ok: false, code: 'DEMO_HATCHED_PET_REQUIRED', message: '完全状态测试数据只能写入已孵化的本地测试宠物' };
+  }
+  const set = sceneConfig.getCardSetForCharacter(pet.prototype);
+  if (!set || !set.cards.length) return { ok: false, code: 'CARD_SET_REQUIRED', message: '当前角色还没有可用的收藏系列' };
+  const obtainedAt = time.now();
+  const date = time.beijingDateKey(obtainedAt);
+  const dateToken = date.replace(/-/g, '');
+  const characterCode = pet.prototype === '锦鲤' ? 'KOI' : 'YT';
+  const cards = set.cards.map((template, index) => {
+    const copyId = `full-${pet.id}-${template.cardId}`;
+    const uniqueCode = `EGG-${characterCode}-${dateToken}-F${String(index + 1).padStart(5, '0')}`;
+    const sceneKey = (template.sceneKeys || [])[0] || 'grass';
+    return Object.assign({}, template, {
+      id: copyId,
+      copyId,
+      sceneKey,
+      character: pet.prototype,
+      pointId: 'full-state-test',
+      obtainedAt,
+      obtainedDate: date,
+      issuedAt: obtainedAt,
+      issuedMode: 'demo',
+      heroAssetVersion: 1,
+      cardTemplateVersion: 1,
+      cardSnapshotHash: snapshotHash([copyId, uniqueCode, template.cardId, template.setCode, template.collectorNumber, template.treatment, template.heroAssetId, 1, 1].join('|')),
+      provenanceEvents: [{ type: 'test_seeded', mode: 'demo', date, sceneKey }],
+      uniqueCode,
+      copyCount: 1,
+      isNewDefinition: true,
+      mode: 'demo',
+      shared: false
+    });
+  });
+  const saved = write('scene_cards', cards, 'demo');
+  return saved.ok ? { ok: true, cards } : saved;
+}
+
 function localAttemptDrop(sceneKey, pointId, character) {
   const timeGate = time.requireAuthoritative();
   if (!timeGate.ok) return timeGate;
@@ -233,4 +272,4 @@ function attemptDrop(sceneKey, pointId, character) {
   return Promise.resolve(localAttemptDrop(sceneKey, pointId, character));
 }
 
-module.exports = { list, importCloudCards, attemptDrop, dailyState, markShared, collectionSummary };
+module.exports = { list, importCloudCards, attemptDrop, dailyState, markShared, collectionSummary, seedFullDemoCollection };

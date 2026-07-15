@@ -1,8 +1,8 @@
 module.exports = {
   version: '2.17.0-preview',
   backendEnabled: false,
-  localActivationCode: 'JIHUOMA',
-  localHatchedActivationCode: 'JIHUOMA2',
+  localActivationCode: 'FUHUAQIAN',
+  localHatchedActivationCode: 'FUHUAHOU',
   apiBase: '',
   timezone: 'Asia/Shanghai',
   sceneCardDailyLimit: 2,

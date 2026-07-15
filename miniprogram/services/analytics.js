@@ -39,9 +39,15 @@ function track(eventName, properties) {
 }
 
 function flush() {
-  const events = readQueue();
-  if (!events.length || !config.backendEnabled) return Promise.resolve({ ok: false, pending: events.length });
-  if (runtime.getMode() === 'live' && !time.isAuthoritative()) return Promise.resolve({ ok: false, pending: events.length, code: 'SERVER_TIME_REQUIRED' });
+  const queuedEvents = readQueue();
+  const events = queuedEvents.filter(event => event.mode === 'live');
+  if (!queuedEvents.length || !config.backendEnabled) return Promise.resolve({ ok: false, pending: events.length });
+  if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: events.length, code: 'LIVE_MODE_REQUIRED' });
+  if (!time.isAuthoritative()) return Promise.resolve({ ok: false, pending: events.length, code: 'SERVER_TIME_REQUIRED' });
+  if (!events.length) {
+    storage.set(QUEUE_KEY, []);
+    return Promise.resolve({ ok: true, count: 0, discarded: queuedEvents.length });
+  }
   const uploadEvents = events.map(event => {
     if (event.server_ts) return event;
     const hydrated = Object.assign({}, event, { server_ts: time.now() });
@@ -51,8 +57,8 @@ function flush() {
   return dataApi.trackEvents(uploadEvents).then(result => {
     if (!result.ok) return { ok: false, pending: events.length };
     const current = readQueue();
-    const uploadedIds = new Set(events.map(event => event.event_id));
-    storage.set(QUEUE_KEY, current.filter(event => !uploadedIds.has(event.event_id)));
+    const processedIds = new Set(queuedEvents.map(event => event.event_id));
+    storage.set(QUEUE_KEY, current.filter(event => !processedIds.has(event.event_id)));
     return { ok: true, count: events.length };
   }).catch(() => ({ ok: false, pending: events.length }));
 }

@@ -16,6 +16,9 @@ const petStore = require('../miniprogram/utils/pet-store');
 const sceneConfig = require('../miniprogram/utils/life-scenes');
 const sceneCards = require('../miniprogram/services/scene-card-store');
 const storageMigration = require('../miniprogram/services/storage-migration');
+const analytics = require('../miniprogram/services/analytics');
+const cloudApi = require('../miniprogram/services/cloud-api');
+const config = require('../miniprogram/config/v2');
 
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 
@@ -56,20 +59,21 @@ async function main() {
     hatchAt: time.now() - 1000
   });
   wx.setStorageSync(removedBackupKey, { pet: { id: 'old-incubating-pet' } });
-  assert.equal(petStore.getPet(), null, '升级后必须清除可绕过 JIHUOMA 的旧直达宠物');
+  assert.equal(petStore.getPet(), null, '升级后必须清除可绕过当前测试码的旧直达宠物');
   assert.equal(wx.getStorageSync(removedBackupKey), undefined, '升级后必须清除旧模式遗留备份');
   wx.setStorageSync(removedBackupKey, { pet: { id: 'orphaned-old-pet' } });
   assert.equal(petStore.getPet(), null, '没有当前宠物时仍应维持未绑定状态');
   assert.equal(wx.getStorageSync(removedBackupKey), undefined, '升级后必须单独清除无当前宠物的孤立旧备份');
   petStore.saveUser({ id: 'test-user', nickname: '测试蛋友', registeredAt: time.now() });
-  const invalid = petStore.bindPet('NOT-JIHUOMA', time.now());
+  const invalid = petStore.bindPet('NOT-A-VALID-CODE', time.now());
   assert.equal(invalid.ok, false, '本地完整版不得接受其他激活码');
   assert.equal(invalid.reason, 'INVALID', '非本地验收码必须返回统一无效码原因');
-  const bound = petStore.bindPet(' jihuoma ', time.now());
-  assert.equal(bound.ok, true, '本地完整版必须接受 JIHUOMA，且大小写与首尾空格不敏感');
-  assert.equal(bound.pet.prototype, '玉兔', 'JIHUOMA 当前固定绑定玉兔原型');
+  const bound = petStore.bindPet(' fuhuaqian ', time.now());
+  assert.equal(bound.ok, true, '孵化前测试必须接受 FUHUAQIAN，且大小写与首尾空格不敏感');
+  assert.equal(bound.pet.prototype, '玉兔', 'FUHUAQIAN 当前固定绑定玉兔原型');
   assert.equal(bound.pet.collectionCard, null, '完整版激活不得跳过孵化直接生成收藏卡');
   assert.equal(bound.pet.hatchAt > bound.pet.createdAt, true, '完整版激活必须进入正常孵化周期');
+  assert.equal(sceneCards.list().length, 0, 'FUHUAQIAN 不得预置任何收集系列卡');
 
   const pet = bound.pet;
   pet.hatchAt = time.now() - 1000;
@@ -229,8 +233,8 @@ async function main() {
   ].join('\n');
   const removedCopy = new RegExp([['展', '会'].join(''), ['EXHIB', 'ITION'].join(''), ['exhib', 'ition'].join(''), ['快速', '体验'].join('')].join('|'));
   assert.equal(removedCopy.test(forbiddenSources), false, '用户入口、当前 PRD 与说明不得残留旧公开直达模式');
-  assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'JIHUOMA'"), true, '本地完整版激活码必须固定为 JIHUOMA');
-  assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'JIHUOMA2'"), true, '本地已孵化验收码必须固定为 JIHUOMA2');
+  assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'FUHUAQIAN'"), true, '孵化前测试码必须固定为 FUHUAQIAN');
+  assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'FUHUAHOU'"), true, '孵化后完全状态测试码必须固定为 FUHUAHOU');
   assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.17'), true, '当前 PRD 必须升级为 v2.17');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
@@ -246,13 +250,41 @@ async function main() {
   petStore.resetDemo();
   assert.deepEqual(wx.getStorageSync(runtime.scopedKey('scene_cards')), undefined, '重置本地体验必须同时清除旧会话收藏卡');
   runtime.setMode('demo');
-  const hatched = petStore.bindPet(' jihuoma2 ', time.now());
-  assert.equal(hatched.ok, true, 'JIHUOMA2 必须作为本地已孵化验收码');
-  assert.equal(petStore.getStage(hatched.pet), 'hatched', 'JIHUOMA2 必须直接进入已孵化状态');
-  assert.equal(!!hatched.pet.collectionCard, true, 'JIHUOMA2 必须同时生成身份收藏卡，保证具体卡面可用');
+  const hatched = petStore.bindPet(' fuhuahou ', time.now());
+  assert.equal(hatched.ok, true, 'FUHUAHOU 必须作为本地孵化后完全状态测试码');
+  assert.equal(petStore.getStage(hatched.pet), 'hatched', 'FUHUAHOU 必须直接进入已孵化状态');
+  assert.equal(!!hatched.pet.collectionCard, true, 'FUHUAHOU 必须同时生成身份收藏卡，保证具体卡面可用');
+  const fullCards = sceneCards.list();
+  assert.equal(fullCards.length, 10, 'FUHUAHOU 必须把当前角色 10 张收藏卡全部写入测试卡册');
+  const fullSummary = sceneCards.collectionSummary('玉兔');
+  assert.equal(fullSummary.ownedUnique, 10, 'FUHUAHOU 卡册必须显示 10/10，而不是 0/10');
+  assert.equal(fullSummary.slots.every(slot => slot.owned && slot.instanceId), true, 'FUHUAHOU 的 10 个卡位必须都可点击具体卡面');
+  assert.equal(new Set(fullCards.map(card => card.cardId)).size, 10, 'FUHUAHOU 必须写入 10 个不同收藏位');
+  assert.equal(new Set(fullCards.map(card => card.uniqueCode)).size, 10, 'FUHUAHOU 每张测试卡必须有不同的副本编号');
+  assert.equal(fullCards.every(card => card.mode === 'demo' && card.character === '玉兔'), true, 'FUHUAHOU 全卡数据必须保持为玉兔 demo 测试数据');
   petStore.resetDemo();
+
+  const originalBackendEnabled = config.backendEnabled;
+  const originalServerTime = cloudApi.serverTime;
+  const originalTrackEvents = cloudApi.trackEvents;
+  let uploadedEvents = null;
+  config.backendEnabled = true;
+  cloudApi.serverTime = () => Promise.resolve({ ok: true, serverTs: Date.now() });
+  cloudApi.trackEvents = events => { uploadedEvents = events; return Promise.resolve({ ok: true }); };
   runtime.setMode('live');
-  console.log('V2.17 校验通过：JIHUOMA 正常孵化，JIHUOMA2 直接进入已孵化验收状态，生活场景与收藏卡正常。');
+  await time.sync();
+  wx.setStorageSync('eggbabe_analytics_queue_v2', [
+    { event_id: 'demo-complete', event_name: 'card_set_complete', mode: 'demo', server_ts: time.now() },
+    { event_id: 'live-control', event_name: 'live_control', mode: 'live', server_ts: time.now() }
+  ]);
+  const flushed = await analytics.flush();
+  assert.equal(flushed.ok, true, '正式统计队列必须可以正常上传 live 事件');
+  assert.deepEqual(uploadedEvents.map(event => event.event_id), ['live-control'], 'demo 完全状态事件不得进入正式统计上传');
+  assert.deepEqual(wx.getStorageSync('eggbabe_analytics_queue_v2'), [], '已处理的 demo 与 live 事件必须从本地待上传队列清除');
+  config.backendEnabled = originalBackendEnabled;
+  cloudApi.serverTime = originalServerTime;
+  cloudApi.trackEvents = originalTrackEvents;
+  console.log('V2.17 校验通过：FUHUAQIAN 正常孵化且零预置卡，FUHUAHOU 直接进入已孵化 10/10 完全状态。');
 }
 
 main().catch(error => {

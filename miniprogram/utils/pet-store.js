@@ -10,6 +10,7 @@ const config = require('../config/v2');
 const syncQueue = require('../services/sync-queue');
 const storage = require('../services/storage-migration');
 const chatSafety = require('../services/chat-safety');
+const sceneCardStore = require('../services/scene-card-store');
 
 const DAY = 24 * 60 * 60 * 1000;
 const HATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
@@ -232,7 +233,12 @@ function bindPet(code, now) {
   if (isDirectHatch) {
     const cardResult = createCollectionCard();
     if (!cardResult.ok) return { ok: false, reason: cardResult.reason || 'CARD_CREATE_FAILED', message: cardResult.message || '收藏卡生成失败，请重试' };
-    return { ok: true, pet: cardResult.pet, directHatch: true };
+    const fullCollection = sceneCardStore.seedFullDemoCollection(cardResult.pet);
+    if (!fullCollection.ok) {
+      resetDemo();
+      return { ok: false, reason: fullCollection.code || 'COLLECTION_SEED_FAILED', message: fullCollection.message || '完全状态收藏卡准备失败，请重试' };
+    }
+    return { ok: true, pet: cardResult.pet, directHatch: true, fullCollection: true };
   }
   return { ok: true, pet };
 }

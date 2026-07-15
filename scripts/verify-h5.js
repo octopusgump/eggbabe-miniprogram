@@ -249,6 +249,9 @@ assert.equal(nativeCardTemplate.includes('wx:if="{{!isCollectible}}" class="acti
 assert.equal(nativeCardStyles.includes('.text-button'), false, '两个身份卡按钮删除后不得残留文字按钮样式');
 assert.equal(nativeCardTemplate.includes('<text class="button-label">保存图片</text>'), true, '具体系列收藏卡底部按钮必须改为保存图片');
 assert.equal(nativeCardTemplate.includes('bindtap="onSaveImage"'), true, '保存图片按钮必须绑定真实保存处理器');
+assert.equal(nativeCardTemplate.includes('class="save-image-button"'), true, '保存图片必须使用页面专用样式，避免通用 primary 宽度覆盖');
+assert.match(nativeCardStyles, /\.actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*stretch;[^}]*width:\s*100%/s, '保存图片父级必须拉伸到内容宽度');
+assert.match(nativeCardStyles, /\.save-image-button\s*\{[^}]*flex:\s*1 1 100%;[^}]*min-width:\s*0;[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important;[^}]*margin:\s*0\s*!important/s, '保存图片按钮必须覆盖微信默认尺寸并铺满卡片内容宽度');
 assert.equal(nativeCardTemplate.includes('disabled="{{savingImage}}"'), true, '保存按钮只能在实际保存期间禁用');
 assert.equal(nativeCardTemplate.includes('!posterReady'), false, '海报首次生成失败后必须允许用户重试');
 assert.equal(nativeCardTemplate.includes('canvas-id="cardPosterCanvas"'), true, '原生回退必须提供收藏卡导出画布');
@@ -258,7 +261,7 @@ assert.equal(nativeCardPage.includes('drawPetAvatar'), true, '导出卡面必须
 assert.equal(nativeCardPage.includes('wx.openSetting'), true, '相册权限被拒后必须提供设置恢复路径');
 assert.equal(nativeCardPage.includes("analytics.track('card_save'"), true, '成功保存收藏卡必须记录 card_save');
 assert.match(nativeCardStyles, /\.actions\s*\{[^}]*width:\s*100%/s, '收藏卡底部操作区必须占满内容宽度');
-assert.match(nativeCardStyles, /\.primary\s*\{[^}]*width:\s*100%;[^}]*margin:\s*0/s, '保存图片按钮必须 full width 且移除默认外边距');
+assert.match(nativeCardStyles, /\.save-image-button\s*\{[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important/s, '保存图片按钮必须 full width 且不受最大宽度限制');
 assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
 assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
 assert.equal(nativeCardTemplate.includes('待接入小程序码'), false, '原生完整卡面不得显示待接入小程序码按钮');

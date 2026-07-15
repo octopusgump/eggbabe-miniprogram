@@ -61,8 +61,10 @@ assert.equal(nativeTemplate.includes('分享给好友'), false, '原生兜底不
 assert.equal(nativeTemplate.includes('shareCanvas'), false, '原生兜底不得恢复旧分享画布');
 assert.equal(nativeTemplate.includes('canvas-id="cardPosterCanvas"'), true, '原生兜底必须提供当前收藏卡保存画布');
 assert.equal(nativeTemplate.includes('<text class="button-label">保存图片</text>'), true, '原生兜底底部必须提供保存图片按钮');
+assert.equal(nativeTemplate.includes('class="save-image-button"'), true, '原生保存按钮必须使用页面专用样式');
 assert.equal(nativeTemplate.includes('disabled="{{savingImage}}"'), true, '保存按钮不得因首次海报生成失败而永久禁用');
-assert.match(nativeCss, /\.primary\s*\{[^}]*width:\s*100%/s, '原生保存图片按钮必须铺满内容宽度');
+assert.match(nativeCss, /\.actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*stretch;[^}]*width:\s*100%/s, '原生保存操作区必须占满内容宽度');
+assert.match(nativeCss, /\.save-image-button\s*\{[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important;[^}]*margin:\s*0\s*!important/s, '原生保存图片按钮必须强制铺满内容宽度');
 assert.equal(nativeLogic.includes('wx.openSetting'), true, '原生保存图片必须处理相册权限恢复');
 assert.equal(nativeLogic.includes("analytics.track('card_save'"), true, '原生保存成功必须上报 card_save');
 assert.equal(nativeLogic.includes('drawPetAvatar'), true, '原生导出卡面必须与页面 IP 头像一致');

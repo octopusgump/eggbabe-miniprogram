@@ -6,7 +6,11 @@ const h5Bridge = require('../../services/birth-card-h5');
 Page({
   data: { card: null, sceneCards: [], setSlots: [], summary: null, shareCard: null },
   onShow() {
-    const pet = petStore.getPet();
+    let pet = petStore.getPet();
+    if (pet) {
+      const fullDemoState = petStore.ensureFullDemoState(pet);
+      if (fullDemoState.ok) pet = fullDemoState.pet;
+    }
     const hasIdentityCard = !!(pet && pet.collectionCard);
     const sceneCards = hasIdentityCard ? sceneCardStore.list().filter(card => card.character === pet.prototype) : [];
     const summary = hasIdentityCard ? sceneCardStore.collectionSummary(pet.prototype) : null;

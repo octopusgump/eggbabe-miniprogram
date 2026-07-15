@@ -84,6 +84,8 @@ async function main() {
   assert.equal(created.ok, true, '达到破壳条件后必须可以承接身份收藏卡');
   const hatchedPet = petStore.getPet();
   assert.equal(hatchedPet.collectionCard.hatchQuality, '完整孵化', '完成理论动作的周期必须按归一化规则记为完整孵化');
+  assert.equal(petStore.ensureFullDemoState(hatchedPet).ok, false, 'FUHUAQIAN 正常孵化完成后仍不得被完全状态修复逻辑预置十张卡');
+  assert.equal(sceneCards.list().length, 0, 'FUHUAQIAN 破壳后必须继续通过互动逐张遇见收藏卡');
 
   for (const character of ['玉兔', '锦鲤']) {
     const scenes = sceneConfig.getScenesForCharacter(character);
@@ -254,6 +256,7 @@ async function main() {
   assert.equal(hatched.ok, true, 'FUHUAHOU 必须作为本地孵化后完全状态测试码');
   assert.equal(petStore.getStage(hatched.pet), 'hatched', 'FUHUAHOU 必须直接进入已孵化状态');
   assert.equal(!!hatched.pet.collectionCard, true, 'FUHUAHOU 必须同时生成身份收藏卡，保证具体卡面可用');
+  assert.equal(hatched.pet.testPreset, 'hatched_full', 'FUHUAHOU 必须保存完全状态标记，以便旧数据缺卡时自动恢复');
   const fullCards = sceneCards.list();
   assert.equal(fullCards.length, 10, 'FUHUAHOU 必须把当前角色 10 张收藏卡全部写入测试卡册');
   const fullSummary = sceneCards.collectionSummary('玉兔');
@@ -262,6 +265,33 @@ async function main() {
   assert.equal(new Set(fullCards.map(card => card.cardId)).size, 10, 'FUHUAHOU 必须写入 10 个不同收藏位');
   assert.equal(new Set(fullCards.map(card => card.uniqueCode)).size, 10, 'FUHUAHOU 每张测试卡必须有不同的副本编号');
   assert.equal(fullCards.every(card => card.mode === 'demo' && card.character === '玉兔'), true, 'FUHUAHOU 全卡数据必须保持为玉兔 demo 测试数据');
+
+  // 回归：旧版本的“孵化后”测试宠物可能已存在，但当时没有成功写入十张收藏卡。
+  // 打开卡册时必须恢复 FUHUAHOU 的 10/10 完全状态，并让每张卡可进入预览。
+  wx.removeStorageSync(runtime.scopedKey('scene_cards'));
+  const legacyDirectHatchPet = Object.assign({}, petStore.getPet());
+  delete legacyDirectHatchPet.testPreset;
+  petStore.savePet(legacyDirectHatchPet);
+  const repeatFullActivation = petStore.bindPet('FUHUAHOU');
+  assert.equal(repeatFullActivation.ok, true, '历史立即孵化测试宠物再次输入 FUHUAHOU 时必须修复完全状态，而不是返回 BOUND');
+  assert.equal(sceneCards.collectionSummary('玉兔').ownedUnique, 10, '再次输入 FUHUAHOU 后必须恢复 10/10');
+  wx.removeStorageSync(runtime.scopedKey('scene_cards'));
+  let albumPageDefinition;
+  const albumPagePath = require.resolve('../miniprogram/pages/album/album.js');
+  global.Page = definition => { albumPageDefinition = definition; };
+  delete require.cache[albumPagePath];
+  require(albumPagePath);
+  delete global.Page;
+  const albumInstance = Object.assign({}, albumPageDefinition);
+  albumInstance.data = Object.assign({}, albumPageDefinition.data);
+  albumInstance.setData = changes => { albumInstance.data = Object.assign({}, albumInstance.data, changes); };
+  albumInstance.onShow();
+  assert.equal(albumInstance.data.summary.ownedUnique, 10, '历史 FUHUAHOU 宠物打开卡册时必须自动恢复 10/10');
+  assert.equal(albumInstance.data.setSlots.every(slot => slot.owned && slot.image && slot.instanceId), true, 'FUHUAHOU 十张卡必须都有图片且可点击');
+  let previewUrl = '';
+  wx.navigateTo = ({ url }) => { previewUrl = url; };
+  albumInstance.onOpenSetCard({ currentTarget: { dataset: { id: albumInstance.data.setSlots[0].instanceId } } });
+  assert.match(previewUrl, /^\/pages\/(h5-card\/h5-card|collection-card\/collection-card)\?/, 'FUHUAHOU 收藏卡必须可进入具体卡面预览');
   petStore.resetDemo();
 
   const originalBackendEnabled = config.backendEnabled;

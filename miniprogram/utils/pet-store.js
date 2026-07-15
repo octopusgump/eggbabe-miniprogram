@@ -14,6 +14,7 @@ const sceneCardStore = require('../services/scene-card-store');
 
 const DAY = 24 * 60 * 60 * 1000;
 const HATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
+const FULL_DEMO_PRESET = 'hatched_full';
 
 const STATUS_LINES = {
   egg: {
@@ -176,6 +177,40 @@ function mockCodeError(code) {
   return errors[value] || '';
 }
 
+function isFullDemoPresetPet(pet) {
+  if (!pet || runtime.getMode() !== 'demo' || pet.mode !== 'demo') return false;
+  if (pet.testPreset === FULL_DEMO_PRESET) return true;
+  const tasks = pet.tasks || {};
+  return Number(pet.hatchAt) < Number(pet.createdAt)
+    && Number(pet.progress || 0) >= 100
+    && tasks.nicknameDone === true
+    && !!tasks.cuddleDate
+    && !!tasks.wishDate
+    && !!tasks.lessonDate
+    && tasks.doodleDone === true;
+}
+
+function ensureFullDemoState(pet) {
+  let current = pet || getPet();
+  if (!isFullDemoPresetPet(current)) return { ok: false, reason: 'NOT_FULL_DEMO_PRESET' };
+  if (!current.collectionCard) {
+    const cardResult = createCollectionCard();
+    if (!cardResult.ok) return cardResult;
+    current = cardResult.pet;
+  }
+  if (current.testPreset !== FULL_DEMO_PRESET) {
+    current.testPreset = FULL_DEMO_PRESET;
+    if (!savePet(current)) return { ok: false, reason: 'WRITE_FAILED', message: '完全状态标记保存失败，请重试' };
+  }
+  const summary = sceneCardStore.collectionSummary(current.prototype);
+  if (summary.total > 0 && summary.ownedUnique === summary.total) {
+    return { ok: true, pet: current, repaired: false };
+  }
+  const seeded = sceneCardStore.seedFullDemoCollection(current);
+  if (!seeded.ok) return seeded;
+  return { ok: true, pet: current, cards: seeded.cards, repaired: true };
+}
+
 function createInviteCodes(seed) {
   const suffix = String(seed).slice(-4);
   return Array.from({ length: 5 }, (_, index) => ({
@@ -185,12 +220,16 @@ function createInviteCodes(seed) {
 }
 
 function bindPet(code, now) {
+  const normalized = String(code || '').trim().toUpperCase();
+  const isDirectHatch = !config.backendEnabled && normalized === config.localHatchedActivationCode;
   if (isBound()) {
+    if (isDirectHatch) {
+      const restored = ensureFullDemoState(getPet());
+      if (restored.ok) return { ok: true, pet: restored.pet, directHatch: true, fullCollection: true, repaired: restored.repaired };
+    }
     return { ok: false, reason: 'BOUND', message: '当前版本一个账号只能绑定 1 只蛋宝宝，本次激活码未被消耗' };
   }
-  const normalized = String(code || '').trim().toUpperCase();
   if (!normalized) return { ok: false, reason: 'EMPTY', message: '请输入激活码' };
-  const isDirectHatch = !config.backendEnabled && normalized === config.localHatchedActivationCode;
   const isLocalActivation = !config.backendEnabled && (normalized === config.localActivationCode || isDirectHatch);
   if (!config.backendEnabled && !isLocalActivation) return { ok: false, reason: 'INVALID', message: `激活码无效，请输入 ${config.localActivationCode} 或 ${config.localHatchedActivationCode}` };
   const error = mockCodeError(normalized);
@@ -229,11 +268,12 @@ function bindPet(code, now) {
     inviteCodes: createInviteCodes(createdAt),
     messages: []
   };
+  if (isDirectHatch) pet.testPreset = FULL_DEMO_PRESET;
   if (!savePet(pet)) return { ok: false, reason: 'WRITE_FAILED', message: '蛋宝宝绑定失败，请重试' };
   if (isDirectHatch) {
     const cardResult = createCollectionCard();
     if (!cardResult.ok) return { ok: false, reason: cardResult.reason || 'CARD_CREATE_FAILED', message: cardResult.message || '收藏卡生成失败，请重试' };
-    const fullCollection = sceneCardStore.seedFullDemoCollection(cardResult.pet);
+    const fullCollection = ensureFullDemoState(cardResult.pet);
     if (!fullCollection.ok) {
       resetDemo();
       return { ok: false, reason: fullCollection.code || 'COLLECTION_SEED_FAILED', message: fullCollection.message || '完全状态收藏卡准备失败，请重试' };
@@ -554,6 +594,7 @@ module.exports = {
   completeWish,
   completeLesson,
   saveDoodle,
+  ensureFullDemoState,
   getStage,
   getStagePresentation,
   getCountdown,

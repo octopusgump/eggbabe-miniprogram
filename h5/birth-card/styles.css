@@ -5,14 +5,14 @@
   --paper: #fffdf7;
   --brand: #3f5a47;
   --line: #e5e4dc;
-  --name-font: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  --name-font: "ZCOOL KuaiLe", "PingFang SC", "Noto Sans SC", sans-serif;
   --latin-font: "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
-html { background: #f2f1eb; color: var(--ink); font-family: "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
+html { background: #f2f1eb; color: var(--ink); font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
 .has-google-sans { --latin-font: "Google Sans", "Helvetica Neue", Arial, sans-serif; }
-[data-field="mbti"], code, .collect-badge, .mode-chip { font-family: var(--latin-font); }
+[data-field="mbti"], [data-field="bloodType"], code, .collect-badge { font-family: var(--latin-font); }
 body { min-height: 100vh; margin: 0; }
 button, a { font: inherit; }
 button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offset: 3px; }

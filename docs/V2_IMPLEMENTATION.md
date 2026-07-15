@@ -18,7 +18,7 @@
 - H5、原生兜底与展会预览统一使用 9 字段卡面：IP 头像、原型、名字、年月日生日、星座、性别符号、MBTI、性情独白、血型。
 - 插画区域固定 4:5、铺满展示；卡面无黑色卡框，标题无装饰星星和 `eggbabe` 小字，系列编号位于标题右侧。
 - H5 不计算星座、不生成名字、不选择插画，也不生成任何随机业务值；所有字段来自已定稿 JSON。
-- 站酷快乐体改为备案域名/CDN 自托管配置：整包静态文件用 `nameFontUrl`，服务端动态子集用 `nameFontUrlTemplate`；未配置时回退 PingFang SC，不依赖 Google CDN。Google Sans 整包使用 `googleSansFontUrl`，字体包与各自 `OFL.txt` 的放置规则见 `h5/birth-card/assets/fonts/README.md`。
+- 三套 OFL 字体均已转换成本地 WOFF2，不依赖 Google CDN：收藏卡名字优先 ZCOOL KuaiLe，英文/数字使用 Google Sans，中文正文优先 PingFang SC，设备缺失时按需加载 Noto Sans SC。服务端动态名字子集仍可通过 `nameFontUrlTemplate` 覆盖整包 ZCOOL 文件；部署与许可证规则见 `h5/birth-card/assets/fonts/README.md`。
 - 分享长图包含完整卡面、全局编号、真实小程序码与未使用的个人分享码；H5 通过 `postMessage` 回传图片数据，由小程序调用相册能力保存。
 - 破壳承接加入预设时间前 2 小时容差；正式业务判定必须先取得服务端北京时间。
 - 孵化完成度按「实际累计进度 ÷ 周期理论最大进度」归一化，达到 90% 记为完整孵化。
@@ -32,7 +32,7 @@
 
 - 王敏侧正式 API：登录、激活码、服务端北京时间、收藏卡生成、场景收集判定、保存与埋点。
 - `eggbabe.com` 的微信业务域名配置、HTTPS H5 部署、卡片读取 API 与真实小程序码。
-- ZCOOL KuaiLe OFL 字体文件及按名字生成的自托管 WOFF2 子集 URL。
+- 按名字生成的 ZCOOL KuaiLe 自托管 WOFF2 子集服务与 URL；本仓库当前使用 OFL 整包 WOFF2 回退，尚未声称动态子集上线。
 - 微信订阅消息模板 ID、企业微信客服参数、淘宝/小红书店铺复制文案。
 - 真实内容安全与模型输出审核；前端关键词 mock 只用于演示交互，不能代替上线审核服务。
 

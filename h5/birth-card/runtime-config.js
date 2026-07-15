@@ -2,7 +2,8 @@
 window.EGGBABE_H5_CONFIG = Object.assign({
   apiBase: '',
   assetManifestUrl: '',
-  googleSansFontUrl: '',
-  nameFontUrl: '',
+  googleSansFontUrl: './assets/fonts/google-sans/GoogleSans-Variable.woff2',
+  notoSansScFontUrl: './assets/fonts/noto-sans-sc/NotoSansSC-Variable.woff2',
+  nameFontUrl: './assets/fonts/zcool-kuaile/ZCOOLKuaiLe-Regular.woff2',
   nameFontUrlTemplate: ''
 }, window.EGGBABE_H5_CONFIG || {});

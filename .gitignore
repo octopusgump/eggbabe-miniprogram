@@ -6,3 +6,8 @@ project.private.config.json
 !.env.example
 *.pem
 *.key
+
+# 本机下载的完整字体源包；H5 只提交转换后的运行时 WOFF2。
+h5/birth-card/assets/fonts/Google_Sans/
+h5/birth-card/assets/fonts/Noto_Sans_SC/
+h5/birth-card/assets/fonts/ZCOOL_KuaiLe/

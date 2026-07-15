@@ -13,6 +13,12 @@ const required = [
   'h5/birth-card/poster-renderer.js',
   'h5/birth-card/runtime-config.js',
   'h5/birth-card/assets/fonts/README.md',
+  'h5/birth-card/assets/fonts/google-sans/GoogleSans-Variable.woff2',
+  'h5/birth-card/assets/fonts/google-sans/OFL.txt',
+  'h5/birth-card/assets/fonts/noto-sans-sc/NotoSansSC-Variable.woff2',
+  'h5/birth-card/assets/fonts/noto-sans-sc/OFL.txt',
+  'h5/birth-card/assets/fonts/zcool-kuaile/ZCOOLKuaiLe-Regular.woff2',
+  'h5/birth-card/assets/fonts/zcool-kuaile/OFL.txt',
   'miniprogram/pages/h5-card/h5-card.js',
   'miniprogram/pages/h5-card/h5-card.wxml'
 ];
@@ -21,6 +27,7 @@ required.forEach(file => assert.equal(fs.existsSync(path.join(root, file)), true
 const html = read('h5/birth-card/index.html');
 const css = read('h5/birth-card/styles.css');
 const app = read('h5/birth-card/app.js');
+const runtimeConfig = read('h5/birth-card/runtime-config.js');
 const poster = read('h5/birth-card/poster-renderer.js');
 const appJson = JSON.parse(read('miniprogram/app.json'));
 const h5Page = read('miniprogram/pages/h5-card/h5-card.js');
@@ -73,6 +80,13 @@ assert.equal(app.includes('fonts.googleapis.com'), false, '中国大陆线上不
 assert.equal(app.includes('nameFontUrlTemplate'), true, '名字字体必须保留备案域名自托管子集 URL 模板');
 assert.equal(app.includes('nameFontUrl'), true, '名字字体必须支持整包静态自托管回退');
 assert.equal(app.includes('googleSansFontUrl'), true, '英文字体必须支持静态自托管配置');
+assert.equal(app.includes('notoSansScFontUrl'), true, 'Noto Sans SC 必须支持本地中文 fallback 配置');
+assert.match(app, /loadFont\([\s\S]*?'Noto Sans SC'[\s\S]*?lazy:\s*true[\s\S]*?\);/, 'Noto Sans SC 必须注册为按需加载的本地 fallback');
+assert.equal(app.includes("weight: '400 700'"), true, 'Google Sans 可变字重范围必须与字体二进制一致');
+assert.equal(runtimeConfig.includes("notoSansScFontUrl: './assets/fonts/noto-sans-sc/NotoSansSC-Variable.woff2'"), true, 'Noto Sans SC 默认地址必须指向本地 WOFF2');
+assert.match(css, /"PingFang SC", "Noto Sans SC", "Helvetica Neue", "Microsoft YaHei", sans-serif/, '中文 fallback 顺序必须优先 PingFang SC，再使用本地 Noto Sans SC');
+assert.equal(poster.includes('"PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif'), true, '分享长图必须使用本地 Noto Sans SC 中文 fallback');
+assert.equal(poster.includes('"Google Sans", "Helvetica Neue", Arial, sans-serif'), true, '分享长图纯英文与数字 token 必须使用 Google Sans');
 assert.equal(app.includes("loadFont('ZCOOL KuaiLe'"), true, '名字必须加载自托管 OFL 版站酷快乐体');
 assert.equal(poster.includes('card.code'), true, '分享长图脚注必须包含全局编号');
 assert.equal(poster.includes('miniProgramCodeUrl'), true, '分享长图必须消费真实小程序码');

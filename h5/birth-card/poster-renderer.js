@@ -11,6 +11,9 @@
   const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.15);
   const ILLUSTRATION_HEIGHT = Math.round((WIDTH - CARD_INSET * 2) * 5 / 4);
   const DATA_HEIGHT = CARD_HEIGHT - CARD_INSET * 2 - TITLE_HEIGHT - ILLUSTRATION_HEIGHT - SECTION_GAP * 2;
+  const CJK_FONT = '"PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+  const LATIN_FONT = '"Google Sans", "Helvetica Neue", Arial, sans-serif';
+  const NAME_FONT = '"ZCOOL KuaiLe", "PingFang SC", "Noto Sans SC", sans-serif';
 
   function loadImage(src) {
     if (!src || typeof Image === 'undefined') return Promise.resolve(null);
@@ -60,14 +63,14 @@
     context.fillRect(avatarX, avatarY, 116, 136);
     if (avatar) drawCover(context, avatar, avatarX, avatarY, 116, 136);
     context.restore();
-    context.font = '400 74px "ZCOOL KuaiLe", "PingFang SC", sans-serif';
+    context.font = `400 74px ${NAME_FONT}`;
     context.textAlign = 'center';
     context.fillText(card.name, WIDTH / 2, CARD_INSET + 112, 560);
     context.fillStyle = '#788078';
-    context.font = '400 26px sans-serif';
+    context.font = `400 26px ${CJK_FONT}`;
     context.fillText(card.prototypeLabel, WIDTH / 2, CARD_INSET + 156);
     if (card.cardType === 'collectible') {
-      context.font = '400 21px sans-serif';
+      context.font = `400 21px ${CJK_FONT}`;
       context.fillText(`${card.setName} · ${card.cardTitle}`, WIDTH / 2, CARD_INSET + 196, 580);
     }
     if (card.cardType === 'collectible') {
@@ -79,7 +82,7 @@
       context.fillStyle = '#F1F1EA';
       context.fill();
       context.fillStyle = '#526054';
-      context.font = '600 28px sans-serif';
+      context.font = `600 28px ${LATIN_FONT}`;
       context.fillText(card.collectorLabel, badgeX + badgeWidth / 2, badgeY + 39);
     }
   }
@@ -130,11 +133,11 @@
       context.fillStyle = '#F6F6F0';
       context.fill();
       context.fillStyle = '#7A807A';
-      context.font = '400 24px sans-serif';
+      context.font = `400 24px ${CJK_FONT}`;
       context.textAlign = 'left';
       context.fillText(cell[0], left + 22, top + 42);
       context.fillStyle = '#2D251F';
-      context.font = '600 27px sans-serif';
+      context.font = `600 27px ${CJK_FONT}`;
       context.textAlign = 'right';
       context.fillText(cell[1], left + cellWidth - 22, top + 42, cellWidth - 112);
     });
@@ -143,15 +146,15 @@
     context.fillStyle = '#F6F6F0';
     context.fill();
     context.fillStyle = '#7A807A';
-    context.font = '400 24px sans-serif';
+    context.font = `400 24px ${LATIN_FONT}`;
     context.textAlign = 'left';
     context.fillText('MBTI', x + width * .24 + 24, mbtiY + 39);
     context.fillStyle = '#2D251F';
-    context.font = '600 29px sans-serif';
+    context.font = `600 29px ${LATIN_FONT}`;
     context.textAlign = 'right';
     context.fillText(card.mbti, x + width * .76 - 24, mbtiY + 39);
     context.fillStyle = '#536057';
-    context.font = '400 28px "ZCOOL KuaiLe", "PingFang SC", sans-serif';
+    context.font = `400 28px ${NAME_FONT}`;
     context.textAlign = 'center';
     context.fillText(`“${card.signature}”`, WIDTH / 2, Math.min(y + height - 16, mbtiY + 112), width - 80);
   }
@@ -178,16 +181,16 @@
     context.fillStyle = '#EEF1E9';
     context.fillRect(0, CARD_HEIGHT, WIDTH, HEIGHT - CARD_HEIGHT);
     context.fillStyle = '#3F5A47';
-    context.font = '600 30px sans-serif';
+    context.font = `600 30px ${CJK_FONT}`;
     context.textAlign = 'left';
     context.fillText('eggbabe 收藏卡', 66, CARD_HEIGHT + 70);
     context.fillStyle = '#667168';
-    context.font = '500 24px monospace';
+    context.font = `500 24px ${LATIN_FONT}`;
     context.fillText(card.code, 66, CARD_HEIGHT + 124, 700);
     context.fillStyle = '#3F5A47';
-    context.font = '600 23px sans-serif';
+    context.font = `600 23px ${CJK_FONT}`;
     context.fillText(`分享码 ${card.shareCode}`, 66, CARD_HEIGHT + 164, 700);
-    context.font = '400 21px sans-serif';
+    context.font = `400 21px ${CJK_FONT}`;
     context.fillStyle = '#667168';
     context.fillText(card.mode === 'demo' ? '展会体验 · 不进入正式收藏与统计' : '识别小程序码后输入分享码，遇见你的蛋宝宝', 66, CARD_HEIGHT + 206, 700);
     drawContain(context, miniCode, WIDTH - 210, CARD_HEIGHT + 28, 150, 150);

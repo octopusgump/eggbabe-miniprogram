@@ -64,13 +64,22 @@
     return '';
   }
 
-  function loadFont(family, source, format, loadedClass) {
+  function loadFont(family, source, options) {
     const url = validSelfHostedFontUrl(source);
     if (!url || typeof FontFace === 'undefined' || !document.fonts) return;
-    const face = new FontFace(family, `url("${url}") format("${format || 'woff2'}")`);
+    const config = options || {};
+    const face = new FontFace(family, `url("${url}") format("${config.format || 'woff2'}")`, {
+      display: 'swap',
+      style: 'normal',
+      weight: config.weight || '400'
+    });
+    if (config.lazy) {
+      document.fonts.add(face);
+      return;
+    }
     face.load().then(loaded => {
       document.fonts.add(loaded);
-      if (loadedClass) document.documentElement.classList.add(loadedClass);
+      if (config.loadedClass) document.documentElement.classList.add(config.loadedClass);
     }).catch(() => {});
   }
 
@@ -79,8 +88,21 @@
     const nameFontUrl = template
       ? template.replace('{text}', encodeURIComponent(String(name || '')))
       : String(runtimeConfig.nameFontUrl || '');
-    loadFont('ZCOOL KuaiLe', nameFontUrl, /\.ttf(?:\?|$)/i.test(nameFontUrl) ? 'truetype' : 'woff2');
-    loadFont('Google Sans', runtimeConfig.googleSansFontUrl, /\.ttf(?:\?|$)/i.test(runtimeConfig.googleSansFontUrl || '') ? 'truetype' : 'woff2', 'has-google-sans');
+    loadFont('ZCOOL KuaiLe', nameFontUrl, { format: /\.ttf(?:\?|$)/i.test(nameFontUrl) ? 'truetype' : 'woff2' });
+    loadFont('Google Sans', runtimeConfig.googleSansFontUrl, {
+      format: /\.ttf(?:\?|$)/i.test(runtimeConfig.googleSansFontUrl || '') ? 'truetype' : 'woff2',
+      loadedClass: 'has-google-sans',
+      weight: '400 700'
+    });
+    loadFont(
+      'Noto Sans SC',
+      runtimeConfig.notoSansScFontUrl,
+      {
+        format: /\.ttf(?:\?|$)/i.test(runtimeConfig.notoSansScFontUrl || '') ? 'truetype' : 'woff2',
+        lazy: true,
+        weight: '100 900'
+      }
+    );
   }
 
   function setView(view, updateHistory) {

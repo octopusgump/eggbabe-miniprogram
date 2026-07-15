@@ -6,21 +6,22 @@
 
 ```text
 fonts/
-├── google-sans/
+├── google-sans/                       # 运行时文件，纳入 Git
 │   ├── GoogleSans-Variable.woff2
 │   └── OFL.txt
-├── noto-sans-sc/
+├── noto-sans-sc/                       # 设备无 PingFang SC 时加载
 │   ├── NotoSansSC-Variable.woff2
 │   └── OFL.txt
-└── zcool-kuaile/
+└── zcool-kuaile/                       # 收藏卡名字字体
     ├── ZCOOLKuaiLe-Regular.woff2
     └── OFL.txt
 ```
 
 - 每个字体家族必须保留它下载包内原始的 `OFL.txt`；不要把一个家族的许可证复制给另一个家族。
-- 文件名可沿用下载包原名。若与示例不同，请在 `runtime-config.js` 中填写真实相对路径。
+- 本机下载的完整 TTF 源包目录 `Google_Sans/`、`Noto_Sans_SC/`、`ZCOOL_KuaiLe/` 已由 `.gitignore` 排除；源文件留在本机，不随 H5 部署。
+- 运行时只提交由源包转换出的三个 WOFF2 与每个家族自己的 `OFL.txt`，避免把约 149 MB 的全部字重打进部署包。
 - `Google Sans` 只用于英文、数字与 MBTI；不能承担中文字形。
-- 中文正文按 PRD 继续使用 `PingFang SC` 及系统 fallback。`Noto Sans SC` 先随项目保留，不默认加载。
+- 中文正文仍优先使用 `PingFang SC`；设备缺少 PingFang SC 时，按需加载本地 `Noto Sans SC`，再回退系统字体。
 - 收藏卡名字需要 Google Fonts 的 OFL 版 `ZCOOL KuaiLe`。只有前两包时会回退到 `PingFang SC`，不得用 Google Sans 或 Noto Sans SC 冒充。
 
 整包静态字体就位后可这样配置：
@@ -28,6 +29,7 @@ fonts/
 ```js
 window.EGGBABE_H5_CONFIG = {
   googleSansFontUrl: './assets/fonts/google-sans/GoogleSans-Variable.woff2',
+  notoSansScFontUrl: './assets/fonts/noto-sans-sc/NotoSansSC-Variable.woff2',
   nameFontUrl: './assets/fonts/zcool-kuaile/ZCOOLKuaiLe-Regular.woff2'
 };
 ```

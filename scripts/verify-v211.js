@@ -56,7 +56,9 @@ assert.equal(/Math\.random/.test([h5App, h5Model, h5Poster].join('\n')), false, 
 
 assert.equal(h5Poster.includes("if (!card.miniProgramCodeUrl) throw new Error('MINI_CODE_REQUIRED')"), true, '分享图必须包含真实小程序码');
 assert.equal(h5Poster.includes("if (!card.shareCode) throw new Error('SHARE_CODE_REQUIRED')"), true, '分享图必须包含分享码');
-assert.equal(nativeLogic.includes('分享图需要先准备一个未使用的个人激活码'), true, '原生分享图缺少分享码时必须失败并说明');
+assert.equal(nativeTemplate.includes('待接入小程序码'), false, '原生兜底不得显示待接入小程序码按钮');
+assert.equal(nativeTemplate.includes('分享给好友'), false, '原生兜底不得显示分享给好友按钮');
+assert.equal(nativeTemplate.includes('shareCanvas'), false, '移除原生分享按钮后不得保留隐藏分享画布');
 assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图片回传小程序');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 

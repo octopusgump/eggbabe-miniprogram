@@ -19,12 +19,6 @@
 .card-signature--compact { font-size: 18rpx; }
 .card-signature--dense { font-size: 15rpx; line-height: 1.2; }
 .actions { margin-top: 28rpx; }
-.primary, .secondary { height: 88rpx; border-radius: 999rpx; font-size: 27rpx; line-height: 88rpx; }
-.primary { background: #3F5A47; color: #FFF; }
-.secondary { flex: 1; border: 1rpx solid #D8D6CF; background: #FFF; color: #3F5A47; }
-.secondary[disabled] { background: #EEEDE8; color: #999C95; opacity: 1; }
-.poster-note { display: block; margin-top: 14rpx; color: #8A8E87; font-size: 21rpx; line-height: 1.5; text-align: center; }
-.primary::after, .secondary::after, .text-button::after { border: none; }
-.action-row { display: flex; gap: 18rpx; margin-top: 18rpx; }
+.primary { height: 88rpx; border-radius: 999rpx; background: #3F5A47; color: #FFF; font-size: 27rpx; line-height: 88rpx; }
+.primary::after, .text-button::after { border: none; }
 .text-button { margin-top: 12rpx; background: transparent; color: #6F744F; font-size: 24rpx; }
-.share-canvas { position: fixed; top: 0; left: -2000px; width: 600px; height: 1067px; }

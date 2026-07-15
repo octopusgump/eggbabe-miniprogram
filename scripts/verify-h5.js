@@ -206,9 +206,12 @@ const nativeCardTemplate = read('miniprogram/pages/collection-card/collection-ca
 const nativeCardStyles = read('miniprogram/pages/collection-card/collection-card.wxss');
 assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
 assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
-assert.equal(nativeCardPage.includes('fillText(card.prototype'), false, '原生分享图名字下方不得重复显示类型');
-assert.equal(nativeCardPage.includes('function fitCanvasText('), true, '原生分享图必须在脚注前的可用高度内适配长独白');
-assert.equal(nativeCardPage.includes('950 + index * 20'), false, '原生分享图不得用可能撞到脚注的无限固定行坐标');
+assert.equal(nativeCardTemplate.includes('待接入小程序码'), false, '原生完整卡面不得显示待接入小程序码按钮');
+assert.equal(nativeCardTemplate.includes('分享给好友'), false, '原生完整卡面不得显示分享给好友按钮');
+assert.equal(nativeCardTemplate.includes('posterUnavailableReason'), false, '移除按钮后不得残留无操作价值的小程序码提示');
+assert.equal(nativeCardTemplate.includes('shareCanvas'), false, '移除原生分享按钮后不得保留隐藏分享画布');
+assert.equal(nativeCardPage.includes('drawShareCard'), false, '移除原生分享按钮后不得继续后台生成分享图');
+assert.equal(nativeCardPage.includes('onSave()'), false, '移除原生保存按钮后不得保留不可达保存处理器');
 assert.equal(nativeCardTemplate.includes('sceneCard.collectorLabel'), true, '原生完整卡面必须显示系列编号');
 assert.equal(nativeCardTemplate.includes('sceneCard.setName'), true, '原生完整卡面必须显示收集系列');
 assert.equal(nativeCardTemplate.includes('class="prototype-name"'), false, '原生回退名字下方不得重复显示类型');
@@ -217,7 +220,6 @@ assert.match(nativeCardStyles, /\.stat-label\s*\{[^}]*font-size:\s*21rpx/s, '原
 assert.match(nativeCardStyles, /\.stat-value\s*\{[^}]*font-size:\s*23rpx/s, '原生回退信息值字号必须放大');
 assert.match(nativeCardStyles, /\.card-signature\s*\{[^}]*white-space:\s*normal/s, '原生回退性情独白必须允许完整换行');
 assert.equal(/\.card-signature\s*\{[^}]*text-overflow:\s*ellipsis/s.test(nativeCardStyles), false, '原生回退性情独白不得使用省略号截断');
-assert.equal(nativeCardPage.includes('.slice(0, 20)'), false, '原生分享图不得按 20 字截断性情独白');
 assert.equal(nativeCardTemplate.includes('{{signatureClass}}'), true, '原生回退必须按独白长度应用可读的紧凑字号');
 assert.equal(nativeCardStyles.includes('.card-signature--compact'), true, '原生回退必须提供长独白紧凑样式');
 assert.equal(nativeCardStyles.includes('.card-signature--dense'), true, '原生回退必须提供超长独白密集样式');

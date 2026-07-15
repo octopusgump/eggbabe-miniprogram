@@ -17,8 +17,7 @@
         <text class="card-signature {{signatureClass}}">“{{cardView.signature}}”</text>
       </view>
     </view>
-    <view wx:if="{{!isCollectible}}" class="actions"><button class="primary" bindtap="onProfile"><text class="button-label">查看它的档案</text></button><view class="action-row"><button class="secondary" disabled="{{!posterReady}}" bindtap="onSave"><text class="button-label">{{posterReady ? '保存图片' : '待接入小程序码'}}</text></button><button class="secondary" open-type="share"><text class="button-label">分享给好友</text></button></view><text wx:if="{{posterUnavailableReason}}" class="poster-note">{{posterUnavailableReason}}</text><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的收藏卡</text></button></view>
-    <view wx:else class="actions"><button class="primary" bindtap="onAlbum"><text class="button-label">返回</text></button><view class="action-row"><button class="secondary" open-type="share"><text class="button-label">分享给好友</text></button></view><text class="poster-note">分享长图功能准备中。</text></view>
-    <canvas canvas-id="shareCanvas" class="share-canvas"></canvas>
+    <view wx:if="{{!isCollectible}}" class="actions"><button class="primary" bindtap="onProfile"><text class="button-label">查看它的档案</text></button><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的收藏卡</text></button></view>
+    <view wx:else class="actions"><button class="primary" bindtap="onAlbum"><text class="button-label">返回</text></button></view>
   </scroll-view>
 </view>

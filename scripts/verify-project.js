@@ -51,7 +51,7 @@ const homeSource = fs.readFileSync(path.join(miniprogram, 'pages/home/home.wxml'
 if (/孵化场景|scene-picker|scene-live/.test(homeSource)) errors.push('首页仍包含旧版孵化场景入口');
 
 for (const image of ['grass_with_egg.jpg', 'snow_with_egg.jpg', 'room_with_egg.jpg', 'sea_with_egg.jpg', 'desk_with_egg.jpg', 'rooftop_with_egg.jpg']) {
-  if (!fs.existsSync(path.join(miniprogram, 'assets/scenes', image))) errors.push(`展会场景缺少图片：${image}`);
+  if (!fs.existsSync(path.join(miniprogram, 'assets/scenes', image))) errors.push(`生活场景缺少图片：${image}`);
 }
 
 const petStore = require(path.join(miniprogram, 'utils/pet-store'));
@@ -69,11 +69,11 @@ for (const [date, expected] of zodiacBoundaries) {
 }
 if (petStore.getZodiac('') !== '' || petStore.getZodiac('invalid') !== '') errors.push('星座计算必须安全处理空生日和非法日期');
 
-const exhibitionScenes = require(path.join(miniprogram, 'utils/exhibition-scenes'));
-const sceneEffectStyles = fs.readFileSync(path.join(miniprogram, 'pages/exhibition-scene/exhibition-scene.wxss'), 'utf8');
-const exhibitionPoints = exhibitionScenes.SCENES.flatMap(scene => (exhibitionScenes.HOTSPOTS[scene.key] || []).map(point => ({ scene: scene.label, ...point })));
-if (exhibitionPoints.length !== 18) errors.push(`六个展会场景应有 18 个互动点，实际为 ${exhibitionPoints.length}`);
-for (const point of exhibitionPoints) {
+const lifeScenes = require(path.join(miniprogram, 'utils/life-scenes'));
+const sceneEffectStyles = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxss'), 'utf8');
+const lifePoints = lifeScenes.SCENES.flatMap(scene => (lifeScenes.HOTSPOTS[scene.key] || []).map(point => ({ scene: scene.label, ...point })));
+if (lifePoints.length !== 18) errors.push(`六个生活场景应有 18 个互动点，实际为 ${lifePoints.length}`);
+for (const point of lifePoints) {
   const x = parseFloat(point.x);
   const y = parseFloat(point.y);
   if (x >= 70 && y <= 30) errors.push(`${point.scene}「${point.label}」位于微信胶囊右上角危险区`);

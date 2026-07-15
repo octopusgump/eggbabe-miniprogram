@@ -1,3 +1,5 @@
+const config = require('../../config/v2');
+
 Page({
   data: {
     cats: { device: true, account: true, chat: true, other: true },
@@ -5,7 +7,7 @@ Page({
     deviceFaqs: [
       {
         q: '如何激活我的蛋宝宝？',
-        a: '打开小程序后点击「添加蛋宝宝」，手动输入购买、活动或好友提供的激活码。校验成功后会绑定当前账号唯一的一只蛋宝宝。',
+        a: `打开小程序后点击「添加蛋宝宝」。当前本地完整版本请输入 ${config.localActivationCode}；正式上线后使用购买、活动或好友提供的激活码。校验成功后会绑定当前账号唯一的一只蛋宝宝。`,
         open: false
       },
       {

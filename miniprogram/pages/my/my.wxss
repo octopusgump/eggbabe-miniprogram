@@ -72,5 +72,3 @@
   border: 1rpx solid #E5E3DF;
   box-shadow: 0rpx 2rpx 4rpx rgba(0, 41, 0, 0.06), 0rpx 4rpx 8rpx rgba(0, 41, 0, 0.04);
 }
-
-.demo-note{margin:-6rpx 4rpx 28rpx;padding:22rpx 26rpx;border-radius:22rpx;background:#F5F8ED;color:#53644F;font-size:23rpx;line-height:1.6;text-align:center}

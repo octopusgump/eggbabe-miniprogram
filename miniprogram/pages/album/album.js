@@ -3,9 +3,8 @@ const sceneCardStore = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
-const runtime = require('../../services/runtime-context');
 Page({
-  data: { card: null, sceneCards: [], setSlots: [], summary: null, shareCard: null, isDemo: false },
+  data: { card: null, sceneCards: [], setSlots: [], summary: null, shareCard: null },
   onShow() {
     const pet = petStore.getPet();
     const summary = pet ? sceneCardStore.collectionSummary(pet.prototype) : null;
@@ -13,8 +12,7 @@ Page({
       card: pet && pet.collectionCard ? pet.collectionCard : null,
       sceneCards: sceneCardStore.list(),
       setSlots: summary ? summary.slots : [],
-      summary,
-      isDemo: runtime.getMode() === 'demo'
+      summary
     });
     analytics.track('card_album_view', { collection_view: 'unified' });
     analytics.track('album_view', { collection_view: 'unified' });
@@ -29,11 +27,6 @@ Page({
     if (card) sceneCardStore.markShared(card.id);
   },
   onOpenSetCard(event) {
-    const definitionId = event.currentTarget.dataset.cardId;
-    if (runtime.getMode() === 'demo') {
-      wx.navigateTo({ url: `/pages/set-card-preview/set-card-preview?cardId=${encodeURIComponent(definitionId || '')}` });
-      return;
-    }
     const card = this.data.sceneCards.find(item => item.id === event.currentTarget.dataset.id);
     if (!card) {
       wx.showToast({ title: '先去蛋宝宝的世界里遇见它吧', icon: 'none' });
@@ -48,7 +41,6 @@ Page({
     }
     wx.navigateTo({ url: `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(card.id)}` });
   },
-  onPreviewAllCards() { wx.navigateTo({ url: '/pages/set-card-preview/set-card-preview' }); },
   onEcommerce() {
     const channels = [
       { label: '复制淘宝口令 / 链接', value: config.ecommerce.taobaoCopyText, entry: 'copy_taobao' },

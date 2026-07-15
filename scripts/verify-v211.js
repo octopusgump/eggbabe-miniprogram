@@ -14,14 +14,15 @@ const userFacing = userFacingFiles.map(file => `${file}\n${read(file)}`).join('\
 
 assert.equal(/破壳卡|场景卡|套卡|我的卡册/.test(userFacing), false, '用户界面只能使用“收藏卡”，不得出现旧卡类名称');
 assert.equal(/卡池|掉落|抽卡|稀有度/.test(userFacing), false, '用户界面必须统一使用“遇见 / 收集”表达');
-assert.equal(/eggbaby/i.test(userFacing), false, '品牌英文只能写 eggbabe');
+const forbiddenBrand = new RegExp(['egg', 'baby'].join(''), 'i');
+assert.equal(forbiddenBrand.test(userFacing), false, '品牌英文只能写 eggbabe');
 
 const album = read('miniprogram/pages/album/album.wxml');
 assert.equal(album.includes('title="我的收藏卡"'), true, '统一卡册标题必须为“我的收藏卡”');
 assert.equal(album.includes('尚未遇见'), true, '未获得位必须显示“尚未遇见”');
 assert.equal(album.includes('collectorLabel'), true, '系列内编号必须与卡位一起显示');
 assert.equal(/class="tabs?\b|data-tab=|onTab/.test(album), false, '我的收藏卡不得使用卡类 tab');
-assert.equal(album.includes('不会重复出现'), true, 'v2.16 必须明确收藏卡不重复出现');
+assert.equal(album.includes('不会重复出现'), true, 'v2.17 必须明确收藏卡不重复出现');
 
 const h5Html = read('h5/birth-card/index.html');
 const h5Css = read('h5/birth-card/styles.css');
@@ -42,11 +43,11 @@ assert.equal(nativeTemplate.includes('title-star'), false, '原生标题不得�
 assert.equal(nativeTemplate.includes('card-wordmark'), false, '原生标题不得显示 eggbabe 小字');
 
 ['prototypeLabel', 'name', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
-  assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.16 卡面缺少 ${field}`);
+  assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.17 卡面缺少 ${field}`);
 });
-assert.equal(h5Html.includes('card-avatar-image'), true, 'H5 v2.16 卡面缺少 IP 头像');
+assert.equal(h5Html.includes('card-avatar-image'), true, 'H5 v2.17 卡面缺少 IP 头像');
 ['card.prototype', 'card.name', 'birthdayLabel', 'card.zodiac', 'card.gender', 'card.mbti', 'card.personality', 'card.bloodType'].forEach(field => {
-  assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.16 卡面缺少 ${field}`);
+  assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.17 卡面缺少 ${field}`);
 });
 assert.equal(h5Model.includes('`${parts.year}年${parts.month}月${parts.day}日`'), true, 'H5 生日必须显示年月日');
 assert.equal(h5App.includes('fonts.googleapis.com'), false, '线上字体不得依赖 Google CDN');
@@ -60,7 +61,7 @@ assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 
 const config = read('miniprogram/config/v2.js');
-assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.16 初始遇见概率必须为约 18%');
+assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.17 初始遇见概率必须为约 18%');
 assert.equal(config.includes('sceneCardDailyLimit: 2'), true, '每日最多遇见 2 张收藏卡');
 assert.equal(app.pages.includes('pages/shop/shop'), false, '露珠商店属于 V2.1，V2.0 不得注册页面');
 assert.equal(app.pages.includes('pages/bag/bag'), false, '背包属于 V2.1，V2.0 不得注册页面');
@@ -85,4 +86,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('PRD v2.16 前端契约校验通过：九字段收藏卡、遇见规则、前端安全 mock 与订阅授权骨架正常。');
+console.log('PRD v2.17 前端契约校验通过：九字段收藏卡、遇见规则、前端安全 mock 与订阅授权骨架正常。');

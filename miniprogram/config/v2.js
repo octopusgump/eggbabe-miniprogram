@@ -1,6 +1,7 @@
 module.exports = {
-  version: '2.16.0-preview',
+  version: '2.17.0-preview',
   backendEnabled: false,
+  localActivationCode: 'JIHUOMA',
   apiBase: '',
   timezone: 'Asia/Shanghai',
   sceneCardDailyLimit: 2,

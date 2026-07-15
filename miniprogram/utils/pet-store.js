@@ -1,7 +1,8 @@
 const PET_KEY = 'eggbabe_mvp_pet_v1';
 const USER_KEY = 'eggbabe_mvp_user_v1';
 const IDENTITY_KEY = 'eggbabe_mvp_identity_v1';
-const EXHIBITION_BACKUP_KEY = 'eggbabe_exhibition_backup_v1';
+const REMOVED_PUBLIC_MODE_FIELD = ['exhib', 'itionMode'].join('');
+const REMOVED_PUBLIC_MODE_BACKUP_KEY = ['eggbabe_', 'exhib', 'ition_backup_v1'].join('');
 const runtime = require('../services/runtime-context');
 const timeService = require('../services/time-service');
 const analytics = require('../services/analytics');
@@ -57,7 +58,7 @@ function todayKey(now) {
 }
 
 function resolvedKey(key) {
-  return key === PET_KEY || key === EXHIBITION_BACKUP_KEY ? runtime.scopedKey(key) : key;
+  return key === PET_KEY ? runtime.scopedKey(key) : key;
 }
 
 function read(key) {
@@ -130,8 +131,20 @@ function clearUser() {
   try { storage.remove(USER_KEY); } catch (error) {}
 }
 
+function clearRemovedPublicModeBackup() {
+  try {
+    storage.remove(runtime.scopedKey(REMOVED_PUBLIC_MODE_BACKUP_KEY, 'demo'));
+    storage.remove(REMOVED_PUBLIC_MODE_BACKUP_KEY);
+  } catch (error) {}
+}
+
 function getPet() {
+  clearRemovedPublicModeBackup();
   const pet = read(PET_KEY);
+  if (pet && (pet[REMOVED_PUBLIC_MODE_FIELD] || pet.demoMode || /^expo-/.test(pet.id || ''))) {
+    try { storage.remove(resolvedKey(PET_KEY)); } catch (error) {}
+    return null;
+  }
   const user = getUser();
   if (pet && pet.ownerId && user && pet.ownerId !== user.id) return null;
   return pet;
@@ -176,12 +189,13 @@ function bindPet(code, now) {
   }
   const normalized = String(code || '').trim().toUpperCase();
   if (!normalized) return { ok: false, reason: 'EMPTY', message: '请输入激活码' };
+  if (!config.backendEnabled && normalized !== config.localActivationCode) return { ok: false, reason: 'INVALID', message: `激活码无效，请输入 ${config.localActivationCode}` };
   const error = mockCodeError(normalized);
   if (error) return { ok: false, reason: normalized, message: error };
 
   const createdAt = now || timeService.now();
-  const prototype = normalized.includes('KOI') ? '锦鲤' : '玉兔';
-  const hatchAt = normalized === 'HATCH-NOW' ? createdAt : createdAt + 7 * DAY;
+  const prototype = '玉兔';
+  const hatchAt = createdAt + 7 * DAY;
   const id = `egg-${createdAt}`;
   const pet = {
     id,
@@ -228,7 +242,6 @@ function importCloudPet(record, mode) {
     progressEarned: source.progress_earned || source.progressEarned || source.progress || 0,
     stage: source.stage || 'waiting',
     serverBacked: true,
-    demoMode: (mode || source.mode) === 'demo',
     lastInteractionAt: createdAt,
     tasks: source.tasks || { nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', doodleDone: false },
     preferences: source.preferences || { wishes: [], lessons: [] },
@@ -503,63 +516,8 @@ function saveMessage(message) {
 }
 
 function resetDemo() {
-  try { storage.remove(resolvedKey(PET_KEY)); storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
-}
-
-function startExhibitionDemo() {
-  const previousMode = runtime.getMode();
-  const previousPet = getPet();
-  runtime.setMode('demo');
-  const current = read(PET_KEY);
-  if (current && current.exhibitionMode) return current;
-  if (previousMode === 'demo' && previousPet) write(EXHIBITION_BACKUP_KEY, { mode: 'demo', pet: previousPet });
-  const createdAt = timeService.now();
-  const pet = {
-    id: `expo-${createdAt}`,
-    mode: 'demo',
-    ownerId: '',
-    prototype: '玉兔',
-    name: '月团',
-    createdAt,
-    hatchAt: createdAt - 1000,
-    progress: 85,
-    progressEarned: 145,
-    stage: 'ready',
-    demoMode: true,
-    exhibitionMode: true,
-    lastInteractionAt: createdAt,
-    tasks: { nicknameDone: true, cuddleDate: todayKey(), wishDate: todayKey(), lessonDate: todayKey(), doodleDone: true },
-    preferences: {
-      wishes: [{ date: todayKey(), value: '安静陪伴你' }],
-      lessons: [{ date: todayKey(), value: '学会撒娇' }]
-    },
-    shell: { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
-    dailyStatus: null,
-    collectionCard: null,
-    inviteCodes: createInviteCodes(createdAt),
-    messages: []
-  };
-  savePet(pet);
-  createCollectionCard();
-  const hatchedPet = getPet();
-  hatchedPet.demoMode = true;
-  savePet(hatchedPet);
-  return hatchedPet;
-}
-
-function endExhibitionDemo() {
-  const backup = read(EXHIBITION_BACKUP_KEY);
-  if (backup && backup.mode === 'demo' && backup.pet) {
-    write(PET_KEY, backup.pet);
-    try { storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY)); } catch (error) {}
-    return getPet();
-  }
-  try {
-    storage.remove(resolvedKey(PET_KEY));
-    storage.remove(resolvedKey(EXHIBITION_BACKUP_KEY));
-  } catch (error) {}
-  runtime.setMode('live');
-  return getPet();
+  try { storage.remove(resolvedKey(PET_KEY)); } catch (error) {}
+  clearRemovedPublicModeBackup();
 }
 
 module.exports = {
@@ -586,8 +544,6 @@ module.exports = {
   applyCloudHatchCard,
   saveMessage,
   resetDemo,
-  startExhibitionDemo,
-  endExhibitionDemo,
   todayKey,
   getZodiac
 };

@@ -2,7 +2,7 @@ const runtime = require('./runtime-context');
 const time = require('./time-service');
 const analytics = require('./analytics');
 const config = require('../config/v2');
-const sceneConfig = require('../utils/exhibition-scenes');
+const sceneConfig = require('../utils/life-scenes');
 const cloudApi = require('./cloud-api');
 const syncQueue = require('./sync-queue');
 const storage = require('./storage-migration');
@@ -175,8 +175,8 @@ function localAttemptDrop(sceneKey, pointId, character) {
 
   const mode = runtime.getMode();
   const seed = `${time.beijingDateKey()}-${sceneKey}-${pointId}-${state.attempts}-${mode}`;
-  const forcedDemoFirstDrop = mode === 'demo' && state.count === 0 && state.attempts >= 2;
-  if (!forcedDemoFirstDrop && deterministicRoll(seed) >= config.sceneCardDropRate) {
+  const forcedInternalFirstEncounter = mode === 'demo' && state.count === 0 && state.attempts >= 2;
+  if (!forcedInternalFirstEncounter && deterministicRoll(seed) >= config.sceneCardDropRate) {
     write('scene_card_daily', state);
     return { ok: true, dropped: false };
   }

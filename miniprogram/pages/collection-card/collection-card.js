@@ -1,7 +1,7 @@
 const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
-const sceneConfig = require('../../utils/exhibition-scenes');
+const sceneConfig = require('../../utils/life-scenes');
 
 const ZODIAC_SYMBOLS = { 白羊座: '♈', 金牛座: '♉', 双子座: '♊', 巨蟹座: '♋', 狮子座: '♌', 处女座: '♍', 天秤座: '♎', 天蝎座: '♏', 射手座: '♐', 摩羯座: '♑', 水瓶座: '♒', 双鱼座: '♓' };
 

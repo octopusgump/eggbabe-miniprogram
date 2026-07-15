@@ -24,7 +24,7 @@
 
 页面按以下顺序读取数据：
 
-1. `card_data`：仅供 `demo` 展会体验注入的 URL 编码 JSON。
+1. `card_data`：仅供内部开发预览注入的 URL 编码 JSON，不作为用户入口。
 2. `card_id`：正式卡通过 `runtime-config.js` 固定的可信 API 读取 `GET {apiBase}/cards/{card_id}?mode=live`。页面不接受 URL 传入 API 地址，防止切换到伪造服务。
 3. `preview=1` 或 `preview=collectible`：仅本地预览固定样例。
 

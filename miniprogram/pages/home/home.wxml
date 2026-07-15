@@ -2,14 +2,10 @@
   <nav-bar title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
   <scroll-view class="content" scroll-y>
-    <view class="expo-row">
-      <view wx:if="{{!pet || !pet.demoMode}}" class="expo-entry" bindtap="onExhibitionDemo" hover-class="pressable--pressed"><text class="expo-spark">✦</text><text>展会快速体验</text></view>
-      <view wx:if="{{pet && pet.demoMode}}" class="expo-exit" bindtap="onExitExhibition">退出体验</view>
-    </view>
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">领取我的蛋宝宝</text>
-      <text class="empty-desc">输入购买或好友送给你的激活码，开始一段只属于你们的孵化旅程。</text>
+      <text class="empty-desc">输入 {{activationCode}}，开始一段只属于你们的完整孵化旅程。</text>
       <button class="primary-button" bindtap="onAddDevice"><text class="button-label">添加蛋宝宝</text></button>
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
@@ -26,7 +22,7 @@
       <view class="egg-zone" bindtap="onOpenProfile">
         <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
         <view class="egg-aura {{eggMotion}}"></view>
-        <image wx:if="{{stage === 'hatched' && hasScenes}}" class="expo-home-scene" src="/assets/scenes/grass_with_egg.jpg" mode="aspectFill" catchtap="onOpenExhibitionScene"></image>
+        <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene" src="{{sceneImage}}" mode="aspectFill" catchtap="onOpenLifeScene"></image>
         <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}"></pet-avatar>
         <view wx:else class="egg {{eggMotion}}" style="background: linear-gradient(155deg, #FFFDF0 6%, {{pet.shell.color}} 58%, #F4B9AE 125%);" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <view class="egg-pattern egg-pattern--one"></view>
@@ -53,8 +49,7 @@
 
       <view class="home-actions">
         <button class="primary-button home-actions__chat" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
-        <button wx:if="{{stage === 'hatched' && hasScenes && pet.demoMode}}" class="primary-button home-actions__scene" bindtap="onExhibitionDemo"><text class="button-label">更换场景</text></button>
-        <button wx:elif="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">更换场景</text></button>
+        <button wx:if="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">更换场景</text></button>
       </view>
     </view>
   </scroll-view>

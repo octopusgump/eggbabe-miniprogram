@@ -29,7 +29,6 @@
 .progress-track { height: 10rpx; overflow: hidden; margin-top: 13rpx; border-radius: 999rpx; background: rgba(63, 90, 71, .12); }
 .progress-value { height: 100%; border-radius: 999rpx; background: #3F5A47; transition: width .4s ease; }
 .set-note { display: block; margin-top: 16rpx; color: #85877F; font-size: 19rpx; }
-.preview-all { height: 76rpx; display: flex; align-items: center; justify-content: center; margin-top: 22rpx; border-radius: 999rpx; background: #3F5A47; color: #FFF; font-size: 23rpx; font-weight: 600; }
 
 .scene-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26rpx; }
 .scene-card { min-width: 0; padding: 18rpx 18rpx 22rpx; border-radius: 28rpx; background: #FFF; box-shadow: 0 12rpx 28rpx rgba(42, 61, 47, .08); }

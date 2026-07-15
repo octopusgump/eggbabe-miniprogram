@@ -192,7 +192,7 @@
     context.fillText(`分享码 ${card.shareCode}`, 66, CARD_HEIGHT + 164, 700);
     context.font = `400 21px ${CJK_FONT}`;
     context.fillStyle = '#667168';
-    context.fillText(card.mode === 'demo' ? '展会体验 · 不进入正式收藏与统计' : '识别小程序码后输入分享码，遇见你的蛋宝宝', 66, CARD_HEIGHT + 206, 700);
+    context.fillText(card.mode === 'demo' ? '内部开发预览 · 不进入正式收藏与统计' : '识别小程序码后输入分享码，遇见你的蛋宝宝', 66, CARD_HEIGHT + 206, 700);
     drawContain(context, miniCode, WIDTH - 210, CARD_HEIGHT + 28, 150, 150);
     return target.toDataURL('image/png', 1);
   }

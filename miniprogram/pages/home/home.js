@@ -1,8 +1,9 @@
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
-const sceneConfig = require('../../utils/exhibition-scenes');
+const sceneConfig = require('../../utils/life-scenes');
 const syncQueue = require('../../services/sync-queue');
+const config = require('../../config/v2');
 
 const TOUCH_LINES = ['你碰到它啦。', '它轻轻晃了一下。', '它好像听见你了。', '蛋壳里传来小小的声音。'];
 Page({
@@ -17,7 +18,9 @@ Page({
     cuddleProgress: 0,
     actionLabel: '孵化修炼手册',
     hasScenes: false,
-    syncPending: 0
+    syncPending: 0,
+    activationCode: config.localActivationCode,
+    sceneImage: ''
   },
 
   async onShow() {
@@ -38,6 +41,7 @@ Page({
       dailyStatus,
       actionLabel: presentation.actionLabel,
       hasScenes: stage === 'hatched' && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
+      sceneImage: stage === 'hatched' ? sceneConfig.getScene('grass', pet.prototype).image : '',
       syncPending: syncQueue.pendingCount()
     });
     if (dailyStatus) analytics.track('daily_status_viewed', { where: stage === 'hatched' ? 'role_home' : 'hatch_home', mood_type: dailyStatus.mood });
@@ -47,44 +51,12 @@ Page({
     wx.navigateTo({ url: '/pages/add-device/add-device' });
   },
 
-  onExhibitionDemo() {
-    if (this.data.pet && this.data.pet.demoMode) {
-      wx.navigateTo({ url: '/pages/exhibition-scenes/exhibition-scenes' });
-      return;
-    }
-    wx.showModal({
-      title: '进入展会快速体验',
-      content: '将临时进入已破壳状态并体验六个生活场景。退出体验后，会恢复现在的孵化进度。',
-      confirmText: '立即体验',
-      confirmColor: '#002900',
-      success: (result) => {
-        if (!result.confirm) return;
-        petStore.startExhibitionDemo();
-        this.onShow();
-        wx.navigateTo({ url: '/pages/exhibition-scenes/exhibition-scenes' });
-      }
-    });
-  },
-
-  onOpenExhibitionScene() {
-    wx.navigateTo({ url: '/pages/exhibition-scene/exhibition-scene?scene=grass' });
+  onOpenLifeScene() {
+    wx.navigateTo({ url: '/pages/life-scene/life-scene?scene=grass' });
   },
 
   onChangeScene() {
-    wx.navigateTo({ url: '/pages/exhibition-scenes/exhibition-scenes?source=live' });
-  },
-
-  onExitExhibition() {
-    wx.showModal({
-      title: '退出展会体验',
-      content: '退出后将恢复进入体验前的蛋宝宝数据。',
-      confirmColor: '#002900',
-      success: (result) => {
-        if (!result.confirm) return;
-        petStore.endExhibitionDemo();
-        this.onShow();
-      }
-    });
+    wx.navigateTo({ url: '/pages/life-scenes/life-scenes' });
   },
 
   showFeedback(text) {

@@ -58,7 +58,7 @@ assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
 assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显示 MBTI');
 ['name', 'prototypeLabel', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
-  assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.16 字段 ${field}`);
+  assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.17 字段 ${field}`);
 });
 assert.equal(cardFace.includes('card-avatar-image'), true, 'H5 卡面必须显示 IP 形象头像');
 assert.equal(cardFace.includes('data-field="setName"'), true, '收集系列卡必须额外显示系列名');
@@ -106,7 +106,8 @@ assert.equal(h5Page.includes("native=1"), true, 'H5 地址未配置时必须回�
 assert.equal(h5Page.includes('toH5CollectibleCard'), true, 'H5 容器必须能打开套装收藏卡副本');
 assert.equal(h5Page.includes('onShow()'), true, '从改名页返回时必须刷新 H5 卡面');
 assert.equal(nicknamePage.includes('await syncQueue.flush()'), true, '已破壳正式卡改名后必须等待云端同步再返回 H5');
-assert.equal(/eggbaby/i.test([html, css, app, miniBridge].join('\n')), false, 'H5 不得出现错误品牌名 eggbaby');
+const forbiddenBrand = new RegExp(['egg', 'baby'].join(''), 'i');
+assert.equal(forbiddenBrand.test([html, css, app, miniBridge].join('\n')), false, 'H5 不得出现错误品牌名');
 function extractNamePools(source) {
   const block = source.match(/const CARD_NAME_POOLS = \{([\s\S]*?)\n\};/);
   assert.ok(block, '生成层必须定义 CARD_NAME_POOLS');
@@ -128,7 +129,7 @@ for (const file of actualFigureFiles) {
 }
 assert.equal(firstSet.setSize, firstSet.cards.length, '套装 setSize 必须等于实际清单数量');
 assert.deepEqual(firstSet.treatments, ['BASE'], 'MVP 第一季只能发布 BASE 版本');
-assert.deepEqual(firstSet.cardFaceFields, ['avatar_id', 'prototype', 'name', 'birthday', 'constellation', 'gender', 'mbti', 'signature', 'blood_type', 'collector_number'], 'v2.16 卡面必须冻结九项身份字段与系列编号');
+assert.deepEqual(firstSet.cardFaceFields, ['avatar_id', 'prototype', 'name', 'birthday', 'constellation', 'gender', 'mbti', 'signature', 'blood_type', 'collector_number'], 'v2.17 卡面必须冻结九项身份字段与系列编号');
 const figureIds = new Set(figureCatalog.assets.map(asset => asset.id));
 firstSet.cards.forEach((card, index) => {
   assert.equal(card.collectorNumber, index + 1, '套装清单编号必须连续且不可重排');

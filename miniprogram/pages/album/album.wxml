@@ -23,7 +23,6 @@
         <view class="set-progress"><text>{{summary.ownedUnique}}</text><text class="set-progress-total"> / {{summary.total}}</text></view>
         <view class="progress-track"><view class="progress-value" style="width:{{summary.total ? summary.ownedUnique / summary.total * 100 : 0}}%;"></view></view>
         <text class="set-note">固定 {{summary.total}} 个收藏位 · 已遇见的收藏卡不会重复出现</text>
-        <view wx:if="{{isDemo}}" class="preview-all" bindtap="onPreviewAllCards">展会预览 · 查看全部收藏卡</view>
       </view>
       <view wx:if="{{summary && setSlots.length}}" class="scene-grid">
         <view wx:for="{{setSlots}}" wx:key="cardId" class="scene-card {{item.owned ? '' : 'scene-card--locked'}}" data-id="{{item.instanceId}}" data-card-id="{{item.cardId}}" bindtap="onOpenSetCard">

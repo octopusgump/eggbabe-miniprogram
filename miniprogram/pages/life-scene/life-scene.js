@@ -1,8 +1,7 @@
 const petStore = require('../../utils/pet-store');
-const exhibitionScenes = require('../../utils/exhibition-scenes');
+const lifeScenes = require('../../utils/life-scenes');
 const sceneCards = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
-const runtime = require('../../services/runtime-context');
 const timeService = require('../../services/time-service');
 
 Page({
@@ -13,11 +12,15 @@ Page({
     this.dropPending = false;
     this.dropRequestToken = 0;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    let pet = petStore.getPet();
-    if (!pet || petStore.getStage(pet) !== 'hatched') pet = petStore.startExhibitionDemo();
-    const scene = exhibitionScenes.getScene(query.scene, pet.prototype);
+    const pet = petStore.getPet();
+    if (!pet || petStore.getStage(pet) !== 'hatched') {
+      wx.showToast({ title: '破壳后才能进入生活场景', icon: 'none' });
+      setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 600);
+      return;
+    }
+    const scene = lifeScenes.getScene(query.scene, pet.prototype);
     this.enteredAt = timeService.now();
-    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneDecorations: [], sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
+    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: lifeScenes.HOTSPOTS[scene.key] || [], sceneDecorations: [], sceneKicker: `${pet.prototype} · 生活场景` });
     analytics.track('scene_enter', { scene_id: scene.key, character: pet.prototype, entry_type: query.entry || 'scene' });
   },
 
@@ -65,10 +68,6 @@ Page({
     if (!card) return;
     clearTimeout(this.cardRevealTimer);
     this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
-    if (runtime.getMode() === 'demo') {
-      wx.navigateTo({ url: `/pages/set-card-preview/set-card-preview?cardId=${encodeURIComponent(card.cardId || '')}` });
-      return;
-    }
     wx.navigateTo({ url: `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(card.id)}` });
   },
   onOpenAlbum() {

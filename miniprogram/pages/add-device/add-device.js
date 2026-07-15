@@ -6,7 +6,7 @@ const runtime = require('../../services/runtime-context');
 const subscriptionMessages = require('../../services/subscription-messages');
 
 Page({
-  data: { code: '', error: '', canSubmit: false, success: null, submitting: false },
+  data: { code: '', error: '', canSubmit: false, success: null, submitting: false, activationCode: config.localActivationCode },
 
   onLoad() { analytics.track('add_egg_page_view'); },
 
@@ -19,7 +19,7 @@ Page({
     if (!this.data.canSubmit || this.data.submitting) return;
     this.setData({ submitting: true, error: '' });
     if (!config.backendEnabled) runtime.setMode('demo');
-    analytics.track('activation_submit', { code_type: 'preview' });
+    analytics.track('activation_submit', { code_type: config.backendEnabled ? 'server' : 'local_full' });
     if (config.backendEnabled) {
       cloudApi.redeemActivationCode(this.data.code).then(result => this.handleResult(result));
       return;
@@ -43,7 +43,7 @@ Page({
       result.pet = imported.pet;
     }
     const prototype = result.pet ? result.pet.prototype : result.prototype;
-    analytics.track('egg_bound', { prototype, code_type: config.backendEnabled ? 'server' : 'preview' });
+    analytics.track('egg_bound', { prototype, code_type: config.backendEnabled ? 'server' : 'local_full' });
     this.setData({ success: { prototype } });
     analytics.track('add_success_feedback_shown', { prototype });
     subscriptionMessages.requestHatchReminders();

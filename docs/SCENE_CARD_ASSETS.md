@@ -4,7 +4,7 @@
 
 - 套装：`YT-S01`（玉兔初见·水彩日常）
 - 清单：固定 10 张，全部 `BASE`
-- 卡牌定义：`miniprogram/utils/exhibition-scenes.js`
+- 卡牌定义：`miniprogram/utils/life-scenes.js`
 - H5 原始 Hero：`h5/birth-card/assets/figures/`
 - H5 套装清单：`h5/birth-card/assets/sets/YT-S01.json`
 - 小程序轻量预览：`miniprogram/assets/cards/YT-S01/`

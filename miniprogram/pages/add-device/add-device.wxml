@@ -4,13 +4,13 @@
   <view class="content">
     <view class="intro">
       <text class="intro-title">输入激活码</text>
-      <text class="intro-desc">输入 {{activationCode}}，进入完整孵化流程。添加成功会告诉你原型，具体款式留到破壳时揭晓。</text>
+      <text class="intro-desc">输入 {{activationCode}} 体验完整孵化；输入 {{hatchedActivationCode}} 直接查看已孵化版本。具体款式会在破壳后揭晓。</text>
     </view>
 
     <view class="code-block">
       <text class="label">激活码</text>
       <input class="code-input" value="{{code}}" bindinput="onCodeInput"
-             placeholder="请输入 {{activationCode}}" />
+             placeholder="请输入 {{activationCode}} 或 {{hatchedActivationCode}}" />
     </view>
 
     <text wx:if="{{error}}" class="error">{{error}}</text>

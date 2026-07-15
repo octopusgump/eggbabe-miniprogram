@@ -64,7 +64,7 @@ async function main() {
   petStore.saveUser({ id: 'test-user', nickname: '测试蛋友', registeredAt: time.now() });
   const invalid = petStore.bindPet('NOT-JIHUOMA', time.now());
   assert.equal(invalid.ok, false, '本地完整版不得接受其他激活码');
-  assert.equal(invalid.reason, 'INVALID', '非 JIHUOMA 必须返回统一无效码原因');
+  assert.equal(invalid.reason, 'INVALID', '非本地验收码必须返回统一无效码原因');
   const bound = petStore.bindPet(' jihuoma ', time.now());
   assert.equal(bound.ok, true, '本地完整版必须接受 JIHUOMA，且大小写与首尾空格不敏感');
   assert.equal(bound.pet.prototype, '玉兔', 'JIHUOMA 当前固定绑定玉兔原型');
@@ -230,6 +230,7 @@ async function main() {
   const removedCopy = new RegExp([['展', '会'].join(''), ['EXHIB', 'ITION'].join(''), ['exhib', 'ition'].join(''), ['快速', '体验'].join('')].join('|'));
   assert.equal(removedCopy.test(forbiddenSources), false, '用户入口、当前 PRD 与说明不得残留旧公开直达模式');
   assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'JIHUOMA'"), true, '本地完整版激活码必须固定为 JIHUOMA');
+  assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'JIHUOMA2'"), true, '本地已孵化验收码必须固定为 JIHUOMA2');
   assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.17'), true, '当前 PRD 必须升级为 v2.17');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
@@ -243,8 +244,15 @@ async function main() {
   sourceRoots.forEach(source => scan(path.join(root, source)));
 
   petStore.resetDemo();
+  assert.deepEqual(wx.getStorageSync(runtime.scopedKey('scene_cards')), undefined, '重置本地体验必须同时清除旧会话收藏卡');
+  runtime.setMode('demo');
+  const hatched = petStore.bindPet(' jihuoma2 ', time.now());
+  assert.equal(hatched.ok, true, 'JIHUOMA2 必须作为本地已孵化验收码');
+  assert.equal(petStore.getStage(hatched.pet), 'hatched', 'JIHUOMA2 必须直接进入已孵化状态');
+  assert.equal(!!hatched.pet.collectionCard, true, 'JIHUOMA2 必须同时生成身份收藏卡，保证具体卡面可用');
+  petStore.resetDemo();
   runtime.setMode('live');
-  console.log('V2.17 校验通过：旧公开直达模式已删除，JIHUOMA 进入完整孵化流程，生活场景与收藏卡正常。');
+  console.log('V2.17 校验通过：JIHUOMA 正常孵化，JIHUOMA2 直接进入已孵化验收状态，生活场景与收藏卡正常。');
 }
 
 main().catch(error => {

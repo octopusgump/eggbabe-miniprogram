@@ -5,7 +5,7 @@
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">领取我的蛋宝宝</text>
-      <text class="empty-desc">输入 {{activationCode}}，开始一段只属于你们的完整孵化旅程。</text>
+      <text class="empty-desc">输入 {{activationCode}} 完整孵化；输入 {{hatchedActivationCode}} 直接查看已孵化版本。</text>
       <button class="primary-button" bindtap="onAddDevice"><text class="button-label">添加蛋宝宝</text></button>
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>

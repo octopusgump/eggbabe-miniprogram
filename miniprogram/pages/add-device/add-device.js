@@ -6,7 +6,7 @@ const runtime = require('../../services/runtime-context');
 const subscriptionMessages = require('../../services/subscription-messages');
 
 Page({
-  data: { code: '', error: '', canSubmit: false, success: null, submitting: false, activationCode: config.localActivationCode },
+  data: { code: '', error: '', canSubmit: false, success: null, submitting: false, activationCode: config.localActivationCode, hatchedActivationCode: config.localHatchedActivationCode },
 
   onLoad() { analytics.track('add_egg_page_view'); },
 

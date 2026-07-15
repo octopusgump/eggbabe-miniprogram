@@ -7,10 +7,12 @@ Page({
   data: { card: null, sceneCards: [], setSlots: [], summary: null, shareCard: null },
   onShow() {
     const pet = petStore.getPet();
-    const summary = pet ? sceneCardStore.collectionSummary(pet.prototype) : null;
+    const hasIdentityCard = !!(pet && pet.collectionCard);
+    const sceneCards = hasIdentityCard ? sceneCardStore.list().filter(card => card.character === pet.prototype) : [];
+    const summary = hasIdentityCard ? sceneCardStore.collectionSummary(pet.prototype) : null;
     this.setData({
-      card: pet && pet.collectionCard ? pet.collectionCard : null,
-      sceneCards: sceneCardStore.list(),
+      card: hasIdentityCard ? pet.collectionCard : null,
+      sceneCards,
       setSlots: summary ? summary.slots : [],
       summary
     });

@@ -20,6 +20,7 @@ Page({
     hasScenes: false,
     syncPending: 0,
     activationCode: config.localActivationCode,
+    hatchedActivationCode: config.localHatchedActivationCode,
     sceneImage: ''
   },
 

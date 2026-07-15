@@ -189,14 +189,17 @@ function bindPet(code, now) {
   }
   const normalized = String(code || '').trim().toUpperCase();
   if (!normalized) return { ok: false, reason: 'EMPTY', message: '请输入激活码' };
-  if (!config.backendEnabled && normalized !== config.localActivationCode) return { ok: false, reason: 'INVALID', message: `激活码无效，请输入 ${config.localActivationCode}` };
+  const isDirectHatch = !config.backendEnabled && normalized === config.localHatchedActivationCode;
+  const isLocalActivation = !config.backendEnabled && (normalized === config.localActivationCode || isDirectHatch);
+  if (!config.backendEnabled && !isLocalActivation) return { ok: false, reason: 'INVALID', message: `激活码无效，请输入 ${config.localActivationCode} 或 ${config.localHatchedActivationCode}` };
   const error = mockCodeError(normalized);
   if (error) return { ok: false, reason: normalized, message: error };
 
   const createdAt = now || timeService.now();
   const prototype = '玉兔';
-  const hatchAt = createdAt + 7 * DAY;
+  const hatchAt = isDirectHatch ? createdAt - 1000 : createdAt + 7 * DAY;
   const id = `egg-${createdAt}`;
+  const completedDate = isDirectHatch ? todayKey(createdAt) : '';
   const pet = {
     id,
     mode: runtime.getMode(),
@@ -205,18 +208,20 @@ function bindPet(code, now) {
     name: '',
     createdAt,
     hatchAt,
-    progress: 0,
-    progressEarned: 0,
-    stage: 'waiting',
+    progress: isDirectHatch ? 100 : 0,
+    progressEarned: isDirectHatch ? 145 : 0,
+    stage: isDirectHatch ? 'ready' : 'waiting',
     lastInteractionAt: createdAt,
     tasks: {
-      nicknameDone: false,
-      cuddleDate: '',
-      wishDate: '',
-      lessonDate: '',
-      doodleDone: false
+      nicknameDone: isDirectHatch,
+      cuddleDate: completedDate,
+      wishDate: completedDate,
+      lessonDate: completedDate,
+      doodleDone: isDirectHatch
     },
-    preferences: { wishes: [], lessons: [] },
+    preferences: isDirectHatch
+      ? { wishes: [{ date: completedDate, value: '安静陪伴你' }], lessons: [{ date: completedDate, value: '学会撒娇' }] }
+      : { wishes: [], lessons: [] },
     shell: { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
     dailyStatus: null,
     collectionCard: null,
@@ -224,6 +229,11 @@ function bindPet(code, now) {
     messages: []
   };
   if (!savePet(pet)) return { ok: false, reason: 'WRITE_FAILED', message: '蛋宝宝绑定失败，请重试' };
+  if (isDirectHatch) {
+    const cardResult = createCollectionCard();
+    if (!cardResult.ok) return { ok: false, reason: cardResult.reason || 'CARD_CREATE_FAILED', message: cardResult.message || '收藏卡生成失败，请重试' };
+    return { ok: true, pet: cardResult.pet, directHatch: true };
+  }
   return { ok: true, pet };
 }
 
@@ -517,6 +527,9 @@ function saveMessage(message) {
 
 function resetDemo() {
   try { storage.remove(resolvedKey(PET_KEY)); } catch (error) {}
+  ['scene_cards', 'scene_card_daily', 'scene_card_issue_counter', 'completed_card_sets'].forEach(key => {
+    try { storage.remove(runtime.scopedKey(key)); } catch (error) {}
+  });
   clearRemovedPublicModeBackup();
 }
 

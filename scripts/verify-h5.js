@@ -214,6 +214,10 @@ const nativeCardTemplate = read('miniprogram/pages/collection-card/collection-ca
 const nativeCardStyles = read('miniprogram/pages/collection-card/collection-card.wxss');
 assert.equal(nativeCardPage.includes('onProfile'), false, '收藏卡不得保留已删除档案页处理器');
 assert.equal(nativeCardTemplate.includes('查看它的档案'), false, '收藏卡不得保留已删除档案页入口');
+assert.equal(nativeCardTemplate.includes('查看我的收藏卡'), false, '身份收藏卡不得保留查看卡册按钮');
+assert.equal(nativeCardTemplate.includes('wx:if="{{!isCollectible}}" class="actions"'), false, '身份收藏卡不得保留空的底部操作区');
+assert.equal(nativeCardStyles.includes('.text-button'), false, '两个身份卡按钮删除后不得残留文字按钮样式');
+assert.equal(nativeCardTemplate.includes('<text class="button-label">返回</text>'), true, '具体系列收藏卡必须保留返回按钮');
 assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
 assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
 assert.equal(nativeCardTemplate.includes('待接入小程序码'), false, '原生完整卡面不得显示待接入小程序码按钮');

@@ -20,5 +20,4 @@
 .card-signature--dense { font-size: 15rpx; line-height: 1.2; }
 .actions { margin-top: 28rpx; }
 .primary { height: 88rpx; border-radius: 999rpx; background: #3F5A47; color: #FFF; font-size: 27rpx; line-height: 88rpx; }
-.primary::after, .text-button::after { border: none; }
-.text-button { margin-top: 12rpx; background: transparent; color: #6F744F; font-size: 24rpx; }
+.primary::after { border: none; }

@@ -66,13 +66,7 @@ Page({
     });
   },
 
-  onAlbum() {
-    if (this.data.isCollectible) {
-      wx.navigateBack();
-      return;
-    }
-    wx.navigateTo({ url: '/pages/album/album' });
-  },
+  onBack() { wx.navigateBack(); },
   onShareAppMessage() {
     const sceneCard = this.data.sceneCard;
     return {

@@ -17,7 +17,6 @@
         <text class="card-signature {{signatureClass}}">“{{cardView.signature}}”</text>
       </view>
     </view>
-    <view wx:if="{{!isCollectible}}" class="actions"><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的收藏卡</text></button></view>
-    <view wx:else class="actions"><button class="primary" bindtap="onAlbum"><text class="button-label">返回</text></button></view>
+    <view wx:if="{{isCollectible}}" class="actions"><button class="primary" bindtap="onBack"><text class="button-label">返回</text></button></view>
   </scroll-view>
 </view>

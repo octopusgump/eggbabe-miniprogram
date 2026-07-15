@@ -38,7 +38,9 @@ Page({
   },
 
   openNativeFallback(view, isSetCard) {
-    const destination = isSetCard ? '/pages/album/album' : (view === 'profile' ? '/pages/pet-detail/pet-detail?native=1' : '/pages/collection-card/collection-card?native=1');
+    const destination = isSetCard
+      ? `/pages/collection-card/collection-card?sceneCardId=${encodeURIComponent(this.sceneCardId)}&native=1`
+      : (view === 'profile' ? '/pages/pet-detail/pet-detail?native=1' : '/pages/collection-card/collection-card?native=1');
     wx.redirectTo({ url: destination });
   },
 

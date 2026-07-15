@@ -7,6 +7,8 @@
 .title-copy { min-width: 0; }
 .name { display: block; overflow: hidden; color: #3C2D24; font-family: "PingFang SC", sans-serif; font-size: 46rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .prototype-name { display: block; margin-top: 8rpx; color: #788078; font-size: 19rpx; }
+.collect-context { display: block; overflow: hidden; margin-top: 5rpx; color: #6E756D; font-size: 17rpx; text-overflow: ellipsis; white-space: nowrap; }
+.collect-badge { justify-self: end; padding: 10rpx 14rpx; border-radius: 999rpx; background: #F0F2E8; color: #65705F; font-size: 20rpx; font-weight: 600; }
 .card-illustration-section { width: 100%; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
 .illustration { width: 100%; height: 100%; }
 .card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 8rpx; box-sizing: border-box; }

@@ -36,7 +36,7 @@ Page({
     const cardData = h5Bridge.toH5CollectibleCard(pet, card, config);
     const src = h5Bridge.buildH5Url(config.birthCardH5Url, 'card', cardData, config.birthCardApiBase);
     if (!src) {
-      wx.showToast({ title: '完整卡面将在 H5 地址配置后开放', icon: 'none' });
+      wx.navigateTo({ url: `/pages/collection-card/collection-card?sceneCardId=${encodeURIComponent(card.id)}&native=1` });
       return;
     }
     wx.navigateTo({ url: `/pages/h5-card/h5-card?sceneCardId=${encodeURIComponent(card.id)}` });

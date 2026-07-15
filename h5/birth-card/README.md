@@ -35,6 +35,7 @@
 1. 将本目录发布到已备案的 HTTPS 域名。
 2. 在微信公众平台把该域名加入小程序“业务域名”。
 3. 在 `miniprogram/config/v2.js` 配置 `birthCardH5Url` 和 `birthCardApiBase`；前者用于打开 H5，后者用于正式模式启用前的安全门禁。
+4. H5 未部署或地址不可用时，小程序会用相同的已定稿数据打开原生完整卡面；不会再把用户留在“配置后开放”的提示上。
 4. 在 H5 的 `runtime-config.js` 固定填写同一可信 `apiBase`，并部署卡片查询接口；正式模式缺少接口时会安全回退原生页或显示错误。
 5. 如需后台更新款式素材，在 `runtime-config.js` 配置 `assetManifestUrl`，返回与 `asset-config.js` 相同结构的 JSON。
 6. 配置 `miniProgramCodeUrl` 或在卡片接口返回 `mini_program_code_url`；任何模式缺少真实小程序码时都会阻止导出，不生成占位码。

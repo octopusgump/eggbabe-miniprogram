@@ -46,7 +46,7 @@ assert.equal(nativeTemplate.includes('card-wordmark'), false, '原生标题不�
   assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.17 卡面缺少 ${field}`);
 });
 assert.equal(h5Html.includes('card-avatar-image'), true, 'H5 v2.17 卡面缺少 IP 头像');
-['card.prototype', 'card.name', 'birthdayLabel', 'card.zodiac', 'card.gender', 'card.mbti', 'card.personality', 'card.bloodType'].forEach(field => {
+['cardView.prototype_name', 'cardView.name', 'birthdayLabel', 'cardView.constellation', 'genderLabel', 'cardView.mbti', 'cardView.signature', 'cardView.blood_type'].forEach(field => {
   assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.17 卡面缺少 ${field}`);
 });
 assert.equal(h5Model.includes('`${parts.year}年${parts.month}月${parts.day}日`'), true, 'H5 生日必须显示年月日');

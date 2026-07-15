@@ -138,4 +138,51 @@ firstSet.cards.forEach((card, index) => {
   assert.equal(figureIds.has(card.heroAssetId), true, `套装引用了未登记 Hero：${card.heroAssetId}`);
 });
 
+let albumDefinition;
+let navigatedTo = '';
+let toastTitle = '';
+global.wx = {
+  getStorageSync() { return undefined; },
+  setStorageSync() {},
+  removeStorageSync() {},
+  navigateTo({ url }) { navigatedTo = url; },
+  showToast({ title }) { toastTitle = title; }
+};
+global.Page = definition => { albumDefinition = definition; };
+const petStore = require('../miniprogram/utils/pet-store');
+const h5Bridge = require('../miniprogram/services/birth-card-h5');
+const originalGetPet = petStore.getPet;
+const originalToCollectible = h5Bridge.toH5CollectibleCard;
+const originalBuildUrl = h5Bridge.buildH5Url;
+petStore.getPet = () => ({ id: 'pet-1', collectionCard: { id: 'identity-1' } });
+h5Bridge.toH5CollectibleCard = () => ({ card_id: 'owned-card', mode: 'demo' });
+h5Bridge.buildH5Url = () => '';
+delete require.cache[require.resolve('../miniprogram/pages/album/album.js')];
+require('../miniprogram/pages/album/album.js');
+delete global.Page;
+const albumPage = Object.assign({}, albumDefinition, { data: { sceneCards: [{ id: 'owned-card' }] } });
+albumPage.onOpenSetCard({ currentTarget: { dataset: { id: 'owned-card' } } });
+assert.equal(toastTitle, '', 'H5 未部署时不得只显示“配置后开放”提示');
+assert.equal(navigatedTo, '/pages/collection-card/collection-card?sceneCardId=owned-card&native=1', 'H5 未部署时必须打开已拥有收藏卡的原生完整卡面');
+let h5PageDefinition;
+let redirectedTo = '';
+global.wx.redirectTo = ({ url }) => { redirectedTo = url; };
+global.Page = definition => { h5PageDefinition = definition; };
+delete require.cache[require.resolve('../miniprogram/pages/h5-card/h5-card.js')];
+require('../miniprogram/pages/h5-card/h5-card.js');
+delete global.Page;
+const h5FallbackPage = Object.assign({}, h5PageDefinition, { sceneCardId: 'owned-card' });
+h5FallbackPage.openNativeFallback('card', true);
+assert.equal(redirectedTo, '/pages/collection-card/collection-card?sceneCardId=owned-card&native=1', 'web-view 地址失效时也必须回退到同一张已拥有收藏卡');
+const nativeCardPage = read('miniprogram/pages/collection-card/collection-card.js');
+const nativeCardTemplate = read('miniprogram/pages/collection-card/collection-card.wxml');
+assert.equal(nativeCardPage.includes('query.sceneCardId'), true, '原生完整卡面必须读取已拥有收藏卡 ID');
+assert.equal(nativeCardPage.includes('toH5CollectibleCard'), true, '原生回退必须消费与 H5 相同的已定稿卡片数据');
+assert.equal(nativeCardTemplate.includes('sceneCard.collectorLabel'), true, '原生完整卡面必须显示系列编号');
+assert.equal(nativeCardTemplate.includes('sceneCard.setName'), true, '原生完整卡面必须显示收集系列');
+petStore.getPet = originalGetPet;
+h5Bridge.toH5CollectibleCard = originalToCollectible;
+h5Bridge.buildH5Url = originalBuildUrl;
+delete global.wx;
+
 console.log('H5 工程校验通过：数据注入、三段式水彩卡面、web-view 接入与导出能力完整。');

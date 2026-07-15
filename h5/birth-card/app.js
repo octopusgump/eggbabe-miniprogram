@@ -48,10 +48,11 @@
     const dataSection = document.querySelector('#birth-card .card-data-section');
     const signature = document.querySelector('#birth-card .card-signature');
     if (!dataSection || !signature) return;
-    let fontSize = 12;
+    const minSignatureFontSize = 10;
+    let fontSize = 14.4;
     signature.style.fontSize = `${fontSize}px`;
-    while (dataSection.scrollHeight > dataSection.clientHeight && fontSize > 8) {
-      fontSize -= 1;
+    while (dataSection.scrollHeight > dataSection.clientHeight && fontSize > minSignatureFontSize) {
+      fontSize = Math.max(minSignatureFontSize, Number((fontSize - .8).toFixed(1)));
       signature.style.fontSize = `${fontSize}px`;
     }
   }

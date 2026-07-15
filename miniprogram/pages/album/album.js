@@ -28,16 +28,6 @@ Page({
     this.setData({ shareCard: card || null });
     if (card) sceneCardStore.markShared(card.id);
   },
-  onOpenCopies(event) {
-    const slot = this.data.setSlots.find(item => item.cardId === event.currentTarget.dataset.cardId);
-    if (!slot || !slot.copies.length) return;
-    const content = slot.copies.map((copy, index) => {
-      const code = copy.uniqueCode || '旧副本暂无编号';
-      const obtained = copy.obtainedLabel ? `获得于 ${copy.obtainedLabel}` : '获得时间未记录';
-      return `${index + 1}. ${code}\n${obtained}`;
-    }).join('\n\n');
-    wx.showModal({ title: `${slot.name} · ${slot.quantity} 份副本`, content, showCancel: false, confirmText: '知道了', confirmColor: '#3F5A47' });
-  },
   onOpenSetCard(event) {
     const definitionId = event.currentTarget.dataset.cardId;
     if (runtime.getMode() === 'demo') {
@@ -60,8 +50,23 @@ Page({
   },
   onPreviewAllCards() { wx.navigateTo({ url: '/pages/set-card-preview/set-card-preview' }); },
   onEcommerce() {
-    analytics.track('ecommerce_cta_click', { unlock_sku: 'scene-set-access', entry: 'album' });
-    wx.showModal({ title: '已解锁站外购买资格', content: '购买仍在线下或品牌私域完成。正式跳转入口将在运营渠道确认后开放。', showCancel: false, confirmText: '知道了', confirmColor: '#3F5A47' });
+    const channels = [
+      { label: '复制淘宝口令 / 链接', value: config.ecommerce.taobaoCopyText, entry: 'copy_taobao' },
+      { label: '复制小红书店铺信息', value: config.ecommerce.xiaohongshuCopyText, entry: 'copy_xiaohongshu' }
+    ].filter(channel => channel.value);
+    if (!channels.length) {
+      wx.showModal({ title: '已解锁站外购买资格', content: '店铺信息将在运营确认后开放。小程序内不进行支付。', showCancel: false, confirmText: '知道了', confirmColor: '#3F5A47' });
+      return;
+    }
+    wx.showActionSheet({
+      itemList: channels.map(channel => channel.label),
+      success: result => {
+        const channel = channels[result.tapIndex];
+        if (!channel) return;
+        analytics.track('ecommerce_cta_click', { unlock_sku: 'scene-set-access', entry: channel.entry });
+        wx.setClipboardData({ data: channel.value });
+      }
+    });
   },
   onShareAppMessage() {
     const card = this.data.shareCard;

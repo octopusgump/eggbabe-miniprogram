@@ -19,7 +19,7 @@ function write(queue) {
 function enqueue(api, data) {
   const item = { id: `sync-${time.now()}-${Math.random().toString(36).slice(2, 8)}`, api, data: data || {}, mode: runtime.getMode(), attempts: 0, createdAt: time.now() };
   const ok = write(read().concat(item).slice(-100));
-  if (ok && config.cloudEnabled && runtime.getMode() === 'live') flush();
+  if (ok && config.backendEnabled && runtime.getMode() === 'live') flush();
   return { ok, pending: ok, item };
 }
 
@@ -27,7 +27,7 @@ function pendingCount() { return read().length; }
 
 function flush() {
   if (inFlight) return inFlight;
-  if (!config.cloudEnabled || runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: pendingCount() });
+  if (!config.backendEnabled || runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: pendingCount() });
   const run = async () => {
     let queue = read();
     while (queue.length) {

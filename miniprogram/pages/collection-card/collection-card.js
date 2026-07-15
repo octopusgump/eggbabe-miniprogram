@@ -6,8 +6,8 @@ const sceneConfig = require('../../utils/exhibition-scenes');
 const ZODIAC_SYMBOLS = { 白羊座: '♈', 金牛座: '♉', 双子座: '♊', 巨蟹座: '♋', 狮子座: '♌', 处女座: '♍', 天秤座: '♎', 天蝎座: '♏', 射手座: '♐', 摩羯座: '♑', 水瓶座: '♒', 双鱼座: '♓' };
 
 function birthdayLabel(value) {
-  const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(String(value || ''));
-  return match ? `${Number(match[1])}月${Number(match[2])}日` : String(value || '');
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  return match ? `${Number(match[1])}年${Number(match[2])}月${Number(match[3])}日` : String(value || '');
 }
 
 function loadCanvasImage(src) {
@@ -45,8 +45,9 @@ Page({
       return;
     }
     const card = pet.collectionCard;
+    const cardView = h5Bridge.toH5Card(pet, config);
     const illustration = ((sceneConfig.getCardSetForCharacter(card.prototype) || {}).cards || []).find(item => item.heroAssetId === card.illustration_id);
-    this.setData({ pet, card, illustration: illustration ? illustration.image : '', birthdayLabel: birthdayLabel(card.birthday), zodiacSymbol: ZODIAC_SYMBOLS[card.zodiac] || '', isNew: query.new === '1' });
+    this.setData({ pet, card, cardView, illustration: illustration ? illustration.image : '', birthdayLabel: birthdayLabel(card.birthday), zodiacSymbol: ZODIAC_SYMBOLS[card.zodiac] || '', isNew: query.new === '1' });
   },
 
   onReady() {
@@ -56,8 +57,13 @@ Page({
   async drawShareCard() {
     const card = this.data.card;
     const miniProgramCodeUrl = card.mini_program_code_url || card.miniProgramCodeUrl || config.miniProgramCodeUrl;
+    const shareCode = this.data.cardView && this.data.cardView.share_code;
     if (!miniProgramCodeUrl) {
       this.setData({ posterReady: false, posterUnavailableReason: '正式分享图需要先配置真实小程序码，当前不会生成占位码。' });
+      return;
+    }
+    if (!shareCode) {
+      this.setData({ posterReady: false, posterUnavailableReason: '分享图需要先准备一个未使用的个人激活码。' });
       return;
     }
     let illustrationImage;
@@ -73,18 +79,19 @@ Page({
     }
     const context = wx.createCanvasContext('shareCanvas', this);
     context.setFillStyle('#FFFDF7'); context.fillRect(0, 0, 600, 1067);
-    context.setTextAlign('center'); context.setFillStyle('#3C2D24'); context.setFontSize(42); context.fillText(card.name, 300, 78);
+    drawCover(context, illustrationImage, 40, 22, 64, 76);
+    context.setTextAlign('center'); context.setFillStyle('#3C2D24'); context.setFontSize(38); context.fillText(card.name, 300, 64);
+    context.setFillStyle('#788078'); context.setFontSize(15); context.fillText(card.prototype, 300, 90);
     context.setFillStyle('#EAF3F4'); context.fillRect(32, 112, 536, 670);
     drawCover(context, illustrationImage, 32, 112, 536, 670);
-    const rows = [['人', 'MBTI', card.mbti], ['★', '星座', `${card.zodiac} ${this.data.zodiacSymbol}`], ['礼', '生日', this.data.birthdayLabel]];
-    context.setStrokeStyle('#94AB61'); context.setLineWidth(2); context.strokeRect(32, 800, 536, 192);
+    const rows = [['生日', this.data.birthdayLabel, '星座', `${card.zodiac} ${this.data.zodiacSymbol}`], ['性别', card.gender, '血型', `${card.bloodType} 型`]];
     rows.forEach((row, index) => {
-      const y = 832 + index * 64;
-      if (index) { context.beginPath(); context.moveTo(32, 800 + index * 64); context.lineTo(568, 800 + index * 64); context.stroke(); }
-      context.setTextAlign('left'); context.setFillStyle('#2D251F'); context.setFontSize(18); context.fillText(`${row[0]}  ${row[1]}`, 62, y);
-      context.setTextAlign('right'); context.fillText(row[2], 538, y);
+      const y = 828 + index * 48;
+      context.setTextAlign('left'); context.setFillStyle('#77756E'); context.setFontSize(14); context.fillText(row[0], 44, y); context.fillText(row[2], 318, y);
+      context.setFillStyle('#2D251F'); context.setFontSize(15); context.fillText(row[1], 98, y); context.fillText(row[3], 364, y);
     });
-    context.setTextAlign('left'); context.setFillStyle('#5D675F'); context.setFontSize(15); context.fillText(card.serial, 38, 1030);
+    context.setTextAlign('center'); context.setFillStyle('#2D251F'); context.setFontSize(16); context.fillText(`MBTI  ${card.mbti}`, 300, 928); context.setFillStyle('#536057'); context.setFontSize(15); context.fillText(`“${String(card.personality || '').slice(0, 20)}”`, 300, 962, 500);
+    context.setTextAlign('left'); context.setFillStyle('#5D675F'); context.setFontSize(13); context.fillText(card.serial, 38, 1015); context.setFillStyle('#3F5A47'); context.fillText(`分享码 ${shareCode}`, 38, 1040);
     drawContain(context, miniProgramCodeImage, 504, 998, 58, 58);
     context.draw(false, () => this.setData({ posterReady: true, posterUnavailableReason: '' }));
   },

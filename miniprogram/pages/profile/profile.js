@@ -6,6 +6,7 @@ const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const syncQueue = require('../../services/sync-queue');
+const chatSafety = require('../../services/chat-safety');
 
 Page({
   data: {
@@ -49,7 +50,7 @@ Page({
     }
     this.setData(changes);
     this.setData({ publicId: savedUser.publicId });
-    if (config.cloudEnabled) syncQueue.enqueue('updateProfile', { profile: changes });
+    if (config.backendEnabled) syncQueue.enqueue('updateProfile', { profile: changes });
     return true;
   },
 
@@ -57,11 +58,11 @@ Page({
     const avatarUrl = event.detail.avatarUrl;
     if (!avatarUrl) return;
     analytics.track('avatar_change', { status: 'start' });
-    if (config.cloudEnabled) {
+    if (config.backendEnabled) {
       wx.showLoading({ title: '正在上传' });
       cloudApi.uploadAvatar(avatarUrl).then(result => {
         wx.hideLoading();
-        if (!result.ok || !this.save({ avatarUrl: result.fileID })) {
+        if (!result.ok || !result.avatarUrl || !this.save({ avatarUrl: result.avatarUrl })) {
           analytics.track('avatar_change', { status: 'fail' });
           wx.showToast({ title: result.message || '头像上传失败，请重试', icon: 'none' });
           return;
@@ -82,7 +83,10 @@ Page({
       title: '修改昵称', editable: true, placeholderText: '最多 16 个字', content: this.data.nickname === '微信用户' ? '' : this.data.nickname,
       success: (result) => {
         const nickname = (result.content || '').trim().slice(0, 16);
-        if (result.confirm && nickname) this.save({ nickname });
+        if (result.confirm && nickname) {
+          if (!chatSafety.isSafeDisplayText(nickname)) return wx.showToast({ title: '昵称含有不适合的内容，请换一个', icon: 'none' });
+          this.save({ nickname });
+        }
       }
     });
   },
@@ -114,7 +118,10 @@ Page({
       title: '常驻城市', editable: true, placeholderText: '例如：上海 · 浦东新区', content: this.data.city,
       success: (result) => {
         const city = (result.content || '').trim().slice(0, 24);
-        if (result.confirm) this.save({ city });
+        if (result.confirm) {
+          if (!chatSafety.isSafeDisplayText(city)) return wx.showToast({ title: '请不要填写敏感个人信息', icon: 'none' });
+          this.save({ city });
+        }
       }
     });
   },

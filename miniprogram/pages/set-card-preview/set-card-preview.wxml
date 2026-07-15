@@ -8,16 +8,18 @@
 
     <view wx:if="{{current}}" class="preview-card birth-card">
       <view class="card-title-section">
-        <view class="title-copy"><text class="card-name">{{current.name}}</text></view>
+        <view class="card-avatar"><pet-avatar pet-type="{{current.prototype}}" size="{{40}}"></pet-avatar></view>
+        <view class="title-copy"><text class="card-name">{{current.name}}</text><text class="prototype-name">{{current.prototypeLabel}}</text><text class="collect-context">{{current.setName}} · {{current.cardTitle}}</text></view>
         <text class="collect-badge">{{current.collectorLabel}}</text>
       </view>
       <view class="card-illustration-section"><image class="hero-image hero-figure" src="{{current.image}}" mode="aspectFill"></image></view>
       <view class="card-data card-data-section">
         <view class="stat-grid">
-          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--mbti">人</view><text class="stat-label">MBTI</text></view><text class="stat-value">{{current.mbti}}</text></view>
-          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--constellation">★</view><text class="stat-label">星座</text></view><text class="stat-value">{{current.constellationLabel}}</text></view>
-          <view class="stat-row"><view class="stat-leading"><view class="stat-icon stat-icon--birthday">礼</view><text class="stat-label">生日</text></view><text class="stat-value">{{current.birthdayLabel}}</text></view>
+          <view class="stat-pair"><view><text>生日</text><text>{{current.birthdayLabel}}</text></view><view><text>星座</text><text>{{current.constellationLabel}}</text></view></view>
+          <view class="stat-pair"><view><text>性别</text><text>{{current.genderSymbol}}</text></view><view><text>血型</text><text>{{current.bloodType}} 型</text></view></view>
+          <view class="stat-mbti"><text>MBTI</text><text>{{current.mbti}}</text></view>
         </view>
+        <text class="card-signature">“{{current.signature}}”</text>
       </view>
     </view>
 

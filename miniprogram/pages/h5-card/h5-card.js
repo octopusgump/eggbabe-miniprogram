@@ -5,7 +5,7 @@ const h5Bridge = require('../../services/birth-card-h5');
 const sceneCardStore = require('../../services/scene-card-store');
 
 Page({
-  data: { src: '', view: 'card' },
+  data: { src: '', view: 'card', savingPoster: false },
 
   onLoad(query) {
     this.view = query.view === 'profile' ? 'profile' : 'card';
@@ -47,7 +47,40 @@ Page({
     if (!Array.isArray(messages)) return;
     messages.slice(-5).forEach(message => {
       if (!message || !/^h5_birth_card_/.test(message.event_name || '')) return;
+      if (message.event_name === 'h5_birth_card_save_poster') {
+        this.savePoster(message.data_url);
+        return;
+      }
       analytics.track(message.event_name, { view: message.view || this.data.view, reason: message.reason || '' });
+    });
+  },
+
+  savePoster(dataUrl) {
+    if (this.data.savingPoster) return;
+    const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
+    if (!match || !wx.getFileSystemManager || !wx.env || !wx.env.USER_DATA_PATH) {
+      wx.showToast({ title: '分享图数据无效，请重试', icon: 'none' });
+      return;
+    }
+    this.setData({ savingPoster: true });
+    const filePath = `${wx.env.USER_DATA_PATH}/eggbabe-collection-card.png`;
+    wx.getFileSystemManager().writeFile({
+      filePath,
+      data: match[1],
+      encoding: 'base64',
+      success: () => wx.saveImageToPhotosAlbum({
+        filePath,
+        success: () => {
+          analytics.track('card_saved', { source: 'h5_bridge' });
+          wx.showToast({ title: '收藏卡已保存', icon: 'success' });
+        },
+        fail: () => wx.showToast({ title: '请允许保存到相册', icon: 'none' }),
+        complete: () => this.setData({ savingPoster: false })
+      }),
+      fail: () => {
+        this.setData({ savingPoster: false });
+        wx.showToast({ title: '分享图保存失败，请重试', icon: 'none' });
+      }
     });
   }
 });

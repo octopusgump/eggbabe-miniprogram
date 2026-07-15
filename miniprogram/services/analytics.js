@@ -1,6 +1,7 @@
 const runtime = require('./runtime-context');
 const time = require('./time-service');
 const config = require('../config/v2');
+const dataApi = require('./cloud-api');
 
 const storage = require('./storage-migration');
 const QUEUE_KEY = 'eggbabe_analytics_queue_v2';
@@ -14,10 +15,9 @@ function getContext() {
   const pet = petStore.getPet();
   const user = petStore.getUser();
   const mode = runtime.getMode();
-  return {
+  const context = {
     user_id: mode === 'demo' ? '' : (user ? user.id : ''),
     mode,
-    server_ts: time.isAuthoritative() || mode === 'demo' ? time.now() : null,
     session_id: runtime.getSessionId(),
     egg_id: pet ? pet.id : '',
     pet_id: pet && pet.collectionCard ? pet.id : '',
@@ -25,20 +25,31 @@ function getContext() {
     stage: pet ? petStore.getStage(pet) : 'empty',
     source_channel: pet ? (pet.sourceChannel || '') : ''
   };
+  if (time.isAuthoritative() || mode === 'demo') context.server_ts = time.now();
+  else context.server_time_pending = true;
+  return context;
 }
 
 function track(eventName, properties) {
   const event = Object.assign({}, getContext(), properties || {}, { event_name: eventName, event_id: `evt-${time.now()}-${Math.random().toString(36).slice(2, 8)}` });
   const queue = readQueue().concat(event).slice(-200);
   try { storage.set(QUEUE_KEY, queue); } catch (error) { return { ok: false, event }; }
-  if (config.cloudEnabled && wx.cloud && queue.length >= 10) flush();
+  if (config.backendEnabled && queue.length >= 10) flush();
   return { ok: true, event };
 }
 
 function flush() {
   const events = readQueue();
-  if (!events.length || !config.cloudEnabled || !wx.cloud) return Promise.resolve({ ok: false, pending: events.length });
-  return wx.cloud.callFunction({ name: 'trackEvents', data: { events } }).then(() => {
+  if (!events.length || !config.backendEnabled) return Promise.resolve({ ok: false, pending: events.length });
+  if (runtime.getMode() === 'live' && !time.isAuthoritative()) return Promise.resolve({ ok: false, pending: events.length, code: 'SERVER_TIME_REQUIRED' });
+  const uploadEvents = events.map(event => {
+    if (event.server_ts) return event;
+    const hydrated = Object.assign({}, event, { server_ts: time.now() });
+    delete hydrated.server_time_pending;
+    return hydrated;
+  });
+  return dataApi.trackEvents(uploadEvents).then(result => {
+    if (!result.ok) return { ok: false, pending: events.length };
     const current = readQueue();
     const uploadedIds = new Set(events.map(event => event.event_id));
     storage.set(QUEUE_KEY, current.filter(event => !uploadedIds.has(event.event_id)));

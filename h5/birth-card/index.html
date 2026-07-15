@@ -25,7 +25,15 @@
       <section id="card-view" class="view-section">
         <article id="birth-card" class="birth-card" aria-label="蛋宝宝收藏卡">
           <header class="card-title-section">
-            <div class="card-title-copy"><h1 data-field="name">—</h1></div>
+            <div class="card-avatar" aria-hidden="true">
+              <span id="card-avatar-mark">兔</span>
+              <img id="card-avatar-image" alt="" hidden>
+            </div>
+            <div class="card-title-copy">
+              <h1 data-field="name">—</h1>
+              <p class="prototype-name" data-field="prototypeLabel">—</p>
+              <p id="collect-context" class="collect-context" hidden><span data-field="setName">—</span> · <span data-field="cardTitle">—</span></p>
+            </div>
             <span id="collect-badge" class="collect-badge" hidden>001/010</span>
           </header>
 
@@ -39,15 +47,16 @@
 
           <div class="card-data card-data-section">
             <dl class="stat-grid">
-              <div class="stat-row"><dt><span class="stat-icon stat-icon--mbti" aria-hidden="true">人</span><span>MBTI</span></dt><dd data-field="mbti">—</dd></div>
-              <div class="stat-row"><dt><span class="stat-icon stat-icon--constellation" aria-hidden="true">★</span><span>星座</span></dt><dd id="card-constellation" data-field="constellation">—</dd></div>
-              <div class="stat-row"><dt><span class="stat-icon stat-icon--birthday" aria-hidden="true">礼</span><span>生日</span></dt><dd id="card-birthday" data-field="birthday">—</dd></div>
+              <div class="stat-pair"><div><dt>生日</dt><dd id="card-birthday" data-field="birthday">—</dd></div><div><dt>星座</dt><dd id="card-constellation" data-field="constellation">—</dd></div></div>
+              <div class="stat-pair"><div><dt>性别</dt><dd data-field="genderSymbol">—</dd></div><div><dt>血型</dt><dd><span data-field="bloodType">—</span> 型</dd></div></div>
+              <div class="stat-mbti"><dt>MBTI</dt><dd data-field="mbti">—</dd></div>
             </dl>
+            <blockquote class="card-signature">“<span data-field="signature">—</span>”</blockquote>
           </div>
         </article>
 
         <div class="actions">
-          <button id="poster-button" class="primary-button" type="button">生成分享长图</button>
+          <button id="poster-button" class="primary-button" type="button">保存分享长图</button>
           <button id="profile-button" class="secondary-button" type="button">查看角色档案</button>
           <p id="action-message" class="action-message" role="status" hidden></p>
         </div>
@@ -87,7 +96,7 @@
     <div class="poster-sheet">
       <button id="poster-close" class="close-button" type="button" aria-label="关闭">×</button>
       <h2 id="poster-title">分享长图已生成</h2>
-      <p>在微信内长按图片，可保存到手机相册。</p>
+      <p>已交给小程序保存；浏览器预览时可使用下方下载入口。</p>
       <img id="poster-image" alt="蛋宝宝收藏卡分享长图">
       <a id="poster-download" class="download-link" download="eggbabe-birth-card.png">在浏览器中下载图片</a>
     </div>

@@ -1,18 +1,18 @@
 {
-  "version": "eggbabe-card-face-v2.13",
+  "version": "eggbabe-card-face-v2.16",
   "aspectRatio": "9 / 16",
-  "titleRatio": "10.5%",
+  "titleRatio": "15%",
   "illustrationAspectRatio": "4 / 5",
   "contentInset": { "h5": "14px", "miniProgram": "24rpx" },
   "headerDecorations": [],
   "collectorBadgeSize": "large",
   "brandName": "eggbabe",
-  "fields": ["name", "birthday", "constellation", "mbti", "collectorLabel"],
-  "recordFields": ["setCode", "uniqueCode"],
-  "statOrder": ["mbti", "constellation", "birthday"],
+  "fields": ["avatarId", "prototypeLabel", "name", "birthday", "constellation", "genderSymbol", "mbti", "signature", "bloodType", "collectorLabel"],
+  "recordFields": ["setCode", "setName", "cardTitle", "uniqueCode", "shareCode"],
+  "statOrder": ["birthday", "constellation", "genderSymbol", "bloodType", "mbti", "signature"],
   "displayExamples": {
-    "birthday": { "raw": "2026-07-14", "label": "7月14日" },
+    "birthday": { "raw": "2026-07-14", "label": "2026年7月14日" },
     "constellation": { "raw": "巨蟹座", "label": "巨蟹座 ♋" }
   },
-  "colors": ["#2d251f", "#fffdf7", "#eaf3f4", "#94ab61", "#dde9b8", "#f2d2df", "#ddd9f2"]
+  "colors": ["#2d251f", "#fffdf7", "#eaf3f4", "#f6f6f0", "#536057"]
 }

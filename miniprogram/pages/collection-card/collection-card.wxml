@@ -3,12 +3,13 @@
   <scroll-view class="content" scroll-y>
     <view wx:if="{{isNew}}" class="new-banner">获得第一张收藏卡 · 已自动收入我的收藏卡</view>
     <view class="card">
-      <view class="card-title-section"><text class="name">{{card.name}}</text></view>
+      <view class="card-title-section"><view class="card-avatar"><pet-avatar pet-type="{{card.prototype}}" size="{{42}}"></pet-avatar></view><view class="title-copy"><text class="name">{{card.name}}</text><text class="prototype-name">{{card.prototype}}</text></view></view>
       <view class="card-illustration-section"><image wx:if="{{illustration}}" class="illustration" src="{{illustration}}" mode="aspectFill"></image><pet-avatar wx:else pet-type="{{card.prototype}}" size="{{250}}"></pet-avatar></view>
       <view class="card-data-section">
-        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--mbti">人</text><text>MBTI</text></view><text class="stat-value">{{card.mbti}}</text></view>
-        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--zodiac">★</text><text>星座</text></view><text class="stat-value">{{card.zodiac}} {{zodiacSymbol}}</text></view>
-        <view class="stat-row"><view class="stat-label"><text class="stat-icon stat-icon--birthday">礼</text><text>生日</text></view><text class="stat-value">{{birthdayLabel}}</text></view>
+        <view class="stat-pair"><view><text>生日</text><text>{{birthdayLabel}}</text></view><view><text>星座</text><text>{{card.zodiac}} {{zodiacSymbol}}</text></view></view>
+        <view class="stat-pair"><view><text>性别</text><text>{{card.gender}}</text></view><view><text>血型</text><text>{{card.bloodType}} 型</text></view></view>
+        <view class="stat-mbti"><text>MBTI</text><text>{{card.mbti}}</text></view>
+        <text class="card-signature">“{{card.personality}}”</text>
       </view>
     </view>
     <view class="actions"><button class="primary" bindtap="onProfile"><text class="button-label">查看它的档案</text></button><view class="action-row"><button class="secondary" disabled="{{!posterReady}}" bindtap="onSave"><text class="button-label">{{posterReady ? '保存图片' : '待接入小程序码'}}</text></button><button class="secondary" open-type="share"><text class="button-label">分享给好友</text></button></view><text wx:if="{{posterUnavailableReason}}" class="poster-note">{{posterUnavailableReason}}</text><button class="text-button" bindtap="onAlbum"><text class="button-label">查看我的收藏卡</text></button></view>

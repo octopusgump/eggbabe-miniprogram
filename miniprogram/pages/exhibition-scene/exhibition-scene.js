@@ -4,7 +4,6 @@ const sceneCards = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
 const runtime = require('../../services/runtime-context');
 const timeService = require('../../services/time-service');
-const currency = require('../../services/currency-store');
 
 Page({
   data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], sceneDecorations: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, cardDrop: null, cardRevealPhase: '', cardImageFailed: false, sceneKicker: '' },
@@ -16,11 +15,9 @@ Page({
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     let pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') pet = petStore.startExhibitionDemo();
-    const scene = exhibitionScenes.getScene(query.scene);
+    const scene = exhibitionScenes.getScene(query.scene, pet.prototype);
     this.enteredAt = timeService.now();
-    const account = currency.getAccount();
-    const sceneDecorations = account.inventory.filter(item => item.equipped && item.category === 'scene-decor').map(owned => Object.assign({}, account.catalog.find(item => item.id === owned.itemId) || {}, owned));
-    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneDecorations, sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
+    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: exhibitionScenes.HOTSPOTS[scene.key] || [], sceneDecorations: [], sceneKicker: runtime.getMode() === 'demo' ? '展会体验 · 数据独立保存' : `${pet.prototype} · 生活场景` });
     analytics.track('scene_enter', { scene_id: scene.key, character: pet.prototype, entry_type: query.entry || 'scene' });
   },
 
@@ -30,7 +27,6 @@ Page({
     const spot = this.data.hotspots[event.currentTarget.dataset.index];
     if (!spot) return;
     analytics.track('interaction_point_tap', { scene_id: this.data.scene.key, point_id: spot.label, character: this.data.pet.prototype });
-    currency.earn('scene_interaction', 1, 5);
     this.showReaction(spot.line, spot.x, spot.y);
     if (this.data.scene.key === 'grass' && spot.label === '小花') this.showFlowerSway(spot);
     if (this.data.scene.key === 'grass' && spot.label === '蝴蝶') this.showButterflyFlight(spot);
@@ -40,13 +36,20 @@ Page({
     const requestToken = ++this.dropRequestToken;
     sceneCards.attemptDrop(this.data.scene.key, spot.label, this.data.pet.prototype).then(drop => {
       if (requestToken !== this.dropRequestToken) return;
-      this.dropPending = false;
-      if (!drop.ok || !drop.dropped || !this.pageActive || !this.data.isActive) return;
+      if (!drop.ok || !drop.dropped || !this.pageActive || !this.data.isActive) {
+        this.dropPending = false;
+        return;
+      }
+      clearTimeout(this.encounterStartTimer);
       clearTimeout(this.cardRevealTimer);
-      this.setData({ cardDrop: drop.card, cardRevealPhase: 'hint', cardImageFailed: false });
-      this.cardRevealTimer = setTimeout(() => {
-        if (this.data.cardDrop && this.pageActive && this.data.isActive) this.setData({ cardRevealPhase: 'revealed' });
-      }, this.cardRevealDelay || 760);
+      this.encounterStartTimer = setTimeout(() => {
+        if (!this.pageActive || !this.data.isActive) return;
+        this.dropPending = false;
+        this.setData({ cardDrop: drop.card, cardRevealPhase: 'hint', cardImageFailed: false });
+        this.cardRevealTimer = setTimeout(() => {
+          if (this.data.cardDrop && this.pageActive && this.data.isActive) this.setData({ cardRevealPhase: 'revealed' });
+        }, this.cardRevealDelay || 520);
+      }, this.encounterDelay || 3050);
     }, () => {
       if (requestToken === this.dropRequestToken) this.dropPending = false;
     });
@@ -72,6 +75,11 @@ Page({
     clearTimeout(this.cardRevealTimer);
     this.setData({ cardDrop: null, cardRevealPhase: '', cardImageFailed: false });
     wx.navigateTo({ url: '/pages/album/album' });
+  },
+  onShareAppMessage() {
+    const card = this.data.cardDrop;
+    if (card) sceneCards.markShared(card.id);
+    return { title: card ? `我遇见了「${card.name}」收藏卡` : '我的 eggbabe 收藏卡', path: '/pages/welcome/welcome' };
   },
   showFlowerSway(spot) {
     clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
@@ -110,14 +118,13 @@ Page({
     clearTimeout(this.flowerStartTimer); clearTimeout(this.flowerHideTimer);
     clearTimeout(this.butterflyStartTimer); clearTimeout(this.butterflyHideTimer);
     clearTimeout(this.sceneEffectStartTimer); clearTimeout(this.sceneEffectHideTimer);
+    clearTimeout(this.encounterStartTimer);
     clearTimeout(this.cardRevealTimer);
   },
 
   onShow() {
     this.pageActive = true;
-    const account = currency.getAccount();
-    const sceneDecorations = account.inventory.filter(item => item.equipped && item.category === 'scene-decor').map(owned => Object.assign({}, account.catalog.find(item => item.id === owned.itemId) || {}, owned));
-    this.setData({ sceneDecorations });
+    this.setData({ sceneDecorations: [] });
     if (!this.data.isActive) this.setData({ isActive: true });
   },
 

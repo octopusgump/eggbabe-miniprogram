@@ -50,18 +50,37 @@
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
     byId('profile-mark').textContent = mark;
+    byId('card-avatar-mark').textContent = mark;
     setImage(byId('hero-background'), resolvedAssets.background);
     setImage(byId('hero-figure'), resolvedAssets.figure);
+    setImage(byId('card-avatar-image'), card.avatarUrl || resolvedAssets.figure);
   }
 
-  function loadNameFont(name) {
-    const oldLink = byId('card-name-font');
-    if (oldLink) oldLink.remove();
-    const link = document.createElement('link');
-    link.id = 'card-name-font';
-    link.rel = 'stylesheet';
-    link.href = `https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap&text=${encodeURIComponent(String(name || ''))}`;
-    document.head.appendChild(link);
+  function validSelfHostedFontUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw || /^(?:data|javascript):/i.test(raw)) return '';
+    if (/^https:\/\//i.test(raw)) return raw;
+    if (/^(?:\.\/|\/)/.test(raw)) return raw;
+    return '';
+  }
+
+  function loadFont(family, source, format, loadedClass) {
+    const url = validSelfHostedFontUrl(source);
+    if (!url || typeof FontFace === 'undefined' || !document.fonts) return;
+    const face = new FontFace(family, `url("${url}") format("${format || 'woff2'}")`);
+    face.load().then(loaded => {
+      document.fonts.add(loaded);
+      if (loadedClass) document.documentElement.classList.add(loadedClass);
+    }).catch(() => {});
+  }
+
+  function loadSelfHostedFonts(name) {
+    const template = String(runtimeConfig.nameFontUrlTemplate || '');
+    const nameFontUrl = template
+      ? template.replace('{text}', encodeURIComponent(String(name || '')))
+      : String(runtimeConfig.nameFontUrl || '');
+    loadFont('ZCOOL KuaiLe', nameFontUrl, /\.ttf(?:\?|$)/i.test(nameFontUrl) ? 'truetype' : 'woff2');
+    loadFont('Google Sans', runtimeConfig.googleSansFontUrl, /\.ttf(?:\?|$)/i.test(runtimeConfig.googleSansFontUrl || '') ? 'truetype' : 'woff2', 'has-google-sans');
   }
 
   function setView(view, updateHistory) {
@@ -81,12 +100,13 @@
   function render(raw) {
     card = model.normalizeCard(raw);
     assets = assetConfig.resolveAssets(card, runtimeConfig.assetManifest || assetConfig.manifest);
-    loadNameFont(card.name);
+    loadSelfHostedFonts(card.name);
     fillFields(card);
     applyTheme(assets);
     const badge = byId('collect-badge');
     const isCollectible = card.cardType === 'collectible';
     byId('birth-card').classList.toggle('is-collectible', isCollectible);
+    byId('collect-context').hidden = !isCollectible;
     badge.hidden = !isCollectible;
     badge.textContent = isCollectible ? card.collectorLabel : '';
     byId('card-birthday').textContent = card.birthdayLabel;
@@ -157,15 +177,16 @@
       byId('poster-modal').hidden = false;
       document.body.style.overflow = 'hidden';
       notifyMiniProgram('h5_birth_card_poster_generated', { mode: card.mode });
+      notifyMiniProgram('h5_birth_card_save_poster', { mode: card.mode, data_url: dataUrl });
     } catch (posterError) {
       const message = posterError.message === 'MINI_CODE_REQUIRED'
         ? '分享图需要先接入真实小程序码。'
-        : '长图生成失败，请检查角色素材是否允许跨域读取后重试。';
+        : (posterError.message === 'SHARE_CODE_REQUIRED' ? '分享图需要先准备一个未使用的个人激活码。' : '长图生成失败，请检查角色素材是否允许跨域读取后重试。');
       byId('action-message').textContent = message;
       byId('action-message').hidden = false;
     } finally {
       button.disabled = false;
-      button.textContent = '生成分享长图';
+      button.textContent = '保存分享长图';
     }
   }
 

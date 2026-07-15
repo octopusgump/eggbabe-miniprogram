@@ -15,10 +15,6 @@
     </view>
 
     <view wx:else class="pet-view">
-      <view class="pet-tools">
-        <view class="dew-balance"><text class="dew-drop">●</text><text>{{dewBalance}} 露珠</text></view>
-        <view class="tool-links"><view class="tool-link" bindtap="onOpenShop">商店</view><view class="tool-link" bindtap="onOpenBag">背包</view></view>
-      </view>
       <view class="top-row">
         <view>
           <text class="eyebrow">{{pet.prototype}} · {{stage === 'hatched' ? '已破壳' : '孵化记录'}}</text>
@@ -37,7 +33,6 @@
           <view class="egg-pattern egg-pattern--two"></view>
           <view class="egg-shine"></view>
         </view>
-        <view wx:for="{{equippedItems}}" wx:key="itemId" class="equipped-decor equipped-decor--{{item.category}}">{{item.icon}}</view>
         <view class="egg-shadow"></view>
         <view wx:if="{{cuddleProgress > 0}}" class="cuddle-track"><view class="cuddle-fill" style="width: {{cuddleProgress}}%;"></view></view>
       </view>

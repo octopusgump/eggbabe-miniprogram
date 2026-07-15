@@ -9,7 +9,7 @@ Page({
   data: { pending: false, endDate: '' },
 
   onShow() {
-    if (config.cloudEnabled) {
+    if (config.backendEnabled) {
       cloudApi.manageDeletion('query').then(result => {
         if (result.ok && result.request) {
           safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_query');
@@ -23,10 +23,9 @@ Page({
   },
 
   showRequest(request) {
-    const end = new Date(request.endAt);
     this.setData({
       pending: true,
-      endDate: `${end.getFullYear()}年${end.getMonth() + 1}月${end.getDate()}日`
+      endDate: timeService.formatBeijingDate(request.endAt)
     });
   },
 
@@ -41,7 +40,7 @@ Page({
       confirmColor: '#D9463C',
       success: (res) => {
         if (!res.confirm) return;
-        if (config.cloudEnabled) {
+        if (config.backendEnabled) {
           cloudApi.manageDeletion('request').then(result => {
             if (!result.ok) return wx.showToast({ title: result.message || '提交失败，请重试', icon: 'none' });
             const saved = safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_request');
@@ -66,7 +65,7 @@ Page({
       content: '取消后账号会恢复正常，可以继续使用蛋宝宝、收藏卡和对话。',
       success: (res) => {
         if (!res.confirm) return;
-        if (config.cloudEnabled) {
+        if (config.backendEnabled) {
           cloudApi.manageDeletion('cancel').then(result => {
             if (!result.ok) return wx.showToast({ title: result.message || '取消失败，请重试', icon: 'none' });
             safeStorage.remove(DEREGISTER_KEY, 'account_delete_cancel'); analytics.track('account_delete_cancel'); this.onShow(); wx.showToast({ title: '已取消注销', icon: 'success' });

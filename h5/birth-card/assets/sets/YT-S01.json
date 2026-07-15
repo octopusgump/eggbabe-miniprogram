@@ -5,7 +5,7 @@
   "setSize": 10,
   "status": "frozen-mvp",
   "treatments": ["BASE"],
-  "cardFaceFields": ["name", "birthday", "constellation", "mbti", "collector_number"],
+  "cardFaceFields": ["avatar_id", "prototype", "name", "birthday", "constellation", "gender", "mbti", "signature", "blood_type", "collector_number"],
   "cards": [
     { "cardDefinitionId": "yt-s01-001", "collectorNumber": 1, "collectorLabel": "001/010", "title": "花间初见", "heroAssetId": "YT__watercolor__hi", "treatment": "BASE" },
     { "cardDefinitionId": "yt-s01-002", "collectorNumber": 2, "collectorLabel": "002/010", "title": "竹林问候", "heroAssetId": "YT__watercolor__salute", "treatment": "BASE" },

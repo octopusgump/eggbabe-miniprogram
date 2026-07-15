@@ -12,6 +12,7 @@ const required = [
   'h5/birth-card/asset-config.js',
   'h5/birth-card/poster-renderer.js',
   'h5/birth-card/runtime-config.js',
+  'h5/birth-card/assets/fonts/README.md',
   'miniprogram/pages/h5-card/h5-card.js',
   'miniprogram/pages/h5-card/h5-card.wxml'
 ];
@@ -25,7 +26,6 @@ const appJson = JSON.parse(read('miniprogram/app.json'));
 const h5Page = read('miniprogram/pages/h5-card/h5-card.js');
 const miniBridge = read('miniprogram/services/birth-card-h5.js');
 const localPetStore = read('miniprogram/utils/pet-store.js');
-const cloudCardGenerator = read('cloudfunctions/generateHatchCard/index.js');
 const nicknamePage = read('miniprogram/pages/nickname/nickname.js');
 const figureDirectory = path.join(root, 'h5/birth-card/assets/figures');
 const figureCatalog = JSON.parse(read('h5/birth-card/assets/figures/catalog.json'));
@@ -50,33 +50,33 @@ assert.equal(/@media \(max-width: 360px\)[\s\S]*?\.card-title-section\s*\{[^}]*p
 assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须显示生日');
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
 assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显示 MBTI');
-const h5Bindings = { mbti: 'data-field="mbti"', constellation: 'data-field="constellation"', birthday: 'data-field="birthday"' };
-const h5StatPositions = faceContract.statOrder.map(field => cardFace.indexOf(h5Bindings[field]));
-assert.equal(h5StatPositions.every((position, index) => position >= 0 && (!index || position > h5StatPositions[index - 1])), true, 'H5 信息顺序必须服从共享卡面契约');
-['stat-row', 'stat-icon--mbti', 'stat-icon--constellation', 'stat-icon--birthday'].forEach(className => {
-  assert.equal(cardFace.includes(className), true, `H5 卡面缺少参考图信息行 ${className}`);
+['name', 'prototypeLabel', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
+  assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.16 字段 ${field}`);
 });
-assert.equal(css.includes('.stat-grid'), true, 'H5 收藏卡必须统一使用三行信息牌布局');
-assert.equal(css.toLowerCase().includes('border: 1.5px solid #94ab61'), true, 'H5 信息牌必须使用参考图的绿色圆角边框');
-assert.equal(poster.includes('drawCollectibleStats'), true, '分享海报必须使用与卡面一致的三行信息牌');
-assert.equal(poster.includes('card.statRows.map'), true, '分享海报必须消费卡片模型中已经按契约排序的信息行');
+assert.equal(cardFace.includes('card-avatar-image'), true, 'H5 卡面必须显示 IP 形象头像');
+assert.equal(cardFace.includes('data-field="setName"'), true, '收集系列卡必须额外显示系列名');
+assert.equal(cardFace.includes('data-field="cardTitle"'), true, '收集系列卡必须额外显示卡名');
+assert.equal(css.includes('.stat-pair'), true, 'H5 收藏卡必须使用收紧的两列信息布局');
+assert.equal(css.includes('.card-signature'), true, '性情独白必须作为独立留白气口');
+assert.equal(poster.includes('drawCardData'), true, '分享海报必须使用与卡面一致的九字段信息区');
 assert.equal(poster.includes('const CARD_HEIGHT = 1920'), true, '分享长图的卡面必须同步为 9:16 竖版');
 const posterTitle = poster.match(/function drawTitle[\s\S]*?\n  }/)[0];
 assert.equal(posterTitle.includes("fillText('★'"), false, '分享长图顶部不得显示星星');
 assert.equal(posterTitle.includes("fillText('eggbabe'"), false, '分享长图名字上方不得显示品牌小字');
-assert.equal(poster.includes('CARD_HEIGHT * 0.105'), true, '分享长图标题区必须与屏显 10.5% 契约一致');
+assert.equal(poster.includes('CARD_HEIGHT * 0.15'), true, '分享长图标题区必须与屏显 15% 契约一致');
 assert.equal(poster.includes("if (figure) drawCover(context, figure"), true, '分享长图的 4:5 插画必须铺满视口');
-assert.equal(cardFace.includes('data-field="bloodType"'), false, 'MVP 正面不得显示血型');
-assert.equal(cardFace.includes('data-field="signature"'), false, 'MVP 正面不得显示性格长句');
 assert.equal(cardFace.includes('data-field="initialOwner"'), false, 'MVP 正面不得显示初始主人');
 assert.equal(app.includes('card.setCode'), false, '收藏卡名字下方不得再渲染套装编号');
 assert.equal(cardFace.includes('card-subtitle'), false, '卡面不得显示名字下方的旧副标题');
 assert.equal(cardFace.includes('card-footer'), false, '卡面不得显示状态和唯一副本编号区');
-assert.equal(app.includes('fonts.googleapis.com/css2?family=ZCOOL+KuaiLe'), true, '名字必须加载 Google Fonts OFL 版站酷快乐体');
-assert.equal(app.includes('&text='), true, '名字字体必须按实际名字做 text 子集化');
+assert.equal(app.includes('fonts.googleapis.com'), false, '中国大陆线上不得依赖 Google Fonts CDN');
+assert.equal(app.includes('nameFontUrlTemplate'), true, '名字字体必须保留备案域名自托管子集 URL 模板');
+assert.equal(app.includes('nameFontUrl'), true, '名字字体必须支持整包静态自托管回退');
+assert.equal(app.includes('googleSansFontUrl'), true, '英文字体必须支持静态自托管配置');
+assert.equal(app.includes("loadFont('ZCOOL KuaiLe'"), true, '名字必须加载自托管 OFL 版站酷快乐体');
 assert.equal(poster.includes('card.code'), true, '分享长图脚注必须包含全局编号');
 assert.equal(poster.includes('miniProgramCodeUrl'), true, '分享长图必须消费真实小程序码');
-assert.equal(app.includes('card.setName}'), false, 'MVP 收藏卡正面不得额外显示套装名');
+assert.equal(poster.includes('card.shareCode'), true, '分享长图必须包含未使用的个人分享码');
 assert.equal(app.includes('card.treatment}'), false, 'MVP 收藏卡正面不得额外显示 BASE 标签');
 assert.equal(/Math\.random/.test([app, read('h5/birth-card/card-model.js'), read('h5/birth-card/poster-renderer.js')].join('\n')), false, 'H5 不得生成任何随机卡片值');
 assert.equal(app.includes('card_data'), true, 'H5 必须支持 URL JSON 注入');
@@ -84,6 +84,8 @@ assert.equal(app.includes('card_id'), true, 'H5 必须支持 card_id 拉取');
 assert.equal(app.includes("params.get('api_base')"), false, '正式卡不得从可编辑 URL 接受 API 地址');
 assert.equal(app.includes("injected.mode === 'demo'"), true, 'URL 注入必须强制限制为 demo 卡');
 assert.equal(app.includes('generatePoster'), true, 'H5 必须支持生成分享长图');
+assert.equal(app.includes('h5_birth_card_save_poster'), true, 'H5 必须把分享图数据回传小程序保存');
+assert.equal(h5Page.includes('saveImageToPhotosAlbum'), true, '小程序容器必须负责把 H5 分享图保存到相册');
 assert.equal(app.includes("/pages/nickname/nickname"), true, 'H5 档案必须提供改名入口');
 assert.equal(miniBridge.includes('card_data'), true, '预览模式必须把已定稿 JSON 注入 H5');
 assert.equal(h5Page.includes("native=1"), true, 'H5 地址未配置时必须回退当前原生页面');
@@ -101,7 +103,8 @@ function extractNamePools(source) {
     return result;
   }, {});
 }
-assert.deepEqual(extractNamePools(localPetStore), extractNamePools(cloudCardGenerator), '本地与云端角色名字池及顺序必须完全一致');
+const pools = extractNamePools(localPetStore);
+assert.equal(pools['玉兔'].length >= 18 && pools['锦鲤'].length >= 18, true, '前端 mock 必须保留两套固定名字池');
 
 const catalogFiles = figureCatalog.assets.map(asset => asset.file).sort();
 const actualFigureFiles = fs.readdirSync(figureDirectory).filter(file => /\.(?:jpg|png|webp)$/i.test(file)).sort();
@@ -111,7 +114,7 @@ for (const file of actualFigureFiles) {
 }
 assert.equal(firstSet.setSize, firstSet.cards.length, '套装 setSize 必须等于实际清单数量');
 assert.deepEqual(firstSet.treatments, ['BASE'], 'MVP 第一季只能发布 BASE 版本');
-assert.deepEqual(firstSet.cardFaceFields, ['name', 'birthday', 'constellation', 'mbti', 'collector_number'], 'MVP 卡面只保留用户确认的可见字段');
+assert.deepEqual(firstSet.cardFaceFields, ['avatar_id', 'prototype', 'name', 'birthday', 'constellation', 'gender', 'mbti', 'signature', 'blood_type', 'collector_number'], 'v2.16 卡面必须冻结九项身份字段与系列编号');
 const figureIds = new Set(figureCatalog.assets.map(asset => asset.id));
 firstSet.cards.forEach((card, index) => {
   assert.equal(card.collectorNumber, index + 1, '套装清单编号必须连续且不可重排');

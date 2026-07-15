@@ -47,13 +47,20 @@ function normalizeSceneCard(card) {
 }
 
 function importCloudCards(cards) {
-  const normalized = (cards || []).map(normalizeSceneCard);
+  const seen = new Set();
+  const normalized = (cards || []).map(normalizeSceneCard).filter(card => {
+    const identity = `${card.character || ''}:${card.cardId || ''}`;
+    if (!card.cardId || seen.has(identity)) return false;
+    seen.add(identity);
+    return true;
+  });
   return write('scene_cards', normalized, 'live');
 }
 
 function cacheCloudCard(card) {
   const current = list();
   const normalized = normalizeSceneCard(card);
+  if (current.some(item => item.character === normalized.character && (item.cardId || item.card_key) === normalized.cardId)) return null;
   if (!current.some(item => item.id === normalized.id)) write('scene_cards', current.concat(normalized));
   return normalized;
 }
@@ -64,7 +71,7 @@ function updateCard(cardId, changes) {
   if (index < 0) return { ok: false, message: '没有找到这张卡' };
   cards[index] = Object.assign({}, cards[index], changes);
   const result = write('scene_cards', cards);
-  if (result.ok && runtime.getMode() === 'live' && config.cloudEnabled) syncQueue.enqueue('updateSceneCard', { cardId, changes });
+  if (result.ok && runtime.getMode() === 'live' && config.backendEnabled) syncQueue.enqueue('updateSceneCard', { cardId, changes });
   return result.ok ? { ok: true, card: cards[index] } : result;
 }
 
@@ -84,7 +91,8 @@ function collectionSummary(character) {
       .filter(card => (card.cardId || card.card_key || card.templateId || card.template_id) === definition.cardId)
       .map(normalizeSceneCard)
       .map(card => Object.assign({}, card, { obtainedLabel: formatObtainedAt(card.obtainedAt), uniqueCode: card.uniqueCode || card.unique_code || '' }))
-      .sort((left, right) => timestamp(right.obtainedAt) - timestamp(left.obtainedAt));
+      .sort((left, right) => timestamp(right.obtainedAt) - timestamp(left.obtainedAt))
+      .slice(0, 1);
     const latestCopy = copies[0] || null;
     return Object.assign({}, definition, {
       owned: copies.length > 0,
@@ -98,7 +106,7 @@ function collectionSummary(character) {
     });
   });
   const ownedUnique = slots.filter(slot => slot.owned).length;
-  const duplicateCount = slots.reduce((total, slot) => total + Math.max(0, slot.quantity - 1), 0);
+  const duplicateCount = 0;
   const complete = set.cards.length > 0 && ownedUnique === set.cards.length;
   const tracked = read('completed_card_sets', []);
   if (complete && !tracked.includes(set.setCode)) {
@@ -133,7 +141,8 @@ function formatObtainedAt(value) {
   if (!valueTimestamp) return '';
   const date = new Date(valueTimestamp);
   const pad = number => String(number).padStart(2, '0');
-  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
+  const beijing = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+  return `${beijing.getUTCFullYear()}.${pad(beijing.getUTCMonth() + 1)}.${pad(beijing.getUTCDate())}`;
 }
 
 function snapshotHash(value) {
@@ -172,12 +181,12 @@ function localAttemptDrop(sceneKey, pointId, character) {
     return { ok: true, dropped: false };
   }
 
-  const pool = sceneConfig.getCardPool(character || '玉兔', sceneKey);
+  const ownedDefinitionIds = new Set(list().filter(item => item.character === (character || '玉兔')).map(item => item.cardId || item.card_key));
+  const pool = sceneConfig.getCardPool(character || '玉兔', sceneKey).filter(item => !ownedDefinitionIds.has(item.cardId));
   if (!pool.length) return { ok: true, dropped: false };
   const template = pool[Math.floor(deterministicRoll(`${seed}-card`) * pool.length)];
   const obtainedAt = time.now();
   const uniqueCode = nextLocalUniqueCode(character || '玉兔', obtainedAt);
-  const existingCopyCount = list().filter(item => (item.cardId || item.card_key) === template.cardId).length;
   const copyId = `${template.cardId}-${obtainedAt}-${state.attempts}`;
   const cardSnapshotHash = snapshotHash([copyId, uniqueCode, template.cardId, template.setCode, template.collectorNumber, template.treatment, template.heroAssetId, 1, 1].join('|'));
   const card = Object.assign({}, template, {
@@ -195,8 +204,8 @@ function localAttemptDrop(sceneKey, pointId, character) {
     cardSnapshotHash,
     provenanceEvents: [{ type: 'issued', mode, date: time.beijingDateKey(obtainedAt), sceneKey, pointId }],
     uniqueCode,
-    copyCount: existingCopyCount + 1,
-    isNewDefinition: existingCopyCount === 0,
+    copyCount: 1,
+    isNewDefinition: true,
     mode,
     shared: false
   });
@@ -210,10 +219,11 @@ function localAttemptDrop(sceneKey, pointId, character) {
 }
 
 function attemptDrop(sceneKey, pointId, character) {
-  if (runtime.getMode() === 'live' && config.cloudEnabled) {
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
     return cloudApi.evaluateSceneCardDrop({ scene_id: sceneKey, point_id: pointId, character }).then(result => {
       if (result.ok && result.dropped) {
         result.card = cacheCloudCard(result.card);
+        if (!result.card) return { ok: true, dropped: false, repeated: true };
         analytics.track('scene_card_drop', { card_id: result.card.id, card_definition_id: result.card.cardId, set_code: result.card.setCode || result.card.set_code, scene_id: sceneKey, character, treatment: result.card.treatment || 'BASE', point_id: pointId });
       }
       return result;

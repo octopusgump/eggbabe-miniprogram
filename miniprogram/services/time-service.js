@@ -1,5 +1,6 @@
 const config = require('../config/v2');
 const runtime = require('./runtime-context');
+const dataApi = require('./cloud-api');
 
 const storage = require('./storage-migration');
 const OFFSET_KEY = 'eggbabe_server_time_offset_v2';
@@ -40,10 +41,17 @@ function beijingDateKey(timestamp) {
   return date.toISOString().slice(0, 10);
 }
 
+function formatBeijingDate(timestamp) {
+  const key = beijingDateKey(timestamp);
+  const parts = key.split('-').map(Number);
+  return `${parts[0]}年${parts[1]}月${parts[2]}日`;
+}
+
 function sync() {
-  if (typeof wx === 'undefined' || !config.cloudEnabled || !wx.cloud) return Promise.resolve({ ok: false, fallback: true, now: now() });
+  if (runtime.getMode() === 'demo') return Promise.resolve({ ok: true, demoFixture: true, now: now() });
+  if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED' });
   const startedAt = Date.now();
-  return wx.cloud.callFunction({ name: 'serverTime' }).then(({ result }) => {
+  return dataApi.serverTime().then(result => {
     if (!result || !result.serverTs) throw new Error('INVALID_SERVER_TIME');
     const receivedAt = Date.now();
     offset = Number(result.serverTs) - Math.round((startedAt + receivedAt) / 2);
@@ -57,4 +65,4 @@ function sync() {
 
 loadOffset();
 
-module.exports = { now, beijingDateKey, sync, isAuthoritative, requireAuthoritative };
+module.exports = { now, beijingDateKey, formatBeijingDate, sync, isAuthoritative, requireAuthoritative };

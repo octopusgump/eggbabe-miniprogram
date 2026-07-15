@@ -1,0 +1,21 @@
+{
+  "setCode": "KOI-S01",
+  "setName": "锦鲤初见·好运日常",
+  "setVersion": 1,
+  "setSize": 10,
+  "status": "frozen-mvp",
+  "treatments": ["BASE"],
+  "cardFaceFields": ["avatar_id", "prototype", "name", "birthday", "constellation", "gender", "mbti", "signature", "blood_type", "collector_number"],
+  "cards": [
+    { "cardDefinitionId": "koi-s01-001", "collectorNumber": 1, "collectorLabel": "001/010", "title": "初次见面", "heroAssetId": "KOI__watercolor__standing", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-002", "collectorNumber": 2, "collectorLabel": "002/010", "title": "给花浇水", "heroAssetId": "KOI__watercolor__watering-plant", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-003", "collectorNumber": 3, "collectorLabel": "003/010", "title": "撑伞散步", "heroAssetId": "KOI__watercolor__umbrella-walk", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-004", "collectorNumber": 4, "collectorLabel": "004/010", "title": "滑板车", "heroAssetId": "KOI__watercolor__scooter", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-005", "collectorNumber": 5, "collectorLabel": "005/010", "title": "向前奔跑", "heroAssetId": "KOI__watercolor__running", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-006", "collectorNumber": 6, "collectorLabel": "006/010", "title": "海滩躺椅", "heroAssetId": "KOI__watercolor__beach-chair", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-007", "collectorNumber": 7, "collectorLabel": "007/010", "title": "潜水准备", "heroAssetId": "KOI__watercolor__diving-goggles", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-008", "collectorNumber": 8, "collectorLabel": "008/010", "title": "抱鱼而归", "heroAssetId": "KOI__watercolor__holding-fish", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-009", "collectorNumber": 9, "collectorLabel": "009/010", "title": "举旗出发", "heroAssetId": "KOI__watercolor__flag", "treatment": "BASE" },
+    { "cardDefinitionId": "koi-s01-010", "collectorNumber": 10, "collectorLabel": "010/010", "title": "浴缸时光", "heroAssetId": "KOI__watercolor__bath-tub", "treatment": "BASE" }
+  ]
+}

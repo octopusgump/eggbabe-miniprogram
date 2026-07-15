@@ -11,6 +11,7 @@ const bridge = require('../../../miniprogram/services/birth-card-h5');
 
 const pet = {
   id: 'pet-1', name: '月团', hatchAt: Date.UTC(2026, 6, 14), prototype: '玉兔',
+  inviteCodes: [{ code: 'EGG-FRIEND-1', used: false }],
   collectionCard: {
     id: 'card-1', serial: 'EGG-RABBIT-20260714-000001', prototype: '玉兔', style: '月白桂花款', name: '月团',
     birthday: '2026-07-14', zodiac: '巨蟹座', gender: '♀', mbti: 'INFP', bloodType: 'O', personality: '温柔地陪伴你。',
@@ -22,7 +23,10 @@ const data = bridge.toH5Card(pet, { miniProgramCodeUrl: 'https://cdn.example.com
 assert.equal(data.mode, 'demo');
 assert.equal(data.prototype, 'YT');
 assert.equal(data.gender, 'FEMALE');
+assert.equal(data.prototype_name, '玉兔');
+assert.equal(data.avatar_id, 'YT_avatar_01');
 assert.equal(data.name_by_user, true);
+assert.equal(data.share_code, 'EGG-FRIEND-1');
 assert.equal(data.mini_program_code_url, 'https://cdn.example.com/code.png');
 assert.equal(bridge.isValidH5BaseUrl('http://example.com/card'), false);
 assert.equal(bridge.isValidH5BaseUrl('https://example.com/card'), true);
@@ -36,6 +40,17 @@ assert.equal(bridge.buildH5Url('https://example.com/card', 'card', liveData), ''
 const liveUrl = bridge.buildH5Url('https://example.com/card', 'card', liveData, 'https://api.example.com');
 assert.equal(liveUrl.includes('card_data='), false, '正式卡不得通过可编辑 URL 注入卡片内容');
 assert.equal(liveUrl.includes('api_base='), false, '正式卡 API 必须固定在 H5 部署配置中');
+const liveBridgeData = bridge.toH5Card(Object.assign({}, pet, {
+  collectionCard: Object.assign({}, pet.collectionCard, { mode: 'live' })
+}));
+assert.equal(liveBridgeData.share_code, '', '正式卡缺少服务端分享码时不得回退到本地邀请码');
+const liveBridgeWithServerCode = bridge.toH5Card(Object.assign({}, pet, {
+  collectionCard: Object.assign({}, pet.collectionCard, { mode: 'live', share_code: 'EGG-SERVER-1' })
+}));
+assert.equal(liveBridgeWithServerCode.share_code, 'EGG-SERVER-1', '正式卡只能使用服务端下发的分享码');
+storage.set('eggbabe_runtime_mode_v2', 'live');
+assert.equal(bridge.toH5Card(pet), null, 'live 运行态不得把缺少显式 mode 的旧卡静默提升为正式卡');
+storage.set('eggbabe_runtime_mode_v2', 'demo');
 assert.equal(bridge.toH5Card(Object.assign({}, pet, { collectionCard: Object.assign({}, pet.collectionCard, { id: '', _id: 'cloud-card-id' }) })).card_id, 'cloud-card-id');
 
 const collectibleData = bridge.toH5CollectibleCard(pet, {
@@ -47,5 +62,8 @@ assert.equal(collectibleData.name, '月团', '套装卡正面显示用户确定�
 assert.equal(collectibleData.card_title, '月下冥想', '套装卡必须保留固定卡名');
 assert.equal(collectibleData.birthday, '2026-07-14', '套装卡动态信息来自已生成的破壳身份');
 assert.equal(collectibleData.hero_asset_id, 'YT__watercolor__meditate', '套装卡必须关联固定完整 Hero');
+assert.equal(collectibleData.gender, 'FEMALE', '所有收藏卡必须复用固定身份性别');
+assert.equal(collectibleData.blood_type, 'O', '所有收藏卡必须复用固定身份血型');
+assert.equal(collectibleData.signature, '温柔地陪伴你。', '所有收藏卡必须复用固定身份性情独白');
 
 console.log('H5 小程序桥接校验通过。');

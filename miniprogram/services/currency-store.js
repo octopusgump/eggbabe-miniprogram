@@ -73,7 +73,7 @@ function cacheRemoteAccount(result) {
 }
 
 function loadAccount() {
-  if (runtime.getMode() !== 'live' || !config.cloudEnabled) return Promise.resolve(getAccount());
+  if (runtime.getMode() !== 'live' || !config.backendEnabled) return Promise.resolve(getAccount());
   return cloudApi.currencyAccount('get').then(result => result.ok ? cacheRemoteAccount(result) : Object.assign(getAccount(), { error: result }));
 }
 
@@ -81,7 +81,7 @@ function earn(source, amount, dailyLimit) {
   const gate = time.requireAuthoritative();
   if (!gate.ok) return gate;
   if (runtime.getMode() !== 'demo') {
-    if (!config.cloudEnabled || !['daily_visit', 'pet_touch', 'daily_status_view'].includes(source)) return { ok: false, code: 'SERVER_LEDGER_REQUIRED', message: '正式露珠由服务器互动记录发放' };
+    if (!config.backendEnabled || !['daily_visit', 'pet_touch', 'daily_status_view'].includes(source)) return { ok: false, code: 'SERVER_LEDGER_REQUIRED', message: '正式露珠由服务器互动记录发放' };
     return cloudApi.recordEngagement(source).then(result => {
       if (!result.ok || !result.granted) return result;
       write(BALANCE_KEY, { mode: 'live', amount: Number(result.balance || 0), updatedAt: result.serverTs });
@@ -115,7 +115,7 @@ function purchase(itemId) {
   const gate = time.requireAuthoritative();
   if (!gate.ok) return gate;
   if (runtime.getMode() !== 'demo') {
-    if (!config.cloudEnabled) return { ok: false, code: 'SERVER_LEDGER_REQUIRED', message: '正式购买将在服务器完成记账' };
+    if (!config.backendEnabled) return { ok: false, code: 'SERVER_LEDGER_REQUIRED', message: '正式购买将在服务器完成记账' };
     return cloudApi.currencyAccount('purchase', itemId).then(result => {
       if (!result.ok) return result;
       const account = cacheRemoteAccount(result);
@@ -149,7 +149,7 @@ function purchase(itemId) {
 function setEquipped(itemId, equipped) {
   const gate = time.requireAuthoritative();
   if (!gate.ok) return gate;
-  if (runtime.getMode() === 'live' && config.cloudEnabled) {
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
     return cloudApi.currencyAccount(equipped ? 'equip' : 'unequip', itemId).then(result => {
       if (!result.ok) return result;
       const account = cacheRemoteAccount(result);
@@ -175,7 +175,7 @@ function setEquipped(itemId, equipped) {
 function useSnack(itemId) {
   const gate = time.requireAuthoritative();
   if (!gate.ok) return gate;
-  if (runtime.getMode() === 'live' && config.cloudEnabled) {
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
     return cloudApi.currencyAccount('use_snack', itemId).then(result => {
       if (!result.ok) return result;
       const account = cacheRemoteAccount(result);

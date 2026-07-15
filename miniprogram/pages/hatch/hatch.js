@@ -36,7 +36,7 @@ Page({
     if (this.data.phase !== 'confirm' || !this.data.pet) return;
     this.setData({ phase: 'reveal' });
     this.revealTimer = setTimeout(() => {
-      if (config.cloudEnabled) {
+      if (config.backendEnabled) {
         cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
         return;
       }
@@ -51,7 +51,7 @@ Page({
         wx.showToast({ title: result.message, icon: 'none' });
         return;
       }
-      if (config.cloudEnabled) {
+      if (config.backendEnabled) {
         const applied = petStore.applyCloudHatchCard(result.card);
         if (!applied.ok) {
           this.setData({ phase: 'confirm' });

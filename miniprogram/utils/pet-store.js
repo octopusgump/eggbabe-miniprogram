@@ -8,8 +8,10 @@ const analytics = require('../services/analytics');
 const config = require('../config/v2');
 const syncQueue = require('../services/sync-queue');
 const storage = require('../services/storage-migration');
+const chatSafety = require('../services/chat-safety');
 
 const DAY = 24 * 60 * 60 * 1000;
+const HATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
 
 const STATUS_LINES = {
   egg: {
@@ -42,6 +44,12 @@ const DEMO_ILLUSTRATIONS = [
   ['YT__watercolor__box', ['I']], ['YT__watercolor__cycle', ['E']], ['YT__watercolor__newspaper', ['I', 'N']],
   ['YT__watercolor__meditate', ['I', 'N']], ['YT__watercolor__skateboard', ['E']],
   ['YT__watercolor__chemistry', ['I', 'T']], ['YT__watercolor__bath', ['I']]
+];
+const DEMO_KOI_ILLUSTRATIONS = [
+  ['KOI__watercolor__standing', []], ['KOI__watercolor__watering-plant', ['I']], ['KOI__watercolor__umbrella-walk', ['I']],
+  ['KOI__watercolor__scooter', ['E']], ['KOI__watercolor__running', ['E']], ['KOI__watercolor__beach-chair', ['I']],
+  ['KOI__watercolor__diving-goggles', ['E']], ['KOI__watercolor__holding-fish', ['F']],
+  ['KOI__watercolor__flag', ['E']], ['KOI__watercolor__bath-tub', ['I']]
 ];
 
 function todayKey(now) {
@@ -89,8 +97,8 @@ function getIdentityRecord() {
 }
 
 function publicIdDate(timestamp) {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+  const date = new Date(Number(timestamp) + 8 * 60 * 60 * 1000);
+  return `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
 function randomIdToken() {
@@ -135,7 +143,7 @@ function savePet(pet) {
 }
 
 function syncIncubationAction(actionType, payload) {
-  if (!config.cloudEnabled || runtime.getMode() !== 'live') return;
+  if (!config.backendEnabled || runtime.getMode() !== 'live') return;
   syncQueue.enqueue('recordIncubationAction', { actionType, payload });
 }
 
@@ -184,6 +192,7 @@ function bindPet(code, now) {
     createdAt,
     hatchAt,
     progress: 0,
+    progressEarned: 0,
     stage: 'waiting',
     lastInteractionAt: createdAt,
     tasks: {
@@ -216,6 +225,7 @@ function importCloudPet(record, mode) {
     createdAt,
     hatchAt: source.hatchAt,
     progress: source.progress || 0,
+    progressEarned: source.progress_earned || source.progressEarned || source.progress || 0,
     stage: source.stage || 'waiting',
     serverBacked: true,
     demoMode: (mode || source.mode) === 'demo',
@@ -241,7 +251,8 @@ function importCloudPet(record, mode) {
 }
 
 function addProgress(pet, amount) {
-  pet.progress = Math.min(100, pet.progress + amount);
+  pet.progressEarned = Number(pet.progressEarned === undefined ? pet.progress || 0 : pet.progressEarned) + amount;
+  pet.progress = Math.min(100, pet.progressEarned);
   pet.stage = pet.progress > 0 ? 'hatching' : 'waiting';
   return pet;
 }
@@ -252,7 +263,7 @@ function updateNickname(name) {
   const value = String(name || '').trim();
   if (!value) return { ok: false, message: '昵称不能为空' };
   if (Array.from(value).length > 10) return { ok: false, message: '昵称最多 10 个字符' };
-  if (['违法', '诈骗', '赌博'].some(word => value.includes(word))) return { ok: false, message: '昵称含有不适合的内容，请换一个' };
+  if (!chatSafety.isSafeDisplayText(value) || ['违法', '诈骗'].some(word => value.includes(word))) return { ok: false, message: '昵称含有不适合的内容，请换一个' };
   const first = !pet.tasks.nicknameDone;
   pet.name = value;
   if (pet.collectionCard) {
@@ -315,7 +326,7 @@ function getStage(pet, now) {
   if (pet.collectionCard) return 'hatched';
   if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) return pet.stage || 'waiting';
   const current = now || timeService.now();
-  if (current >= pet.hatchAt) return 'ready';
+  if (current >= pet.hatchAt - HATCH_TOLERANCE_MS) return 'ready';
   if (pet.hatchAt - current <= DAY) return 'soon';
   if (pet.progress >= 100) return 'prepared';
   return pet.progress > 0 ? 'hatching' : 'waiting';
@@ -338,7 +349,7 @@ function getCountdown(pet, now) {
   if (!pet) return '';
   if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) return '正在同步北京时间…';
   const remaining = pet.hatchAt - (now || timeService.now());
-  if (remaining <= 0) return '破壳时刻已到';
+  if (remaining <= HATCH_TOLERANCE_MS) return '已可查看破壳结果';
   const days = Math.floor(remaining / DAY);
   const hours = Math.floor((remaining % DAY) / (60 * 60 * 1000));
   return days > 0 ? `还剩 ${days} 天 ${hours} 小时` : `还剩 ${hours} 小时`;
@@ -429,8 +440,9 @@ function generatedName(pet) {
 }
 
 function demoIllustration(pet, mbti) {
+  const illustrations = pet.prototype === '锦鲤' ? DEMO_KOI_ILLUSTRATIONS : DEMO_ILLUSTRATIONS;
   const personalityTags = [String(mbti || '').slice(0, 1), String(mbti || '').slice(2, 3)].filter(Boolean);
-  const weighted = DEMO_ILLUSTRATIONS.flatMap(item => {
+  const weighted = illustrations.flatMap(item => {
     const repeats = personalityTags.some(tag => item[1].includes(tag)) ? 2 : 1;
     return Array(repeats).fill(item[0]);
   });
@@ -442,11 +454,14 @@ function createCollectionCard() {
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
   const timeGate = timeService.requireAuthoritative();
   if (!timeGate.ok) return timeGate;
-  if (timeService.now() < pet.hatchAt) return { ok: false, message: '还没到预设破壳时间' };
+  if (timeService.now() < pet.hatchAt - HATCH_TOLERANCE_MS) return { ok: false, message: '还没到可承接的破壳时间' };
   if (pet.collectionCard) return { ok: true, created: false, card: pet.collectionCard, pet };
   const isKoi = pet.prototype === '锦鲤';
   const personality = derivePersonality(pet);
-  const illustrationId = isKoi ? '' : demoIllustration(pet, personality.mbti);
+  const illustrationId = demoIllustration(pet, personality.mbti);
+  const cycleDays = Math.max(3, Math.min(10, Math.round((pet.hatchAt - pet.createdAt) / DAY) || 7));
+  const theoreticalMaximum = 40 + cycleDays * 15;
+  const completionRatio = Number(pet.progressEarned === undefined ? pet.progress || 0 : pet.progressEarned) / theoreticalMaximum;
   pet.collectionCard = {
     id: `card-${pet.id}`,
     mode: runtime.getMode(),
@@ -464,7 +479,7 @@ function createCollectionCard() {
     bloodType: ['A', 'B', 'O', 'AB'][simpleHash(pet.id) % 4],
     personality: personality.text,
     collectible: '普通',
-    hatchQuality: pet.progress >= 80 ? '完整孵化' : '轻量孵化',
+    hatchQuality: completionRatio >= 0.9 ? '完整孵化' : '轻量孵化',
     originalOwner: (getUser() && getUser().nickname) || '蛋友3024'
   };
   pet.stage = 'hatched';
@@ -508,6 +523,7 @@ function startExhibitionDemo() {
     createdAt,
     hatchAt: createdAt - 1000,
     progress: 85,
+    progressEarned: 145,
     stage: 'ready',
     demoMode: true,
     exhibitionMode: true,

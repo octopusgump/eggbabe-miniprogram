@@ -2,6 +2,8 @@
   "card_id": "card-preview-yutu-001",
   "mode": "demo",
   "prototype": "YT",
+  "prototype_name": "玉兔",
+  "avatar_id": "YT_avatar_01",
   "style": "月白桂花款",
   "name": "月团",
   "name_by_user": true,
@@ -21,5 +23,6 @@
   "figure_key": "YT__watercolor__hi",
   "bg_key": "YT__月白桂花款",
   "limited_batch": null,
+  "share_code": "EGG-FRIEND-0001",
   "mini_program_code_url": ""
 }

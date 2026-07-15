@@ -359,7 +359,7 @@
 .drop-details { opacity: 0; transform: translateY(10rpx); pointer-events: none; transition: opacity .42s ease .12s,transform .52s ease .12s; }
 .drop-name { display: block; font-size: 38rpx; color: #1A1A1A; font-weight: 600; }.drop-meta { display: block; margin-top: 10rpx; font-size: 23rpx; color: #77756E; }
 .drop-copy-code { display: block; margin-top: 8rpx; min-height: 24rpx; font-size: 18rpx; letter-spacing: 1rpx; color: #A09E96; }
-.drop-primary,.drop-ghost { height: 92rpx; line-height: 92rpx; margin-top: 26rpx; border-radius: 999rpx; font-size: 28rpx; }.drop-primary { background: #3F5A47; color: #FFF; }.drop-primary::after,.drop-ghost::after { border: 0; }.drop-ghost { margin-top: 4rpx; background: transparent; color: #3F5A47; }
+.drop-primary,.drop-ghost { width: 100%; height: 92rpx; line-height: 92rpx; margin-top: 26rpx; padding: 0; border: 0; border-radius: 999rpx; font-size: 28rpx; }.drop-primary { background: #3F5A47; color: #FFF; }.drop-primary::after,.drop-ghost::after { border: 0; }.drop-ghost { margin-top: 4rpx; background: transparent; color: #3F5A47; }
 .drop-panel--revealed .drop-halo { opacity: .88; transform: translate(-50%,-50%) scale(1.1); }
 .drop-panel--revealed .drop-card { animation: drop-card-settle .76s cubic-bezier(.22,.61,.36,1) both; box-shadow: 0 28rpx 58rpx rgba(24,54,35,.2); }
 .drop-panel--revealed .drop-veil { opacity: 0; transform: translateY(-26rpx) scale(1.04); pointer-events: none; }

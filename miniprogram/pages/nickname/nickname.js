@@ -18,7 +18,7 @@ Page({
     if (this.data.saving) return;
     const result = petStore.updateNickname(this.data.name);
     if (!result.ok) return this.setData({ error: result.message });
-    if (config.cloudEnabled && runtime.getMode() === 'live' && result.pet.collectionCard) {
+    if (config.backendEnabled && runtime.getMode() === 'live' && result.pet.collectionCard) {
       this.setData({ saving: true, error: '' });
       const synced = await syncQueue.flush();
       if (!synced.ok) {

@@ -3,12 +3,8 @@ const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
 const sceneConfig = require('../../utils/exhibition-scenes');
 const syncQueue = require('../../services/sync-queue');
-const currency = require('../../services/currency-store');
 
 const TOUCH_LINES = ['你碰到它啦。', '它轻轻晃了一下。', '它好像听见你了。', '蛋壳里传来小小的声音。'];
-function equippedDecorations(account) {
-  return account.inventory.filter(item => item.equipped).map(owned => Object.assign({}, account.catalog.find(item => item.id === owned.itemId) || {}, owned));
-}
 Page({
   data: {
     pet: null,
@@ -21,9 +17,7 @@ Page({
     cuddleProgress: 0,
     actionLabel: '孵化修炼手册',
     hasScenes: false,
-    syncPending: 0,
-    dewBalance: 0,
-    equippedItems: []
+    syncPending: 0
   },
 
   async onShow() {
@@ -36,9 +30,6 @@ Page({
     analytics.track(stage === 'hatched' ? 'role_home_view' : 'hatch_home_view');
     const presentation = petStore.getStagePresentation(stage);
     const dailyStatus = petStore.getDailyStatus();
-    await Promise.resolve(currency.earn('daily_visit', 5, 5));
-    if (dailyStatus) await Promise.resolve(currency.earn('daily_status_view', 3, 3));
-    const dewAccount = await currency.loadAccount();
     this.setData({
       pet,
       stage,
@@ -47,9 +38,7 @@ Page({
       dailyStatus,
       actionLabel: presentation.actionLabel,
       hasScenes: stage === 'hatched' && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
-      syncPending: syncQueue.pendingCount(),
-      dewBalance: dewAccount.balance,
-      equippedItems: equippedDecorations(dewAccount)
+      syncPending: syncQueue.pendingCount()
     });
     if (dailyStatus) analytics.track('daily_status_viewed', { where: stage === 'hatched' ? 'role_home' : 'hatch_home', mood_type: dailyStatus.mood });
   },
@@ -113,7 +102,6 @@ Page({
     if (this.lastTapAt && now - this.lastTapAt < 2000) return;
     this.lastTapAt = now;
     petStore.recordTouch();
-    currency.earn('pet_touch', 1, 5);
     analytics.track('egg_tap', { tap_count: 1 });
     this.setData({ eggMotion: 'egg--wobble' });
     this.showFeedback(TOUCH_LINES[Math.floor(Math.random() * TOUCH_LINES.length)]);
@@ -143,7 +131,6 @@ Page({
       }
       analytics.track('pat_egg_complete');
       analytics.track('incubation_action', { action_type: 'cuddle', is_first_time: !!result.added, progress_delta: result.added || 0 });
-      currency.earn('cuddle', 3, 3);
       this.completedLongPress = true;
       this.setData({ cuddleProgress: 100, eggMotion: 'egg--warm' });
       this.showFeedback(result.added ? '它暖起来了 · 孵化进度 +5%' : '它又往你这边靠了靠');
@@ -189,9 +176,6 @@ Page({
   onOpenProfile() {
     if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/pet-detail/pet-detail' });
   },
-
-  onOpenShop() { wx.navigateTo({ url: '/pages/shop/shop' }); },
-  onOpenBag() { wx.navigateTo({ url: '/pages/bag/bag' }); },
 
   onHide() {
     this.clearInteractionTimers();

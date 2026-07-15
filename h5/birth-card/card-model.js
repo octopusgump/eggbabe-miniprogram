@@ -24,7 +24,7 @@
 
   function formatBirthdayLabel(value) {
     const parts = validDateParts(value);
-    return parts ? `${parts.month}月${parts.day}日` : String(value || '');
+    return parts ? `${parts.year}年${parts.month}月${parts.day}日` : String(value || '');
   }
 
   function formatConstellationLabel(value) {
@@ -40,10 +40,10 @@
     const gender = GENDERS[input.gender] || String(input.gender || '').toUpperCase();
     const code = String(input.code || input.serial || '');
     const constellation = String(input.constellation || input.zodiac || '');
-    const required = [input.card_id || input.id, input.mode, prototype, birthday, constellation, input.mbti, code];
-    const birthRequired = [input.style, input.gender, input.blood_type || input.bloodType];
+    const required = [input.card_id || input.id, input.mode, prototype, input.name, input.avatar_id || input.avatarId, birthday, constellation, input.gender, input.mbti, input.signature || input.personality, input.blood_type || input.bloodType, code];
+    const birthRequired = [input.style];
     const collectibleRequired = [input.set_code, input.set_name, input.collector_label, input.card_definition_id, input.treatment, input.hero_asset_id];
-    const invalidEnum = !['live', 'demo'].includes(input.mode) || !['YT', 'KOI'].includes(prototype) || (cardType === 'birth' && !['MALE', 'FEMALE'].includes(gender));
+    const invalidEnum = !['live', 'demo'].includes(input.mode) || !['YT', 'KOI'].includes(prototype) || !['MALE', 'FEMALE'].includes(gender);
     const invalidCollectible = cardType === 'collectible' && (!/^\d{3}\/\d{3}$/.test(String(input.collector_label || '')) || input.treatment !== 'BASE');
     if (required.some(value => !value) || (cardType === 'birth' ? birthRequired : collectibleRequired).some(value => !value) || invalidEnum || invalidCollectible || !validDateParts(birthday) || !isValidCardCode(code)) throw new Error('INVALID_CARD');
     return {
@@ -51,13 +51,15 @@
       cardType,
       mode: input.mode,
       prototype,
-      prototypeLabel: prototype === 'KOI' ? '锦鲤' : '玉兔',
+      prototypeLabel: String(input.prototype_name || '') || (prototype === 'KOI' ? '锦鲤' : '玉兔'),
+      avatarId: String(input.avatar_id || input.avatarId || ''),
+      avatarUrl: String(input.avatar_url || input.avatarUrl || ''),
       style: String(input.style || ''),
-      name: String(input.name || '').trim().slice(0, 10) || '未命名',
+      name: String(input.name || '').trim().slice(0, 10),
       cardTitle: String(input.card_title || '').trim().slice(0, 20),
       nameByUser: !!input.name_by_user,
       gender,
-      genderSymbol: cardType === 'birth' ? (gender === 'FEMALE' ? '♀' : '♂') : '',
+      genderSymbol: gender === 'FEMALE' ? '♀' : '♂',
       signature: String(input.signature || input.personality || '').slice(0, 20),
       birthday,
       birthdayLabel: formatBirthdayLabel(birthday),
@@ -65,11 +67,6 @@
       constellation,
       constellationLabel: formatConstellationLabel(constellation),
       mbti: String(input.mbti).toUpperCase().slice(0, 4),
-      statRows: [
-        { key: 'mbti', label: 'MBTI', value: String(input.mbti).toUpperCase().slice(0, 4) },
-        { key: 'constellation', label: '星座', value: formatConstellationLabel(constellation) },
-        { key: 'birthday', label: '生日', value: formatBirthdayLabel(birthday) }
-      ],
       bloodType: String(input.blood_type || input.bloodType || '').toUpperCase(),
       code,
       collectAttr: cardType === 'collectible' ? 'BASE' : (input.collect_attr === '限定' || input.collectible === '限定' ? '限定' : '普通'),
@@ -86,7 +83,8 @@
       treatment: String(input.treatment || ''),
       heroAssetId: String(input.hero_asset_id || ''),
       limitedBatch: input.limited_batch || null,
-      miniProgramCodeUrl: String(input.mini_program_code_url || '')
+      miniProgramCodeUrl: String(input.mini_program_code_url || ''),
+      shareCode: String(input.share_code || input.shareCode || '')
     };
   }
 

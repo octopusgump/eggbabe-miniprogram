@@ -5,23 +5,22 @@
 .heading-kicker { display: block; color: #7A7C74; font-size: 19rpx; }
 .heading-title { display: block; margin-top: 6rpx; color: #26372C; font-size: 30rpx; font-weight: 600; }
 .preview-card { width: 675rpx; height: 1200rpx; overflow: hidden; display: flex; flex-direction: column; margin: 0 auto; padding: 24rpx; gap: 16rpx; border-radius: 54rpx; box-sizing: border-box; background: #FFFDF7; box-shadow: 0 36rpx 100rpx rgba(25, 34, 27, .18); }
-.card-title-section { position: relative; height: 110rpx; display: flex; align-items: center; justify-content: center; flex: 0 0 110rpx; padding: 0 120rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
+.card-title-section { position: relative; height: 160rpx; display: grid; grid-template-columns: 76rpx minmax(0,1fr) 112rpx; align-items: center; flex: 0 0 160rpx; gap: 14rpx; padding: 0 8rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
+.card-avatar { width: 72rpx; height: 82rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2rpx solid #DCE4D2; border-radius: 50% 50% 46% 46%; background: #F4F7EC; }
 .title-copy { min-width: 0; }
-.card-name { display: block; max-width: 360rpx; overflow: hidden; color: #3C2D24; font-size: 48rpx; font-weight: 600; line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; }
+.card-name { display: block; overflow: hidden; color: #3C2D24; font-size: 44rpx; font-weight: 600; line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; }
+.prototype-name { display: block; margin-top: 8rpx; color: #788078; font-size: 18rpx; }
+.collect-context { display: block; overflow: hidden; margin-top: 7rpx; color: #667168; font-size: 15rpx; text-overflow: ellipsis; white-space: nowrap; }
 .collect-badge { position: absolute; right: 0; top: 50%; padding: 10rpx 16rpx; border-radius: 999rpx; background: #F1F1EA; color: #526054; font-size: 24rpx; font-weight: 600; transform: translateY(-50%); }
 .card-illustration-section { width: 100%; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; border-radius: 26rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
 .hero-image { width: 100%; height: 100%; }
-.card-data { min-height: 0; flex: 1 1 auto; box-sizing: border-box; background: #FFFDF7; }
-.stat-grid { height: 100%; overflow: hidden; display: grid; grid-template-rows: repeat(3, 1fr); border: 3rpx solid #94AB61; border-radius: 24rpx; }
-.stat-row { min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx 0 12rpx; box-sizing: border-box; }
-.stat-row + .stat-row { border-top: 3rpx solid #A7B978; }
-.stat-leading { display: flex; align-items: center; gap: 16rpx; }
-.stat-icon { width: 46rpx; height: 46rpx; display: flex; align-items: center; justify-content: center; border: 2rpx solid; border-radius: 50%; box-sizing: border-box; color: #172018; font-size: 22rpx; font-weight: 600; }
-.stat-icon--mbti { border-color: #8DA85D; background: #DDE9B8; }
-.stat-icon--constellation { border-color: #BD7796; background: #F2D2DF; }
-.stat-icon--birthday { border-color: #8176B5; background: #DDD9F2; }
-.stat-label, .stat-value { color: #2D251F; font-size: 24rpx; font-weight: 600; }
-.stat-value { max-width: 290rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-data { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; gap: 8rpx; box-sizing: border-box; background: #FFFDF7; }
+.stat-grid { display: grid; gap: 8rpx; }
+.stat-pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10rpx; }
+.stat-pair > view,.stat-mbti { display: flex; align-items: center; justify-content: space-between; gap: 8rpx; padding: 8rpx 14rpx; border-radius: 15rpx; background: #F6F6F0; color: #7A807A; font-size: 17rpx; }
+.stat-pair text:last-child,.stat-mbti text:last-child { overflow: hidden; color: #2D251F; font-size: 18rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.stat-mbti { width: 52%; box-sizing: border-box; justify-self: center; }
+.card-signature { overflow: hidden; padding: 2rpx 14rpx; color: #536057; font-size: 20rpx; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .pager { width: 650rpx; display: flex; gap: 18rpx; margin: 28rpx auto 0; }
 .pager-button { height: 82rpx; display: flex; align-items: center; justify-content: center; flex: 1; border: 1rpx solid #CDD2CC; border-radius: 999rpx; background: #FFF; color: #3F5A47; font-size: 25rpx; }
 .pager-button::after, .album-button::after { border: 0; }

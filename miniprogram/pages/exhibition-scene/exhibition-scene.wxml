@@ -62,7 +62,7 @@
   <view wx:if="{{bubble}}" class="bubble">{{bubble}}</view>
   <view wx:if="{{cardDrop}}" class="drop-mask drop-mask--{{cardRevealPhase}}" catchtap="onCloseCardDrop">
     <view class="drop-panel drop-panel--{{cardRevealPhase}}" catchtap="noop">
-      <text class="drop-kicker">{{cardRevealPhase === 'hint' ? '好像有什么悄悄出现了…' : (cardDrop.isNewDefinition ? '第一次遇见这张卡' : '又遇见了一位老朋友')}}</text>
+      <text class="drop-kicker">{{cardRevealPhase === 'hint' ? '好像有什么悄悄出现了…' : '你遇见了一张新的收藏卡'}}</text>
       <view class="drop-stage">
         <view class="drop-halo"></view>
         <view class="drop-mote drop-mote--one"></view>
@@ -71,17 +71,16 @@
         <view class="drop-card" style="background:{{cardDrop.tint}};">
           <image wx:if="{{cardDrop.image && !cardImageFailed}}" class="drop-card-image" src="{{cardDrop.image}}" mode="aspectFit" binderror="onCardImageError"></image>
           <text wx:else class="drop-mark">{{cardDrop.mark}}</text>
-          <view class="drop-card-brand">eggbabe</view>
           <view class="drop-card-number">{{cardDrop.collectorLabel}}</view>
           <view class="drop-veil"><text>?</text></view>
         </view>
       </view>
       <view class="drop-details">
         <text class="drop-name">{{cardDrop.name}}</text>
-        <text class="drop-meta">{{cardDrop.setCode}} · {{cardDrop.collectorLabel}}{{cardDrop.copyCount > 1 ? ' · 第 ' + cardDrop.copyCount + ' 份' : ''}}</text>
+        <text class="drop-meta">{{cardDrop.setName}} · {{cardDrop.collectorLabel}}</text>
         <text class="drop-copy-code">{{cardDrop.uniqueCode}}</text>
-        <view class="drop-primary" bindtap="onOpenFullCard">查看完整卡面</view>
-        <view class="drop-ghost" bindtap="onOpenAlbum">去我的收藏卡</view>
+        <view class="drop-primary" bindtap="onOpenFullCard">查看</view>
+        <button class="drop-ghost" open-type="share"><text class="button-label">分享</text></button>
       </view>
     </view>
   </view>

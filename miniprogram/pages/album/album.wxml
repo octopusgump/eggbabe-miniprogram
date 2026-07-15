@@ -22,7 +22,7 @@
         <view><text class="set-code">{{summary.setCode}}</text><text class="set-name">{{summary.setName}}</text></view>
         <view class="set-progress"><text>{{summary.ownedUnique}}</text><text class="set-progress-total"> / {{summary.total}}</text></view>
         <view class="progress-track"><view class="progress-value" style="width:{{summary.total ? summary.ownedUnique / summary.total * 100 : 0}}%;"></view></view>
-        <text class="set-note">固定 {{summary.total}} 个收藏位{{summary.duplicateCount ? ' · 另有重复收藏 ' + summary.duplicateCount + ' 张' : ''}}</text>
+        <text class="set-note">固定 {{summary.total}} 个收藏位 · 已遇见的收藏卡不会重复出现</text>
         <view wx:if="{{isDemo}}" class="preview-all" bindtap="onPreviewAllCards">展会预览 · 查看全部收藏卡</view>
       </view>
       <view wx:if="{{summary && setSlots.length}}" class="scene-grid">
@@ -33,11 +33,10 @@
             <text class="collector-chip">{{item.collectorLabel}}</text>
           </view>
           <text class="scene-name">{{item.owned ? item.name : '尚未遇见'}}</text>
-          <text class="scene-meta">{{item.collectorLabel}}{{item.quantity > 1 ? ' · ×' + item.quantity : ''}}</text>
+          <text class="scene-meta">{{item.collectorLabel}}</text>
           <text wx:if="{{item.owned && item.uniqueCode}}" class="scene-serial">{{item.uniqueCode}}</text>
-          <view wx:if="{{item.owned}}" class="copy-detail" data-card-id="{{item.cardId}}" catchtap="onOpenCopies">
+          <view wx:if="{{item.owned}}" class="copy-detail">
             <text>{{item.obtainedLabel ? '获得 ' + item.obtainedLabel : '获得时间未记录'}}</text>
-            <text wx:if="{{item.quantity > 1}}">查看 {{item.quantity}} 份 ›</text>
           </view>
           <view wx:if="{{item.owned}}" class="card-actions">
             <button class="card-action card-share" open-type="share" data-id="{{item.instanceId}}" catchtap="onSelectShare"><text class="button-label">分享</text></button>

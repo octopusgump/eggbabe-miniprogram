@@ -6,6 +6,7 @@
   const runtimeConfig = window.EGGBABE_H5_CONFIG || {};
   let card = null;
   let assets = null;
+  let signatureFontReady = Promise.resolve(null);
 
   const byId = id => document.getElementById(id);
   const loading = byId('loading');
@@ -48,8 +49,8 @@
     const dataSection = document.querySelector('#birth-card .card-data-section');
     const signature = document.querySelector('#birth-card .card-signature');
     if (!dataSection || !signature) return;
-    const minSignatureFontSize = 10;
-    let fontSize = 14.4;
+    const minSignatureFontSize = 20;
+    let fontSize = 28.8;
     signature.style.fontSize = `${fontSize}px`;
     while (dataSection.scrollHeight > dataSection.clientHeight && fontSize > minSignatureFontSize) {
       fontSize = Math.max(minSignatureFontSize, Number((fontSize - .8).toFixed(1)));
@@ -60,10 +61,8 @@
   function applyTheme(resolvedAssets) {
     const mark = resolvedAssets.fallbackMark || (card.prototype === 'KOI' ? '鲤' : '兔');
     byId('fallback-mark').textContent = mark;
-    byId('card-avatar-mark').textContent = mark;
     setImage(byId('hero-background'), resolvedAssets.background);
     setImage(byId('hero-figure'), resolvedAssets.figure);
-    setImage(byId('card-avatar-image'), card.avatarUrl || resolvedAssets.figure);
   }
 
   function validSelfHostedFontUrl(value) {
@@ -76,29 +75,28 @@
 
   function loadFont(family, source, options) {
     const url = validSelfHostedFontUrl(source);
-    if (!url || typeof FontFace === 'undefined' || !document.fonts) return;
+    if (!url || typeof FontFace === 'undefined' || !document.fonts) return Promise.resolve(null);
     const config = options || {};
     const face = new FontFace(family, `url("${url}") format("${config.format || 'woff2'}")`, {
       display: 'swap',
       style: 'normal',
       weight: config.weight || '400'
     });
-    if (config.lazy) {
-      document.fonts.add(face);
-      return;
-    }
-    face.load().then(loaded => {
-      document.fonts.add(loaded);
+    document.fonts.add(face);
+    if (config.lazy) return Promise.resolve(face);
+    return face.load().then(loaded => {
       if (config.loadedClass) document.documentElement.classList.add(config.loadedClass);
-    }).catch(() => {});
+      return loaded;
+    }).catch(() => null);
   }
 
-  function loadSelfHostedFonts(name) {
+  function loadSelfHostedFonts(name, signature) {
     const template = String(runtimeConfig.nameFontUrlTemplate || '');
+    const fontText = `${String(name || '')}${String(signature || '')}`;
     const nameFontUrl = template
-      ? template.replace('{text}', encodeURIComponent(String(name || '')))
+      ? template.replace('{text}', encodeURIComponent(fontText))
       : String(runtimeConfig.nameFontUrl || '');
-    loadFont('ZCOOL KuaiLe', nameFontUrl, { format: /\.ttf(?:\?|$)/i.test(nameFontUrl) ? 'truetype' : 'woff2' });
+    const zcoolReady = loadFont('ZCOOL KuaiLe', nameFontUrl, { format: /\.ttf(?:\?|$)/i.test(nameFontUrl) ? 'truetype' : 'woff2' });
     loadFont('Google Sans', runtimeConfig.googleSansFontUrl, {
       format: /\.ttf(?:\?|$)/i.test(runtimeConfig.googleSansFontUrl || '') ? 'truetype' : 'woff2',
       loadedClass: 'has-google-sans',
@@ -113,12 +111,13 @@
         weight: '100 900'
       }
     );
+    return zcoolReady;
   }
 
   function render(raw) {
     card = model.normalizeCard(raw);
     assets = assetConfig.resolveAssets(card, runtimeConfig.assetManifest || assetConfig.manifest);
-    loadSelfHostedFonts(card.name);
+    signatureFontReady = loadSelfHostedFonts(card.name, card.signature);
     fillFields(card);
     applyTheme(assets);
     const badge = byId('collect-badge');
@@ -136,6 +135,7 @@
     document.title = `${card.name}的收藏卡 · eggbabe`;
     notifyMiniProgram('h5_birth_card_viewed', { view: 'card', mode: card.mode });
     fitCardSignature();
+    signatureFontReady.then(fitCardSignature).catch(() => {});
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCardSignature).catch(() => {});
   }
 
@@ -191,6 +191,7 @@
     button.textContent = '正在生成…';
     try {
       byId('action-message').hidden = true;
+      await signatureFontReady;
       const dataUrl = await posterRenderer.generatePoster(card, assets);
       byId('poster-image').src = dataUrl;
       byId('poster-download').href = dataUrl;

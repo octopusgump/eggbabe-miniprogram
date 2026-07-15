@@ -4,6 +4,7 @@ const h5Bridge = require('../../services/birth-card-h5');
 const sceneConfig = require('../../utils/life-scenes');
 const sceneCardStore = require('../../services/scene-card-store');
 const analytics = require('../../services/analytics');
+const signatureFont = require('../../assets/fonts/zcool-kuaile/signature-font');
 
 const ZODIAC_SYMBOLS = { 白羊座: '♈', 金牛座: '♉', 双子座: '♊', 巨蟹座: '♋', 狮子座: '♌', 处女座: '♍', 天秤座: '♎', 天蝎座: '♏', 射手座: '♐', 摩羯座: '♑', 水瓶座: '♒', 双鱼座: '♓' };
 
@@ -28,69 +29,6 @@ function drawCover(context, image, x, y, width, height) {
   const sourceWidth = width / scale;
   const sourceHeight = height / scale;
   context.drawImage(image.path, (image.width - sourceWidth) / 2, (image.height - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
-}
-
-function fillEllipse(context, x, y, radiusX, radiusY, color) {
-  context.save();
-  context.beginPath();
-  context.translate(x, y);
-  context.scale(radiusX, radiusY);
-  context.arc(0, 0, 1, 0, Math.PI * 2);
-  context.setFillStyle(color);
-  context.fill();
-  context.restore();
-}
-
-function drawPetAvatar(context, prototype, x, y, width, height) {
-  fillEllipse(context, x + width / 2, y + height / 2, width / 2, height / 2, '#F4F7EC');
-  if (prototype === '锦鲤') {
-    fillEllipse(context, x + width * .73, y + height * .53, width * .24, height * .25, '#F4B9AE');
-    fillEllipse(context, x + width * .48, y + height * .5, width * .34, height * .27, '#FFF9E4');
-    fillEllipse(context, x + width * .5, y + height * .32, width * .12, height * .11, '#E77E72');
-    fillEllipse(context, x + width * .62, y + height * .62, width * .1, height * .09, '#E77E72');
-    fillEllipse(context, x + width * .32, y + height * .43, width * .025, height * .03, '#002900');
-    fillEllipse(context, x + width * .5, y + height * .76, width * .14, height * .08, '#EDE78E');
-    return;
-  }
-  fillEllipse(context, x + width * .36, y + height * .3, width * .12, height * .28, '#FFF9E4');
-  fillEllipse(context, x + width * .64, y + height * .3, width * .12, height * .28, '#FFF9E4');
-  fillEllipse(context, x + width * .36, y + height * .29, width * .045, height * .18, '#F4B9AE');
-  fillEllipse(context, x + width * .64, y + height * .29, width * .045, height * .18, '#F4B9AE');
-  fillEllipse(context, x + width * .5, y + height * .58, width * .34, height * .32, '#FFF9E4');
-  fillEllipse(context, x + width * .4, y + height * .54, width * .025, height * .035, '#002900');
-  fillEllipse(context, x + width * .6, y + height * .54, width * .025, height * .035, '#002900');
-  fillEllipse(context, x + width * .5, y + height * .63, width * .035, height * .025, '#D8908B');
-  fillEllipse(context, x + width * .34, y + height * .65, width * .06, height * .025, 'rgba(244,185,174,.45)');
-  fillEllipse(context, x + width * .66, y + height * .65, width * .06, height * .025, 'rgba(244,185,174,.45)');
-}
-
-function wrapCanvasText(context, value, maxWidth, fallbackCharWidth) {
-  const lines = [];
-  let line = '';
-  Array.from(String(value || '')).forEach(character => {
-    const candidate = line + character;
-    const measured = context.measureText ? context.measureText(candidate).width : candidate.length * fallbackCharWidth;
-    if (line && measured > maxWidth) {
-      lines.push(line);
-      line = character;
-    } else line = candidate;
-  });
-  if (line) lines.push(line);
-  return lines.length ? lines : [''];
-}
-
-function fitCanvasText(context, value, maxWidth, maxHeight) {
-  let fontSize = 18;
-  let lineHeight = 24;
-  let lines = [];
-  do {
-    context.setFontSize(fontSize);
-    lineHeight = Math.round(fontSize * 1.35);
-    lines = wrapCanvasText(context, value, maxWidth, fontSize);
-    if (lines.length * lineHeight <= maxHeight || fontSize <= 13) break;
-    fontSize -= 1;
-  } while (fontSize >= 13);
-  return { fontSize, lineHeight, lines };
 }
 
 function signatureClass(value) {
@@ -143,13 +81,15 @@ Page({
   },
 
   drawCardPoster(done) {
-    loadCanvasImage(this.data.illustration).then(illustrationImage => {
+    Promise.all([
+      loadCanvasImage(this.data.illustration),
+      loadCanvasImage(signatureFont.IMAGE_BY_TEXT[this.data.cardView.signature])
+    ]).then(([illustrationImage, signatureImage]) => {
       const context = wx.createCanvasContext('cardPosterCanvas', this);
       const cardView = this.data.cardView;
       const sceneCard = this.data.sceneCard;
       context.setFillStyle('#FFFDF7');
       context.fillRect(0, 0, 600, 1067);
-      drawPetAvatar(context, cardView.prototype_name, 40, 20, 64, 76);
       context.setTextAlign('center');
       context.setFillStyle('#3C2D24');
       context.setFontSize(38);
@@ -185,11 +125,7 @@ Page({
         context.setFontSize(18);
         context.fillText(cell[1], x + cellWidth - 12, y + 30, cellWidth - 88);
       });
-      context.setFillStyle('#536057');
-      context.setTextAlign('center');
-      const signature = fitCanvasText(context, `“${cardView.signature}”`, 520, 90);
-      const signatureTop = 932 + (90 - signature.lines.length * signature.lineHeight) / 2 + signature.fontSize;
-      signature.lines.forEach((line, index) => context.fillText(line, 300, signatureTop + index * signature.lineHeight));
+      context.drawImage(signatureImage.path, 40, 934, 520, 112);
       context.draw(false, () => {
         this.setData({ posterReady: true, posterError: '' });
         if (done) done(true);

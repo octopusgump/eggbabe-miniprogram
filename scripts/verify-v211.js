@@ -32,6 +32,8 @@ const h5Poster = read('h5/birth-card/poster-renderer.js');
 const nativeTemplate = read('miniprogram/pages/collection-card/collection-card.wxml');
 const nativeCss = read('miniprogram/pages/collection-card/collection-card.wxss');
 const nativeLogic = read('miniprogram/pages/collection-card/collection-card.js');
+const nativeSignatureFontCss = read('miniprogram/assets/fonts/zcool-kuaile/font.wxss');
+const nativeSignatureFont = require('../miniprogram/assets/fonts/zcool-kuaile/signature-font');
 
 assert.match(h5Css, /\.illustration-frame\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, 'H5 插画必须统一使用 4:5');
 assert.match(nativeCss, /\.card-illustration-section\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '原生兜底插画必须统一使用 4:5');
@@ -45,7 +47,8 @@ assert.equal(nativeTemplate.includes('card-wordmark'), false, '原生标题不�
 ['prototypeLabel', 'name', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
   assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.17 卡面缺少 ${field}`);
 });
-assert.equal(h5Html.includes('card-avatar-image'), true, 'H5 v2.17 卡面缺少 IP 头像');
+assert.equal(h5Html.includes('card-avatar'), false, 'H5 卡面左上角必须移除 IP 头像');
+assert.equal(nativeTemplate.includes('class="card-avatar"'), false, '原生卡面左上角必须移除 IP 头像');
 ['cardView.prototype_name', 'cardView.name', 'birthdayLabel', 'cardView.constellation', 'genderLabel', 'cardView.mbti', 'cardView.signature', 'cardView.blood_type'].forEach(field => {
   assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.17 卡面缺少 ${field}`);
 });
@@ -67,7 +70,15 @@ assert.match(nativeCss, /\.actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*
 assert.match(nativeCss, /\.save-image-button\s*\{[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important;[^}]*margin:\s*0\s*!important/s, '原生保存图片按钮必须强制铺满内容宽度');
 assert.equal(nativeLogic.includes('wx.openSetting'), true, '原生保存图片必须处理相册权限恢复');
 assert.equal(nativeLogic.includes("analytics.track('card_save'"), true, '原生保存成功必须上报 card_save');
-assert.equal(nativeLogic.includes('drawPetAvatar'), true, '原生导出卡面必须与页面 IP 头像一致');
+assert.equal(nativeLogic.includes('drawPetAvatar'), false, '原生导出卡面也必须移除左上角 IP 头像');
+assert.equal(nativeCss.includes('@import "../../assets/fonts/zcool-kuaile/font.wxss"'), true, '原生屏显必须引入本地站酷快乐体');
+assert.equal(nativeSignatureFontCss.includes('data:font/truetype;base64,'), true, '原生屏显字体必须随小程序包本地交付');
+assert.equal(nativeLogic.includes('wx.loadFontFace'), false, '原生卡面不得依赖旧 Canvas 不支持的动态字体接口');
+assert.equal(nativeLogic.includes('context.drawImage(signatureImage.path, 40, 934, 520, 112)'), true, '原生保存图必须绘制预渲染的 ZCOOL 性情独白');
+assert.equal(Object.keys(nativeSignatureFont.IMAGE_BY_TEXT).length, 6, '原生保存图必须覆盖全部六条可产出性情独白');
+assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/fonts/zcool-kuaile/OFL.txt')), true, '原生小程序发布包必须附带站酷快乐体 OFL 许可证');
+assert.match(nativeCss, /\.card-signature\s*\{[^}]*margin-top:\s*24rpx;[^}]*font-family:\s*"ZCOOL KuaiLe Signature"[^}]*font-size:\s*50\.4rpx/s, '原生性情独白必须使用站酷快乐体并放大两倍');
+assert.match(h5Css, /\.card-signature\s*\{[^}]*margin:\s*12px 0 0;[^}]*font-family:\s*var\(--name-font\);[^}]*font-size:\s*28\.8px/s, 'H5 性情独白必须使用站酷快乐体并放大两倍');
 assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图片回传小程序');
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 
@@ -97,4 +108,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('PRD v2.17 前端契约校验通过：九字段收藏卡、遇见规则、前端安全 mock 与订阅授权骨架正常。');
+console.log('PRD v2.17 前端契约校验通过：八个可见身份字段收藏卡、遇见规则、前端安全 mock 与订阅授权骨架正常。');

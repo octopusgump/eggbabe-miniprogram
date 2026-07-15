@@ -8,7 +8,7 @@
   const HEIGHT = 2160;
   const CARD_INSET = 54;
   const SECTION_GAP = 24;
-  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.11);
+  const TITLE_HEIGHT = Math.round(CARD_HEIGHT * 0.08);
   const ILLUSTRATION_HEIGHT = Math.round((WIDTH - CARD_INSET * 2) * 5 / 4);
   const DATA_HEIGHT = CARD_HEIGHT - CARD_INSET * 2 - TITLE_HEIGHT - ILLUSTRATION_HEIGHT - SECTION_GAP * 2;
   const CJK_FONT = '"PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
@@ -64,19 +64,10 @@
     return lines.length ? lines : [''];
   }
 
-  function drawTitle(context, card, avatar) {
+  function drawTitle(context, card) {
     context.fillStyle = '#FFFCF4';
     context.fillRect(CARD_INSET, CARD_INSET, WIDTH - CARD_INSET * 2, TITLE_HEIGHT);
     context.fillStyle = '#3C2D24';
-    const avatarX = CARD_INSET + 16;
-    const avatarY = CARD_INSET + 38;
-    roundedRect(context, avatarX, avatarY, 116, 136, 56);
-    context.save();
-    context.clip();
-    context.fillStyle = '#F4F7EC';
-    context.fillRect(avatarX, avatarY, 116, 136);
-    if (avatar) drawCover(context, avatar, avatarX, avatarY, 116, 136);
-    context.restore();
     context.font = `400 74px ${NAME_FONT}`;
     context.textAlign = 'center';
     context.fillText(card.name, WIDTH / 2, CARD_INSET + 120, 560);
@@ -154,18 +145,18 @@
       context.textAlign = 'right';
       context.fillText(cell[1], left + cellWidth - 22, top + 42, cellWidth - 112);
     });
-    const signatureTop = y + (rowHeight + 12) * 3 + 6;
+    const signatureTop = y + (rowHeight + 12) * 3 + 24;
     const signatureHeight = Math.max(36, y + height - signatureTop - 6);
-    let signatureSize = 28;
-    let signatureLineHeight = 38;
+    let signatureSize = 56;
+    let signatureLineHeight = 76;
     let signatureLines = [];
     do {
       context.font = `400 ${signatureSize}px ${NAME_FONT}`;
       signatureLineHeight = Math.round(signatureSize * 1.35);
       signatureLines = wrapText(context, `“${card.signature}”`, width - 80);
-      if (signatureLines.length * signatureLineHeight <= signatureHeight || signatureSize <= 16) break;
+      if (signatureLines.length * signatureLineHeight <= signatureHeight || signatureSize <= 32) break;
       signatureSize -= 2;
-    } while (signatureSize >= 16);
+    } while (signatureSize >= 32);
     context.fillStyle = '#536057';
     context.textAlign = 'center';
     const signatureStart = signatureTop + Math.max(signatureLineHeight, (signatureHeight - signatureLines.length * signatureLineHeight) / 2 + signatureLineHeight * .8);
@@ -179,15 +170,15 @@
     target.width = WIDTH;
     target.height = HEIGHT;
     const context = target.getContext('2d');
-    const [background, figure, avatar, miniCode] = await Promise.all([
-      loadImage(assets.background), loadImage(assets.figure), loadImage(card.avatarUrl || assets.figure), loadImage(card.miniProgramCodeUrl)
+    const [background, figure, miniCode] = await Promise.all([
+      loadImage(assets.background), loadImage(assets.figure), loadImage(card.miniProgramCodeUrl)
     ]);
     if (!miniCode) throw new Error('MINI_CODE_REQUIRED');
     if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) await document.fonts.ready;
 
     context.fillStyle = '#FFFDF7';
     context.fillRect(0, 0, WIDTH, HEIGHT);
-    drawTitle(context, card, avatar);
+    drawTitle(context, card);
     drawIllustration(context, card, assets, background, figure);
     drawCardData(context, card);
 

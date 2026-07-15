@@ -19,6 +19,9 @@ const required = [
   'h5/birth-card/assets/fonts/noto-sans-sc/OFL.txt',
   'h5/birth-card/assets/fonts/zcool-kuaile/ZCOOLKuaiLe-Regular.woff2',
   'h5/birth-card/assets/fonts/zcool-kuaile/OFL.txt',
+  'miniprogram/assets/fonts/zcool-kuaile/signature-font.js',
+  'miniprogram/assets/fonts/zcool-kuaile/font.wxss',
+  'miniprogram/assets/fonts/zcool-kuaile/OFL.txt',
   'miniprogram/pages/h5-card/h5-card.js',
   'miniprogram/pages/h5-card/h5-card.wxml'
 ];
@@ -34,11 +37,74 @@ const h5Page = read('miniprogram/pages/h5-card/h5-card.js');
 const homePage = read('miniprogram/pages/home/home.js');
 const miniBridge = read('miniprogram/services/birth-card-h5.js');
 const localPetStore = read('miniprogram/utils/pet-store.js');
+const nativeSignatureFont = require('../miniprogram/assets/fonts/zcool-kuaile/signature-font');
+const nativeSignatureFontCss = read('miniprogram/assets/fonts/zcool-kuaile/font.wxss');
 const figureDirectory = path.join(root, 'h5/birth-card/assets/figures');
 const figureCatalog = JSON.parse(read('h5/birth-card/assets/figures/catalog.json'));
 const firstSet = JSON.parse(read('h5/birth-card/assets/sets/YT-S01.json'));
 const faceContract = JSON.parse(read('h5/birth-card/card-face-contract.json'));
 const cardFace = html.match(/<section id="card-view"[\s\S]*?<\/section>/)[0];
+
+function ttfHasGlyph(font, codePoint) {
+  const numTables = font.readUInt16BE(4);
+  let cmapOffset = -1;
+  for (let index = 0; index < numTables; index += 1) {
+    const record = 12 + index * 16;
+    if (font.toString('ascii', record, record + 4) === 'cmap') cmapOffset = font.readUInt32BE(record + 8);
+  }
+  if (cmapOffset < 0) return false;
+  const subtableCount = font.readUInt16BE(cmapOffset + 2);
+  for (let index = 0; index < subtableCount; index += 1) {
+    const record = cmapOffset + 4 + index * 8;
+    const subtable = cmapOffset + font.readUInt32BE(record + 4);
+    const format = font.readUInt16BE(subtable);
+    if (format === 12) {
+      const groupCount = font.readUInt32BE(subtable + 12);
+      for (let group = 0; group < groupCount; group += 1) {
+        const offset = subtable + 16 + group * 12;
+        const start = font.readUInt32BE(offset);
+        const end = font.readUInt32BE(offset + 4);
+        if (codePoint >= start && codePoint <= end) return font.readUInt32BE(offset + 8) + codePoint - start !== 0;
+      }
+    }
+    if (format === 4 && codePoint <= 0xFFFF) {
+      const segmentCount = font.readUInt16BE(subtable + 6) / 2;
+      const endCodes = subtable + 14;
+      const startCodes = endCodes + segmentCount * 2 + 2;
+      const deltas = startCodes + segmentCount * 2;
+      const rangeOffsets = deltas + segmentCount * 2;
+      for (let segment = 0; segment < segmentCount; segment += 1) {
+        const start = font.readUInt16BE(startCodes + segment * 2);
+        const end = font.readUInt16BE(endCodes + segment * 2);
+        if (codePoint < start || codePoint > end) continue;
+        const delta = font.readInt16BE(deltas + segment * 2);
+        const range = font.readUInt16BE(rangeOffsets + segment * 2);
+        if (range === 0) return ((codePoint + delta) & 0xFFFF) !== 0;
+        const glyphOffset = rangeOffsets + segment * 2 + range + (codePoint - start) * 2;
+        return glyphOffset + 2 <= font.length && font.readUInt16BE(glyphOffset) !== 0;
+      }
+    }
+  }
+  return false;
+}
+
+const personalitySource = localPetStore.match(/const descriptions = \{([\s\S]*?)\};\s*return \{ mbti, text: descriptions\[mbti\] \|\| '([^']+)' \};/);
+assert.ok(personalitySource, '必须能读取所有可产出的性情独白');
+const personalityPhrases = Array.from(personalitySource[1].matchAll(/:\s*'([^']+)'/g), match => match[1]).concat(personalitySource[2]);
+const requiredSignatureGlyphs = new Set(Array.from(`“”${personalityPhrases.join('')}`));
+const declaredSignatureGlyphs = new Set(Array.from(nativeSignatureFont.GLYPHS));
+assert.deepEqual(Array.from(requiredSignatureGlyphs).filter(character => !declaredSignatureGlyphs.has(character)), [], '原生站酷快乐体子集声明必须覆盖所有可产出独白');
+const nativeFontBase64 = nativeSignatureFontCss.match(/base64,([A-Za-z0-9+/=]+)/);
+assert.ok(nativeFontBase64, '原生屏显必须通过 WXSS 内嵌可加载的 TTF 子集');
+const nativeFontBuffer = Buffer.from(nativeFontBase64[1], 'base64');
+assert.deepEqual(Array.from(requiredSignatureGlyphs).filter(character => !ttfHasGlyph(nativeFontBuffer, character.codePointAt(0))), [], '原生站酷快乐体 TTF cmap 必须实际包含所有可产出独白字形');
+assert.deepEqual(personalityPhrases.filter(phrase => !nativeSignatureFont.IMAGE_BY_TEXT[phrase]), [], '原生保存图必须为每条可产出独白提供 ZCOOL 预渲染素材');
+Object.values(nativeSignatureFont.IMAGE_BY_TEXT).forEach(relative => {
+  const png = fs.readFileSync(path.join(root, 'miniprogram', relative));
+  assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a', `性情独白素材必须为 PNG：${relative}`);
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1040, 224], `性情独白素材必须为 2x 清晰尺寸：${relative}`);
+});
+assert.equal(read('miniprogram/assets/fonts/zcool-kuaile/OFL.txt').includes('SIL OPEN FONT LICENSE Version 1.1'), true, '原生小程序发布包必须附带 ZCOOL KuaiLe OFL 1.1 许可证');
 
 assert.equal(appJson.pages.includes('pages/h5-card/h5-card'), true, '小程序必须注册 H5 web-view 容器页');
 assert.equal(appJson.pages.includes('pages/pet-detail/pet-detail'), false, '重复的蛋宝宝档案页必须从小程序路由删除');
@@ -61,8 +127,8 @@ assert.equal(html.includes('eggbabe'), true, 'H5 卡面必须使用 eggbabe 品�
 assert.equal(cardFace.includes('title-star'), false, 'H5 收藏卡顶部不得显示星星');
 assert.equal(cardFace.includes('card-wordmark'), false, 'H5 收藏卡名字上方不得显示 eggbabe 小字');
 assert.match(css, /\.birth-card\s*\{[^}]*padding:\s*14px;[^}]*gap:\s*8px;/s, 'H5 收藏卡内容必须四周等距');
-assert.match(css, /--title-ratio:\s*9\.5%/, 'H5 标题区必须让出足够高度给放大后的底部信息');
-assert.match(css, /--illustration-inset:\s*44px/, 'H5 插画必须轻量内收以保证窄屏两行独白完整');
+assert.match(css, /--title-ratio:\s*8%/, '移除头像后 H5 标题区必须进一步轻量化');
+assert.match(css, /--illustration-inset:\s*74px/, 'H5 插画必须内收以容纳两倍字号的完整独白');
 assert.match(css, /\.collect-badge\s*\{[^}]*padding:\s*6px 10px;[^}]*font-size:\s*13px;/s, 'H5 系列序号必须放大');
 assert.equal(/@media \(max-width: 360px\)[\s\S]*?\.card-data-section\s*\{[^}]*padding/.test(css), false, 'H5 小屏不得破坏卡片内容的四边等距');
 assert.equal(/@media \(max-width: 360px\)[\s\S]*?\.card-title-section\s*\{[^}]*padding/.test(css), false, 'H5 小屏必须保留名字与放大序号的安全间距');
@@ -72,7 +138,8 @@ assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显�
 ['name', 'prototypeLabel', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
   assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.17 字段 ${field}`);
 });
-assert.equal(cardFace.includes('card-avatar-image'), true, 'H5 卡面必须显示 IP 形象头像');
+assert.equal(cardFace.includes('card-avatar'), false, 'H5 卡面左上角不得继续显示 IP 头像');
+assert.equal(app.includes('card-avatar'), false, 'H5 渲染逻辑不得残留已删除头像节点访问');
 const cardHeader = cardFace.match(/<header class="card-title-section">[\s\S]*?<\/header>/)[0];
 assert.equal(cardHeader.includes('data-field="prototypeLabel"'), false, '类型不得继续重复显示在名字下方');
 const statLabels = Array.from(cardFace.matchAll(/<dt>([^<]+)<\/dt>/g), match => match[1]);
@@ -84,10 +151,13 @@ assert.equal(css.includes('.card-signature'), true, '性情独白必须作为独
 assert.match(css, /\.stat-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*\.85fr\)\s*minmax\(0,\s*1\.15fr\)/s, '六个信息豆腐块必须使用两列三行网格，并为完整生日保留足够宽度');
 assert.match(css, /\.stat-grid dt\s*\{[^}]*font-size:\s*14\.4px/s, 'H5 信息标签字号必须在 12px 基线上增加 20%');
 assert.match(css, /\.stat-grid dd\s*\{[^}]*font-size:\s*15\.6px/s, 'H5 信息值字号必须在 13px 基线上增加 20%');
-assert.match(css, /\.card-signature\s*\{[^}]*font-size:\s*14\.4px/s, 'H5 性情独白字号必须在 12px 基线上增加 20%');
+assert.match(css, /\.card-signature\s*\{[^}]*margin:\s*12px 0 0;[^}]*font-family:\s*var\(--name-font\);[^}]*font-size:\s*28\.8px/s, 'H5 性情独白必须使用站酷快乐体、字号放大两倍并保留上方留白');
 assert.match(css, /\.card-data-section\s*\{[^}]*padding:\s*7px 0 9px;[^}]*gap:\s*5px/s, 'H5 数据区必须提供舒适且不溢出的上下留白与模块间距');
 assert.match(css, /\.stat-grid\s*\{[^}]*gap:\s*4px 8px/s, 'H5 六个信息块必须增加舒适且不溢出的行列间距');
-assert.equal(app.includes('let fontSize = 14.4'), true, 'H5 长独白适配必须从放大 20% 后的字号开始');
+assert.equal(app.includes('let fontSize = 28.8'), true, 'H5 长独白适配必须从放大两倍后的字号开始');
+assert.equal(app.includes('loadSelfHostedFonts(card.name, card.signature)'), true, 'H5 站酷快乐体子集必须同时覆盖名字与性情独白');
+assert.equal(app.indexOf('document.fonts.add(face)') < app.indexOf('return face.load()'), true, 'H5 必须先注册字体再等待加载，避免 fonts.ready 竞态');
+assert.equal(app.includes('await signatureFontReady'), true, 'H5 导出分享图前必须等待站酷快乐体完成加载');
 assert.equal(app.includes('Math.max(minSignatureFontSize'), true, 'H5 长独白缩放不得越过最小字号');
 assert.match(css, /\.card-signature\s*\{[^}]*white-space:\s*normal/s, 'H5 性情独白必须允许完整换行');
 assert.equal(/\.card-signature\s*\{[^}]*text-overflow:\s*ellipsis/s.test(css), false, 'H5 性情独白不得使用省略号截断');
@@ -99,13 +169,13 @@ const estimateH5CardLayout = viewportWidth => {
   const cardWidth = Math.min(viewportWidth, 520) - shellHorizontalPadding;
   const cardHeight = cardWidth * 16 / 9;
   const innerHeight = cardHeight - 28;
-  const titleHeight = innerHeight * .095;
-  const illustrationWidth = cardWidth - 28 - 44;
+  const titleHeight = innerHeight * .08;
+  const illustrationWidth = cardWidth - 28 - 74;
   const illustrationHeight = illustrationWidth * 5 / 4;
   const dataAvailable = innerHeight - titleHeight - illustrationHeight - 16;
   const gridHeight = (15.6 * 1.2 + 6) * 3 + 4 * 2;
-  const signatureHeight = 14.4 * 1.45 * 2 + 4;
-  const dataRequired = 7 + gridHeight + 5 + 1 + signatureHeight + 9;
+  const signatureHeight = 28.8 * 1.45 * 2;
+  const dataRequired = 7 + gridHeight + 5 + 12 + signatureHeight + 9;
   const gridWidth = cardWidth - 28;
   const birthdayColumnWidth = (gridWidth - 8) * 1.15 / 2;
   const birthdayRequiredWidth = 14.4 * 2 + 4 + 109 + 8;
@@ -116,15 +186,17 @@ const estimateH5CardLayout = viewportWidth => {
   assert.equal(layout.dataAvailable >= layout.dataRequired, true, `${viewportWidth}px H5 卡面两行独白不得缩小或溢出 9:16 卡面`);
   assert.equal(layout.birthdayColumnWidth >= layout.birthdayRequiredWidth, true, `${viewportWidth}px H5 卡面生日字段不得截断`);
 });
-assert.equal(poster.includes('drawCardData'), true, '分享海报必须使用与卡面一致的九字段信息区');
+assert.equal(poster.includes('drawCardData'), true, '分享海报必须使用与卡面一致的可见身份信息区');
 assert.equal(poster.includes('const CARD_HEIGHT = 1920'), true, '分享长图的卡面必须同步为 9:16 竖版');
 const posterTitle = poster.match(/function drawTitle[\s\S]*?\n  }/)[0];
 assert.equal(posterTitle.includes("fillText('★'"), false, '分享长图顶部不得显示星星');
 assert.equal(posterTitle.includes("fillText('eggbabe'"), false, '分享长图名字上方不得显示品牌小字');
 assert.equal(posterTitle.includes('card.prototypeLabel'), false, '分享长图名字下方不得重复显示类型');
+assert.equal(posterTitle.includes('avatar'), false, '分享长图左上角不得继续绘制 IP 头像');
+assert.equal(poster.includes('let signatureSize = 56'), true, '分享长图性情独白起始字号必须放大两倍');
 assert.equal(poster.includes("['类型', card.prototypeLabel]"), true, '分享长图信息区必须把类型放在六块首位');
 assert.equal(poster.includes("['MBTI', card.mbti]"), true, '分享长图 MBTI 必须并入第六个信息块');
-assert.equal(poster.includes('CARD_HEIGHT * 0.11'), true, '分享长图标题区必须与屏显 11% 契约一致');
+assert.equal(poster.includes('CARD_HEIGHT * 0.08'), true, '分享长图标题区必须与移除头像后的轻量屏显契约一致');
 assert.equal(poster.includes("if (figure) drawCover(context, figure"), true, '分享长图的 4:5 插画必须铺满视口');
 const posterRenderer = require('../h5/birth-card/poster-renderer');
 const drawnPosterText = [];
@@ -250,6 +322,7 @@ assert.equal(nativeCardStyles.includes('.text-button'), false, '两个身份卡�
 assert.equal(nativeCardTemplate.includes('<text class="button-label">保存图片</text>'), true, '具体系列收藏卡底部按钮必须改为保存图片');
 assert.equal(nativeCardTemplate.includes('bindtap="onSaveImage"'), true, '保存图片按钮必须绑定真实保存处理器');
 assert.equal(nativeCardTemplate.includes('class="save-image-button"'), true, '保存图片必须使用页面专用样式，避免通用 primary 宽度覆盖');
+assert.equal(nativeCardTemplate.includes('class="card-avatar"'), false, '原生卡面左上角不得继续显示兔子 icon');
 assert.match(nativeCardStyles, /\.actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*stretch;[^}]*width:\s*100%/s, '保存图片父级必须拉伸到内容宽度');
 assert.match(nativeCardStyles, /\.save-image-button\s*\{[^}]*flex:\s*1 1 100%;[^}]*min-width:\s*0;[^}]*width:\s*100%\s*!important;[^}]*max-width:\s*none\s*!important;[^}]*margin:\s*0\s*!important/s, '保存图片按钮必须覆盖微信默认尺寸并铺满卡片内容宽度');
 assert.equal(nativeCardTemplate.includes('disabled="{{savingImage}}"'), true, '保存按钮只能在实际保存期间禁用');
@@ -257,7 +330,7 @@ assert.equal(nativeCardTemplate.includes('!posterReady'), false, '海报首次�
 assert.equal(nativeCardTemplate.includes('canvas-id="cardPosterCanvas"'), true, '原生回退必须提供收藏卡导出画布');
 assert.equal(nativeCardPage.includes('wx.canvasToTempFilePath'), true, '原生回退必须把收藏卡画布导出为临时图片');
 assert.equal(nativeCardPage.includes('wx.saveImageToPhotosAlbum'), true, '原生回退必须把收藏卡保存到相册');
-assert.equal(nativeCardPage.includes('drawPetAvatar'), true, '导出卡面必须使用与当前页面一致的 IP 头像');
+assert.equal(nativeCardPage.includes('drawPetAvatar'), false, '导出卡面左上角也必须删除 IP 头像');
 assert.equal(nativeCardPage.includes('wx.openSetting'), true, '相册权限被拒后必须提供设置恢复路径');
 assert.equal(nativeCardPage.includes("analytics.track('card_save'"), true, '成功保存收藏卡必须记录 card_save');
 assert.match(nativeCardStyles, /\.actions\s*\{[^}]*width:\s*100%/s, '收藏卡底部操作区必须占满内容宽度');
@@ -364,18 +437,22 @@ assert.equal(nativeCardTemplate.includes('class="prototype-name"'), false, '原�
 assert.deepEqual(Array.from(nativeCardTemplate.matchAll(/<text class="stat-label">([^<]+)<\/text>/g), match => match[1]), ['类型', '生日', '星座', '性别', '血型', 'MBTI'], '原生回退必须显示同顺序的六个信息块');
 assert.match(nativeCardStyles, /\.stat-label\s*\{[^}]*font-size:\s*25\.2rpx/s, '原生回退信息标签字号必须增加 20%');
 assert.match(nativeCardStyles, /\.stat-value\s*\{[^}]*font-size:\s*27\.6rpx/s, '原生回退信息值字号必须增加 20%');
-assert.match(nativeCardStyles, /\.card-signature\s*\{[^}]*font-size:\s*25\.2rpx/s, '原生回退性情独白字号必须增加 20%');
-assert.match(nativeCardStyles, /\.card-title-section\s*\{[^}]*height:\s*9%;[^}]*flex:\s*0 0 9%/s, '原生标题区必须让出足够高度给放大后的底部信息');
-assert.match(nativeCardStyles, /\.card-illustration-section\s*\{[^}]*width:\s*calc\(100% - 60rpx\)/s, '原生插画必须轻量内收以保证两行独白完整');
+assert.equal(nativeSignatureFont.FAMILY, 'ZCOOL KuaiLe Signature', '原生卡面必须使用独立的 ZCOOL KuaiLe 子集字体家族');
+assert.equal(nativeCardStyles.includes('@import "../../assets/fonts/zcool-kuaile/font.wxss"'), true, '原生屏显必须引入本地站酷快乐体');
+assert.equal(nativeCardPage.includes('wx.loadFontFace'), false, '原生卡面不得依赖旧 Canvas 不支持的动态字体接口');
+assert.equal(nativeCardPage.includes('context.drawImage(signatureImage.path, 40, 934, 520, 112)'), true, '原生保存图必须绘制预渲染的 ZCOOL 性情独白');
+assert.match(nativeCardStyles, /\.card-signature\s*\{[^}]*margin-top:\s*24rpx;[^}]*font-family:\s*"ZCOOL KuaiLe Signature"[^}]*font-size:\s*50\.4rpx/s, '原生性情独白必须使用站酷快乐体、字号放大两倍并保留上方留白');
+assert.match(nativeCardStyles, /\.card-title-section\s*\{[^}]*height:\s*8%;[^}]*flex:\s*0 0 8%/s, '移除头像后原生标题区必须进一步轻量化');
+assert.match(nativeCardStyles, /\.card-illustration-section\s*\{[^}]*width:\s*calc\(100% - 120rpx\)/s, '原生插画必须内收以容纳两倍字号的完整独白');
 assert.match(nativeCardStyles, /\.card-data-section\s*\{[^}]*padding:\s*18rpx 0 24rpx;[^}]*gap:\s*14rpx/s, '原生数据区必须提供舒适的上下留白与模块间距');
 assert.match(nativeCardStyles, /\.stat-grid\s*\{[^}]*gap:\s*10rpx 14rpx/s, '原生六个信息块必须增加舒适的行列间距');
 const nativeCardWidth = 750 - 72;
 const nativeInnerHeight = nativeCardWidth * 16 / 9 - 48;
-const nativeDataAvailable = nativeInnerHeight - nativeInnerHeight * .09 - (nativeCardWidth - 48 - 60) * 5 / 4 - 32;
+const nativeDataAvailable = nativeInnerHeight - nativeInnerHeight * .08 - (nativeCardWidth - 48 - 120) * 5 / 4 - 32;
 const nativeGridHeight = (27.6 * 1.2 + 16) * 3 + 10 * 2;
-const nativeTwoLineSignatureHeight = 25.2 * 1.4 * 2;
-const nativeDataRequired = 18 + nativeGridHeight + 14 + 4 + nativeTwoLineSignatureHeight + 24;
-assert.equal(nativeDataAvailable >= nativeDataRequired, true, '原生 9:16 卡面必须完整容纳两行 25.2rpx 独白');
+const nativeTwoLineSignatureHeight = 50.4 * 1.4 * 2;
+const nativeDataRequired = 18 + nativeGridHeight + 14 + 24 + nativeTwoLineSignatureHeight + 24;
+assert.equal(nativeDataAvailable >= nativeDataRequired, true, '原生 9:16 卡面必须完整容纳两行 50.4rpx 独白');
 assert.match(nativeCardStyles, /\.card-signature\s*\{[^}]*white-space:\s*normal/s, '原生回退性情独白必须允许完整换行');
 assert.equal(/\.card-signature\s*\{[^}]*text-overflow:\s*ellipsis/s.test(nativeCardStyles), false, '原生回退性情独白不得使用省略号截断');
 assert.equal(nativeCardTemplate.includes('{{signatureClass}}'), true, '原生回退必须按独白长度应用可读的紧凑字号');

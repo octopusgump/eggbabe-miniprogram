@@ -1,23 +1,24 @@
+@import "../../assets/fonts/zcool-kuaile/font.wxss";
+
 .page { height: 100vh; display: flex; flex-direction: column; background: #F3F1E8; }
 .content { flex: 1; padding: 28rpx 36rpx 64rpx; box-sizing: border-box; }
 .new-banner { margin-bottom: 22rpx; padding: 20rpx 24rpx; border-radius: 20rpx; background: #3F5A47; color: #FFF; font-size: 23rpx; text-align: center; }
 .card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; padding: 24rpx; gap: 16rpx; border-radius: 40rpx; box-sizing: border-box; background: #FFFDF7; box-shadow: 0 26rpx 60rpx rgba(0, 41, 0, .16); }
-.card-title-section { height: 9%; display: grid; grid-template-columns: 82rpx minmax(0,1fr) 82rpx; align-items: center; flex: 0 0 9%; gap: 14rpx; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
-.card-avatar { width: 78rpx; height: 90rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2rpx solid #DCE4D2; border-radius: 50% 50% 46% 46%; background: #F4F7EC; }
-.title-copy { min-width: 0; }
+.card-title-section { position: relative; height: 8%; display: flex; align-items: center; justify-content: center; flex: 0 0 8%; box-sizing: border-box; background: linear-gradient(180deg, #FFFEFB, #FFFAF0); text-align: center; }
+.title-copy { width: calc(100% - 180rpx); min-width: 0; }
 .name { display: block; overflow: hidden; color: #3C2D24; font-family: "PingFang SC", sans-serif; font-size: 46rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .collect-context { display: block; overflow: hidden; margin-top: 5rpx; color: #6E756D; font-size: 17rpx; text-overflow: ellipsis; white-space: nowrap; }
-.collect-badge { justify-self: end; padding: 10rpx 14rpx; border-radius: 999rpx; background: #F0F2E8; color: #65705F; font-size: 20rpx; font-weight: 600; }
-.card-illustration-section { width: calc(100% - 60rpx); aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; margin: 0 auto; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
+.collect-badge { position: absolute; top: 50%; right: 0; padding: 10rpx 14rpx; border-radius: 999rpx; background: #F0F2E8; color: #65705F; font-size: 20rpx; font-weight: 600; transform: translateY(-50%); }
+.card-illustration-section { width: calc(100% - 120rpx); aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden; margin: 0 auto; border-radius: 28rpx; background: linear-gradient(155deg, #EAF3F4, #F5F0DD 58%, #ECE7F5); }
 .illustration { width: 100%; height: 100%; }
 .card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; padding: 18rpx 0 24rpx; gap: 14rpx; box-sizing: border-box; }
 .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10rpx 14rpx; }
 .stat-cell { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10rpx; padding: 8rpx 14rpx; border-radius: 15rpx; background: #F6F6F0; }
 .stat-label { flex: 0 0 auto; color: #7A807A; font-size: 25.2rpx; line-height: 1.2; }
 .stat-value { overflow: hidden; color: #2D251F; font-size: 27.6rpx; font-weight: 600; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
-.card-signature { margin-top: 4rpx; padding: 0 14rpx; color: #536057; font-size: 25.2rpx; line-height: 1.4; overflow-wrap: break-word; text-align: center; white-space: normal; }
-.card-signature--compact { font-size: 21.6rpx; }
-.card-signature--dense { font-size: 18rpx; line-height: 1.3; }
+.card-signature { margin-top: 24rpx; padding: 0 14rpx; color: #536057; font-family: "ZCOOL KuaiLe Signature", "PingFang SC", sans-serif; font-size: 50.4rpx; font-weight: 400; line-height: 1.4; overflow-wrap: break-word; text-align: center; white-space: normal; }
+.card-signature--compact { font-size: 43.2rpx; }
+.card-signature--dense { font-size: 36rpx; line-height: 1.3; }
 .actions { display: flex; align-items: stretch; width: 100%; margin-top: 28rpx; }
 .save-image-button { flex: 1 1 100%; min-width: 0; width: 100% !important; max-width: none !important; height: 88rpx; margin: 0 !important; padding: 0; border-radius: 999rpx; box-sizing: border-box; background: #3F5A47; color: #FFF; font-size: 27rpx; line-height: 88rpx; }
 .save-image-button[disabled] { background: #8B9A8E; color: #FFF; opacity: 1; }

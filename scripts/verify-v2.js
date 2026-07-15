@@ -100,7 +100,8 @@ async function main() {
   const ytSet = sceneConfig.getCardSet('YT-S01');
   const h5Set = JSON.parse(read('h5/birth-card/assets/sets/YT-S01.json'));
   const faceContract = JSON.parse(read('h5/birth-card/card-face-contract.json'));
-  assert.deepEqual(faceContract.fields, ['avatarId', 'prototypeLabel', 'name', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType', 'collectorLabel'], '收藏卡正面字段契约必须保持九字段模板与系列编号');
+  assert.deepEqual(faceContract.fields, ['prototypeLabel', 'name', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType', 'collectorLabel'], '收藏卡正面字段契约必须移除头像并保留其余身份字段与系列编号');
+  assert.equal(faceContract.recordFields.includes('avatarId'), true, '头像字段必须仅保留在数据记录中');
   assert.equal(ytSet.setName, '玉兔初见·水彩日常', '第一季收藏系列名称必须固定');
   assert.equal(ytSet.cards.every(card => card.treatment === 'BASE' && !card.rarity), true, 'MVP 只能使用 BASE，不得显示人为稀有度');
   assert.equal(ytSet.cards.every(card => card.checklistNumber === card.collectorNumber && card.checklistTotal === 10), true, '每张副本定义必须独立保存固定收藏位字段');

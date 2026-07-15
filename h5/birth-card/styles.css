@@ -1,6 +1,6 @@
 :root {
-  --title-ratio: 9.5%;
-  --illustration-inset: 44px;
+  --title-ratio: 8%;
+  --illustration-inset: 74px;
   --ink: #2d251f;
   --muted: #77756e;
   --paper: #fffdf7;
@@ -28,10 +28,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .mode-chip { width: fit-content; margin: 0 auto 12px; padding: 7px 12px; border-radius: 999px; background: #fff0c8; color: #604812; font-size: 12px; font-weight: 600; letter-spacing: .06em; }
 
 .birth-card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; padding: 14px; gap: 8px; border-radius: 28px; background: var(--paper); box-shadow: 0 20px 60px rgba(25, 34, 27, .18); }
-.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: grid; grid-template-columns: 48px minmax(0, 1fr) 70px; align-items: center; flex: 0 0 var(--title-ratio); gap: 10px; padding: 0 4px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
-.card-avatar { position: relative; width: 40px; height: 47px; overflow: hidden; display: grid; place-items: center; border: 1px solid #dce4d2; border-radius: 50% 50% 46% 46%; background: #f4f7ec; color: #6a7c59; font-family: serif; font-size: 22px; }
-.card-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.card-title-copy { min-width: 0; }
+.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: flex; align-items: center; justify-content: center; flex: 0 0 var(--title-ratio); padding: 0 4px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
+.card-title-copy { width: calc(100% - 150px); min-width: 0; }
 .card-title-section h1 { overflow: hidden; margin: 0; color: #3c2d24; font-family: var(--name-font); font-size: clamp(25px, 7vw, 37px); font-weight: 400; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
 .collect-context { overflow: hidden; margin: 4px 0 0; color: #667168; font-size: 9px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
 .collect-badge { position: absolute; right: 0; top: 50%; padding: 6px 10px; border-radius: 999px; background: #f6f5ee; color: #526054; font-size: 13px; font-weight: 600; transform: translateY(-50%); }
@@ -48,7 +46,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .stat-cell { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 3px 4px; border-radius: 10px; background: #f6f6f0; }
 .stat-grid dt { flex: 0 0 auto; color: #7a807a; font-size: 14.4px; font-weight: 400; line-height: 1.2; }
 .stat-grid dd { overflow: hidden; margin: 0; color: var(--ink); font-size: 15.6px; font-weight: 600; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
-.card-signature { margin: 1px 0 0; padding: 2px 8px; color: #536057; font-family: var(--name-font); font-size: 14.4px; line-height: 1.45; overflow-wrap: anywhere; text-align: center; white-space: normal; }
+.card-signature { margin: 12px 0 0; padding: 2px 8px; color: #536057; font-family: var(--name-font); font-size: 28.8px; font-weight: 400; line-height: 1.45; overflow-wrap: anywhere; text-align: center; white-space: normal; }
 
 .actions { display: grid; gap: 10px; margin-top: 22px; }
 .primary-button { min-height: 50px; border-radius: 16px; font-weight: 600; cursor: pointer; }
@@ -67,7 +65,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 @media (max-width: 360px) {
   .app-shell { padding-right: 10px; padding-left: 10px; }
   .birth-card { border-radius: 22px; }
-  .card-title-section { grid-template-columns: 42px minmax(0, 1fr) 68px; }
+  .card-title-copy { width: calc(100% - 136px); }
   #card-birthday { letter-spacing: -.04em; }
 }
 @media (prefers-reduced-motion: reduce) { .loading-egg { animation: none; } }

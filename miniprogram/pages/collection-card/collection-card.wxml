@@ -3,7 +3,7 @@
   <scroll-view class="content" scroll-y>
     <view wx:if="{{isNew}}" class="new-banner">获得第一张收藏卡 · 已自动收入我的收藏卡</view>
     <view class="card">
-      <view class="card-title-section"><view class="card-avatar"><pet-avatar pet-type="{{cardView.prototype_name}}" size="{{42}}"></pet-avatar></view><view class="title-copy"><text class="name">{{cardView.name}}</text><text wx:if="{{isCollectible}}" class="collect-context">{{sceneCard.setName}} · {{sceneCard.name}}</text></view><text wx:if="{{isCollectible}}" class="collect-badge">{{sceneCard.collectorLabel}}</text></view>
+      <view class="card-title-section"><view class="title-copy"><text class="name">{{cardView.name}}</text><text wx:if="{{isCollectible}}" class="collect-context">{{sceneCard.setName}} · {{sceneCard.name}}</text></view><text wx:if="{{isCollectible}}" class="collect-badge">{{sceneCard.collectorLabel}}</text></view>
       <view class="card-illustration-section"><image wx:if="{{illustration}}" class="illustration" src="{{illustration}}" mode="aspectFill"></image><pet-avatar wx:else pet-type="{{cardView.prototype_name}}" size="{{250}}"></pet-avatar></view>
       <view class="card-data-section">
         <view class="stat-grid">

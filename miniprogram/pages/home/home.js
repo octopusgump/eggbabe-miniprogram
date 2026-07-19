@@ -21,7 +21,7 @@ const TASK_DEFINITIONS = {
   cuddle: { title: '今天摸摸我', desc: '长按蛋壳 3 秒', reward: '+5%', action: 'hint', greeting: '今天摸摸我吧。' },
   wish: { title: '告诉我今天的愿望', desc: '让我更懂你的期待', reward: '+5%', action: 'route', route: '/pages/wish/wish', greeting: '今天也把愿望告诉我吧。' },
   lesson: { title: '今天教我一件事', desc: '你的选择会影响我的性格', reward: '+5%', action: 'route', route: '/pages/lesson/lesson', greeting: '今天想教我点什么？' },
-  talk: { title: '跟我说说话', desc: '我会用身体回应你', reward: '+5%', action: 'talk', greeting: '跟我说说话好不好？' }
+  talk: { title: '跟我说说话', desc: '我会用身体回应你', reward: '', action: 'talk', greeting: '跟我说说话好不好？' }
 };
 
 function task(key, done) {

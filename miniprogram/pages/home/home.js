@@ -66,7 +66,6 @@ Page({
     greetingAction: '',
     progressTip: false,
     talkDraft: '',
-    talkCount: 0,
     talkFocused: false,
     tapParticles: [],
     showNameSheet: false,
@@ -260,14 +259,14 @@ Page({
 
   onTalkInput(event) {
     const value = Array.from(event.detail.value || '').slice(0, 50).join('');
-    this.setData({ talkDraft: value, talkCount: Array.from(value).length });
+    this.setData({ talkDraft: value });
   },
 
   onTalkSubmit() {
     const result = petStore.completeTalk(this.data.talkDraft);
     if (!result.ok) return this.showFeedback(result.message || '换个说法告诉我吧');
     const reaction = TALK_REACTIONS[Math.floor(timeService.now()) % TALK_REACTIONS.length];
-    this.setData({ talkDraft: '', talkCount: 0, talkFocused: false, eggMotion: reaction.motion });
+    this.setData({ talkDraft: '', talkFocused: false, eggMotion: reaction.motion });
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
     if (reaction.text) this.showFeedback(reaction.text);
     analytics.track('incubation_action', { action_type: 'talk', is_first_time: !!result.added, progress_delta: result.added || 0 });

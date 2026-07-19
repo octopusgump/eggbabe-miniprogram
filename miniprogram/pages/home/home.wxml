@@ -89,7 +89,6 @@
         <text class="section-title">跟我说说话</text>
         <view class="talk-composer">
           <input class="talk-input" value="{{talkDraft}}" focus="{{talkFocused}}" maxlength="50" placeholder="最多 50 个字，我会认真听" confirm-type="send" bindinput="onTalkInput" bindconfirm="onTalkSubmit" />
-          <text class="talk-count">{{talkCount}}/50</text>
           <view class="talk-send" hover-class="talk-send--pressed" aria-role="button" aria-label="发送" bindtap="onTalkSubmit">
             <view class="talk-send-arrow"></view>
           </view>

@@ -35,7 +35,7 @@ Page({
   onOpenSetCard(event) {
     const card = this.data.sceneCards.find(item => item.id === event.currentTarget.dataset.id);
     if (!card) {
-      wx.showToast({ title: '先去蛋宝宝的世界里遇见它吧', icon: 'none' });
+      wx.showToast({ title: '先去蛋宝宝的世界里遇见这张收藏卡吧', icon: 'none' });
       return;
     }
     const pet = petStore.getPet();

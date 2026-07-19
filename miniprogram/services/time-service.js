@@ -25,7 +25,8 @@ function loadOffset() {
 function now() {
   if (authoritative) return serverBase + (monotonicNow() - monotonicBase);
   if (runtime.getMode() === 'demo') return DEMO_EPOCH_MS + (monotonicNow() - demoMonotonicBase);
-  return Date.now() + offset;
+  // live 模式没有服务端基准时不提供业务时间，避免设备时钟进入判定。
+  return 0;
 }
 
 function isAuthoritative() { return authoritative; }

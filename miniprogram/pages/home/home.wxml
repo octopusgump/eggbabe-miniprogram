@@ -14,20 +14,51 @@
       <view class="top-row">
         <view>
           <text class="eyebrow">{{pet.prototype}} · {{stage === 'hatched' ? '已破壳' : '孵化记录'}}</text>
-          <text class="pet-name">{{pet.name || '还没有名字'}}</text>
+          <view class="pet-name-row" bindtap="onPetNameTap">
+            <text class="pet-name">{{pet.name || '还没有名字'}}</text>
+            <text wx:if="{{stage === 'hatched'}}" class="pet-name-edit">改名</text>
+          </view>
         </view>
-        <view class="progress-ring"><text>{{pet.progress}}%</text></view>
+        <view wx:if="{{stage !== 'hatched'}}" class="progress-wrap" bindtap="onProgressTap">
+          <view class="progress-ring" style="background:conic-gradient(#9DB65B 0% {{pet.progress}}%, #E5E9DD {{pet.progress}}% 100%);">
+            <view class="progress-ring-core"><text>{{pet.progress}}%</text></view>
+          </view>
+          <view wx:if="{{progressTip}}" class="progress-tip">这是我的孵化进度</view>
+        </view>
       </view>
 
-      <view class="egg-zone" bindtap="onOpenCard">
+      <view class="egg-zone">
+        <view wx:if="{{stage !== 'hatched'}}" class="incubation-scene {{environment.className}}" style="{{environment.backgroundImage ? 'background-image:url(' + environment.backgroundImage + ')' : ''}}">
+          <view class="window-glow"></view>
+          <view class="room-floor"></view>
+          <view class="room-lamp"></view>
+          <view wx:if="{{environment.weather === 'cloudy'}}" class="weather-clouds">
+            <view class="weather-cloud weather-cloud--one"></view><view class="weather-cloud weather-cloud--two"></view>
+          </view>
+          <view wx:if="{{environment.weather === 'rain'}}" class="weather-rain">
+            <view wx:for="{{weatherParticles}}" wx:key="*this" class="rain-drop rain-drop--{{index}}"></view>
+          </view>
+          <view wx:if="{{environment.weather === 'snow'}}" class="weather-snow">
+            <view wx:for="{{weatherParticles}}" wx:key="*this" class="snow-flake snow-flake--{{index}}">·</view>
+          </view>
+        </view>
+
+        <view wx:if="{{greeting}}" class="daily-greeting" bindtap="onGreetingTap">{{greeting}}</view>
         <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
         <view class="egg-aura {{eggMotion}}"></view>
-        <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene" src="{{sceneImage}}" mode="aspectFill" catchtap="onOpenLifeScene"></image>
-        <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}"></pet-avatar>
+
+        <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene {{eggMotion}}" src="{{sceneImage}}" mode="aspectFill" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></image>
+        <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></pet-avatar>
         <view wx:else class="egg {{eggMotion}}" style="background: linear-gradient(155deg, #FFFDF0 6%, {{pet.shell.color}} 58%, #F4B9AE 125%);" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <view class="egg-pattern egg-pattern--one"></view>
           <view class="egg-pattern egg-pattern--two"></view>
           <view class="egg-shine"></view>
+        </view>
+
+        <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">
+          <view class="tap-particle tap-particle--one">✦</view>
+          <view class="tap-particle tap-particle--two">•</view>
+          <view class="tap-particle tap-particle--three">✧</view>
         </view>
         <view class="egg-shadow"></view>
         <view wx:if="{{cuddleProgress > 0}}" class="cuddle-track"><view class="cuddle-fill" style="width: {{cuddleProgress}}%;"></view></view>
@@ -35,22 +66,56 @@
 
       <view class="state-card">
         <view class="state-dot"></view>
-        <view class="state-copy">
-          <text class="state-title">{{stageText}}</text>
-          <text class="state-time">{{countdown}}</text>
+        <text class="state-title">{{stageText}}</text>
+      </view>
+
+      <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
+        <text class="status-meta">今日心情 · {{dailyStatus.mood}}</text>
+        <text class="status-line">{{dailyStatus.line}}</text>
+      </view>
+
+      <view wx:if="{{stage !== 'hatched' && stage !== 'ready' && homeTasks.length}}" class="task-section">
+        <text class="section-title">今天陪我做的事</text>
+        <view class="task-list">
+          <view wx:for="{{homeTasks}}" wx:key="key" class="task-row {{item.done ? 'task-row--done' : ''}}" data-key="{{item.key}}" bindtap="onTaskTap">
+            <view class="task-check">{{item.done ? '✓' : index + 1}}</view>
+            <view class="task-copy"><text class="task-title">{{item.title}}</text><text class="task-desc">{{item.desc}}</text></view>
+            <text class="task-reward">{{item.done ? '完成' : item.reward}}</text>
+          </view>
         </view>
       </view>
 
-      <view wx:if="{{dailyStatus}}" class="status-daily">
-        <text class="status-meta">今日状态 · {{dailyStatus.mood}}</text>
-        <text class="status-line">{{dailyStatus.line}}</text>
+      <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="talk-panel">
+        <text class="section-title">跟我说说话</text>
+        <view class="talk-composer">
+          <input class="talk-input" value="{{talkDraft}}" focus="{{talkFocused}}" maxlength="50" placeholder="最多 50 个字，我会认真听" confirm-type="send" bindinput="onTalkInput" bindconfirm="onTalkSubmit" />
+          <text class="talk-count">{{talkCount}}/50</text>
+          <button class="talk-send" bindtap="onTalkSubmit"><text class="button-label">告诉我</text></button>
+        </view>
+        <text class="talk-note">每天第一次说话增加 5% 孵化进度，不会改变预设破壳日。</text>
       </view>
+
       <view wx:if="{{syncPending > 0}}" class="sync-note">{{syncPending}} 项记录正在等待网络同步</view>
 
-      <view class="home-actions">
-        <button class="primary-button home-actions__chat" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
+      <view wx:if="{{stage === 'prepared' || stage === 'soon' || stage === 'ready' || stage === 'hatched'}}" class="home-actions">
+        <button class="primary-button home-actions__chat" disabled="{{stage === 'prepared' || stage === 'soon'}}" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
         <button wx:if="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">更换场景</text></button>
       </view>
     </view>
   </scroll-view>
+
+  <view wx:if="{{showNameSheet}}" class="name-mask" catchtouchmove="noop">
+    <view class="name-sheet">
+      <view class="name-handle"></view>
+      <text class="name-sheet-title">我还没有名字</text>
+      <text class="name-sheet-copy">给我起一个昵称吧，之后每天最多可以改一次。</text>
+      <view class="name-input-wrap">
+        <input class="name-input" value="{{nameDraft}}" maxlength="10" placeholder="最多 10 个字" bindinput="onNameInput" focus />
+        <text class="name-count">{{nameCount}}/10</text>
+      </view>
+      <text wx:if="{{nameError}}" class="name-error">{{nameError}}</text>
+      <button class="name-save" disabled="{{savingName}}" bindtap="onSaveName"><text class="button-label">{{savingName ? '正在保存…' : '记住这个名字'}}</text></button>
+      <button class="name-skip" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
+    </view>
+  </view>
 </view>

@@ -10,11 +10,12 @@ const runtime = require('./services/runtime-context');
 App({
   globalData: {
     version: config.version,
-    backendReady: false
+    backendReady: false,
+    incubationEnvironment: null
   },
 
   onLaunch() {
-    if (!config.backendEnabled) runtime.setMode('demo');
+    runtime.setMode(config.backendEnabled ? 'live' : 'demo');
     timeService.sync().then(result => {
       if (!result.ok || typeof getCurrentPages === 'undefined') return;
       const pages = getCurrentPages();
@@ -29,8 +30,9 @@ App({
         analytics.track('login_result', { success: !!code, fail_reason: code ? '' : 'EMPTY_CODE' });
         if (code && config.backendEnabled) {
           cloudApi.bootstrap().then(result => {
-            if (!result.ok) return;
+            if (!result.ok || result.mode !== 'live' || !result.user) return;
             this.globalData.backendReady = true;
+            this.globalData.incubationEnvironment = result.incubationEnvironment || null;
             petStore.saveUser({ id: result.user._id, publicId: result.user.public_id, avatarUrl: result.user.avatar_url || '', registeredAt: result.user.created_at || result.serverTs });
             if (result.pet) petStore.importCloudPet(Object.assign({}, result.pet, { id: result.pet._id, hatchAt: new Date(result.pet.hatch_at).getTime(), collectionCard: result.hatchCard || null, messages: result.messages || [] }), 'live');
             if (result.sceneCards) sceneCardStore.importCloudCards(result.sceneCards);

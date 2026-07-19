@@ -22,7 +22,7 @@ Page({
     const result = await Promise.resolve(currency.useSnack(event.currentTarget.dataset.id));
     if (!result.ok) return wx.showToast({ title: result.message || '暂时无法投喂', icon: 'none' });
     this.refresh();
-    wx.showModal({ title: '它很喜欢', content: result.reaction, showCancel: false, confirmText: '好呀', confirmColor: '#3F5A47' });
+    wx.showModal({ title: '我很喜欢', content: result.reaction, showCancel: false, confirmText: '好呀', confirmColor: '#3F5A47' });
   },
   onOpenShop() { wx.navigateTo({ url: '/pages/shop/shop' }); }
 });

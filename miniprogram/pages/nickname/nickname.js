@@ -26,7 +26,7 @@ Page({
         return;
       }
     }
-    wx.showToast({ title: result.added ? '它记住了 · 进度 +20%' : '昵称已更新', icon: 'none' });
+    wx.showToast({ title: result.added ? '我记住了 · 进度 +20%' : '我记住新名字啦', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
   }
 });

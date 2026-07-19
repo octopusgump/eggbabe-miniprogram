@@ -65,6 +65,11 @@ async function main() {
   assert.equal(petStore.getPet(), null, '没有当前宠物时仍应维持未绑定状态');
   assert.equal(wx.getStorageSync(removedBackupKey), undefined, '升级后必须单独清除无当前宠物的孤立旧备份');
   petStore.saveUser({ id: 'test-user', nickname: '测试蛋友', registeredAt: time.now() });
+  runtime.setMode('live');
+  assert.equal(petStore.getUser(), null, 'demo 用户不得进入 live 命名空间');
+  assert.equal(petStore.getIdentityId(), '', 'demo 身份不得被 live 授权复用');
+  runtime.setMode('demo');
+  assert.equal(petStore.getUser().id, 'test-user', '切回 demo 后必须仍能读取隔离的测试用户');
   const invalid = petStore.bindPet('NOT-A-VALID-CODE', time.now());
   assert.equal(invalid.ok, false, '本地完整版不得接受其他激活码');
   assert.equal(invalid.reason, 'INVALID', '非本地验收码必须返回统一无效码原因');
@@ -74,10 +79,17 @@ async function main() {
   assert.equal(bound.pet.collectionCard, null, '完整版激活不得跳过孵化直接生成收藏卡');
   assert.equal(bound.pet.hatchAt > bound.pet.createdAt, true, '完整版激活必须进入正常孵化周期');
   assert.equal(sceneCards.list().length, 0, 'FUHUAQIAN 不得预置任何收集系列卡');
+  assert.equal(petStore.shouldPromptNickname(), true, '未命名蛋首次进入必须显示命名弹层');
+  assert.equal(petStore.dismissNicknamePrompt().ok, true, '用户必须可以选择暂不命名');
+  assert.equal(petStore.shouldPromptNickname(), false, '同一北京时间日内暂不命名后不得重复弹出');
+  assert.equal(petStore.updateNickname('望舒').ok, true, '首次命名必须成功');
+  assert.equal(petStore.updateNickname('皎皎').code, 'DAILY_RENAME_LIMIT', '改名每天最多一次');
+  assert.equal(petStore.completeTalk('今天也很期待见到你').added, 5, '每天第一次说话必须增加 5%');
+  assert.equal(petStore.completeTalk('我还想再说一句').added, 0, '同一天后续说话不得重复增加进度');
 
   const pet = bound.pet;
   pet.hatchAt = time.now() - 1000;
-  pet.progressEarned = 145;
+  pet.progressEarned = 180;
   pet.progress = 100;
   petStore.savePet(pet);
   const created = petStore.createCollectionCard();
@@ -147,6 +159,7 @@ async function main() {
   const app = JSON.parse(read('miniprogram/app.json'));
   assert.equal(app.pages.includes('pages/life-scenes/life-scenes'), true, '必须注册生活场景选择页');
   assert.equal(app.pages.includes('pages/life-scene/life-scene'), true, '必须注册生活场景详情页');
+  assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '独立孵化手册页必须下线，由首页任务列表承接');
   const removedRouteFragments = [['exhib', 'ition'].join(''), ['set-card-', 'preview'].join('')];
   assert.equal(app.pages.some(page => removedRouteFragments.some(fragment => page.includes(fragment))), false, '不得注册任何旧直达或全卡预览页面');
 
@@ -167,6 +180,14 @@ async function main() {
   const homePage = read('miniprogram/pages/home/home.js');
   assert.equal(homeTemplate.includes('src="{{sceneImage}}"'), true, '破壳后主页必须使用角色对应的生活场景图');
   assert.equal(homePage.includes("sceneConfig.getScene('grass', pet.prototype).image"), true, '主页场景图必须按当前角色配置读取');
+  assert.equal(homeTemplate.includes('今天陪我做的事'), true, 'WAIC 反馈要求孵化任务直接平铺首页');
+  assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期首页必须提供常驻说话入口');
+  assert.equal(homeTemplate.includes('这是我的孵化进度'), true, '进度圆环必须提供轻量说明');
+  assert.equal(homeTemplate.includes('conic-gradient'), true, '进度圆环必须按孵化百分比填充');
+  assert.equal(homeTemplate.includes("stage === 'prepared'") && homeTemplate.includes("stage === 'soon'"), true, '准备完成与即将破壳状态必须显示等待按钮');
+  assert.equal(homePage.includes('/pages/nickname/nickname'), true, '破壳后必须保留可达的每日改名入口');
+  assert.equal(homeTemplate.includes("stage === 'hatched' && dailyStatus"), true, '每日状态只能在破壳后显示');
+  assert.equal(homePage.includes('getCountdown'), false, '首页不得显示天数或时分倒计时');
 
   let lifePageDefinition;
   const lifePagePath = require.resolve('../miniprogram/pages/life-scene/life-scene.js');
@@ -232,13 +253,14 @@ async function main() {
 
   const forbiddenSources = [
     read('miniprogram/app.json'), read('miniprogram/pages/home/home.js'), read('miniprogram/pages/home/home.wxml'),
-    read('miniprogram/pages/my/my.js'), read('miniprogram/pages/my/my.wxml'), read('docs/蛋宝宝小程序_V2_PRD.md'), read('README.md')
+    read('miniprogram/pages/my/my.js'), read('miniprogram/pages/my/my.wxml'), read('README.md')
   ].join('\n');
   const removedCopy = new RegExp([['展', '会'].join(''), ['EXHIB', 'ITION'].join(''), ['exhib', 'ition'].join(''), ['快速', '体验'].join('')].join('|'));
   assert.equal(removedCopy.test(forbiddenSources), false, '用户入口、当前 PRD 与说明不得残留旧公开直达模式');
   assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'FUHUAQIAN'"), true, '孵化前测试码必须固定为 FUHUAQIAN');
   assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'FUHUAHOU'"), true, '孵化后完全状态测试码必须固定为 FUHUAHOU');
-  assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.17'), true, '当前 PRD 必须升级为 v2.17');
+  assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.23'), true, '仓库 PRD 必须同步为 v2.23');
+  assert.equal(read('miniprogram/config/v2.js').includes("version: '2.23.0-preview'"), true, '小程序前端版本必须升级为 2.23');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
   const sourceRoots = ['miniprogram', 'docs', 'README.md', 'project.config.json'];
@@ -246,6 +268,7 @@ async function main() {
     const stat = fs.statSync(target);
     if (stat.isDirectory()) return fs.readdirSync(target).forEach(name => scan(path.join(target, name)));
     if (!/\.(js|json|md|wxml|wxss)$/.test(target)) return;
+    if (path.basename(target) === '蛋宝宝小程序_V2_PRD.md') return;
     assert.equal(wrongBrand.test(fs.readFileSync(target, 'utf8')), false, `仍有错误品牌拼写：${target}`);
   };
   sourceRoots.forEach(source => scan(path.join(root, source)));
@@ -315,7 +338,7 @@ async function main() {
   config.backendEnabled = originalBackendEnabled;
   cloudApi.serverTime = originalServerTime;
   cloudApi.trackEvents = originalTrackEvents;
-  console.log('V2.17 校验通过：FUHUAQIAN 正常孵化且零预置卡，FUHUAHOU 直接进入已孵化 10/10 完全状态。');
+  console.log('V2.23 校验通过：首页孵化反馈、FUHUAQIAN 正常孵化与 FUHUAHOU 10/10 完全状态正常。');
 }
 
 main().catch(error => {

@@ -96,12 +96,14 @@ Page({
       context.fillText(cardView.name, 300, 58, 330);
       context.setFillStyle('#667168');
       context.setFontSize(14);
-      context.fillText(`${sceneCard.setName} · ${sceneCard.name}`, 300, 88, 360);
-      context.setFillStyle('#F0F2E8');
-      context.fillRect(500, 33, 72, 38);
-      context.setFillStyle('#65705F');
-      context.setFontSize(15);
-      context.fillText(sceneCard.collectorLabel, 536, 58, 66);
+      context.fillText(sceneCard ? `${sceneCard.setName} · ${sceneCard.name}` : cardView.prototype_name, 300, 88, 360);
+      if (sceneCard) {
+        context.setFillStyle('#F0F2E8');
+        context.fillRect(500, 33, 72, 38);
+        context.setFillStyle('#65705F');
+        context.setFontSize(15);
+        context.fillText(sceneCard.collectorLabel, 536, 58, 66);
+      }
       context.setFillStyle('#F3F1E8');
       context.fillRect(52, 112, 496, 620);
       drawCover(context, illustrationImage, 52, 112, 496, 620);
@@ -162,7 +164,7 @@ Page({
       success: ({ tempFilePath }) => wx.saveImageToPhotosAlbum({
         filePath: tempFilePath,
         success: () => {
-          analytics.track('card_save', { card_id: this.data.sceneCard.id, source: 'native_fallback' });
+          analytics.track('card_save', { card_id: this.data.sceneCard ? this.data.sceneCard.id : this.data.cardView.card_id, source: 'native_fallback' });
           wx.showToast({ title: '收藏卡已保存', icon: 'success' });
         },
         fail: error => this.handleAlbumSaveFailure(error),

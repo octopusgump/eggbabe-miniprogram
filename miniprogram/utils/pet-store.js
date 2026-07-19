@@ -15,21 +15,22 @@ const sceneCardStore = require('../services/scene-card-store');
 const DAY = 24 * 60 * 60 * 1000;
 const HATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
 const FULL_DEMO_PRESET = 'hatched_full';
+const MODE_SCOPED_KEYS = [PET_KEY, USER_KEY, IDENTITY_KEY];
 
 const STATUS_LINES = {
   egg: {
-    开心: ['蛋壳里传来轻轻的回应。', '它把你的声音藏进了壳里。'],
-    平静: ['蛋壳里很安静，但很暖。', '它今天睡得很踏实。'],
-    想念: ['它好像等了你很久。', '它把想你藏在壳里。'],
-    兴奋: ['蛋壳里的动静变多了。', '裂纹好像又亮了一点。'],
-    低落: ['它今天安静了很久。', '蛋壳里的声音变小了。']
+    开心: ['我在壳里轻轻回应你。', '我把你的声音藏进壳里了。'],
+    平静: ['我在壳里睡得很暖。', '我今天睡得很踏实。'],
+    想念: ['我好像等了你很久。', '我把想你藏进壳里了。'],
+    兴奋: ['我在壳里动得更多啦。', '我就快准备好见你了。'],
+    低落: ['我今天想安静待一会儿。', '我的声音今天有一点小。']
   },
   pet: {
-    开心: ['它把快乐摆在了脸上。', '它好像一直在等你来。'],
-    平静: ['它今天把日子过得很慢。', '它安静地待在你身边。'],
-    想念: ['它偷偷练习了怎么叫你。', '它把想你写进了今天。'],
-    兴奋: ['它好像准备了一个小秘密。', '它今天比平时更坐不住。'],
-    低落: ['它今天有一点点没精神。', '它安静了很久，像是在等你。']
+    开心: ['我今天把快乐摆在脸上。', '我就知道你会来找我。'],
+    平静: ['我今天想把日子过慢一点。', '我想安静地待在你身边。'],
+    想念: ['我偷偷练习了怎么叫你。', '我把想你写进了今天。'],
+    兴奋: ['我准备了一个小秘密。', '我今天比平时更坐不住。'],
+    低落: ['我今天有一点点没精神。', '我安静等了你好一会儿。']
   }
 };
 
@@ -60,18 +61,20 @@ function todayKey(now) {
 }
 
 function resolvedKey(key) {
-  return key === PET_KEY ? runtime.scopedKey(key) : key;
+  return MODE_SCOPED_KEYS.includes(key) ? runtime.scopedKey(key) : key;
 }
 
 function read(key) {
   try {
     const value = storage.read(resolvedKey(key), null);
     if (value) return value;
-    if (key === PET_KEY && runtime.getMode() === 'live') {
-      const legacy = storage.read(PET_KEY, null);
-      if (legacy) {
+    if (MODE_SCOPED_KEYS.includes(key) && runtime.getMode() === 'live') {
+      const legacy = storage.read(key, null);
+      const legacyUser = key === USER_KEY ? legacy : storage.read(USER_KEY, null);
+      const belongsToDemo = (legacy && legacy.mode === 'demo') || (legacyUser && legacyUser.mode === 'demo');
+      if (legacy && !belongsToDemo) {
         storage.set(resolvedKey(key), legacy);
-        storage.remove(PET_KEY);
+        storage.remove(key);
         return legacy;
       }
     }
@@ -90,13 +93,17 @@ function write(key, value) {
 }
 
 function getUser() {
-  return read(USER_KEY);
+  const user = read(USER_KEY);
+  if (user && user.mode && user.mode !== runtime.getMode()) return null;
+  return user;
 }
 
 function getIdentityRecord() {
   const stored = read(IDENTITY_KEY);
   if (!stored) return {};
-  return typeof stored === 'string' ? { id: stored } : stored;
+  const identity = typeof stored === 'string' ? { id: stored } : stored;
+  if (identity.mode && identity.mode !== runtime.getMode()) return {};
+  return identity;
 }
 
 function publicIdDate(timestamp) {
@@ -120,7 +127,7 @@ function saveUser(user) {
   const id = source.id || identity.id || `user-${registeredAt}-${randomIdToken()}`;
   const publicId = source.publicId || identity.publicId || createPublicUserId(registeredAt);
   const normalized = Object.assign({}, source, { id, publicId, registeredAt, mode: source.mode === 'demo' ? 'demo' : runtime.getMode() });
-  write(IDENTITY_KEY, { id, publicId, registeredAt });
+  write(IDENTITY_KEY, { id, publicId, registeredAt, mode: runtime.getMode() });
   const result = write(USER_KEY, normalized);
   return result.ok ? result.value : null;
 }
@@ -130,7 +137,7 @@ function getIdentityId() {
 }
 
 function clearUser() {
-  try { storage.remove(USER_KEY); } catch (error) {}
+  try { storage.remove(resolvedKey(USER_KEY)); } catch (error) {}
 }
 
 function clearRemovedPublicModeBackup() {
@@ -187,6 +194,7 @@ function isFullDemoPresetPet(pet) {
     && !!tasks.cuddleDate
     && !!tasks.wishDate
     && !!tasks.lessonDate
+    && !!tasks.talkDate
     && tasks.doodleDone === true;
 }
 
@@ -249,7 +257,7 @@ function bindPet(code, now) {
     createdAt,
     hatchAt,
     progress: isDirectHatch ? 100 : 0,
-    progressEarned: isDirectHatch ? 145 : 0,
+    progressEarned: isDirectHatch ? 180 : 0,
     stage: isDirectHatch ? 'ready' : 'waiting',
     lastInteractionAt: createdAt,
     tasks: {
@@ -257,11 +265,14 @@ function bindPet(code, now) {
       cuddleDate: completedDate,
       wishDate: completedDate,
       lessonDate: completedDate,
+      talkDate: completedDate,
+      nicknamePromptDate: completedDate,
+      nicknameChangedDate: completedDate,
       doodleDone: isDirectHatch
     },
     preferences: isDirectHatch
-      ? { wishes: [{ date: completedDate, value: '安静陪伴你' }], lessons: [{ date: completedDate, value: '学会撒娇' }] }
-      : { wishes: [], lessons: [] },
+      ? { wishes: [{ date: completedDate, value: '安静陪伴你' }], lessons: [{ date: completedDate, value: '学会撒娇' }], talks: [{ date: completedDate, value: '期待见到你' }] }
+      : { wishes: [], lessons: [], talks: [] },
     shell: { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
     dailyStatus: null,
     collectionCard: null,
@@ -299,8 +310,8 @@ function importCloudPet(record, mode) {
     stage: source.stage || 'waiting',
     serverBacked: true,
     lastInteractionAt: createdAt,
-    tasks: source.tasks || { nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', doodleDone: false },
-    preferences: source.preferences || { wishes: [], lessons: [] },
+    tasks: Object.assign({ nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', talkDate: '', nicknamePromptDate: '', nicknameChangedDate: '', doodleDone: false }, source.tasks || {}),
+    preferences: Object.assign({ wishes: [], lessons: [], talks: [] }, source.preferences || {}),
     shell: source.shell || { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
     dailyStatus: source.dailyStatus || null,
     collectionCard: source.collectionCard || null,
@@ -329,11 +340,15 @@ function addProgress(pet, amount) {
 function updateNickname(name) {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
   const value = String(name || '').trim();
   if (!value) return { ok: false, message: '昵称不能为空' };
   if (Array.from(value).length > 10) return { ok: false, message: '昵称最多 10 个字符' };
   if (!chatSafety.isSafeDisplayText(value) || ['违法', '诈骗'].some(word => value.includes(word))) return { ok: false, message: '昵称含有不适合的内容，请换一个' };
   const first = !pet.tasks.nicknameDone;
+  const date = todayKey();
+  if (!first && pet.tasks.nicknameChangedDate === date) return { ok: false, code: 'DAILY_RENAME_LIMIT', message: '今天已经改过名字啦，明天再来吧' };
   pet.name = value;
   if (pet.collectionCard) {
     pet.collectionCard.name = value;
@@ -341,10 +356,44 @@ function updateNickname(name) {
   }
   if (first) addProgress(pet, 20);
   pet.tasks.nicknameDone = true;
+  pet.tasks.nicknameChangedDate = date;
+  pet.tasks.nicknamePromptDate = date;
   pet.lastInteractionAt = timeService.now();
   if (!savePet(pet)) return { ok: false, message: '昵称保存失败，请重试' };
   syncIncubationAction('nickname', { name: value });
   return { ok: true, added: first ? 20 : 0, pet };
+}
+
+function shouldPromptNickname() {
+  const pet = getPet();
+  if (!pet || pet.name || (pet.tasks && pet.tasks.nicknameDone)) return false;
+  if (!timeService.requireAuthoritative().ok) return false;
+  return (pet.tasks.nicknamePromptDate || '') !== todayKey();
+}
+
+function dismissNicknamePrompt() {
+  const pet = getPet();
+  if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
+  pet.tasks.nicknamePromptDate = todayKey();
+  return savePet(pet) ? { ok: true, pet } : { ok: false, message: '稍后提醒状态保存失败，请重试' };
+}
+
+function shouldShowDailyGreeting() {
+  const pet = getPet();
+  if (!pet) return false;
+  if (!timeService.requireAuthoritative().ok) return false;
+  return (pet.tasks.greetingDate || '') !== todayKey();
+}
+
+function markDailyGreetingShown() {
+  const pet = getPet();
+  if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
+  pet.tasks.greetingDate = todayKey();
+  return savePet(pet) ? { ok: true, pet } : { ok: false, message: '招呼状态保存失败，请重试' };
 }
 
 function completeDailyTask(task, value) {
@@ -377,6 +426,27 @@ function completeLesson(value) {
   return completeDailyTask('lesson', value);
 }
 
+function completeTalk(value) {
+  const pet = getPet();
+  if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
+  const text = String(value || '').trim();
+  if (!text) return { ok: false, message: '先跟我说一句话吧' };
+  if (Array.from(text).length > 50) return { ok: false, message: '最多说 50 个字' };
+  const assessment = chatSafety.assessInput(text);
+  if (!assessment.allowed || assessment.crisis) return { ok: false, message: assessment.message || '换个说法告诉我吧' };
+  const date = todayKey();
+  const first = pet.tasks.talkDate !== date;
+  pet.tasks.talkDate = date;
+  pet.preferences.talks = (pet.preferences.talks || []).concat({ date, value: text }).slice(-30);
+  if (first) addProgress(pet, 5);
+  pet.lastInteractionAt = timeService.now();
+  if (!savePet(pet)) return { ok: false, message: '这句话没有保存成功，请重试' };
+  syncIncubationAction('talk', { text });
+  return { ok: true, added: first ? 5 : 0, pet };
+}
+
 function saveDoodle(color, colorName, pattern) {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
@@ -402,26 +472,16 @@ function getStage(pet, now) {
 }
 
 const STAGE_PRESENTATION = {
-  waiting: { homeText: '它还在睡觉，试着叫醒它吧', actionLabel: '孵化修炼手册', myStage: '待激活' },
-  hatching: { homeText: '它正在慢慢长大', actionLabel: '孵化修炼手册', myStage: '孵化中' },
-  prepared: { homeText: '准备好了，等待破壳日', actionLabel: '等待破壳日', myStage: '孵化中 · 已准备' },
-  soon: { homeText: '蛋壳里传来了动静', actionLabel: '孵化修炼手册', myStage: '即将破壳' },
-  ready: { homeText: '它准备好见你了', actionLabel: '查看破壳结果', myStage: '待破壳' },
-  hatched: { homeText: '它终于来到你身边了', actionLabel: '和它说说话', myStage: '已破壳' }
+  waiting: { homeText: '我还在睡觉，轻轻叫醒我吧', actionLabel: '', myStage: '待激活' },
+  hatching: { homeText: '我正在慢慢长大', actionLabel: '', myStage: '孵化中' },
+  prepared: { homeText: '我准备好啦，就快见面了', actionLabel: '等待破壳日', myStage: '孵化中 · 已准备' },
+  soon: { homeText: '我在壳里轻轻动起来了', actionLabel: '等待破壳', myStage: '即将破壳' },
+  ready: { homeText: '我准备好见你了', actionLabel: '查看破壳结果', myStage: '待破壳' },
+  hatched: { homeText: '我终于来到你身边啦', actionLabel: '和我说说话', myStage: '已破壳' }
 };
 
 function getStagePresentation(stage) {
   return STAGE_PRESENTATION[stage] || STAGE_PRESENTATION.waiting;
-}
-
-function getCountdown(pet, now) {
-  if (!pet) return '';
-  if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) return '正在同步北京时间…';
-  const remaining = pet.hatchAt - (now || timeService.now());
-  if (remaining <= HATCH_TOLERANCE_MS) return '已可查看破壳结果';
-  const days = Math.floor(remaining / DAY);
-  const hours = Math.floor((remaining % DAY) / (60 * 60 * 1000));
-  return days > 0 ? `还剩 ${days} 天 ${hours} 小时` : `还剩 ${hours} 小时`;
 }
 
 function simpleHash(value) {
@@ -430,7 +490,7 @@ function simpleHash(value) {
 
 function getDailyStatus() {
   const pet = getPet();
-  if (!pet) return null;
+  if (!pet || getStage(pet) !== 'hatched') return null;
   if (runtime.getMode() === 'live' && !timeService.isAuthoritative()) {
     return pet.dailyStatus || { date: '', mood: '平静', line: '正在和北京时间对齐…', source: 'sync-pending', pending: true };
   }
@@ -449,9 +509,10 @@ function getDailyStatus() {
   const stagePool = pet.collectionCard ? STATUS_LINES.pet : STATUS_LINES.egg;
   const lines = stagePool[mood];
   const line = lines[simpleHash(date) % lines.length];
-  pet.dailyStatus = { date, mood, line, source: 'local-fallback' };
+  const fallback = { date, mood, line, source: 'local-fallback' };
+  if (runtime.getMode() === 'live') return fallback;
+  pet.dailyStatus = fallback;
   if (!savePet(pet)) return null;
-  analytics.track('daily_status_generated', { mood_type: mood, gen_source: 'fallback' });
   return pet.dailyStatus;
 }
 
@@ -529,7 +590,7 @@ function createCollectionCard() {
   const personality = derivePersonality(pet);
   const illustrationId = demoIllustration(pet, personality.mbti);
   const cycleDays = Math.max(3, Math.min(10, Math.round((pet.hatchAt - pet.createdAt) / DAY) || 7));
-  const theoreticalMaximum = 40 + cycleDays * 15;
+  const theoreticalMaximum = 40 + cycleDays * 20;
   const completionRatio = Number(pet.progressEarned === undefined ? pet.progress || 0 : pet.progressEarned) / theoreticalMaximum;
   pet.collectionCard = {
     id: `card-${pet.id}`,
@@ -590,14 +651,18 @@ module.exports = {
   bindPet,
   importCloudPet,
   updateNickname,
+  shouldPromptNickname,
+  dismissNicknamePrompt,
+  shouldShowDailyGreeting,
+  markDailyGreetingShown,
   completeCuddle,
   completeWish,
   completeLesson,
+  completeTalk,
   saveDoodle,
   ensureFullDemoState,
   getStage,
   getStagePresentation,
-  getCountdown,
   getDailyStatus,
   recordTouch,
   createCollectionCard,

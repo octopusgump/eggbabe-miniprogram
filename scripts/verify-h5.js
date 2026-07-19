@@ -116,7 +116,8 @@ assert.equal(app.includes("view === 'profile'"), false, 'H5 不得保留 profile
 assert.equal(css.includes('.profile-view'), false, 'H5 不得残留已删除档案页样式');
 assert.equal(h5Page.includes("query.view === 'profile'"), false, '小程序 H5 容器不得再接受档案视图');
 assert.equal(h5Page.includes('/pages/pet-detail/pet-detail'), false, 'H5 回退不得跳转到已删除档案页');
-assert.equal(homePage.includes("/pages/collection-card/collection-card"), true, '首页点击破壳后角色必须改为打开已有收藏卡');
+assert.equal(homePage.includes("/pages/life-scene/life-scene?scene=grass"), true, '首页单击破壳后角色必须进入当前生活场景');
+assert.equal(homePage.includes('role_cuddle_complete'), true, '首页长按破壳后角色必须延续贴贴反馈');
 assert.equal(homePage.includes('/pages/pet-detail/pet-detail'), false, '首页不得跳转到已删除档案页');
 assert.match(css, /\.birth-card\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/, '卡面必须使用竖版比例承载 4:5 插画');
 assert.match(css, /\.illustration-frame\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5/, '卡面插画视口必须锁定 4:5');
@@ -136,7 +137,7 @@ assert.equal(cardFace.includes('data-field="birthday"'), true, 'MVP 正面必须
 assert.equal(cardFace.includes('data-field="constellation"'), true, 'MVP 正面必须显示星座');
 assert.equal(cardFace.includes('data-field="mbti"'), true, 'MVP 正面必须显示 MBTI');
 ['name', 'prototypeLabel', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
-  assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.17 字段 ${field}`);
+  assert.equal(cardFace.includes(`data-field="${field}"`), true, `H5 卡面缺少 v2.23 字段 ${field}`);
 });
 assert.equal(cardFace.includes('card-avatar'), false, 'H5 卡面左上角不得继续显示 IP 头像');
 assert.equal(app.includes('card-avatar'), false, 'H5 渲染逻辑不得残留已删除头像节点访问');
@@ -266,7 +267,7 @@ for (const file of actualFigureFiles) {
 }
 assert.equal(firstSet.setSize, firstSet.cards.length, '套装 setSize 必须等于实际清单数量');
 assert.deepEqual(firstSet.treatments, ['BASE'], 'MVP 第一季只能发布 BASE 版本');
-assert.deepEqual(firstSet.cardFaceFields, ['avatar_id', 'prototype', 'name', 'birthday', 'constellation', 'gender', 'mbti', 'signature', 'blood_type', 'collector_number'], 'v2.17 卡面必须冻结九项身份字段与系列编号');
+assert.deepEqual(firstSet.cardFaceFields, ['avatar_id', 'prototype', 'name', 'birthday', 'constellation', 'gender', 'mbti', 'signature', 'blood_type', 'collector_number'], 'v2.23 卡面必须冻结九项身份字段与系列编号');
 const figureIds = new Set(figureCatalog.assets.map(asset => asset.id));
 firstSet.cards.forEach((card, index) => {
   assert.equal(card.collectorNumber, index + 1, '套装清单编号必须连续且不可重排');

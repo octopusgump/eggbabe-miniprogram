@@ -16,13 +16,15 @@ assert.equal(/破壳卡|场景卡|套卡|我的卡册/.test(userFacing), false, 
 assert.equal(/卡池|掉落|抽卡|稀有度/.test(userFacing), false, '用户界面必须统一使用“遇见 / 收集”表达');
 const forbiddenBrand = new RegExp(['egg', 'baby'].join(''), 'i');
 assert.equal(forbiddenBrand.test(userFacing), false, '品牌英文只能写 eggbabe');
+assert.equal(/>EGGBABE</.test(userFacing), false, '用户可见品牌字标必须使用小写 eggbabe');
+assert.equal(/它/.test(userFacing), false, '蛋宝宝相关用户文案必须使用第一人称“我”');
 
 const album = read('miniprogram/pages/album/album.wxml');
 assert.equal(album.includes('title="我的收藏卡"'), true, '统一卡册标题必须为“我的收藏卡”');
 assert.equal(album.includes('尚未遇见'), true, '未获得位必须显示“尚未遇见”');
 assert.equal(album.includes('collectorLabel'), true, '系列内编号必须与卡位一起显示');
 assert.equal(/class="tabs?\b|data-tab=|onTab/.test(album), false, '我的收藏卡不得使用卡类 tab');
-assert.equal(album.includes('不会重复出现'), true, 'v2.17 必须明确收藏卡不重复出现');
+assert.equal(album.includes('不会重复出现'), true, 'v2.23 必须明确收藏卡不重复出现');
 
 const h5Html = read('h5/birth-card/index.html');
 const h5Css = read('h5/birth-card/styles.css');
@@ -45,12 +47,11 @@ assert.equal(nativeTemplate.includes('title-star'), false, '原生标题不得�
 assert.equal(nativeTemplate.includes('card-wordmark'), false, '原生标题不得显示 eggbabe 小字');
 
 ['prototypeLabel', 'name', 'birthday', 'constellation', 'genderSymbol', 'mbti', 'signature', 'bloodType'].forEach(field => {
-  assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.17 卡面缺少 ${field}`);
+  assert.equal(h5Html.includes(`data-field="${field}"`), true, `H5 v2.23 卡面缺少 ${field}`);
 });
-assert.equal(h5Html.includes('card-avatar'), false, 'H5 卡面左上角必须移除 IP 头像');
-assert.equal(nativeTemplate.includes('class="card-avatar"'), false, '原生卡面左上角必须移除 IP 头像');
+assert.equal(h5Html.includes('card-avatar-image'), true, 'H5 v2.23 卡面缺少 IP 头像');
 ['cardView.prototype_name', 'cardView.name', 'birthdayLabel', 'cardView.constellation', 'genderLabel', 'cardView.mbti', 'cardView.signature', 'cardView.blood_type'].forEach(field => {
-  assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.17 卡面缺少 ${field}`);
+  assert.equal(nativeTemplate.includes(field), true, `原生兜底 v2.23 卡面缺少 ${field}`);
 });
 assert.equal(h5Model.includes('`${parts.year}年${parts.month}月${parts.day}日`'), true, 'H5 生日必须显示年月日');
 assert.equal(h5App.includes('fonts.googleapis.com'), false, '线上字体不得依赖 Google CDN');
@@ -83,16 +84,35 @@ assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 
 const config = read('miniprogram/config/v2.js');
-assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.17 初始遇见概率必须为约 18%');
+assert.equal(config.includes("version: '2.23.0-preview'"), true, '前端版本必须为 v2.23');
+assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.23 初始遇见概率必须为约 18%');
 assert.equal(config.includes('sceneCardDailyLimit: 2'), true, '每日最多遇见 2 张收藏卡');
 assert.equal(app.pages.includes('pages/shop/shop'), false, '露珠商店属于 V2.1，V2.0 不得注册页面');
 assert.equal(app.pages.includes('pages/bag/bag'), false, '背包属于 V2.1，V2.0 不得注册页面');
 assert.equal(read('miniprogram/pages/home/home.wxml').includes('露珠'), false, 'V2.0 首页不得展示露珠入口');
+const homeTemplate = read('miniprogram/pages/home/home.wxml');
+const homeLogic = read('miniprogram/pages/home/home.js');
+const homeStyles = read('miniprogram/pages/home/home.wxss');
+assert.equal(homeTemplate.includes('今天陪我做的事'), true, '孵化任务必须平铺首页');
+assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期必须提供常驻说话输入');
+assert.equal(homeTemplate.includes('暂不命名'), true, '命名弹层必须允许暂不命名');
+assert.equal(homeTemplate.includes('conic-gradient'), true, '孵化进度圆环必须显示比例填充');
+assert.equal(homeLogic.includes('/pages/nickname/nickname'), true, '破壳后必须可以进入改名页');
+assert.equal(homeTemplate.includes("stage === 'hatched' && dailyStatus"), true, '孵化期不得展示每日心情');
+assert.equal(/还剩\s*\{\{|天\s*\{\{|小时/.test(homeTemplate), false, '首页不得展示天数或时分倒计时');
+assert.equal(homeLogic.includes('spawnTapParticles'), true, '轻点蛋必须在点击位置显示粒子');
+assert.equal(homeLogic.includes('vibrateCuddleTick'), true, '长按必须按秒提供体感反馈');
+assert.equal(homeStyles.includes('.season-spring') && homeStyles.includes('.weather-rain') && homeStyles.includes('.period-night'), true, '孵化场景必须包含季节、天气、昼夜三层表现');
+assert.equal(/getLocation|chooseLocation|startLocationUpdate/.test([homeLogic, read('miniprogram/services/incubation-environment.js')].join('\n')), false, '上海天气不得申请用户定位');
+assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '孵化修炼手册独立页必须下线');
 
 assert.equal(fs.existsSync(path.join(root, 'cloudfunctions')), false, 'Bohao 侧目录不得保留 cloudfunctions');
 const frontEndSources = ['miniprogram/app.js', 'miniprogram/services/cloud-api.js', 'miniprogram/services/analytics.js', 'miniprogram/services/time-service.js'].map(read).join('\n');
 assert.equal(/wx\.cloud/.test(frontEndSources), false, 'Bohao 侧前端不得调用 wx.cloud.*');
 assert.equal(read('miniprogram/services/time-service.js').includes('requireAuthoritative'), true, '正式业务时间必须经过服务端北京时间门禁');
+assert.equal(read('miniprogram/services/time-service.js').includes('return Date.now() + offset'), false, 'live 业务时间不得回退设备时钟');
+assert.equal(read('miniprogram/pages/welcome/welcome.js').includes('Date.now()'), false, '账号授权时间不得使用设备时钟');
+assert.equal(read('miniprogram/app.js').includes("result.mode !== 'live'"), true, '正式 bootstrap 必须拒绝非 live 数据');
 assert.equal(read('miniprogram/pages/deregister/deregister.js').includes('getFullYear()'), false, '注销截止日不得依赖设备本地时区格式化');
 assert.equal(read('miniprogram/utils/pet-store.js').includes('HATCH_TOLERANCE_MS'), true, '破壳承接必须包含服务端时间容差');
 assert.equal(read('miniprogram/utils/pet-store.js').includes('completionRatio >= 0.9'), true, '孵化完成度必须按理论最大进度归一化');
@@ -108,4 +128,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('PRD v2.17 前端契约校验通过：八个可见身份字段收藏卡、遇见规则、前端安全 mock 与订阅授权骨架正常。');
+console.log('PRD v2.23 前端契约校验通过：首页孵化反馈、九字段收藏卡、遇见规则与正式时间门禁正常。');

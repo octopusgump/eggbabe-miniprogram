@@ -1,16 +1,26 @@
 <view class="page">
   <nav-bar title="帮助中心"></nav-bar>
 
-  <view class="search-bar" bindtap="onSearchTap">
+  <view class="search-bar">
     <view class="search-input">
       <view class="search-icon"></view>
-      <text class="search-placeholder">搜索问题关键词</text>
+      <input class="search-field" value="{{searchQuery}}" placeholder="搜索问题关键词" bindinput="onSearchInput" />
     </view>
   </view>
 
   <scroll-view scroll-y class="faq-scroll">
 
-    <collapse-item
+    <view wx:if="{{searchQuery}}" class="search-results">
+      <view wx:if="{{searchResults.length}}">
+        <view wx:for="{{searchResults}}" wx:key="q" class="search-result">
+          <text class="search-result-q">{{item.q}}</text>
+          <text class="search-result-a">{{item.a}}</text>
+        </view>
+      </view>
+      <view wx:else class="search-empty">没有找到相关问题，试试其他关键词。</view>
+    </view>
+
+    <collapse-item wx:if="{{!searchQuery}}"
       title="设备问题"
       variant="category"
       expanded="{{cats.device}}"
@@ -34,7 +44,7 @@
       </view>
     </collapse-item>
 
-    <collapse-item
+    <collapse-item wx:if="{{!searchQuery}}"
       title="账号"
       variant="category"
       expanded="{{cats.account}}"
@@ -58,7 +68,7 @@
       </view>
     </collapse-item>
 
-    <collapse-item
+    <collapse-item wx:if="{{!searchQuery}}"
       title="对话功能"
       variant="category"
       expanded="{{cats.chat}}"
@@ -82,7 +92,7 @@
       </view>
     </collapse-item>
 
-    <collapse-item
+    <collapse-item wx:if="{{!searchQuery}}"
       title="其他"
       variant="category"
       expanded="{{cats.other}}"

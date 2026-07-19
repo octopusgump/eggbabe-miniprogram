@@ -1,20 +1,27 @@
 const storage = require('../../services/storage-migration');
+const subscriptionMessages = require('../../services/subscription-messages');
 const STORAGE_KEY = 'eggbabe_notification_preferences_v1';
-const DEFAULTS = { daily: true, hatch: true, growth: true, bday: false };
+const DEFAULTS = { hatch: true, seasonal: false };
 
 Page({
   data: { notifs: DEFAULTS },
 
   onLoad() {
-    this.setData({ notifs: storage.read(STORAGE_KEY, DEFAULTS) });
+    this.setData({ notifs: Object.assign({}, DEFAULTS, storage.read(STORAGE_KEY, {})) });
   },
 
   update(key, value) {
     this.setData({ [`notifs.${key}`]: value }, () => storage.set(STORAGE_KEY, this.data.notifs));
   },
 
-  onToggleDaily(e) { this.update('daily', e.detail.value); },
-  onToggleHatch(e) { this.update('hatch', e.detail.value); },
-  onToggleGrowth(e) { this.update('growth', e.detail.value); },
-  onToggleBday(e) { this.update('bday', e.detail.value); }
+  onToggleHatch(e) {
+    const enabled = e.detail.value;
+    this.update('hatch', enabled);
+    if (enabled) subscriptionMessages.requestHatchReminders();
+  },
+  onToggleSeasonal(e) {
+    const enabled = e.detail.value;
+    this.update('seasonal', enabled);
+    if (enabled) subscriptionMessages.requestSeasonalUpdates();
+  }
 });

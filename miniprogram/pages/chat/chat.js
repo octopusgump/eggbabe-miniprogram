@@ -59,6 +59,10 @@ Page({
     analytics.track('chat_message_sent', { msg_len: Array.from(text).length });
     if (config.backendEnabled && runtime.getMode() === 'live') syncQueue.enqueue('saveMessage', { message: userMessage });
     this.setData({ messages, draft: '', typing: true, scrollAnchor: `msg-${userMessage.id}` });
+    if (config.backendEnabled && runtime.getMode() === 'live') {
+      this.setData({ typing: false });
+      return;
+    }
     this.replyTimer = setTimeout(() => {
       const mood = this.data.dailyStatus ? this.data.dailyStatus.mood : '平静';
       const pool = MOOD_REPLIES[mood] || REPLIES;
@@ -76,7 +80,7 @@ Page({
       const turnCount = next.filter(item => item.from === 'user').length;
       if (chatSafety.shouldShowRestReminder(timeService.now(), turnCount, this.restReminderShown)) {
         this.restReminderShown = true;
-        next.push({ id: `rest${timeService.now()}`, from: 'egg', text: '它有点困了，你也早点休息吧。', safety: 'rest-reminder' });
+        next.push({ id: `rest${timeService.now()}`, from: 'egg', text: '我有点困了，你也早点休息吧。', safety: 'rest-reminder' });
       }
       this.setData({ messages: next, typing: false, scrollAnchor: `msg-${reply.id}` });
     }, 900);

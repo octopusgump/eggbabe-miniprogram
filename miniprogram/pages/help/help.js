@@ -3,6 +3,8 @@ const config = require('../../config/v2');
 Page({
   data: {
     cats: { device: true, account: true, chat: true, other: true },
+    searchQuery: '',
+    searchResults: [],
 
     deviceFaqs: [
       {
@@ -12,7 +14,7 @@ Page({
       },
       {
         q: '孵化进度会让实体装置提前打开吗？',
-        a: '不会。实体装置按激活码预设的破壳时间打开；孵化进度只会丰富互动反馈、性格倾向和收藏卡内容。',
+        a: '不会。实体装置按激活码预设的破壳时间打开；孵化进度只会丰富我的互动反馈、性格倾向和收藏卡内容。',
         open: false
       },
       {
@@ -48,7 +50,7 @@ Page({
     chatFaqs: [
       {
         q: '为什么现在不能和蛋宝宝对话？',
-        a: '文字对话会在蛋宝宝破壳后开放。孵化期可以轻触蛋壳获得回应，也可以完成修炼手册里的动作。',
+        a: '文字对话会在我破壳后开放。孵化期可以轻触或长按蛋壳、完成首页任务，也可以直接跟我说说话。',
         open: false
       },
       {
@@ -58,7 +60,7 @@ Page({
       },
       {
         q: '什么是破壳？',
-        a: '破壳是蛋宝宝孵化期结束、正式苏醒的时刻——从这一刻起，它会开口说话，和你开始真正的陪伴与对话。',
+        a: '破壳是我结束孵化、正式苏醒的时刻——从这一刻起，我会开口说话，和你开始真正的陪伴与对话。',
         open: false
       }
     ],
@@ -87,20 +89,30 @@ Page({
     this.setData({ [`${group}[${index}].open`]: !this.data[group][index].open });
   },
 
-  onSearchTap() {
-    // TODO: 接入真实的 FAQ 关键词搜索/高亮，目前仅占位提示
-    wx.showToast({ title: '搜索功能待接入', icon: 'none' });
+  onSearchInput(event) {
+    const searchQuery = String(event.detail.value || '').trim();
+    if (!searchQuery) {
+      this.setData({ searchQuery: '', searchResults: [] });
+      return;
+    }
+    const groups = ['deviceFaqs', 'accountFaqs', 'chatFaqs', 'otherFaqs'];
+    const searchResults = groups
+      .flatMap(group => this.data[group] || [])
+      .filter(item => `${item.q} ${item.a}`.includes(searchQuery));
+    this.setData({ searchQuery, searchResults });
   },
 
   onContactCS() {
-    // 企业微信客服接入方式二选一：
-    // 1) wx.openCustomerServiceChat（需要企业微信 corpId + kfId/客服链接）
-    // 2) <button open-type="contact"> 原生客服按钮
+    const customerService = config.customerService || {};
+    if (!customerService.corpId || !customerService.url) {
+      wx.showToast({ title: '客服参数待运营配置', icon: 'none' });
+      return;
+    }
     wx.openCustomerServiceChat({
-      extInfo: { url: 'https://work.weixin.qq.com/kfid/YOUR_KF_ID' },
-      corpId: 'YOUR_CORP_ID',
+      extInfo: { url: customerService.url },
+      corpId: customerService.corpId,
       fail: () => {
-        wx.showToast({ title: '客服功能待接入', icon: 'none' });
+        wx.showToast({ title: '暂时无法打开客服，请稍后再试', icon: 'none' });
       }
     });
   }

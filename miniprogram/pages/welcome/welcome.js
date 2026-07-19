@@ -1,4 +1,5 @@
 const petStore = require('../../utils/pet-store');
+const timeService = require('../../services/time-service');
 
 Page({
   data: {
@@ -25,19 +26,25 @@ Page({
       wx.showToast({ title: '请先阅读并同意隐私政策', icon: 'none' });
       return;
     }
+    const timeGate = timeService.requireAuthoritative();
+    if (!timeGate.ok) {
+      wx.showToast({ title: timeGate.message, icon: 'none' });
+      return;
+    }
     if (this.data.authorizing) return;
     this.setData({ authorizing: true });
 
     const finish = (profile) => {
+      const businessNow = timeService.now();
       const gender = profile.gender === 1 ? '男' : profile.gender === 2 ? '女' : '';
       const city = [profile.province, profile.city].filter(Boolean).join(' · ');
       petStore.saveUser({
-        id: petStore.getIdentityId() || `user-${Date.now()}`,
+        id: petStore.getIdentityId() || `user-${businessNow}`,
         nickname: profile.nickName || '微信用户',
         avatarUrl: profile.avatarUrl || '',
         gender,
         city,
-        authorizedAt: Date.now()
+        authorizedAt: businessNow
       });
       wx.switchTab({ url: '/pages/home/home' });
     };

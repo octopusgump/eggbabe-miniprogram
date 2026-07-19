@@ -19,7 +19,7 @@ Page({
       introImage: scenes[0] ? scenes[0].image : '',
       introKicker: `${pet.prototype} · SCENES`,
       introTitle: `${pet.name || pet.prototype}的生活`,
-      introDesc: '选择一个地方，去看看它此刻正在做什么。'
+      introDesc: '选择一个地方，来看看我此刻正在做什么。'
     });
   },
 

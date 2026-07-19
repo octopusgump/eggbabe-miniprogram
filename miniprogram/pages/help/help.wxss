@@ -42,7 +42,10 @@
   bottom: -1rpx;
 }
 
-.search-placeholder {
+.search-field {
+  flex: 1;
+  min-width: 0;
+  height: 72rpx;
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 28rpx;
   color: #8C8C88;
@@ -56,6 +59,13 @@
 .qa-group {
   background: #FFFFFF;
 }
+
+.search-results { padding: 24rpx 40rpx 48rpx; }
+.search-result { padding: 26rpx 0; border-bottom: 1rpx solid #ECEBE7; }
+.search-result-q, .search-result-a { display: block; }
+.search-result-q { color: #26372C; font-size: 28rpx; font-weight: 600; }
+.search-result-a { margin-top: 12rpx; color: #737771; font-size: 24rpx; line-height: 1.65; }
+.search-empty { padding: 90rpx 20rpx; color: #8C8C88; font-size: 25rpx; text-align: center; }
 
 .bottom-space {
   height: 24rpx;

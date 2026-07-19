@@ -1,5 +1,5 @@
 module.exports = {
-  version: '2.17.0-preview',
+  version: '2.23.0-preview',
   backendEnabled: false,
   localActivationCode: 'FUHUAQIAN',
   localHatchedActivationCode: 'FUHUAHOU',
@@ -13,6 +13,9 @@ module.exports = {
   birthCardH5Url: '',
   birthCardApiBase: '',
   miniProgramCodeUrl: '',
+  // 仅用于前端预览。正式环境由 CTO 在 bootstrap 数据中下发同结构表现数据。
+  incubationEnvironmentPreview: { season: 'summer', weather: 'sunny', period: 'day', backgroundImage: '' },
   ecommerce: { taobaoCopyText: '', xiaohongshuCopyText: '' },
+  customerService: { corpId: '', url: '' },
   subscriptionTemplateIds: { hatchDay: '', hatchSoon: '', seasonal: '' }
 };

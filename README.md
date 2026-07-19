@@ -1,14 +1,14 @@
 # eggbabe 蛋宝宝小程序 V2 Preview
 
-这是基于现有 MVP 增量升级的微信小程序 V2.17 Preview，可直接将本文件夹导入微信开发者工具。最新规格见 `docs/蛋宝宝小程序_V2_PRD.md`，前端实现边界见 `docs/V2_IMPLEMENTATION.md`；`docs/V2_DATA_MODEL.md` 与 `docs/V2_CLOUD_SCHEMA.json` 仅作为王敏侧后端接口规格。
+这是基于现有 MVP 增量升级的微信小程序 V2.23 Preview，可直接将本文件夹导入微信开发者工具。最新规格见 `docs/蛋宝宝小程序_V2_PRD.md`，前端实现边界见 `docs/V2_IMPLEMENTATION.md`；`docs/V2_DATA_MODEL.md` 与 `docs/V2_CLOUD_SCHEMA.json` 仅作为王敏侧后端接口规格。
 
 公开仓库：<https://github.com/octopusgump/eggbabe-miniprogram>
 
 ## 已完成的核心闭环
 
-微信授权进入 → 输入激活码 → 绑定唯一蛋宝宝 → 轻触 / 长按互动 → 到达可承接破壳时刻 → 生成唯一收藏卡 → 在生活场景继续遇见并收集系列收藏卡。
+微信授权进入 → 输入激活码 → 绑定唯一蛋宝宝 → 命名 / 轻触 / 长按 / 说话 / 每日任务 → 到达可承接破壳时刻 → 生成唯一收藏卡 → 在生活场景继续遇见并收集系列收藏卡。
 
-本版严格遵循最新 PRD：孵化期只展示蛋形，不展示背景场景，也不提供场景选择或切换入口。
+孵化期使用统一的小房间场景，不提供场景选择或切换；前端支持四季底图、上海天气粒子和昼夜光线三层表现，正式环境数据由 CTO 侧下发。
 
 ## 目录
 
@@ -55,4 +55,4 @@ node scripts/verify-h5.js
 node scripts/verify-v211.js
 ```
 
-校验会检查页面四件套、JSON、组件引用、工程根目录设置，以及最新 PRD 禁止的孵化场景页面是否仍被编译。
+校验会检查页面四件套、JSON、组件引用、工程根目录设置，以及 v2.23 首页交互、第一人称文案、服务端时间门禁、收藏卡和 H5 渲染约束。

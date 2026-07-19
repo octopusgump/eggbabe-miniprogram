@@ -16,7 +16,7 @@ function getContext() {
   const user = petStore.getUser();
   const mode = runtime.getMode();
   const context = {
-    user_id: mode === 'demo' ? '' : (user ? user.id : ''),
+    user_id: mode === 'demo' || !user || user.mode !== 'live' ? '' : user.id,
     mode,
     session_id: runtime.getSessionId(),
     egg_id: pet ? pet.id : '',

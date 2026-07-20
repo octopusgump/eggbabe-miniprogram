@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+  <style>.line{stroke:#28533F;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.accent{fill:#E3B34F}</style>
+  <path class="line" d="M29 34h68c6 0 11 5 11 11v31c0 6-5 11-11 11H62L44 100V87H29c-6 0-11-5-11-11V45c0-6 5-11 11-11Z"/>
+  <circle class="accent" cx="43" cy="61" r="4"/><circle class="accent" cx="64" cy="61" r="4"/><circle class="accent" cx="85" cy="61" r="4"/>
+</svg>

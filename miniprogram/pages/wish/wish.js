@@ -5,7 +5,7 @@ Page({
   onSubmit() {
     if (!this.data.selected) return wx.showToast({ title: '先选一个愿望吧', icon: 'none' });
     const result = petStore.completeWish(this.data.selected);
-    wx.showToast({ title: result.added ? '我记住了 · 进度 +5%' : '今天已经许过愿啦', icon: 'none' });
+    wx.showToast({ title: result.added ? '我把愿望收好啦' : '这个愿望我还记得', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
   }
 });

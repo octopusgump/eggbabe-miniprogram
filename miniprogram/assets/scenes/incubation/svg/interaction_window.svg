@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+  <style>.line{stroke:#28533F;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.accent{stroke:#E3B34F;fill:none}</style>
+  <path class="line" d="M22 29h84v63H22zM64 29v63M22 60h84"/>
+  <path class="line" d="m28 83 17-16 13 10 16-20 24 26"/>
+  <path class="accent" stroke-width="5" d="M28 93h73"/>
+</svg>

@@ -5,6 +5,8 @@ const timeService = require('./time-service');
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
 const WEATHER = ['sunny', 'cloudy', 'rain', 'snow'];
 const PERIODS = ['day', 'night'];
+const SCENE_ASSET_ROOT = '/assets/scenes/incubation/webp';
+const EGG_ASSET = `${SCENE_ASSET_ROOT}/egg_base_day.webp`;
 
 function valid(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;
@@ -29,21 +31,41 @@ function periodFromBeijingTime(timestamp) {
   return hour >= 6 && hour < 18 ? 'day' : 'night';
 }
 
+function sceneAssetPath(season, period) {
+  const safeSeason = valid(season, SEASONS, 'spring');
+  const safePeriod = valid(period, PERIODS, 'day');
+  return `${SCENE_ASSET_ROOT}/incubation_${safeSeason}_${safePeriod}.webp`;
+}
+
 function resolve(serverPresentation) {
   const preview = config.incubationEnvironmentPreview || {};
   const source = serverPresentation || (runtime.getMode() === 'demo' ? preview : {});
   const season = valid(source.season, SEASONS, seasonFromBeijingDate());
   const weather = valid(source.weather, WEATHER, 'sunny');
   const period = valid(source.period, PERIODS, periodFromBeijingTime());
-  const backgroundImage = String(source.backgroundImage || '').trim();
+  const remoteBackgroundImage = String(source.backgroundImage || '').trim();
+  const backgroundImage = /^(?:https:\/\/|\/)/.test(remoteBackgroundImage)
+    ? remoteBackgroundImage
+    : sceneAssetPath(season, period);
   return {
     season,
     weather,
     period,
-    backgroundImage: /^(?:https:\/\/|\/)/.test(backgroundImage) ? backgroundImage : '',
+    backgroundImage,
+    eggImage: EGG_ASSET,
     locationLabel: '上海',
     className: `season-${season} weather-${weather} period-${period}`
   };
 }
 
-module.exports = { SEASONS, WEATHER, PERIODS, seasonFromBeijingDate, periodFromBeijingTime, resolve };
+module.exports = {
+  SEASONS,
+  WEATHER,
+  PERIODS,
+  SCENE_ASSET_ROOT,
+  EGG_ASSET,
+  seasonFromBeijingDate,
+  periodFromBeijingTime,
+  sceneAssetPath,
+  resolve
+};

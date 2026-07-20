@@ -19,55 +19,95 @@
 .progress-ring-core { width: 78rpx; height: 78rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.94); }
 .progress-tip { position: absolute; z-index: 20; top: 104rpx; right: 0; width: 220rpx; padding: 14rpx 18rpx; border-radius: 16rpx 4rpx 16rpx 16rpx; background: #26372C; color: #FFF; font-size: 20rpx; text-align: center; }
 
-.egg-zone { position: relative; height: 650rpx; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20rpx; border-radius: 42rpx; }
-.incubation-scene { position: absolute; z-index: 0; inset: 0; overflow: hidden; background-position: center; background-size: cover; transition: filter .4s ease, background .4s ease; }
-.incubation-scene::before { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,250,232,.18) 55%, rgba(103,82,58,.12)); }
+.egg-zone { position: relative; height: 820rpx; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20rpx; border-radius: 42rpx; background: #E8E5D8; isolation: isolate; }
+.incubation-scene { position: absolute; z-index: 0; inset: 0; overflow: hidden; background: #E8E5D8; }
+.incubation-scene-image { position: absolute; inset: 0; width: 100%; height: 100%; object-position: 50% 58%; transform: scale(1.015); transition: filter .6s ease, opacity .6s ease; }
+.incubation-scene::before { position: absolute; z-index: 2; inset: 0; content: ""; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 48%, rgba(74,54,35,.08)); }
+.scene-color-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; transition: background .6s ease, opacity .6s ease; }
 .season-spring { background: linear-gradient(155deg, #DDECD7 0%, #F8F0D8 52%, #DDBF9C 100%); }
 .season-summer { background: linear-gradient(155deg, #BFDCCB 0%, #F5EFCB 50%, #D7B48A 100%); }
 .season-autumn { background: linear-gradient(155deg, #DFC897 0%, #F4E2C5 52%, #B98D6B 100%); }
 .season-winter { background: linear-gradient(155deg, #D9E7EA 0%, #F2EEE3 54%, #B7C1C3 100%); }
-.period-night { filter: brightness(.72) saturate(.9); }
-.period-night::after { position: absolute; inset: 0; content: ""; background: radial-gradient(circle at 72% 42%, rgba(255,218,134,.34), transparent 30%), linear-gradient(180deg, rgba(29,42,67,.28), rgba(75,54,42,.08)); }
+.period-night .scene-color-layer { background: radial-gradient(circle at 24% 59%, rgba(255,212,130,.09), transparent 24%), linear-gradient(180deg, rgba(22,36,58,.05), rgba(42,31,24,.04)); }
+.weather-cloudy .incubation-scene-image { filter: brightness(.92) saturate(.88); }
+.weather-rain .incubation-scene-image { filter: brightness(.88) saturate(.86); }
+.weather-snow .incubation-scene-image { filter: brightness(.96) saturate(.82); }
+.scene-fallback { position: absolute; z-index: 1; inset: 0; }
 .window-glow { position: absolute; top: 56rpx; left: 72rpx; width: 210rpx; height: 220rpx; border: 12rpx solid rgba(117,91,65,.22); border-radius: 10rpx; background: linear-gradient(180deg, rgba(255,255,255,.52), rgba(219,235,218,.3)); box-shadow: inset 0 0 50rpx rgba(255,255,255,.6); }
 .window-glow::before, .window-glow::after { position: absolute; content: ""; background: rgba(117,91,65,.18); }
 .window-glow::before { left: 50%; top: 0; width: 6rpx; height: 100%; }
 .window-glow::after { top: 50%; left: 0; width: 100%; height: 6rpx; }
 .room-floor { position: absolute; left: -10%; right: -10%; bottom: -80rpx; height: 270rpx; border-radius: 50% 50% 0 0; background: repeating-linear-gradient(100deg, rgba(147,105,73,.18) 0 4rpx, rgba(226,199,166,.5) 4rpx 70rpx); transform: perspective(260rpx) rotateX(18deg); }
 .room-lamp { position: absolute; right: 70rpx; bottom: 150rpx; width: 60rpx; height: 110rpx; border-radius: 50% 50% 10rpx 10rpx; background: radial-gradient(circle at 50% 30%, #FFF5B8, #D9B867 70%); box-shadow: 0 0 70rpx rgba(255,224,133,.45); }
-.weather-cloud { position: absolute; height: 38rpx; border-radius: 999rpx; background: rgba(222,229,229,.8); filter: blur(2rpx); animation: cloud-drift-room 12s linear infinite; }
-.weather-cloud--one { top: 92rpx; left: 80rpx; width: 150rpx; }
-.weather-cloud--two { top: 150rpx; left: 150rpx; width: 100rpx; animation-delay: -5s; }
-.weather-rain, .weather-snow { position: absolute; inset: 0; overflow: hidden; }
+.window-effects { position: absolute; z-index: 4; top: 0; left: 45%; width: 35%; height: 40%; overflow: hidden; }
+.window-light { position: absolute; top: -12%; left: 32%; width: 22%; height: 118%; border-radius: 50%; background: rgba(255,248,205,.2); filter: blur(18rpx); opacity: .4; transform: rotate(5deg); animation: window-light-drift 9s ease-in-out infinite; }
+.period-night .window-light { background: rgba(181,211,235,.12); opacity: .24; }
+.curtain-light { position: absolute; z-index: 2; top: 0; bottom: 0; width: 18%; pointer-events: none; opacity: 0; filter: blur(5rpx); background: linear-gradient(90deg, rgba(255,251,237,.24), transparent); transform-origin: 50% 0; }
+.curtain-light--left { left: -4%; }
+.curtain-light--right { right: -4%; background: linear-gradient(270deg, rgba(255,251,237,.24), transparent); }
+.season-spring .curtain-light { animation: spring-curtain-sway 8.4s ease-in-out infinite; }
+.season-spring .curtain-light--right { animation-delay: -4.2s; }
+.season-atmosphere { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.season-piece { position: absolute; opacity: 0; }
+.season-spring .season-piece { width: 34rpx; height: 16rpx; border-radius: 80% 20% 80% 20%; background: rgba(178,210,150,.2); animation: spring-leaf-sway 8s ease-in-out infinite; }
+.season-spring .season-piece--one { top: 26%; left: 18%; }
+.season-spring .season-piece--two { top: 48%; left: 67%; animation-delay: -2.4s; }
+.season-spring .season-piece--three { top: 68%; left: 34%; animation-delay: -5s; }
+.season-summer .season-piece { width: 32rpx; height: 15rpx; border-radius: 80% 20% 80% 20%; background: rgba(116,168,70,.24); filter: blur(1rpx); animation: summer-leaf-parallax 10s ease-in-out infinite; }
+.season-summer .season-piece--one { top: 18%; left: 10%; }
+.season-summer .season-piece--two { top: 42%; left: 64%; animation-delay: -3.2s; }
+.season-summer .season-piece--three { top: 70%; left: 30%; animation-delay: -6.4s; }
+.season-autumn .scene-color-layer { background: radial-gradient(ellipse at 50% 68%, rgba(235,166,89,.12), transparent 54%); animation: autumn-room-warmth 9s ease-in-out infinite; }
+.season-autumn .season-atmosphere { background: linear-gradient(150deg, rgba(255,207,132,.02), rgba(229,151,79,.08)); }
+.season-winter .season-atmosphere { border: 3rpx solid rgba(229,242,245,.1); box-sizing: border-box; background: linear-gradient(90deg, rgba(234,244,246,.17), transparent 12% 86%, rgba(234,244,246,.14)), linear-gradient(180deg, rgba(238,247,248,.14), transparent 20%); box-shadow: inset 0 0 18rpx rgba(235,245,247,.12); }
+.weather-clouds, .weather-rain, .weather-snow { position: absolute; inset: 0; overflow: hidden; }
+.weather-cloud { position: absolute; height: 38rpx; border-radius: 999rpx; background: rgba(221,227,226,.66); filter: blur(4rpx); animation: cloud-drift-room 16s linear infinite; }
+.weather-cloud--one { top: 96rpx; left: -130rpx; width: 150rpx; }
+.weather-cloud--two { top: 166rpx; left: -90rpx; width: 100rpx; animation-delay: -7s; }
 .rain-drop, .snow-flake { position: absolute; top: -40rpx; animation: weather-fall 1.4s linear infinite; }
-.rain-drop { width: 3rpx; height: 42rpx; border-radius: 999rpx; background: rgba(115,151,167,.55); transform: rotate(10deg); }
-.snow-flake { color: rgba(255,255,255,.9); font-size: 34rpx; animation-duration: 4.2s; }
+.rain-drop { width: 2rpx; height: 38rpx; border-radius: 999rpx; background: rgba(145,176,188,.58); transform: rotate(8deg); }
+.snow-flake { color: rgba(255,255,255,.86); font-size: 26rpx; animation-duration: 5.8s; }
 .rain-drop--0,.snow-flake--0{left:6%}.rain-drop--1,.snow-flake--1{left:14%;animation-delay:-.3s}.rain-drop--2,.snow-flake--2{left:22%;animation-delay:-.8s}.rain-drop--3,.snow-flake--3{left:31%;animation-delay:-1.1s}.rain-drop--4,.snow-flake--4{left:39%;animation-delay:-.5s}.rain-drop--5,.snow-flake--5{left:48%;animation-delay:-1.3s}.rain-drop--6,.snow-flake--6{left:57%;animation-delay:-.2s}.rain-drop--7,.snow-flake--7{left:65%;animation-delay:-.9s}.rain-drop--8,.snow-flake--8{left:73%;animation-delay:-1.2s}.rain-drop--9,.snow-flake--9{left:81%;animation-delay:-.4s}.rain-drop--10,.snow-flake--10{left:89%;animation-delay:-1s}.rain-drop--11,.snow-flake--11{left:96%;animation-delay:-.6s}
+.window-fog-canvas { position: absolute; z-index: 6; inset: 0; width: 100%; height: 100%; }
+.scene--window-cleared .window-effects::after { position: absolute; z-index: 7; inset: 0; content: ""; pointer-events: none; background: rgba(255,255,255,.06); animation: window-clear-glint 1.8s ease-out both; }
+.room-light-breathe { position: absolute; z-index: 5; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 72%, rgba(255,242,190,.2), transparent 36%); }
 
-.egg-aura { position: absolute; z-index: 1; width: 390rpx; height: 390rpx; border-radius: 50%; background: radial-gradient(circle, rgba(237,231,142,.55), rgba(237,231,142,0) 68%); animation: aura 3s ease-in-out infinite; }
-.egg { position: relative; z-index: 3; width: 268rpx; height: 330rpx; border-radius: 52% 48% 47% 53% / 61% 58% 42% 39%; box-shadow: inset -20rpx -26rpx 36rpx rgba(105,105,40,.15), 0 34rpx 56rpx rgba(0,41,0,.15); animation: breathe 3.4s ease-in-out infinite; }
+.egg-aura { position: absolute; z-index: 5; left: 50%; bottom: 52rpx; width: 350rpx; height: 350rpx; margin-left: -175rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,243,180,.3), rgba(237,231,142,0) 68%); animation: aura 4.4s ease-in-out infinite; }
+.egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 190rpx; height: 272rpx; margin-left: -95rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 10rpx 10rpx rgba(69,53,35,.08)); }
+.egg-image { display: block; }
+.egg-zone.period-night .egg-image { filter: brightness(.9) saturate(.88) drop-shadow(0 10rpx 10rpx rgba(25,29,39,.14)); }
+.egg-contact-shadow { position: absolute; z-index: 6; left: 50%; bottom: 87rpx; width: 178rpx; height: 31rpx; margin-left: -89rpx; border-radius: 50%; pointer-events: none; background: rgba(72,54,35,.19); filter: blur(10rpx); transform-origin: center; animation: shadow-breathe 4.2s ease-in-out infinite; }
 .life-home-scene { position: relative; z-index: 3; width: 430rpx; height: 450rpx; border-radius: 42rpx; box-shadow: 0 26rpx 50rpx rgba(0,41,0,.16); }
-.egg-shine { position: absolute; top: 64rpx; left: 54rpx; width: 52rpx; height: 124rpx; border-radius: 50%; background: rgba(255,255,255,.56); transform: rotate(17deg); }
-.egg-pattern { position: absolute; border-radius: 50%; background: rgba(0,41,0,.10); }
-.egg-pattern--one { top: 112rpx; right: 62rpx; width: 16rpx; height: 16rpx; }
-.egg-pattern--two { left: 78rpx; bottom: 84rpx; width: 10rpx; height: 10rpx; }
-.egg-shadow { position: relative; z-index: 2; width: 250rpx; height: 42rpx; margin-top: -2rpx; border-radius: 50%; background: rgba(0,41,0,.14); filter: blur(12rpx); }
 .feedback-bubble, .daily-greeting { position: absolute; z-index: 8; max-width: 480rpx; padding: 18rpx 26rpx; border-radius: 28rpx 28rpx 28rpx 8rpx; background: #FFF; box-shadow: 0 12rpx 36rpx rgba(0,41,0,.10); color: #3D4930; font-size: 25rpx; animation: bubble-in .25s ease-out; }
-.feedback-bubble { top: 92rpx; }
-.daily-greeting { top: 26rpx; border: 2rpx solid rgba(157,182,91,.28); }
-.cuddle-track { position: absolute; z-index: 8; bottom: 62rpx; width: 280rpx; height: 8rpx; overflow: hidden; border-radius: 999rpx; background: #E8E6DF; }
+.feedback-bubble { top: 122rpx; }
+.daily-greeting { top: 28rpx; border: 2rpx solid rgba(157,182,91,.28); }
+.cuddle-track { position: absolute; z-index: 9; bottom: 44rpx; width: 220rpx; height: 7rpx; overflow: hidden; border-radius: 999rpx; background: rgba(255,255,255,.64); }
 .cuddle-fill { height: 100%; border-radius: 999rpx; background: #9DB65B; transition: width .1s linear; }
 .tap-particles { position: absolute; z-index: 12; width: 1rpx; height: 1rpx; pointer-events: none; }
 .tap-particle { position: absolute; color: #FFF6A3; font-size: 30rpx; text-shadow: 0 2rpx 8rpx rgba(89,83,35,.25); animation: tap-burst .55s ease-out forwards; }
 .tap-particle--one { --px:-42rpx; --py:-48rpx; }.tap-particle--two { --px:38rpx; --py:-26rpx; animation-delay:.04s }.tap-particle--three { --px:8rpx; --py:46rpx; animation-delay:.08s }
-.egg--wobble { animation: wobble .55s ease-in-out; }
-.egg--warming, .egg--warm, .egg--talk-glow { filter: drop-shadow(0 0 28rpx rgba(237,231,142,.95)); }
-.egg--warming { animation: warm 1s ease-in-out infinite; }
-.egg--warm { animation: warm-done .8s ease-out; }
-.egg--talk-soft { animation: wobble .8s ease-in-out; }
-.egg--talk-happy { animation: happy-wobble .8s ease-out; }
-.egg--talk-glow { animation: warm-done .85s ease-out; }
-.egg--talk-color { filter: hue-rotate(18deg) saturate(1.12); }
-.egg--talk-knock { animation: knock .7s ease-in-out; }
+.egg.egg--wobble { animation: wobble .76s ease-in-out; }
+.egg.egg--warming, .egg.egg--warm, .egg.egg--talk-glow { filter: drop-shadow(0 0 24rpx rgba(255,235,150,.72)); }
+.egg.egg--warming { animation: warm-lean 1.2s ease-in-out infinite; }
+.egg.egg--warm { animation: warm-done .8s ease-out; }
+.egg.egg--talk-soft { animation: wobble .8s ease-in-out; }
+.egg.egg--talk-happy { animation: happy-settle .8s ease-out; }
+.egg.egg--talk-glow { animation: warm-done .85s ease-out; }
+.egg.egg--talk-color { filter: sepia(.08) saturate(1.08) drop-shadow(0 0 18rpx rgba(255,221,151,.4)); }
+.egg.egg--talk-knock { animation: knock .7s ease-in-out; }
+.egg.egg--quiet { animation: quiet-breathe 6.8s ease-in-out infinite; }
+.egg.egg--window { animation: window-lean 3.6s ease-in-out both; }
+.egg-contact-shadow.egg--wobble, .egg-contact-shadow.egg--talk-soft, .egg-contact-shadow.egg--talk-knock { animation: shadow-react .76s ease-in-out; }
+.egg-contact-shadow.egg--warming, .egg-contact-shadow.egg--warm { animation: shadow-cuddle 1.2s ease-in-out infinite; }
+.egg-contact-shadow.egg--talk-happy { animation: shadow-happy .8s ease-out; }
+.egg-contact-shadow.egg--quiet { animation: shadow-quiet 6.8s ease-in-out infinite; }
+.egg-contact-shadow.egg--window { animation: shadow-window 3.6s ease-in-out both; }
+.egg-contact-shadow.egg--talk-glow, .egg-contact-shadow.egg--talk-color { animation: shadow-glow .85s ease-out; }
+.scene--quiet .room-light-breathe { animation: room-breathe 6.8s ease-in-out infinite; }
+.scene--window .window-light { animation: window-look 3.6s ease-in-out both; }
+.scene--listening .egg-aura, .scene--secret .egg-aura, .scene--cuddle .egg-aura, .scene--wish .egg-aura, .scene--learn .egg-aura, .scene--draw .egg-aura { animation: aura-listen 1.1s ease-in-out infinite; }
+.scene--touch .egg-aura { animation: aura-touch .76s ease-out both; }
+.scene--draw .egg-aura::after { position: absolute; top: 30%; right: 16%; content: "✦"; color: rgba(255,241,151,.84); font-size: 34rpx; animation: draw-star .52s ease-out both; }
 
 .state-card { display: flex; align-items: center; margin: 24rpx 0; padding: 26rpx 30rpx; border: 1rpx solid #E8E6E0; border-radius: 28rpx; background: #FFF; box-shadow: 0 8rpx 24rpx rgba(0,41,0,.04); }
 .state-dot { width: 16rpx; height: 16rpx; flex: 0 0 auto; margin: 0 28rpx 0 8rpx; border-radius: 50%; background: #9DB65B; box-shadow: 0 0 0 10rpx #F1F5E7; }
@@ -76,17 +116,16 @@
 .status-meta { display: block; color: #718044; font-size: 21rpx; line-height: 1.5; }
 .status-line { display: block; margin-top: 10rpx; color: #35352F; font-size: 28rpx; line-height: 1.55; }
 .section-title { display: block; margin-bottom: 18rpx; color: #26372C; font-size: 28rpx; font-weight: 600; }
-.task-section, .talk-panel { margin-top: 26rpx; }
-.task-list { overflow: hidden; border: 1rpx solid #E5E8E0; border-radius: 28rpx; background: #FFF; }
-.task-row { min-height: 108rpx; display: flex; align-items: center; gap: 20rpx; padding: 18rpx 22rpx; border-bottom: 1rpx solid #ECEDE8; }
-.task-row:last-child { border-bottom: 0; }
-.task-row--done { opacity: .62; }
-.task-check { width: 46rpx; height: 46rpx; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #EEF3E6; color: #526844; font-size: 21rpx; }
-.task-copy { flex: 1; min-width: 0; }
-.task-title, .task-desc { display: block; }
-.task-title { color: #28332B; font-size: 25rpx; font-weight: 600; }
-.task-desc { margin-top: 7rpx; color: #8A8C85; font-size: 20rpx; }
-.task-reward { color: #718044; font-size: 21rpx; }
+.companion-section, .talk-panel { margin-top: 26rpx; }
+.companion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
+.companion-item { min-width: 0; min-height: 116rpx; display: flex; align-items: center; gap: 12rpx; padding: 16rpx; box-sizing: border-box; border: 1rpx solid #E3E8DF; border-radius: 24rpx; background: #FFF; box-shadow: 0 7rpx 20rpx rgba(45,72,42,.045); transition: transform .18s ease, background .18s ease; }
+.companion-item--pressed { background: #F4F7EF; transform: scale(.98); }
+.companion-icon-wrap { width: 62rpx; height: 62rpx; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 20rpx; background: #F3F6ED; }
+.companion-icon { width: 50rpx; height: 50rpx; display: block; }
+.companion-copy { min-width: 0; flex: 1; }
+.companion-title, .companion-desc { display: block; }
+.companion-title { overflow: hidden; color: #28332B; font-size: 22rpx; font-weight: 600; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.companion-desc { overflow: hidden; margin-top: 6rpx; color: #8A8C85; font-size: 17rpx; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .talk-panel { padding: 24rpx; border-radius: 28rpx; background: #EEF2E9; }
 .talk-composer { width: 100%; height: 86rpx; display: flex; align-items: center; gap: 12rpx; padding: 0 10rpx 0 22rpx; box-sizing: border-box; border-radius: 24rpx; background: #FFF; }
 .talk-input { min-width: 0; height: 86rpx; flex: 1; color: #26372C; font-size: 24rpx; }
@@ -113,20 +152,40 @@
 .name-skip { margin-top: 8rpx; background: transparent; color: #777B75; }
 .name-save::after, .name-skip::after { border: 0; }
 
-@keyframes breathe { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10rpx) rotate(1deg); } }
-@keyframes aura { 0%,100% { transform: scale(.95); opacity: .65; } 50% { transform: scale(1.08); opacity: 1; } }
-@keyframes wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 70% { transform: rotate(5deg); } }
-@keyframes warm { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
-@keyframes warm-done { 0% { transform: scale(1); } 45% { transform: scale(1.07); } 100% { transform: scale(1); } }
-@keyframes happy-wobble { 0%,100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-14rpx) rotate(-4deg); } 65% { transform: translateY(-4rpx) rotate(5deg); } }
-@keyframes knock { 0%,100% { transform: translateX(0); } 30% { transform: translateX(-7rpx); } 60% { transform: translateX(7rpx); } }
+@keyframes egg-breathe { 0%,100% { transform: scale(1); } 50% { transform: translateY(2rpx) scale(1.008,.986); } }
+@keyframes shadow-breathe { 0%,100% { transform: scaleX(1); opacity: .74; } 50% { transform: scaleX(1.045); opacity: .58; } }
+@keyframes aura { 0%,100% { transform: scale(.96); opacity: .42; } 50% { transform: scale(1.035); opacity: .7; } }
+@keyframes wobble { 0%,100% { transform: rotate(0); } 24% { transform: rotate(-4deg); } 66% { transform: rotate(3.5deg); } }
+@keyframes warm-lean { 0%,100% { transform: translateY(1rpx) rotate(0) scale(1); } 50% { transform: translateY(5rpx) rotate(1.4deg) scale(.99,.975); } }
+@keyframes warm-done { 0% { transform: scale(1); } 45% { transform: translateY(3rpx) scale(1.025,.98); } 100% { transform: scale(1); } }
+@keyframes happy-settle { 0%,100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-4rpx) rotate(-3deg); } 68% { transform: translateY(2rpx) rotate(3deg); } }
+@keyframes knock { 0%,100% { transform: translateX(0); } 30% { transform: translateX(-4rpx) scaleX(.992); } 60% { transform: translateX(4rpx) scaleX(1.006); } }
+@keyframes quiet-breathe { 0%,100% { transform: translateY(2rpx) scale(1,.99); } 50% { transform: translateY(5rpx) scale(1.008,.978); } }
+@keyframes window-lean { 0%,100% { transform: rotate(0); } 30%,76% { transform: rotate(-2.2deg) translateY(2rpx); } }
+@keyframes shadow-react { 0%,100% { transform: scaleX(1); } 35% { transform: translateX(-3rpx) scaleX(.94); } 68% { transform: translateX(3rpx) scaleX(1.04); } }
+@keyframes shadow-cuddle { 0%,100% { transform: scaleX(1); opacity: .75; } 50% { transform: scaleX(1.08); opacity: .86; } }
+@keyframes shadow-happy { 0%,100% { transform: scaleX(1); opacity: .72; } 32% { transform: scaleX(.88); opacity: .5; } 68% { transform: scaleX(1.07); opacity: .86; } }
+@keyframes shadow-quiet { 0%,100% { transform: scaleX(1); opacity: .7; } 50% { transform: scaleX(1.035); opacity: .62; } }
+@keyframes shadow-window { 0%,100% { transform: translateX(0) scaleX(1); } 30%,76% { transform: translateX(-3rpx) scaleX(1.02); } }
+@keyframes shadow-glow { 0%,100% { transform: scaleX(1); opacity: .7; } 50% { transform: scaleX(1.06); opacity: .84; } }
+@keyframes aura-listen { 0%,100% { transform: scale(.96); opacity: .46; } 50% { transform: scale(1.04); opacity: .74; } }
+@keyframes aura-touch { 0% { transform: scale(.92); opacity: .3; } 45% { transform: scale(1.08); opacity: .74; } 100% { transform: scale(1); opacity: .45; } }
+@keyframes room-breathe { 0%,100% { opacity: .08; } 50% { opacity: .8; } }
+@keyframes window-light-drift { 0%,100% { transform: translateX(-10rpx) rotate(5deg); opacity: .26; } 50% { transform: translateX(18rpx) rotate(5deg); opacity: .5; } }
+@keyframes window-look { 0% { transform: translateX(-70rpx) rotate(5deg); opacity: 0; } 42%,76% { transform: translateX(24rpx) rotate(5deg); opacity: .65; } 100% { transform: translateX(70rpx) rotate(5deg); opacity: 0; } }
+@keyframes spring-leaf-sway { 0%,100% { transform: translate(0,0) rotate(-12deg); opacity: .08; } 50% { transform: translate(10rpx,5rpx) rotate(10deg); opacity: .3; } }
+@keyframes spring-curtain-sway { 0%,100% { transform: skewX(0deg); opacity: .07; } 50% { transform: skewX(2.2deg) translateX(4rpx); opacity: .2; } }
+@keyframes summer-leaf-parallax { 0%,100% { transform: translate(0,0) rotate(-12deg) scale(.92); opacity: .08; } 50% { transform: translate(18rpx,-7rpx) rotate(10deg) scale(1.08); opacity: .28; } }
+@keyframes autumn-room-warmth { 0%,100% { opacity: .28; } 50% { opacity: .78; } }
+@keyframes window-clear-glint { 0% { transform: translateX(-100%); opacity: 0; } 35% { opacity: .55; } 100% { transform: translateX(100%); opacity: 0; } }
+@keyframes draw-star { from { transform: translateY(18rpx) scale(.6); opacity: 0; } 55% { opacity: 1; } to { transform: translateY(-12rpx) scale(1.15); opacity: 0; } }
 @keyframes bubble-in { from { transform: translateY(8rpx); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes tap-burst { from { transform: translate(0,0) scale(.7); opacity: 1; } to { transform: translate(var(--px),var(--py)) scale(1.15); opacity: 0; } }
-@keyframes weather-fall { from { transform: translateY(-40rpx) rotate(8deg); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(720rpx) rotate(12deg); opacity: .15; } }
-@keyframes cloud-drift-room { from { transform: translateX(-80rpx); } to { transform: translateX(240rpx); } }
+@keyframes weather-fall { from { transform: translateY(-40rpx) rotate(8deg); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(420rpx) rotate(12deg); opacity: .15; } }
+@keyframes cloud-drift-room { from { transform: translateX(-80rpx); } to { transform: translateX(480rpx); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .egg, .egg-aura, .weather-cloud, .rain-drop, .snow-flake { animation: none; }
+  .egg, .egg-contact-shadow, .egg-aura, .window-light, .curtain-light, .room-light-breathe, .scene-color-layer, .season-piece, .season-atmosphere, .weather-cloud, .rain-drop, .snow-flake { animation: none; }
   .tap-particle--two, .tap-particle--three { display: none; }
   .tap-particle--one { animation: tap-fade .45s ease-out forwards; }
 }

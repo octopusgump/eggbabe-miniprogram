@@ -93,13 +93,36 @@ assert.equal(read('miniprogram/pages/home/home.wxml').includes('露珠'), false,
 const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
-assert.equal(homeTemplate.includes('今天陪我做的事'), true, '孵化任务必须平铺首页');
+const incubationFeedbackLogic = [
+  homeLogic,
+  read('miniprogram/pages/wish/wish.js'),
+  read('miniprogram/pages/lesson/lesson.js'),
+  read('miniprogram/pages/doodle/doodle.js'),
+  read('miniprogram/pages/nickname/nickname.js')
+].join('\n');
+const incubationSceneAssets = ['spring', 'summer', 'autumn', 'winter'].flatMap(season => (
+  ['day', 'night'].map(period => `miniprogram/assets/scenes/incubation/webp/incubation_${season}_${period}.webp`)
+));
+const incubationInteractionAssets = ['touch', 'talk', 'quiet', 'window', 'wish', 'learn', 'draw', 'secret']
+  .map(name => `miniprogram/assets/scenes/incubation/svg/interaction_${name}.svg`);
+assert.equal(
+  incubationSceneAssets.concat(incubationInteractionAssets, ['miniprogram/assets/scenes/incubation/webp/egg_base_day.webp'])
+    .every(file => fs.existsSync(path.join(root, file))),
+  true,
+  '孵化首页引用的 8 张场景、8 个互动图标与透明蛋主体必须全部存在'
+);
+assert.equal(homeTemplate.includes('一起待一会儿'), true, '孵化首页必须使用无任务压力的自由陪伴入口');
+assert.equal((homeLogic.match(/interaction_(?:touch|talk|quiet|window|wish|learn|draw|secret)\.svg/g) || []).length, 8, '必须接入 8 个独立互动图标');
+assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示任务编号、完成态或奖励比例');
+assert.equal(homeTemplate.includes('src="{{environment.eggImage}}"'), true, '必须使用交付的透明蛋主体');
+assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须具有随动作变化的接触阴影');
 assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期必须提供常驻说话输入');
 assert.equal(homeTemplate.includes('/assets/icons/send.svg'), true, '说话输入框必须使用纸飞机发送图标');
 assert.equal(homeTemplate.includes('talk-send-arrow'), false, '说话输入框不得继续使用向上箭头');
 assert.equal(homeTemplate.includes('talk-count'), false, '说话输入条只保留输入框与发送图标');
 assert.equal(homeTemplate.includes('>告诉我<'), false, '说话发送按钮不得占用整块文字按钮');
 assert.equal(homeTemplate.includes('每天第一次说话增加 5%'), false, '用户界面不得公开说话的具体进度奖励比例');
+assert.equal(/\+\d+%|进度\s*\+\d+%/.test(incubationFeedbackLogic), false, '孵化互动成功提示不得公开后台进度奖励比例');
 assert.equal(homeTemplate.includes('暂不命名'), true, '命名弹层必须允许暂不命名');
 assert.equal(homeTemplate.includes('conic-gradient'), true, '孵化进度圆环必须显示比例填充');
 assert.equal(homeLogic.includes('/pages/nickname/nickname'), true, '破壳后必须可以进入改名页');
@@ -108,6 +131,9 @@ assert.equal(/还剩\s*\{\{|天\s*\{\{|小时/.test(homeTemplate), false, '首�
 assert.equal(homeLogic.includes('spawnTapParticles'), true, '轻点蛋必须在点击位置显示粒子');
 assert.equal(homeLogic.includes('vibrateCuddleTick'), true, '长按必须按秒提供体感反馈');
 assert.equal(homeStyles.includes('.season-spring') && homeStyles.includes('.weather-rain') && homeStyles.includes('.period-night'), true, '孵化场景必须包含季节、天气、昼夜三层表现');
+assert.equal(homeTemplate.includes('id="windowFogCanvas"'), true, '窗外区域必须提供可擦除雾层');
+assert.equal(homeLogic.includes("globalCompositeOperation = 'destination-out'"), true, '擦窗必须真实清除雾层而不是叠加白色光斑');
+assert.equal(homeStyles.includes('spring-curtain-sway') && homeStyles.includes('summer-leaf-parallax') && homeStyles.includes('autumn-room-warmth'), true, '春帘、夏叶与秋季室内暖光必须各有低频表现');
 assert.equal(/getLocation|chooseLocation|startLocationUpdate/.test([homeLogic, read('miniprogram/services/incubation-environment.js')].join('\n')), false, '上海天气不得申请用户定位');
 assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '孵化修炼手册独立页必须下线');
 

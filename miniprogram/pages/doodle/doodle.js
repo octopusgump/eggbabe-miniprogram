@@ -13,7 +13,7 @@ Page({
   onPattern(e) { this.setData({ selectedPattern: e.currentTarget.dataset.value }); },
   onSave() {
     const result = petStore.saveDoodle(this.data.selectedColor, this.data.selectedColorName, this.data.selectedPattern);
-    wx.showToast({ title: result.added ? '蛋壳变漂亮了 · +20%' : '蛋壳外观已更新', icon: 'none' });
+    wx.showToast({ title: result.added ? '我喜欢这个小记号' : '我换好新的蛋壳啦', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
   }
 });

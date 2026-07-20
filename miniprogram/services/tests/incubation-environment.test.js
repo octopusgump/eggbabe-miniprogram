@@ -19,16 +19,31 @@ assert.equal(environment.seasonFromBeijingDate(Date.parse('2026-08-07T12:00:00+0
 assert.equal(environment.seasonFromBeijingDate(Date.parse('2026-11-07T12:00:00+08:00')), 'winter');
 assert.equal(environment.periodFromBeijingTime(Date.parse('2026-07-19T06:00:00+08:00')), 'day');
 assert.equal(environment.periodFromBeijingTime(Date.parse('2026-07-19T18:00:00+08:00')), 'night');
+assert.equal(
+  environment.sceneAssetPath('autumn', 'night'),
+  '/assets/scenes/incubation/webp/incubation_autumn_night.webp'
+);
+assert.equal(
+  environment.sceneAssetPath('unknown', 'unknown'),
+  '/assets/scenes/incubation/webp/incubation_spring_day.webp',
+  '非法季节或昼夜枚举必须降级到安全素材'
+);
 assert.deepEqual(
   environment.resolve({ season: 'summer', weather: 'rain', period: 'night' }),
   {
     season: 'summer',
     weather: 'rain',
     period: 'night',
-    backgroundImage: '',
+    backgroundImage: '/assets/scenes/incubation/webp/incubation_summer_night.webp',
+    eggImage: '/assets/scenes/incubation/webp/egg_base_day.webp',
     locationLabel: '上海',
     className: 'season-summer weather-rain period-night'
   }
+);
+assert.equal(
+  environment.resolve({ season: 'winter', period: 'day', backgroundImage: 'https://cdn.example.com/incubation.webp' }).backgroundImage,
+  'https://cdn.example.com/incubation.webp',
+  '服务端下发的备案 HTTPS 场景图优先于本地素材'
 );
 assert.equal(environment.resolve({ weather: 'storm' }).weather, 'sunny', '未知天气必须降级为晴天');
 

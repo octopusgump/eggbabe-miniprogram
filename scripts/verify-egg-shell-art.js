@@ -1,0 +1,83 @@
+const assert = require('assert');
+const shellArt = require('../miniprogram/services/egg-shell-art');
+
+assert.equal(shellArt.COLORS.length >= 6 && shellArt.COLORS.length <= 8, true, '蛋壳颜色必须为 6–8 种');
+assert.deepEqual(shellArt.PATTERNS.map(item => item.type), ['star', 'heart', 'leaf'], '首版图样只保留星星、爱心、叶子');
+
+const blank = shellArt.defaultShellArt();
+assert.equal(blank.version, 2, '绘图记录必须使用新版结构');
+assert.equal(blank.operations.length, 0, '新蛋默认不得自带装饰');
+assert.equal(blank.baseAsset, shellArt.BASE_ASSET, '母版蛋必须使用受控本地素材');
+assert.equal(blank.colorToken, 'white', '配置缺失时必须回退白色母版');
+assert.equal(blank.colorAlpha, 0, '白色回退不得自动叠加奶油色');
+
+const incompatibleColor = shellArt.normalizeShellArt({ colorToken: 'uploaded-texture', color: '#123456' });
+assert.equal(incompatibleColor.colorToken, 'white', '不兼容颜色配置必须回退白色母版');
+assert.equal(incompatibleColor.colorAlpha, 0, '不兼容颜色不得污染白色母版');
+
+const legacy = shellArt.normalizeShellArt({ color: '#BFD9C1', colorName: '薄荷绿', pattern: '星星' });
+assert.equal(legacy.colorToken, 'mint', '旧颜色记录必须可以迁移');
+assert.equal(legacy.operations[0].pattern, 'star', '旧星星纹理必须迁移为图样操作');
+
+const remoteAttempt = shellArt.normalizeShellArt({
+  baseAsset: 'https://unsafe.example.com/upload.png',
+  colorToken: 'blush',
+  operations: [
+    { type: 'sticker', pattern: 'heart', x: 2, y: -1, scale: 8 },
+    { type: 'stroke', tool: 'eraser', width: 99, points: [{ x: -1, y: 2 }] },
+    { type: 'sticker', pattern: 'photo-upload', x: 0.5, y: 0.5 }
+  ]
+});
+assert.equal(remoteAttempt.baseAsset, shellArt.BASE_ASSET, '不得接受用户上传或远程母版');
+assert.equal(remoteAttempt.operations.length, 2, '非法上传型图样必须被过滤');
+assert.deepEqual(remoteAttempt.operations[1].points[0], { x: 0, y: 1 }, '手绘坐标必须归一化');
+assert.equal(remoteAttempt.operations[1].width, shellArt.FIXED_STROKE_WIDTH, '画笔和橡皮擦必须固定粗细');
+
+const withOperations = shellArt.normalizeShellArt({
+  colorToken: 'lavender',
+  operations: [
+    shellArt.createSticker('leaf', 0),
+    shellArt.createStroke('brush', [{ x: 0.2, y: 0.3 }, { x: 0.5, y: 0.6 }], 1),
+    shellArt.createStroke('eraser', [{ x: 0.4, y: 0.5 }], 2)
+  ]
+});
+const summary = shellArt.operationSummary(withOperations);
+assert.deepEqual(summary, {
+  color_token: 'lavender',
+  pattern_ids: ['leaf'],
+  sticker_count: 1,
+  stroke_count: 1,
+  used_eraser: true
+}, '埋点摘要不得包含用户具体手绘轨迹');
+
+assert.equal(JSON.stringify(summary).includes('points'), false, '埋点不得上传手绘点列');
+
+function createContextLog() {
+  const composites = [];
+  const gradient = { addColorStop() {} };
+  const context = {
+    clearRect() {}, drawImage() {}, save() {}, restore() {}, fillRect() {},
+    beginPath() {}, closePath() {}, moveTo() {}, lineTo() {}, bezierCurveTo() {},
+    quadraticCurveTo() {}, arc() {}, ellipse() {}, fill() {}, stroke() {}, clip() {},
+    translate() {}, rotate() {},
+    createLinearGradient() { return gradient; },
+    createRadialGradient() { return gradient; }
+  };
+  Object.defineProperty(context, 'globalCompositeOperation', {
+    set(value) { composites.push(value); },
+    get() { return composites[composites.length - 1] || 'source-over'; }
+  });
+  return { context, composites };
+}
+
+const baseLog = createContextLog();
+shellArt.drawEggBase(baseLog.context, {}, 280, 400, withOperations);
+assert.equal(baseLog.composites.includes('source-in'), true, '旧素材只能作为 Alpha 轮廓生成白色母版');
+assert.equal(baseLog.composites.includes('source-atop'), true, '颜色层必须在蛋体 Alpha 内半透明混色');
+
+const artLog = createContextLog();
+shellArt.drawEggArt(artLog.context, {}, 280, 400, withOperations);
+assert.equal(artLog.composites.includes('destination-out'), true, '橡皮擦必须只作用于装饰画布');
+assert.equal(artLog.composites.includes('destination-in'), true, '装饰必须裁切在蛋体 Alpha 内');
+
+console.log('蛋壳绘图校验通过：三层数据、固定笔刷、图样和安全边界正常。');

@@ -11,6 +11,7 @@ const syncQueue = require('../services/sync-queue');
 const storage = require('../services/storage-migration');
 const chatSafety = require('../services/chat-safety');
 const sceneCardStore = require('../services/scene-card-store');
+const shellArtService = require('../services/egg-shell-art');
 
 const DAY = 24 * 60 * 60 * 1000;
 const HATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
@@ -156,6 +157,7 @@ function getPet() {
   }
   const user = getUser();
   if (pet && pet.ownerId && user && pet.ownerId !== user.id) return null;
+  if (pet) pet.shell = shellArtService.normalizeShellArt(pet.shell);
   return pet;
 }
 
@@ -273,7 +275,7 @@ function bindPet(code, now) {
     preferences: isDirectHatch
       ? { wishes: [{ date: completedDate, value: '安静陪伴你' }], lessons: [{ date: completedDate, value: '学会撒娇' }], talks: [{ date: completedDate, value: '期待见到你' }] }
       : { wishes: [], lessons: [], talks: [] },
-    shell: { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
+    shell: shellArtService.defaultShellArt(),
     dailyStatus: null,
     collectionCard: null,
     inviteCodes: createInviteCodes(createdAt),
@@ -312,7 +314,7 @@ function importCloudPet(record, mode) {
     lastInteractionAt: createdAt,
     tasks: Object.assign({ nicknameDone: false, cuddleDate: '', wishDate: '', lessonDate: '', talkDate: '', nicknamePromptDate: '', nicknameChangedDate: '', doodleDone: false }, source.tasks || {}),
     preferences: Object.assign({ wishes: [], lessons: [], talks: [] }, source.preferences || {}),
-    shell: source.shell || { color: '#EDE78E', colorName: '奶油白', pattern: '星星' },
+    shell: shellArtService.normalizeShellArt(source.shell),
     dailyStatus: source.dailyStatus || null,
     collectionCard: source.collectionCard || null,
     inviteCodes: source.inviteCodes || createInviteCodes(createdAt),
@@ -447,16 +449,21 @@ function completeTalk(value) {
   return { ok: true, added: first ? 5 : 0, pet };
 }
 
-function saveDoodle(color, colorName, pattern) {
+function saveDoodle(shellInput, colorName, pattern) {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
+  const timeGate = timeService.requireAuthoritative();
+  if (!timeGate.ok) return timeGate;
   const first = !pet.tasks.doodleDone;
-  pet.shell = { color, colorName, pattern };
+  const legacyInput = typeof shellInput === 'string'
+    ? { color: shellInput, colorName, pattern }
+    : shellInput;
+  pet.shell = shellArtService.normalizeShellArt(legacyInput);
   pet.tasks.doodleDone = true;
   if (first) addProgress(pet, 20);
   pet.lastInteractionAt = timeService.now();
   if (!savePet(pet)) return { ok: false, message: '蛋壳保存失败，请重试' };
-  syncIncubationAction('doodle', { color, colorName, pattern });
+  syncIncubationAction('doodle', shellArtService.operationSummary(pet.shell));
   return { ok: true, added: first ? 20 : 0, pet };
 }
 

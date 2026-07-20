@@ -66,7 +66,10 @@
         <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene {{eggMotion}}" src="{{sceneImage}}" mode="aspectFill" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></image>
         <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></pet-avatar>
         <view wx:else class="egg-contact-shadow {{eggMotion}}"></view>
-        <image wx:if="{{stage !== 'hatched'}}" class="egg egg-image {{eggMotion}}" src="{{environment.eggImage}}" mode="aspectFit" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></image>
+        <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+          <canvas type="2d" id="homeEggBaseCanvas" class="egg-shell-layer egg-shell-layer--base"></canvas>
+          <canvas type="2d" id="homeEggArtCanvas" class="egg-shell-layer egg-shell-layer--art"></canvas>
+        </view>
 
         <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">
           <view class="tap-particle tap-particle--one">✦</view>

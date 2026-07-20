@@ -4,6 +4,8 @@ const timeService = require('../../services/time-service');
 const sceneConfig = require('../../utils/life-scenes');
 const syncQueue = require('../../services/sync-queue');
 const environmentService = require('../../services/incubation-environment');
+const shellArtService = require('../../services/egg-shell-art');
+const canvas2d = require('../../utils/canvas-2d');
 const config = require('../../config/v2');
 
 const TOUCH_LINES = ['你碰到我啦。', '我轻轻晃了一下。', '我听见你了。', '壳里传来我小小的回应。'];
@@ -61,6 +63,7 @@ Page({
   async onShow() {
     const pet = petStore.getPet();
     if (!pet) {
+      this.homeEggLayersReady = false;
       this.setData({ pet: null, stage: 'empty', hasScenes: false, greeting: '', showNameSheet: false, syncPending: syncQueue.pendingCount() });
       return;
     }
@@ -91,7 +94,10 @@ Page({
       environment: environmentService.resolve(serverEnvironment),
       syncPending: syncQueue.pendingCount()
     }, () => {
-      if (!hatched) this.setupWindowFog();
+      if (!hatched) {
+        this.setupWindowFog();
+        this.setupHomeEgg();
+      }
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
     if (hatched && this.data.dailyStatus) analytics.track('daily_status_viewed', { where: 'role_home', mood_type: this.data.dailyStatus.mood });
@@ -99,6 +105,64 @@ Page({
 
   onReady() {
     this.setupWindowFog();
+    this.setupHomeEgg();
+  },
+
+  setupHomeEgg() {
+    if (!this.data.pet || this.data.stage === 'hatched') return;
+    if (this.homeEggLayersReady) {
+      this.renderHomeEgg();
+      return;
+    }
+    if (this.homeEggSetupPending) return;
+    this.homeEggSetupPending = true;
+    const begin = () => {
+      Promise.all([
+        canvas2d.createLayer(this, '#homeEggBaseCanvas'),
+        canvas2d.createLayer(this, '#homeEggArtCanvas')
+      ]).then(layers => {
+        this.homeEggBaseLayer = layers[0];
+        this.homeEggArtLayer = layers[1];
+        if (!this.homeEggBaseLayer || !this.homeEggArtLayer) return null;
+        return Promise.all([
+          canvas2d.loadImage(this.homeEggBaseLayer, shellArtService.BASE_ASSET),
+          canvas2d.loadImage(this.homeEggArtLayer, shellArtService.BASE_ASSET)
+        ]);
+      }).then(images => {
+        if (!images) {
+          this.homeEggSetupPending = false;
+          return;
+        }
+        this.homeEggBaseImage = images[0];
+        this.homeEggMaskImage = images[1];
+        this.homeEggLayersReady = true;
+        this.renderHomeEgg();
+        this.homeEggSetupPending = false;
+      }).catch(() => {
+        this.homeEggSetupPending = false;
+      });
+    };
+    if (wx.nextTick) wx.nextTick(begin);
+    else setTimeout(begin, 0);
+  },
+
+  renderHomeEgg() {
+    if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched') return;
+    const shell = shellArtService.normalizeShellArt(this.data.pet.shell);
+    shellArtService.drawEggBase(
+      this.homeEggBaseLayer.context,
+      this.homeEggBaseImage,
+      this.homeEggBaseLayer.width,
+      this.homeEggBaseLayer.height,
+      shell
+    );
+    shellArtService.drawEggArt(
+      this.homeEggArtLayer.context,
+      this.homeEggMaskImage,
+      this.homeEggArtLayer.width,
+      this.homeEggArtLayer.height,
+      shell
+    );
   },
 
   onAddDevice() { wx.navigateTo({ url: '/pages/add-device/add-device' }); },
@@ -426,5 +490,11 @@ Page({
     this.windowEffectsRect = null;
     this.lastWindowWipePoint = null;
     this.windowFogInitialized = false;
+    this.homeEggBaseLayer = null;
+    this.homeEggArtLayer = null;
+    this.homeEggBaseImage = null;
+    this.homeEggMaskImage = null;
+    this.homeEggLayersReady = false;
+    this.homeEggSetupPending = false;
   }
 });

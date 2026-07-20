@@ -184,7 +184,8 @@ async function main() {
   assert.equal(homeTemplate.includes('一起待一会儿'), true, '孵化首页必须使用无任务压力的自由陪伴入口');
   assert.equal((homePage.match(/interaction_(?:touch|talk|quiet|window|wish|learn|draw|secret)\.svg/g) || []).length, 8, '孵化首页必须接入 8 个独立互动图标');
   assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示每日任务、完成状态或奖励比例');
-  assert.equal(homeTemplate.includes('src="{{environment.eggImage}}"'), true, '孵化首页必须使用交付的透明蛋主体');
+  assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '孵化首页必须以 Canvas 使用交付蛋体并回显蛋壳绘图');
+  assert.equal(homePage.includes("require('../../services/egg-shell-art')"), true, '孵化首页必须通过统一蛋壳绘图渲染器使用透明蛋主体');
   assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须在 U 形孵化窝中具有接触阴影');
   assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期首页必须提供常驻说话入口');
   assert.equal(homeTemplate.includes('这是我的孵化进度'), true, '进度圆环必须提供轻量说明');

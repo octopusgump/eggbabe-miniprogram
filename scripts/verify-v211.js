@@ -93,6 +93,9 @@ assert.equal(read('miniprogram/pages/home/home.wxml').includes('露珠'), false,
 const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
+const doodleTemplate = read('miniprogram/pages/doodle/doodle.wxml');
+const doodleLogic = read('miniprogram/pages/doodle/doodle.js');
+const shellArtLogic = read('miniprogram/services/egg-shell-art.js');
 const incubationFeedbackLogic = [
   homeLogic,
   read('miniprogram/pages/wish/wish.js'),
@@ -114,7 +117,9 @@ assert.equal(
 assert.equal(homeTemplate.includes('一起待一会儿'), true, '孵化首页必须使用无任务压力的自由陪伴入口');
 assert.equal((homeLogic.match(/interaction_(?:touch|talk|quiet|window|wish|learn|draw|secret)\.svg/g) || []).length, 8, '必须接入 8 个独立互动图标');
 assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示任务编号、完成态或奖励比例');
-assert.equal(homeTemplate.includes('src="{{environment.eggImage}}"'), true, '必须使用交付的透明蛋主体');
+assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '首页必须用独立 Canvas 渲染蛋体颜色与上层绘图');
+assert.equal(homeLogic.includes('shellArtService.drawEggBase') && homeLogic.includes('shellArtService.drawEggArt'), true, '首页必须回显保存后的三层蛋壳');
+assert.equal(shellArtLogic.includes('/assets/scenes/incubation/webp/egg_base_day.webp'), true, 'Canvas 必须继续使用交付的透明蛋主体作为母版');
 assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须具有随动作变化的接触阴影');
 assert.match(homeStyles, /\.egg\s*\{[^}]*width:\s*285rpx;[^}]*height:\s*408rpx;/s, '蛋宝宝主体必须在原尺寸基础上放大 50%');
 assert.match(homeStyles, /\.egg-contact-shadow\s*\{[^}]*width:\s*267rpx;[^}]*height:\s*47rpx;[^}]*radial-gradient/s, '窝垫必须提供与放大蛋体匹配的实时接触阴影');
@@ -125,6 +130,14 @@ assert.equal(homeTemplate.includes('talk-count'), false, '说话输入条只保�
 assert.equal(homeTemplate.includes('>告诉我<'), false, '说话发送按钮不得占用整块文字按钮');
 assert.equal(homeTemplate.includes('每天第一次说话增加 5%'), false, '用户界面不得公开说话的具体进度奖励比例');
 assert.equal(/\+\d+%|进度\s*\+\d+%/.test(incubationFeedbackLogic), false, '孵化互动成功提示不得公开后台进度奖励比例');
+assert.equal(shellArtLogic.includes("'destination-out'"), true, '橡皮擦必须只清除上层装饰画布');
+assert.equal(shellArtLogic.includes("globalCompositeOperation = 'source-atop'"), true, '蛋壳颜色必须以半透明混色保留母版高光');
+assert.equal(shellArtLogic.includes("globalCompositeOperation = 'source-in'"), true, '交付蛋图必须只作为 Alpha 轮廓生成中性白色母版');
+assert.equal(doodleTemplate.includes('星星') === false && doodleLogic.includes('shellArtService.PATTERNS'), true, '绘图页图样必须由受控星星、爱心、叶子配置渲染');
+assert.equal(doodleTemplate.includes('撤销') && doodleTemplate.includes('清空') && doodleTemplate.includes('橡皮擦') && doodleTemplate.includes('保存我的蛋壳'), true, '绘图页必须提供撤销、清空、橡皮擦与保存');
+assert.equal(doodleTemplate.includes('散落图样') && doodleTemplate.includes('调整贴纸') && doodleTemplate.includes('删除贴纸'), true, '图样必须支持重复铺陈，贴纸必须可移动和单独删除');
+assert.equal(doodleLogic.includes('draggingStickerId') && doodleLogic.includes('onDeleteSticker'), true, '贴纸移动与删除必须有真实交互逻辑');
+assert.equal(/chooseImage|chooseMedia|chooseMessageFile/.test(doodleLogic), false, '首版蛋壳绘图不得开放图片上传');
 assert.equal(homeTemplate.includes('暂不命名'), true, '命名弹层必须允许暂不命名');
 assert.equal(homeTemplate.includes('conic-gradient'), true, '孵化进度圆环必须显示比例填充');
 assert.equal(homeLogic.includes('/pages/nickname/nickname'), true, '破壳后必须可以进入改名页');

@@ -10,8 +10,7 @@
 .primary-button::after { border: none; }
 .pet-view { padding-bottom: 30rpx; }
 .top-row { position: relative; z-index: 8; display: flex; align-items: center; justify-content: space-between; }
-.eyebrow { display: block; font-size: 20rpx; letter-spacing: 2rpx; color: #829047; }
-.pet-name-row { display: flex; align-items: center; gap: 14rpx; margin-top: 10rpx; }
+.pet-name-row { display: flex; align-items: center; gap: 14rpx; }
 .pet-name { display: block; font-size: 42rpx; font-weight: 600; color: #1A1A1A; }
 .pet-name-edit { padding: 6rpx 12rpx; border-radius: 999rpx; background: #EEF3E6; color: #60703B; font-size: 19rpx; }
 .progress-wrap { position: relative; }

@@ -13,7 +13,6 @@
     <view wx:else class="pet-view">
       <view class="top-row">
         <view>
-          <text class="eyebrow">{{pet.prototype}} · {{stage === 'hatched' ? '已破壳' : '孵化记录'}}</text>
           <view class="pet-name-row" bindtap="onPetNameTap">
             <text class="pet-name">{{pet.name || '还没有名字'}}</text>
             <text wx:if="{{stage === 'hatched'}}" class="pet-name-edit">改名</text>

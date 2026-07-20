@@ -115,6 +115,7 @@ assert.equal(
   '孵化首页引用的 8 张场景、8 个互动图标与透明蛋主体必须全部存在'
 );
 assert.equal(homeTemplate.includes('一起待一会儿'), true, '孵化首页必须使用无任务压力的自由陪伴入口');
+assert.equal(homeTemplate.includes('孵化记录') || homeTemplate.includes('class="eyebrow"'), false, '首页左上角只保留蛋宝宝昵称，不得显示孵化记录眉题');
 assert.equal((homeLogic.match(/interaction_(?:touch|talk|quiet|window|wish|learn|draw|secret)\.svg/g) || []).length, 8, '必须接入 8 个独立互动图标');
 assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示任务编号、完成态或奖励比例');
 assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '首页必须用独立 Canvas 渲染蛋体颜色与上层绘图');

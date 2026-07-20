@@ -68,6 +68,8 @@
         <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
+          <view class="egg-shell-depth"></view>
+          <view class="egg-shell-specular"></view>
         </view>
 
         <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">

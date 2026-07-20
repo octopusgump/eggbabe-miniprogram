@@ -139,7 +139,10 @@ assert.equal(homeTemplate.includes('每天第一次说话增加 5%'), false, '�
 assert.equal(/\+\d+%|进度\s*\+\d+%/.test(incubationFeedbackLogic), false, '孵化互动成功提示不得公开后台进度奖励比例');
 assert.equal(shellArtLogic.includes("'destination-out'"), true, '橡皮擦必须只清除上层装饰画布');
 assert.equal(shellArtLogic.includes("globalCompositeOperation = 'source-atop'"), true, '蛋壳颜色必须以半透明混色保留母版高光');
-assert.equal(shellArtLogic.includes("globalCompositeOperation = 'source-in'"), true, '交付蛋图必须只作为 Alpha 轮廓生成中性白色母版');
+assert.equal(shellArtLogic.includes('context.drawImage(image, 0, 0, width, height)'), true, '交付蛋图必须作为真实视觉母版直接绘制');
+assert.equal(shellArtLogic.includes("globalCompositeOperation = 'source-in'"), false, '不得再用中性渐变覆盖交付蛋图的原始高光和立体阴影');
+assert.equal(homeTemplate.includes('egg-shell-specular') && homeTemplate.includes('egg-shell-depth'), true, '真实蛋体必须具有随动作响应的表面光泽与体积反馈层');
+assert.equal(homeStyles.includes('-webkit-mask-image: url("/assets/scenes/incubation/webp/egg_base_day.webp")'), true, '光泽反馈必须使用真实蛋体 Alpha 裁切，不得越出蛋壳');
 assert.equal(doodleTemplate.includes('星星') === false && doodleLogic.includes('shellArtService.PATTERNS'), true, '绘图页图样必须由受控星星、爱心、叶子配置渲染');
 assert.equal(doodleTemplate.includes('撤销') && doodleTemplate.includes('清空') && doodleTemplate.includes('橡皮擦') && doodleTemplate.includes('保存我的蛋壳'), true, '绘图页必须提供撤销、清空、橡皮擦与保存');
 assert.equal(doodleTemplate.includes('散落图样') && doodleTemplate.includes('调整贴纸') && doodleTemplate.includes('删除贴纸'), true, '图样必须支持重复铺陈，贴纸必须可移动和单独删除');

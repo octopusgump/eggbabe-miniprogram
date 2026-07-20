@@ -54,9 +54,10 @@ assert.equal(JSON.stringify(summary).includes('points'), false, '埋点不得上
 
 function createContextLog() {
   const composites = [];
+  const drawImages = [];
   const gradient = { addColorStop() {} };
   const context = {
-    clearRect() {}, drawImage() {}, save() {}, restore() {}, fillRect() {},
+    clearRect() {}, drawImage(...args) { drawImages.push(args); }, save() {}, restore() {}, fillRect() {},
     beginPath() {}, closePath() {}, moveTo() {}, lineTo() {}, bezierCurveTo() {},
     quadraticCurveTo() {}, arc() {}, ellipse() {}, fill() {}, stroke() {}, clip() {},
     translate() {}, rotate() {},
@@ -67,13 +68,20 @@ function createContextLog() {
     set(value) { composites.push(value); },
     get() { return composites[composites.length - 1] || 'source-over'; }
   });
-  return { context, composites };
+  return { context, composites, drawImages };
 }
 
-const baseLog = createContextLog();
-shellArt.drawEggBase(baseLog.context, {}, 280, 400, withOperations);
-assert.equal(baseLog.composites.includes('source-in'), true, '旧素材只能作为 Alpha 轮廓生成白色母版');
-assert.equal(baseLog.composites.includes('source-atop'), true, '颜色层必须在蛋体 Alpha 内半透明混色');
+const originalBaseLog = createContextLog();
+shellArt.drawEggBase(originalBaseLog.context, {}, 280, 400, blank);
+assert.equal(originalBaseLog.drawImages.length, 1, '默认蛋体必须直接绘制交付的真实 WebP 母版');
+assert.equal(originalBaseLog.composites.includes('source-in'), false, '不得再用中性渐变覆盖真实母版的原始高光与体积阴影');
+assert.equal(originalBaseLog.composites.includes('source-atop'), false, '原生蛋色不得额外覆盖人工色层或体积层');
+
+const tintedBaseLog = createContextLog();
+shellArt.drawEggBase(tintedBaseLog.context, {}, 280, 400, withOperations);
+assert.equal(tintedBaseLog.drawImages.length, 1, '换色蛋也必须先绘制交付的真实 WebP 母版');
+assert.equal(tintedBaseLog.composites.includes('source-in'), false, '换色不得抹掉真实母版 RGB 质感');
+assert.equal(tintedBaseLog.composites.includes('source-atop'), true, '用户颜色层必须在真实蛋体 Alpha 内半透明混色');
 
 const artLog = createContextLog();
 shellArt.drawEggArt(artLog.context, {}, 280, 400, withOperations);

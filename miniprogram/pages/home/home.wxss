@@ -72,12 +72,16 @@
 .room-light-breathe { position: absolute; z-index: 5; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 72%, rgba(255,242,190,.2), transparent 36%); }
 
 .egg-aura { position: absolute; z-index: 5; left: 50%; bottom: 52rpx; width: 350rpx; height: 350rpx; margin-left: -175rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,243,180,.3), rgba(237,231,142,0) 68%); animation: aura 4.4s ease-in-out infinite; }
-.egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 285rpx; height: 408rpx; margin-left: -143rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 12rpx 12rpx rgba(69,53,35,.1)); }
+.egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 285rpx; height: 408rpx; margin-left: -143rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 11rpx 11rpx rgba(69,53,35,.16)); }
 .egg-shell { overflow: visible; }
 .egg-shell-preview { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .egg-shell-preview--base { z-index: 1; }
-.egg-shell-preview--art { z-index: 2; }
+.egg-shell-preview--art { z-index: 4; }
+.egg-shell-depth, .egg-shell-specular { position: absolute; inset: 0; pointer-events: none; opacity: 0; -webkit-mask-image: url("/assets/scenes/incubation/webp/egg_base_day.webp"); mask-image: url("/assets/scenes/incubation/webp/egg_base_day.webp"); -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.egg-shell-depth { z-index: 2; background: radial-gradient(ellipse, rgba(73,61,42,.24) 0%, rgba(94,78,54,.09) 38%, rgba(94,78,54,0) 72%) 50% 86% / 64% 30% no-repeat; filter: blur(2rpx); }
+.egg-shell-specular { z-index: 3; background: radial-gradient(ellipse, rgba(255,255,248,.72) 0%, rgba(255,255,248,.28) 35%, rgba(255,255,248,0) 72%) 28% 24% / 35% 34% no-repeat; filter: blur(1rpx); }
 .egg-zone.period-night .egg-shell-preview { filter: brightness(.9) saturate(.88); }
+.egg-zone.period-night .egg-shell-specular { filter: brightness(.82); }
 .egg-render-cache { position: fixed; left: -2000px; top: 0; width: 285rpx; height: 408rpx; pointer-events: none; }
 .egg-render-cache--art { top: 500px; }
 .egg-contact-shadow { position: absolute; z-index: 6; left: 50%; bottom: 84rpx; width: 267rpx; height: 47rpx; margin-left: -134rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(ellipse, rgba(66,45,28,.34) 0%, rgba(74,52,34,.22) 48%, rgba(85,60,38,0) 76%); filter: blur(7rpx); transform-origin: center; animation: shadow-breathe 4.2s ease-in-out infinite; }
@@ -91,10 +95,15 @@
 .tap-particle { position: absolute; color: #FFF6A3; font-size: 30rpx; text-shadow: 0 2rpx 8rpx rgba(89,83,35,.25); animation: tap-burst .55s ease-out forwards; }
 .tap-particle--one { --px:-42rpx; --py:-48rpx; }.tap-particle--two { --px:38rpx; --py:-26rpx; animation-delay:.04s }.tap-particle--three { --px:8rpx; --py:46rpx; animation-delay:.08s }
 .egg.egg--wobble { animation: wobble .76s ease-in-out; }
+.egg.egg--wobble .egg-shell-specular { animation: shell-glint-touch .76s ease-out; }
+.egg.egg--wobble .egg-shell-depth { animation: shell-depth-touch .76s ease-out; }
 .egg.egg--warming, .egg.egg--warm, .egg.egg--talk-glow { filter: drop-shadow(0 0 24rpx rgba(255,235,150,.72)); }
 .egg.egg--warming { animation: warm-lean 1.2s ease-in-out infinite; }
+.egg.egg--warming .egg-shell-specular { animation: shell-glint-cuddle 1.2s ease-in-out infinite; }
 .egg.egg--warm { animation: warm-done .8s ease-out; }
+.egg.egg--warm .egg-shell-specular, .egg.egg--talk-glow .egg-shell-specular { animation: shell-glint-warm .85s ease-out; }
 .egg.egg--talk-soft { animation: wobble .8s ease-in-out; }
+.egg.egg--talk-soft .egg-shell-specular, .egg.egg--talk-knock .egg-shell-specular { animation: shell-glint-touch .8s ease-out; }
 .egg.egg--talk-happy { animation: happy-settle .8s ease-out; }
 .egg.egg--talk-glow { animation: warm-done .85s ease-out; }
 .egg.egg--talk-color { filter: sepia(.08) saturate(1.08) drop-shadow(0 0 18rpx rgba(255,221,151,.4)); }
@@ -159,7 +168,7 @@
 @keyframes egg-breathe { 0%,100% { transform: scale(1); } 50% { transform: translateY(2rpx) scale(1.008,.986); } }
 @keyframes shadow-breathe { 0%,100% { transform: scale(1,.9); opacity: .9; } 50% { transform: scale(1.045,.78); opacity: .7; } }
 @keyframes aura { 0%,100% { transform: scale(.96); opacity: .42; } 50% { transform: scale(1.035); opacity: .7; } }
-@keyframes wobble { 0%,100% { transform: rotate(0); } 24% { transform: rotate(-4deg); } 66% { transform: rotate(3.5deg); } }
+@keyframes wobble { 0%,100% { transform: translateY(0) rotate(0) scale(1); } 24% { transform: translateY(2rpx) rotate(-4deg) scale(.992,1.005); } 52% { transform: translateY(4rpx) rotate(2deg) scale(1.012,.982); } 72% { transform: translateY(1rpx) rotate(3.5deg) scale(.998,1.002); } }
 @keyframes warm-lean { 0%,100% { transform: translateY(1rpx) rotate(0) scale(1); } 50% { transform: translateY(5rpx) rotate(1.4deg) scale(.99,.975); } }
 @keyframes warm-done { 0% { transform: scale(1); } 45% { transform: translateY(3rpx) scale(1.025,.98); } 100% { transform: scale(1); } }
 @keyframes happy-settle { 0%,100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-4rpx) rotate(-3deg); } 68% { transform: translateY(2rpx) rotate(3deg); } }
@@ -172,6 +181,10 @@
 @keyframes shadow-quiet { 0%,100% { transform: scale(1,.9); opacity: .7; } 50% { transform: scale(1.035,.8); opacity: .62; } }
 @keyframes shadow-window { 0%,100% { transform: translateX(0) scale(1,.9); } 30%,76% { transform: translateX(-3rpx) scale(1.02,.84); } }
 @keyframes shadow-glow { 0%,100% { transform: scale(1,.9); opacity: .7; } 50% { transform: scale(1.06,.78); opacity: .84; } }
+@keyframes shell-glint-touch { 0%,100% { background-position: 28% 24%; background-size: 35% 34%; opacity: 0; } 32% { background-position: 21% 30%; background-size: 33% 36%; opacity: .34; } 68% { background-position: 34% 21%; background-size: 37% 32%; opacity: .26; } }
+@keyframes shell-depth-touch { 0%,100% { background-position: 50% 86%; background-size: 64% 30%; opacity: 0; } 38% { background-position: 46% 88%; background-size: 61% 32%; opacity: .34; } 70% { background-position: 54% 86%; background-size: 67% 28%; opacity: .27; } }
+@keyframes shell-glint-cuddle { 0%,100% { background-position: 28% 24%; background-size: 35% 34%; opacity: .08; } 50% { background-position: 30% 29%; background-size: 38% 32%; opacity: .28; } }
+@keyframes shell-glint-warm { 0%,100% { background-position: 28% 24%; background-size: 35% 34%; opacity: 0; } 46% { background-position: 26% 28%; background-size: 41% 39%; opacity: .42; } }
 @keyframes aura-listen { 0%,100% { transform: scale(.96); opacity: .46; } 50% { transform: scale(1.04); opacity: .74; } }
 @keyframes aura-touch { 0% { transform: scale(.92); opacity: .3; } 45% { transform: scale(1.08); opacity: .74; } 100% { transform: scale(1); opacity: .45; } }
 @keyframes room-breathe { 0%,100% { opacity: .08; } 50% { opacity: .8; } }
@@ -189,7 +202,7 @@
 @keyframes cloud-drift-room { from { transform: translateX(-80rpx); } to { transform: translateX(480rpx); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .egg, .egg-contact-shadow, .egg-aura, .window-light, .curtain-light, .room-light-breathe, .scene-color-layer, .season-piece, .season-atmosphere, .weather-cloud, .rain-drop, .snow-flake { animation: none; }
+  .egg, .egg-shell-specular, .egg-shell-depth, .egg-contact-shadow, .egg-aura, .window-light, .curtain-light, .room-light-breathe, .scene-color-layer, .season-piece, .season-atmosphere, .weather-cloud, .rain-drop, .snow-flake { animation: none; }
   .tap-particle--two, .tap-particle--three { display: none; }
   .tap-particle--one { animation: tap-fade .45s ease-out forwards; }
 }

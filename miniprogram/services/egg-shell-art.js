@@ -1,7 +1,7 @@
 const BASE_ASSET = '/assets/scenes/incubation/webp/egg_base_day.webp';
 const SHELL_VERSION = 2;
-const BASE_VERSION = 'v2.23';
-const COLOR_ALPHA = 0.42;
+const BASE_VERSION = 'v2.26-realistic';
+const COLOR_ALPHA = 0.32;
 const FIXED_STROKE_WIDTH = 0.052;
 
 const COLORS = [
@@ -196,19 +196,10 @@ function drawEggBase(context, image, width, height, shellInput) {
     drawHighlight(context, width, height);
     return;
   }
-  // The delivered image supplies the exact transparent silhouette only. Its old RGB
-  // tint is replaced with a neutral, shaded white master before user color is added.
+  // The delivered WebP is the visual master: keep its soft highlight, green volume
+  // gradient and warm lower shadow intact. User colors are a translucent shell tint,
+  // never a replacement gradient.
   context.drawImage(image, 0, 0, width, height);
-  context.save();
-  context.globalCompositeOperation = 'source-in';
-  const neutral = context.createLinearGradient(0, 0, width, height);
-  neutral.addColorStop(0, '#FFFDF7');
-  neutral.addColorStop(0.52, '#F6F4EC');
-  neutral.addColorStop(0.82, '#E9E6DC');
-  neutral.addColorStop(1, '#D5D1C6');
-  context.fillStyle = neutral;
-  context.fillRect(0, 0, width, height);
-  context.restore();
   if (shell.colorAlpha > 0) {
     context.save();
     context.globalCompositeOperation = 'source-atop';
@@ -216,16 +207,6 @@ function drawEggBase(context, image, width, height, shellInput) {
     context.fillRect(0, 0, width, height);
     context.restore();
   }
-  context.save();
-  context.globalCompositeOperation = 'source-atop';
-  const volume = context.createLinearGradient(0, 0, width, height);
-  volume.addColorStop(0, 'rgba(255,255,255,.18)');
-  volume.addColorStop(0.58, 'rgba(255,255,255,0)');
-  volume.addColorStop(1, 'rgba(71,65,52,.12)');
-  context.fillStyle = volume;
-  context.fillRect(0, 0, width, height);
-  context.restore();
-  drawHighlight(context, width, height);
 }
 
 function drawStar(context, radius) {

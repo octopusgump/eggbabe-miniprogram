@@ -96,6 +96,7 @@ const homeStyles = read('miniprogram/pages/home/home.wxss');
 const doodleTemplate = read('miniprogram/pages/doodle/doodle.wxml');
 const doodleLogic = read('miniprogram/pages/doodle/doodle.js');
 const shellArtLogic = read('miniprogram/services/egg-shell-art.js');
+const visibleEggBlock = homeTemplate.match(/<view wx:if="\{\{stage !== 'hatched'\}\}" class="egg egg-shell[^"]*"[\s\S]*?<\/view>/);
 const incubationFeedbackLogic = [
   homeLogic,
   read('miniprogram/pages/wish/wish.js'),
@@ -120,6 +121,11 @@ assert.equal((homeLogic.match(/interaction_(?:touch|talk|quiet|window|wish|learn
 assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示任务编号、完成态或奖励比例');
 assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '首页必须用独立 Canvas 渲染蛋体颜色与上层绘图');
 assert.equal(homeLogic.includes('shellArtService.drawEggBase') && homeLogic.includes('shellArtService.drawEggArt'), true, '首页必须回显保存后的三层蛋壳');
+assert.equal(homeTemplate.includes('egg-shell-preview') && homeTemplate.includes('egg-render-cache'), true, '首页必须使用屏幕外 Canvas 合成，再以普通图片显示在孵化窝中');
+assert.equal(!!visibleEggBlock, true, '首页必须保留位于孵化窝中的可交互蛋体容器');
+assert.equal(visibleEggBlock[0].includes('<canvas'), false, '可见蛋体容器不得嵌套原生 Canvas，避免滚动时脱离孵化窝');
+assert.equal(homeStyles.includes('left: -2000px') && homeLogic.includes('canvas2d.exportImage'), true, '蛋壳 Canvas 必须固定在屏幕外并导出预览图');
+assert.equal(homeLogic.includes('setupToken !== this.homeEggSetupToken'), true, '页面卸载后必须丢弃过期的 Canvas 异步初始化结果');
 assert.equal(shellArtLogic.includes('/assets/scenes/incubation/webp/egg_base_day.webp'), true, 'Canvas 必须继续使用交付的透明蛋主体作为母版');
 assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须具有随动作变化的接触阴影');
 assert.match(homeStyles, /\.egg\s*\{[^}]*width:\s*285rpx;[^}]*height:\s*408rpx;/s, '蛋宝宝主体必须在原尺寸基础上放大 50%');

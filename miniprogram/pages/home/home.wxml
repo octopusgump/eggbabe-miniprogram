@@ -66,8 +66,8 @@
         <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></pet-avatar>
         <view wx:else class="egg-contact-shadow {{eggMotion}}"></view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
-          <canvas type="2d" id="homeEggBaseCanvas" class="egg-shell-layer egg-shell-layer--base"></canvas>
-          <canvas type="2d" id="homeEggArtCanvas" class="egg-shell-layer egg-shell-layer--art"></canvas>
+          <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
+          <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
         </view>
 
         <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">
@@ -116,6 +116,9 @@
       </view>
     </view>
   </scroll-view>
+
+  <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>
+  <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggArtCanvas" class="egg-render-cache egg-render-cache--art"></canvas>
 
   <view wx:if="{{showNameSheet}}" class="name-mask" catchtouchmove="noop">
     <view class="name-sheet">

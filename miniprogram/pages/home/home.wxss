@@ -74,10 +74,12 @@
 .egg-aura { position: absolute; z-index: 5; left: 50%; bottom: 52rpx; width: 350rpx; height: 350rpx; margin-left: -175rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,243,180,.3), rgba(237,231,142,0) 68%); animation: aura 4.4s ease-in-out infinite; }
 .egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 285rpx; height: 408rpx; margin-left: -143rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 12rpx 12rpx rgba(69,53,35,.1)); }
 .egg-shell { overflow: visible; }
-.egg-shell-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.egg-shell-layer--base { z-index: 1; }
-.egg-shell-layer--art { z-index: 2; }
-.egg-zone.period-night .egg-shell-layer { filter: brightness(.9) saturate(.88); }
+.egg-shell-preview { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.egg-shell-preview--base { z-index: 1; }
+.egg-shell-preview--art { z-index: 2; }
+.egg-zone.period-night .egg-shell-preview { filter: brightness(.9) saturate(.88); }
+.egg-render-cache { position: fixed; left: -2000px; top: 0; width: 285rpx; height: 408rpx; pointer-events: none; }
+.egg-render-cache--art { top: 500px; }
 .egg-contact-shadow { position: absolute; z-index: 6; left: 50%; bottom: 84rpx; width: 267rpx; height: 47rpx; margin-left: -134rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(ellipse, rgba(66,45,28,.34) 0%, rgba(74,52,34,.22) 48%, rgba(85,60,38,0) 76%); filter: blur(7rpx); transform-origin: center; animation: shadow-breathe 4.2s ease-in-out infinite; }
 .life-home-scene { position: relative; z-index: 3; width: 430rpx; height: 450rpx; border-radius: 42rpx; box-shadow: 0 26rpx 50rpx rgba(0,41,0,.16); }
 .feedback-bubble, .daily-greeting { position: absolute; z-index: 8; max-width: 480rpx; padding: 18rpx 26rpx; border-radius: 28rpx 28rpx 28rpx 8rpx; background: #FFF; box-shadow: 0 12rpx 36rpx rgba(0,41,0,.10); color: #3D4930; font-size: 25rpx; animation: bubble-in .25s ease-out; }

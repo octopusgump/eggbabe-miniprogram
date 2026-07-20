@@ -38,4 +38,26 @@ function loadImage(layer, source) {
   });
 }
 
-module.exports = { createLayer, loadImage };
+function exportImage(layer) {
+  return new Promise(resolve => {
+    if (!layer || !layer.canvas || !wx.canvasToTempFilePath) {
+      resolve('');
+      return;
+    }
+    wx.canvasToTempFilePath({
+      canvas: layer.canvas,
+      x: 0,
+      y: 0,
+      width: layer.width,
+      height: layer.height,
+      destWidth: layer.canvas.width,
+      destHeight: layer.canvas.height,
+      fileType: 'png',
+      quality: 1,
+      success: result => resolve(result.tempFilePath || ''),
+      fail: () => resolve('')
+    });
+  });
+}
+
+module.exports = { createLayer, loadImage, exportImage };

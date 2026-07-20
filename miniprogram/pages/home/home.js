@@ -57,14 +57,25 @@ Page({
     nameDraft: '',
     nameCount: 0,
     nameError: '',
-    savingName: false
+    savingName: false,
+    homeEggBasePreview: '',
+    homeEggArtPreview: ''
   },
 
   async onShow() {
     const pet = petStore.getPet();
     if (!pet) {
       this.homeEggLayersReady = false;
-      this.setData({ pet: null, stage: 'empty', hasScenes: false, greeting: '', showNameSheet: false, syncPending: syncQueue.pendingCount() });
+      this.setData({
+        pet: null,
+        stage: 'empty',
+        hasScenes: false,
+        greeting: '',
+        showNameSheet: false,
+        syncPending: syncQueue.pendingCount(),
+        homeEggBasePreview: '',
+        homeEggArtPreview: ''
+      });
       return;
     }
     const stage = petStore.getStage(pet);
@@ -116,30 +127,36 @@ Page({
     }
     if (this.homeEggSetupPending) return;
     this.homeEggSetupPending = true;
+    const setupToken = this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
+    let candidateLayers = null;
     const begin = () => {
+      if (setupToken !== this.homeEggSetupToken) return;
       Promise.all([
         canvas2d.createLayer(this, '#homeEggBaseCanvas'),
         canvas2d.createLayer(this, '#homeEggArtCanvas')
       ]).then(layers => {
-        this.homeEggBaseLayer = layers[0];
-        this.homeEggArtLayer = layers[1];
-        if (!this.homeEggBaseLayer || !this.homeEggArtLayer) return null;
+        if (setupToken !== this.homeEggSetupToken) return null;
+        candidateLayers = layers;
+        if (!candidateLayers[0] || !candidateLayers[1]) return null;
         return Promise.all([
-          canvas2d.loadImage(this.homeEggBaseLayer, shellArtService.BASE_ASSET),
-          canvas2d.loadImage(this.homeEggArtLayer, shellArtService.BASE_ASSET)
+          canvas2d.loadImage(candidateLayers[0], shellArtService.BASE_ASSET),
+          canvas2d.loadImage(candidateLayers[1], shellArtService.BASE_ASSET)
         ]);
       }).then(images => {
+        if (setupToken !== this.homeEggSetupToken) return;
         if (!images) {
           this.homeEggSetupPending = false;
           return;
         }
+        this.homeEggBaseLayer = candidateLayers[0];
+        this.homeEggArtLayer = candidateLayers[1];
         this.homeEggBaseImage = images[0];
         this.homeEggMaskImage = images[1];
         this.homeEggLayersReady = true;
         this.renderHomeEgg();
         this.homeEggSetupPending = false;
       }).catch(() => {
-        this.homeEggSetupPending = false;
+        if (setupToken === this.homeEggSetupToken) this.homeEggSetupPending = false;
       });
     };
     if (wx.nextTick) wx.nextTick(begin);
@@ -148,6 +165,7 @@ Page({
 
   renderHomeEgg() {
     if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched') return;
+    const renderToken = this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
     const shell = shellArtService.normalizeShellArt(this.data.pet.shell);
     shellArtService.drawEggBase(
       this.homeEggBaseLayer.context,
@@ -163,6 +181,27 @@ Page({
       this.homeEggArtLayer.height,
       shell
     );
+    Promise.all([
+      canvas2d.exportImage(this.homeEggBaseLayer),
+      canvas2d.exportImage(this.homeEggArtLayer)
+    ]).then(previews => {
+      if (renderToken !== this.homeEggRenderToken || !this.data.pet || this.data.stage === 'hatched') return;
+      this.setData({
+        homeEggBasePreview: previews[0] || this.data.environment.eggImage,
+        homeEggArtPreview: previews[1] || ''
+      });
+    });
+  },
+
+  onHomeEggPreviewError(event) {
+    const layer = event.currentTarget.dataset.layer;
+    if (layer === 'art') {
+      this.setData({ homeEggArtPreview: '' });
+      return;
+    }
+    if (this.data.homeEggBasePreview !== this.data.environment.eggImage) {
+      this.setData({ homeEggBasePreview: this.data.environment.eggImage });
+    }
   },
 
   onAddDevice() { wx.navigateTo({ url: '/pages/add-device/add-device' }); },
@@ -496,5 +535,7 @@ Page({
     this.homeEggMaskImage = null;
     this.homeEggLayersReady = false;
     this.homeEggSetupPending = false;
+    this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
+    this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
   }
 });

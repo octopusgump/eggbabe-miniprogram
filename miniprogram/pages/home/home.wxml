@@ -18,11 +18,18 @@
             <text wx:if="{{stage === 'hatched'}}" class="pet-name-edit">改名</text>
           </view>
         </view>
-        <view wx:if="{{stage !== 'hatched'}}" class="progress-wrap" bindtap="onProgressTap">
-          <view class="progress-ring" style="background:conic-gradient(#9DB65B 0% {{pet.progress}}%, #E5E9DD {{pet.progress}}% 100%);">
-            <view class="progress-ring-core"><text>{{pet.progress}}%</text></view>
+        <view class="home-info">
+          <view class="dew-balance {{dewBalanceBumpClass}}" bindtap="onDewBalanceTap" aria-role="button" aria-label="当前露珠 {{dewBalance}}">
+            <view class="dew-icon"><view class="dew-icon-shine"></view></view>
+            <text class="dew-value">{{dewBalance}}</text>
+            <view wx:if="{{dewTip}}" class="dew-tip">今日通过点击已收集 {{dailyClickEarned}} / {{dailyClickCap}}</view>
           </view>
-          <view wx:if="{{progressTip}}" class="progress-tip">这是我的孵化进度</view>
+          <view wx:if="{{stage !== 'hatched'}}" class="progress-wrap" bindtap="onProgressTap">
+            <view class="progress-ring" style="background:conic-gradient(#9DB65B 0% {{pet.progress}}%, #E5E9DD {{pet.progress}}% 100%);">
+              <view class="progress-ring-core"><text>{{pet.progress}}%</text></view>
+            </view>
+            <view wx:if="{{progressTip}}" class="progress-tip">这是我的孵化进度</view>
+          </view>
         </view>
       </view>
 
@@ -71,18 +78,35 @@
           <view class="egg-shell-depth"></view>
           <view class="egg-shell-specular"></view>
         </view>
-
         <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">
           <view class="tap-particle tap-particle--one">✦</view>
           <view class="tap-particle tap-particle--two">•</view>
           <view class="tap-particle tap-particle--three">✧</view>
         </view>
+        <view wx:for="{{dewDrops}}" wx:key="id" class="dew-drop-flight" style="left:{{item.x}}px;top:{{item.y}}px;--dew-x:{{item.dx}}px;--dew-y:{{item.dy}}px;">
+          <view class="dew-drop-core"></view>
+        </view>
+        <view wx:for="{{dewGains}}" wx:key="id" class="dew-gain" style="top:{{item.top}}rpx;">{{item.text}}</view>
         <view wx:if="{{cuddleProgress > 0}}" class="cuddle-track"><view class="cuddle-fill" style="width: {{cuddleProgress}}%;"></view></view>
       </view>
 
       <view class="state-card">
         <view class="state-dot"></view>
         <text class="state-title">{{stageText}}</text>
+      </view>
+
+      <view class="item-entry">
+        <view class="item-entry-copy">
+          <text class="item-entry-title">给我添一点可爱</text>
+          <text class="item-entry-desc">{{equippedItems.length ? '当前道具状态已保存到背包' : '装扮、零食与摆件都不会改变数值'}}</text>
+          <view wx:if="{{equippedItems.length}}" class="equipped-summary">
+            <text wx:for="{{equippedItems}}" wx:key="id" class="equipped-summary-item">{{item.category === 'scene-decor' ? '已摆放' : '已装配'}} · {{item.name}}</text>
+          </view>
+        </view>
+        <view class="item-entry-actions">
+          <view class="item-entry-button" bindtap="onOpenShop">商店</view>
+          <view class="item-entry-button item-entry-button--light" bindtap="onOpenBag">背包</view>
+        </view>
       </view>
 
       <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">

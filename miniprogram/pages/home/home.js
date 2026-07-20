@@ -7,6 +7,8 @@ const environmentService = require('../../services/incubation-environment');
 const shellArtService = require('../../services/egg-shell-art');
 const canvas2d = require('../../utils/canvas-2d');
 const config = require('../../config/v2');
+const currency = require('../../services/currency-store');
+const runtime = require('../../services/runtime-context');
 
 const TOUCH_LINES = ['你碰到我啦。', '我轻轻晃了一下。', '我听见你了。', '壳里传来我小小的回应。'];
 const TALK_REACTIONS = [
@@ -59,10 +61,19 @@ Page({
     nameError: '',
     savingName: false,
     homeEggBasePreview: '',
-    homeEggArtPreview: ''
+    homeEggArtPreview: '',
+    dewBalance: 0,
+    dailyClickEarned: 0,
+    dailyClickCap: currency.DAILY_CLICK_CAP,
+    dewTip: false,
+    dewBalanceBumpClass: '',
+    dewDrops: [],
+    dewGains: [],
+    equippedItems: []
   },
 
   async onShow() {
+    this.pageActive = true;
     const pet = petStore.getPet();
     if (!pet) {
       this.homeEggLayersReady = false;
@@ -89,6 +100,11 @@ Page({
     }
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
+    const currencyAccount = await currency.loadAccount();
+    const equipped = currencyAccount.inventory
+      .filter(item => item.equipped)
+      .map(owned => currencyAccount.catalog.find(item => item.id === owned.itemId))
+      .filter(Boolean);
     this.setData({
       pet,
       stage,
@@ -103,7 +119,11 @@ Page({
       hasScenes: hatched && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
       sceneImage: hatched ? sceneConfig.getScene('grass', pet.prototype).image : '',
       environment: environmentService.resolve(serverEnvironment),
-      syncPending: syncQueue.pendingCount()
+      syncPending: syncQueue.pendingCount(),
+      dewBalance: currencyAccount.balance,
+      dailyClickEarned: currencyAccount.dailyClickEarned,
+      dailyClickCap: currencyAccount.dailyClickCap,
+      equippedItems: equipped
     }, () => {
       if (!hatched) {
         this.setupWindowFog();
@@ -246,20 +266,86 @@ Page({
   },
 
   spawnTapParticles(event) {
-    const id = `tap-${timeService.now()}-${this.particleSequence = (this.particleSequence || 0) + 1}`;
-    const point = event.detail || {};
-    wx.createSelectorQuery().in(this).select('.egg-zone').boundingClientRect(rect => {
-      if (!rect) return;
-      const x = Math.max(24, Math.min(rect.width - 24, Number(point.x || rect.left + rect.width / 2) - rect.left));
-      const y = Math.max(24, Math.min(rect.height - 24, Number(point.y || rect.top + rect.height / 2) - rect.top));
-      const next = this.data.tapParticles.concat({ id, x, y }).slice(-3);
-      this.setData({ tapParticles: next });
+    return new Promise(resolve => {
+      const detail = event.detail || {};
+      wx.createSelectorQuery().in(this).select('.egg-zone').boundingClientRect(rect => {
+        if (!rect) return resolve({ x: 0, y: 0 });
+        const clientX = Number(detail.x || rect.left + rect.width / 2);
+        const clientY = Number(detail.y || rect.top + rect.height / 2);
+        const point = {
+          x: Math.max(24, Math.min(rect.width - 24, clientX - rect.left)),
+          y: Math.max(24, Math.min(rect.height - 24, clientY - rect.top))
+        };
+        const id = `tap-${timeService.now()}-${this.particleSequence = (this.particleSequence || 0) + 1}`;
+        const next = this.data.tapParticles.concat({ id, x: point.x, y: point.y }).slice(-3);
+        this.setData({ tapParticles: next });
+        const timer = setTimeout(() => {
+          if (this.pageActive) this.setData({ tapParticles: this.data.tapParticles.filter(item => item.id !== id) });
+          this.particleTimers = (this.particleTimers || []).filter(item => item !== timer);
+        }, 560);
+        this.particleTimers = (this.particleTimers || []).concat(timer);
+        resolve(point);
+      }).exec();
+    });
+  },
+
+  playDewAward(point, result) {
+    if (!this.pageActive) return;
+    const id = `dew-${result.requestId}`;
+    const query = wx.createSelectorQuery().in(this);
+    query.select('.egg-zone').boundingClientRect();
+    query.select('.dew-balance').boundingClientRect();
+    query.exec(rects => {
+      if (!this.pageActive) return;
+      const zone = rects && rects[0];
+      const wallet = rects && rects[1];
+      const dx = zone && wallet ? wallet.left + wallet.width / 2 - zone.left - point.x : 230;
+      const dy = zone && wallet ? wallet.top + wallet.height / 2 - zone.top - point.y : -180;
+      const pulse = this.dewPulseSequence = (this.dewPulseSequence || 0) + 1;
+      this.setData({
+        dewBalance: result.balance,
+        dailyClickEarned: result.dailyClickEarned,
+        dailyClickCap: result.dailyClickCap,
+        dewBalanceBumpClass: pulse % 2 ? 'dew-balance--bump-a' : 'dew-balance--bump-b',
+        dewGains: this.data.dewGains.concat({ id, text: `+${result.amount} 露珠`, top: 286 + ((pulse - 1) % 3) * 46 }).slice(-3),
+        dewDrops: this.data.dewDrops.concat({ id, x: point.x, y: point.y, dx, dy }).slice(-3)
+      });
       const timer = setTimeout(() => {
-        this.setData({ tapParticles: this.data.tapParticles.filter(item => item.id !== id) });
-        this.particleTimers = (this.particleTimers || []).filter(item => item !== timer);
-      }, 560);
-      this.particleTimers = (this.particleTimers || []).concat(timer);
-    }).exec();
+        if (this.pageActive) {
+          this.setData({
+            dewGains: this.data.dewGains.filter(item => item.id !== id),
+            dewDrops: this.data.dewDrops.filter(item => item.id !== id)
+          });
+        }
+        this.dewTimers = (this.dewTimers || []).filter(item => item !== timer);
+      }, 1050);
+      this.dewTimers = (this.dewTimers || []).concat(timer);
+      if (result.dailyClickEarned >= result.dailyClickCap && !this.capNotified) {
+        this.capNotified = true;
+        this.showFeedback('今天的 10 个露珠已经收好啦');
+      }
+    });
+  },
+
+  requestDewForTap(pointPromise) {
+    const requestId = `${runtime.getSessionId()}-egg-tap-${timeService.now()}-${this.currencyTapSequence = (this.currencyTapSequence || 0) + 1}`;
+    const run = () => currency.tapEgg(requestId).then(async result => {
+      if (!this.pageActive) return result;
+      if (!result.ok) {
+        if (!this.currencyErrorShown) {
+          this.currencyErrorShown = true;
+          this.showFeedback('露珠暂时没有同步，蛋宝宝的回应还在。');
+        }
+        return result;
+      }
+      this.setData({
+        dailyClickEarned: result.dailyClickEarned,
+        dailyClickCap: result.dailyClickCap
+      });
+      if (result.awarded) this.playDewAward(await pointPromise, result);
+      return result;
+    });
+    this.currencyTapQueue = (this.currencyTapQueue || Promise.resolve()).then(run, run);
   },
 
   onEggTap(event) {
@@ -267,11 +353,12 @@ Page({
       this.completedLongPress = false;
       return;
     }
-    this.spawnTapParticles(event);
+    const tapPoint = this.spawnTapParticles(event);
     const now = timeService.now();
     this.runSceneEffect('scene--touch', 'egg--wobble', 760);
     petStore.recordTouch();
     analytics.track('egg_tap', { tap_count: 1 });
+    this.requestDewForTap(tapPoint);
     if (this.lastTapAt && now - this.lastTapAt < 2000) return;
     this.lastTapAt = now;
     this.showFeedback(TOUCH_LINES[Math.floor(Math.random() * TOUCH_LINES.length)]);
@@ -383,6 +470,22 @@ Page({
     this.setData({ progressTip: true });
     clearTimeout(this.progressTipTimer);
     this.progressTipTimer = setTimeout(() => this.setData({ progressTip: false }), 2000);
+  },
+
+  onDewBalanceTap() {
+    this.setData({ dewTip: true });
+    clearTimeout(this.dewTipTimer);
+    this.dewTipTimer = setTimeout(() => {
+      if (this.pageActive) this.setData({ dewTip: false });
+    }, 2200);
+  },
+
+  onOpenShop() {
+    wx.navigateTo({ url: '/pages/shop/shop' });
+  },
+
+  onOpenBag() {
+    wx.navigateTo({ url: '/pages/bag/bag' });
   },
 
   onTalkInput(event) {
@@ -512,18 +615,23 @@ Page({
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.progressTipTimer);
+    clearTimeout(this.dewTipTimer);
     this.clearEffectTimers();
     (this.particleTimers || []).forEach(clearTimeout);
     this.particleTimers = [];
+    (this.dewTimers || []).forEach(clearTimeout);
+    this.dewTimers = [];
   },
 
   onHide() {
+    this.pageActive = false;
     this.clearInteractionTimers();
     this.completedLongPress = false;
-    this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '', feedback: '', progressTip: false, tapParticles: [] });
+    this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '', feedback: '', progressTip: false, dewTip: false, dewBalanceBumpClass: '', dewGains: [], dewDrops: [], tapParticles: [] });
   },
 
   onUnload() {
+    this.pageActive = false;
     this.clearInteractionTimers();
     this.windowFogContext = null;
     this.windowEffectsRect = null;

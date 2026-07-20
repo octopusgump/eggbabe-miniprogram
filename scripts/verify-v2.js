@@ -159,6 +159,8 @@ async function main() {
   const app = JSON.parse(read('miniprogram/app.json'));
   assert.equal(app.pages.includes('pages/life-scenes/life-scenes'), true, '必须注册生活场景选择页');
   assert.equal(app.pages.includes('pages/life-scene/life-scene'), true, '必须注册生活场景详情页');
+  assert.equal(app.pages.includes('pages/shop/shop'), true, '当前 V2.0 必须注册露珠商店');
+  assert.equal(app.pages.includes('pages/bag/bag'), true, '当前 V2.0 必须注册背包');
   assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '独立孵化手册页必须下线，由首页任务列表承接');
   const removedRouteFragments = [['exhib', 'ition'].join(''), ['set-card-', 'preview'].join('')];
   assert.equal(app.pages.some(page => removedRouteFragments.some(fragment => page.includes(fragment))), false, '不得注册任何旧直达或全卡预览页面');
@@ -190,6 +192,13 @@ async function main() {
   assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期首页必须提供常驻说话入口');
   assert.equal(homeTemplate.includes('这是我的孵化进度'), true, '进度圆环必须提供轻量说明');
   assert.equal(homeTemplate.includes('conic-gradient'), true, '进度圆环必须按孵化百分比填充');
+  assert.equal(homeTemplate.includes('class="dew-balance'), true, '首页右上角必须有独立露珠余额组件');
+  assert.equal(homeTemplate.includes('今日通过点击已收集'), true, '露珠余额入口必须只展示今日点击收集进度');
+  assert.equal(homeTemplate.includes('class="dew-drop-flight"'), true, '露珠到账必须从点击位置飞向余额');
+  assert.equal(homeTemplate.includes('class="dew-gain"'), true, '露珠到账必须显示 +1 露珠反馈');
+  assert.equal(homePage.includes('currency.tapEgg(requestId)'), true, '每次轻触必须携带唯一请求 ID 通过服务适配层判定露珠');
+  assert.equal(homeStyles.includes('@keyframes dew-flight'), true, '首页必须实现露珠柔和飞行动效');
+  assert.equal(homeStyles.includes('.dew-drop-flight { animation: dew-fade-in'), true, '弱动效模式必须将露珠飞行降级为淡入');
   assert.equal(homeTemplate.includes("stage === 'prepared'") && homeTemplate.includes("stage === 'soon'"), true, '准备完成与即将破壳状态必须显示等待按钮');
   assert.equal(homePage.includes('/pages/nickname/nickname'), true, '破壳后必须保留可达的每日改名入口');
   assert.equal(homeTemplate.includes("stage === 'hatched' && dailyStatus"), true, '每日状态只能在破壳后显示');
@@ -265,8 +274,22 @@ async function main() {
   assert.equal(removedCopy.test(forbiddenSources), false, '用户入口、当前 PRD 与说明不得残留旧公开直达模式');
   assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'FUHUAQIAN'"), true, '孵化前测试码必须固定为 FUHUAQIAN');
   assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'FUHUAHOU'"), true, '孵化后完全状态测试码必须固定为 FUHUAHOU');
-  assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.23'), true, '仓库 PRD 必须同步为 v2.23');
-  assert.equal(read('miniprogram/config/v2.js').includes("version: '2.23.0-preview'"), true, '小程序前端版本必须升级为 2.23');
+  const currencySource = read('miniprogram/services/currency-store.js');
+  const cloudApiSource = read('miniprogram/services/cloud-api.js');
+  const shopSource = read('miniprogram/pages/shop/shop.js');
+  const bagTemplate = read('miniprogram/pages/bag/bag.wxml');
+  assert.equal(currencySource.includes('DEMO_CLICK_THRESHOLDS = [1, 2, 1, 2, 3, 2, 3, 3, 4, 5]'), true, 'demo 应以独立固定序列复现约 26 次收齐 10 个露珠');
+  assert.equal(/daily_visit|daily_status_view/.test(currencySource), false, '当前版本不得从签到、到访或查看状态发露珠');
+  assert.equal(currencySource.includes("runtime.getMode() === 'live'"), true, 'live 与 demo 经济必须隔离');
+  assert.equal(currencySource.includes('processedRequestIds'), true, 'demo 适配层也必须校验请求幂等');
+  assert.equal(currencySource.includes("write(DEMO_ECONOMY_KEY, snapshot)"), true, 'demo 余额、流水、点击状态与库存必须通过单快照写入');
+  assert.equal(currencySource.includes("result.mode !== 'live'"), true, 'live 必须拒绝非 live 模式的后端数据');
+  assert.equal(currencySource.includes('item_used'), false, '未列入 §18.9 的投喂行为不得新增埋点');
+  assert.equal(cloudApiSource.includes("call('tapEggCurrency', { request_id: requestId, mode: 'live' })"), true, 'live 点击必须把唯一请求 ID 与 mode 交给 CTO 接口');
+  assert.equal(shopSource.indexOf('currency.purchase(item.id)') < shopSource.indexOf("title: '已经放进背包'"), true, '购买成功反馈必须晚于服务确认');
+  assert.equal(bagTemplate.includes('{{item.actionLabel}}'), true, '背包必须区分装配、卸下、摆放、收起与投喂');
+  assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.26'), true, '仓库 PRD 必须同步为 v2.26');
+  assert.equal(read('miniprogram/config/v2.js').includes("version: '2.26.0-preview'"), true, '小程序前端版本必须升级为 2.26');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
   const sourceRoots = ['miniprogram', 'docs', 'README.md', 'project.config.json'];
@@ -344,7 +367,7 @@ async function main() {
   config.backendEnabled = originalBackendEnabled;
   cloudApi.serverTime = originalServerTime;
   cloudApi.trackEvents = originalTrackEvents;
-  console.log('V2.23 校验通过：首页孵化反馈、FUHUAQIAN 正常孵化与 FUHUAHOU 10/10 完全状态正常。');
+  console.log('V2.26 校验通过：首页孵化反馈、v2.25 露珠道具、FUHUAQIAN 正常孵化与 FUHUAHOU 10/10 完全状态正常。');
 }
 
 main().catch(error => {

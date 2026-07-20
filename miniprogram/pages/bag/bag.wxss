@@ -16,6 +16,8 @@
 .item-name { margin-top: 4rpx; color: #25332A; font-size: 25rpx; font-weight: 600; }
 .quantity { color: #7E887F; font-size: 20rpx; font-weight: 400; }
 .item-desc { max-width: 310rpx; margin-top: 7rpx; color: #7E817A; font-size: 18rpx; line-height: 1.45; }
+.item-action { display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
+.item-status { color: #698169; font-size: 16rpx; }
 .use-button { min-width: 94rpx; height: 62rpx; margin: 0; padding: 0 16rpx; border: 1rpx solid #C8D3C5; border-radius: 999rpx; background: #FFF; color: #3F5A47; font-size: 20rpx; line-height: 62rpx; }
 .use-button--active { border-color: #3F5A47; background: #3F5A47; color: #FFF; }
 .safe-space { height: calc(80rpx + env(safe-area-inset-bottom)); }

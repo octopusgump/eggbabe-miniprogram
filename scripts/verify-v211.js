@@ -84,12 +84,12 @@ assert.equal(h5App.includes('h5_birth_card_save_poster'), true, 'H5 必须把图
 assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToPhotosAlbum'), true, '图片必须由小程序侧保存到相册');
 
 const config = read('miniprogram/config/v2.js');
-assert.equal(config.includes("version: '2.23.0-preview'"), true, '前端版本必须为 v2.23');
+assert.equal(config.includes("version: '2.26.0-preview'"), true, '前端版本必须为 v2.26');
 assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.23 初始遇见概率必须为约 18%');
 assert.equal(config.includes('sceneCardDailyLimit: 2'), true, '每日最多遇见 2 张收藏卡');
-assert.equal(app.pages.includes('pages/shop/shop'), false, '露珠商店属于 V2.1，V2.0 不得注册页面');
-assert.equal(app.pages.includes('pages/bag/bag'), false, '背包属于 V2.1，V2.0 不得注册页面');
-assert.equal(read('miniprogram/pages/home/home.wxml').includes('露珠'), false, 'V2.0 首页不得展示露珠入口');
+assert.equal(app.pages.includes('pages/shop/shop'), true, 'v2.25 已将露珠商店纳入当前 V2.0');
+assert.equal(app.pages.includes('pages/bag/bag'), true, 'v2.25 已将背包纳入当前 V2.0');
+assert.equal(read('miniprogram/pages/home/home.wxml').includes('今日通过点击已收集'), true, '首页露珠余额必须提供今日 X / 10 轻量说明');
 const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
@@ -184,4 +184,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('PRD v2.23 前端契约校验通过：首页孵化反馈、九字段收藏卡、遇见规则与正式时间门禁正常。');
+console.log('PRD v2.26 前端契约校验通过：首页孵化反馈、v2.25 露珠道具、九字段收藏卡、遇见规则与正式时间门禁正常。');

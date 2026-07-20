@@ -23,8 +23,8 @@ function saveMessage(message) { return call('saveMessage', { message }); }
 function updateSceneCard(cardId, changes) { return call('updateSceneCard', { cardId, changes }); }
 function recordIncubationAction(actionType, payload) { return call('recordIncubationAction', { actionType, payload: payload || {} }); }
 function manageDeletion(action) { return call('manageDeletion', { action }); }
-function currencyAccount(action, itemId) { return call('currencyAccount', { action, itemId }); }
-function recordEngagement(source) { return call('recordEngagement', { source }); }
+function currencyAccount(action, itemId) { return call('currencyAccount', { action, itemId, mode: 'live' }); }
+function tapEggCurrency(requestId) { return call('tapEggCurrency', { request_id: requestId, mode: 'live' }); }
 function trackEvents(events) { return call('trackEvents', { events }); }
 function serverTime() { return call('serverTime'); }
 function uploadAvatar(localPath) {
@@ -49,4 +49,4 @@ function uploadAvatar(localPath) {
   });
 }
 
-module.exports = { call, bootstrap, redeemActivationCode, evaluateSceneCardDrop, generateHatchCard, updateProfile, saveMessage, updateSceneCard, recordIncubationAction, manageDeletion, currencyAccount, recordEngagement, trackEvents, serverTime, uploadAvatar };
+module.exports = { call, bootstrap, redeemActivationCode, evaluateSceneCardDrop, generateHatchCard, updateProfile, saveMessage, updateSceneCard, recordIncubationAction, manageDeletion, currencyAccount, tapEggCurrency, trackEvents, serverTime, uploadAvatar };

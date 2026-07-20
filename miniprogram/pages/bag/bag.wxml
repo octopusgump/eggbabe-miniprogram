@@ -7,8 +7,11 @@
       <view wx:for="{{items}}" wx:key="id" class="item-card">
         <view class="item-icon">{{item.icon}}</view>
         <view class="item-copy"><text class="item-category">{{item.categoryLabel}}</text><text class="item-name">{{item.name}}<text wx:if="{{item.quantity > 1}}" class="quantity"> ×{{item.quantity}}</text></text><text class="item-desc">{{item.description}}</text></view>
-        <button wx:if="{{item.category === 'snack'}}" class="use-button" data-id="{{item.id}}" bindtap="onUseSnack"><text class="button-label">投喂</text></button>
-        <button wx:else class="use-button {{item.equipped ? 'use-button--active' : ''}}" data-id="{{item.id}}" data-equipped="{{item.equipped}}" bindtap="onToggle"><text class="button-label">{{item.equipped ? '卸下' : '使用'}}</text></button>
+        <button wx:if="{{item.category === 'snack'}}" class="use-button" data-id="{{item.id}}" bindtap="onUseSnack"><text class="button-label">{{item.actionLabel}}</text></button>
+        <view wx:else class="item-action">
+          <text wx:if="{{item.statusLabel}}" class="item-status">{{item.statusLabel}}</text>
+          <button class="use-button {{item.equipped ? 'use-button--active' : ''}}" data-id="{{item.id}}" data-equipped="{{item.equipped}}" bindtap="onToggle"><text class="button-label">{{item.actionLabel}}</text></button>
+        </view>
       </view>
     </view>
     <view class="safe-space"></view>

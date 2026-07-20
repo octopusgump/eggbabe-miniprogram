@@ -7,7 +7,12 @@ Page({
     const account = await currency.loadAccount();
     const items = account.inventory.map(owned => {
       const definition = account.catalog.find(item => item.id === owned.itemId) || {};
-      return Object.assign({}, definition, owned);
+      const item = Object.assign({}, definition, owned);
+      if (item.category === 'snack') item.actionLabel = '投喂';
+      else if (item.category === 'scene-decor') item.actionLabel = item.equipped ? '收起' : '摆放';
+      else item.actionLabel = item.equipped ? '卸下' : '装配';
+      item.statusLabel = item.equipped ? (item.category === 'scene-decor' ? '已摆放' : '已装配') : '';
+      return item;
     });
     this.setData({ balance: account.balance, items });
   },

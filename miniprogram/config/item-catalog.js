@@ -8,7 +8,9 @@ module.exports = [
     price: 60,
     icon: '☾',
     slot: 'neck',
+    presentation: 'scarf',
     decorativeOnly: true,
+    stackable: false,
     limited: false,
     mode: 'live'
   },
@@ -21,7 +23,9 @@ module.exports = [
     price: 25,
     icon: '♢',
     slot: '',
+    presentation: 'snack',
     decorativeOnly: true,
+    stackable: true,
     limited: false,
     mode: 'live'
   },
@@ -34,7 +38,9 @@ module.exports = [
     price: 80,
     icon: '✦',
     slot: 'scene-table',
+    presentation: 'lamp',
     decorativeOnly: true,
+    stackable: false,
     limited: false,
     mode: 'live'
   }

@@ -10,8 +10,12 @@
     <view class="item-list">
       <view wx:for="{{items}}" wx:key="id" class="item-card">
         <view class="item-icon">{{item.icon}}</view>
-        <view class="item-copy"><text class="item-category">{{item.categoryLabel}}</text><text class="item-name">{{item.name}}</text><text class="item-desc">{{item.description}}</text></view>
-        <button class="buy-button" data-id="{{item.id}}" bindtap="onPurchase"><text class="button-label">{{item.price}} 露珠</text></button>
+        <view class="item-copy">
+          <view class="item-meta"><text class="item-category">{{item.categoryLabel}}</text><text wx:if="{{item.owned}}" class="owned-mark">已拥有</text></view>
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-desc">{{item.description}}</text>
+        </view>
+        <button class="buy-button {{item.insufficient ? 'buy-button--insufficient' : ''}}" disabled="{{item.locked || purchasingId}}" data-id="{{item.id}}" bindtap="onPurchase"><text class="button-label">{{purchasingId === item.id ? '确认中…' : item.actionLabel}}</text></button>
       </view>
     </view>
     <view class="safe-space"></view>

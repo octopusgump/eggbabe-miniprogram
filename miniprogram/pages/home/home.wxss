@@ -73,10 +73,10 @@
 .room-light-breathe { position: absolute; z-index: 5; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 72%, rgba(255,242,190,.2), transparent 36%); }
 
 .egg-aura { position: absolute; z-index: 5; left: 50%; bottom: 52rpx; width: 350rpx; height: 350rpx; margin-left: -175rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,243,180,.3), rgba(237,231,142,0) 68%); animation: aura 4.4s ease-in-out infinite; }
-.egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 190rpx; height: 272rpx; margin-left: -95rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 10rpx 10rpx rgba(69,53,35,.08)); }
+.egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 285rpx; height: 408rpx; margin-left: -143rpx; transform-origin: 50% 96%; animation: egg-breathe 4.2s ease-in-out infinite; filter: drop-shadow(0 12rpx 12rpx rgba(69,53,35,.1)); }
 .egg-image { display: block; }
 .egg-zone.period-night .egg-image { filter: brightness(.9) saturate(.88) drop-shadow(0 10rpx 10rpx rgba(25,29,39,.14)); }
-.egg-contact-shadow { position: absolute; z-index: 6; left: 50%; bottom: 87rpx; width: 178rpx; height: 31rpx; margin-left: -89rpx; border-radius: 50%; pointer-events: none; background: rgba(72,54,35,.19); filter: blur(10rpx); transform-origin: center; animation: shadow-breathe 4.2s ease-in-out infinite; }
+.egg-contact-shadow { position: absolute; z-index: 6; left: 50%; bottom: 84rpx; width: 267rpx; height: 47rpx; margin-left: -134rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(ellipse, rgba(66,45,28,.34) 0%, rgba(74,52,34,.22) 48%, rgba(85,60,38,0) 76%); filter: blur(7rpx); transform-origin: center; animation: shadow-breathe 4.2s ease-in-out infinite; }
 .life-home-scene { position: relative; z-index: 3; width: 430rpx; height: 450rpx; border-radius: 42rpx; box-shadow: 0 26rpx 50rpx rgba(0,41,0,.16); }
 .feedback-bubble, .daily-greeting { position: absolute; z-index: 8; max-width: 480rpx; padding: 18rpx 26rpx; border-radius: 28rpx 28rpx 28rpx 8rpx; background: #FFF; box-shadow: 0 12rpx 36rpx rgba(0,41,0,.10); color: #3D4930; font-size: 25rpx; animation: bubble-in .25s ease-out; }
 .feedback-bubble { top: 122rpx; }
@@ -153,7 +153,7 @@
 .name-save::after, .name-skip::after { border: 0; }
 
 @keyframes egg-breathe { 0%,100% { transform: scale(1); } 50% { transform: translateY(2rpx) scale(1.008,.986); } }
-@keyframes shadow-breathe { 0%,100% { transform: scaleX(1); opacity: .74; } 50% { transform: scaleX(1.045); opacity: .58; } }
+@keyframes shadow-breathe { 0%,100% { transform: scale(1,.9); opacity: .9; } 50% { transform: scale(1.045,.78); opacity: .7; } }
 @keyframes aura { 0%,100% { transform: scale(.96); opacity: .42; } 50% { transform: scale(1.035); opacity: .7; } }
 @keyframes wobble { 0%,100% { transform: rotate(0); } 24% { transform: rotate(-4deg); } 66% { transform: rotate(3.5deg); } }
 @keyframes warm-lean { 0%,100% { transform: translateY(1rpx) rotate(0) scale(1); } 50% { transform: translateY(5rpx) rotate(1.4deg) scale(.99,.975); } }
@@ -162,12 +162,12 @@
 @keyframes knock { 0%,100% { transform: translateX(0); } 30% { transform: translateX(-4rpx) scaleX(.992); } 60% { transform: translateX(4rpx) scaleX(1.006); } }
 @keyframes quiet-breathe { 0%,100% { transform: translateY(2rpx) scale(1,.99); } 50% { transform: translateY(5rpx) scale(1.008,.978); } }
 @keyframes window-lean { 0%,100% { transform: rotate(0); } 30%,76% { transform: rotate(-2.2deg) translateY(2rpx); } }
-@keyframes shadow-react { 0%,100% { transform: scaleX(1); } 35% { transform: translateX(-3rpx) scaleX(.94); } 68% { transform: translateX(3rpx) scaleX(1.04); } }
-@keyframes shadow-cuddle { 0%,100% { transform: scaleX(1); opacity: .75; } 50% { transform: scaleX(1.08); opacity: .86; } }
-@keyframes shadow-happy { 0%,100% { transform: scaleX(1); opacity: .72; } 32% { transform: scaleX(.88); opacity: .5; } 68% { transform: scaleX(1.07); opacity: .86; } }
-@keyframes shadow-quiet { 0%,100% { transform: scaleX(1); opacity: .7; } 50% { transform: scaleX(1.035); opacity: .62; } }
-@keyframes shadow-window { 0%,100% { transform: translateX(0) scaleX(1); } 30%,76% { transform: translateX(-3rpx) scaleX(1.02); } }
-@keyframes shadow-glow { 0%,100% { transform: scaleX(1); opacity: .7; } 50% { transform: scaleX(1.06); opacity: .84; } }
+@keyframes shadow-react { 0%,100% { transform: scale(1,.9); } 35% { transform: translateX(-3rpx) scale(.94,.82); } 68% { transform: translateX(3rpx) scale(1.04,.86); } }
+@keyframes shadow-cuddle { 0%,100% { transform: scale(1,.9); opacity: .75; } 50% { transform: scale(1.08,.76); opacity: .86; } }
+@keyframes shadow-happy { 0%,100% { transform: scale(1,.9); opacity: .72; } 32% { transform: scale(.88,.72); opacity: .5; } 68% { transform: scale(1.07,.82); opacity: .86; } }
+@keyframes shadow-quiet { 0%,100% { transform: scale(1,.9); opacity: .7; } 50% { transform: scale(1.035,.8); opacity: .62; } }
+@keyframes shadow-window { 0%,100% { transform: translateX(0) scale(1,.9); } 30%,76% { transform: translateX(-3rpx) scale(1.02,.84); } }
+@keyframes shadow-glow { 0%,100% { transform: scale(1,.9); opacity: .7; } 50% { transform: scale(1.06,.78); opacity: .84; } }
 @keyframes aura-listen { 0%,100% { transform: scale(.96); opacity: .46; } 50% { transform: scale(1.04); opacity: .74; } }
 @keyframes aura-touch { 0% { transform: scale(.92); opacity: .3; } 45% { transform: scale(1.08); opacity: .74; } 100% { transform: scale(1); opacity: .45; } }
 @keyframes room-breathe { 0%,100% { opacity: .08; } 50% { opacity: .8; } }

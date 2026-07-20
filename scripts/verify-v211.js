@@ -116,6 +116,8 @@ assert.equal((homeLogic.match(/interaction_(?:touch|talk|quiet|window|wish|learn
 assert.equal(/task-row|task-reward|今天陪我做的事/.test(homeTemplate), false, '自由陪伴入口不得显示任务编号、完成态或奖励比例');
 assert.equal(homeTemplate.includes('src="{{environment.eggImage}}"'), true, '必须使用交付的透明蛋主体');
 assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须具有随动作变化的接触阴影');
+assert.match(homeStyles, /\.egg\s*\{[^}]*width:\s*285rpx;[^}]*height:\s*408rpx;/s, '蛋宝宝主体必须在原尺寸基础上放大 50%');
+assert.match(homeStyles, /\.egg-contact-shadow\s*\{[^}]*width:\s*267rpx;[^}]*height:\s*47rpx;[^}]*radial-gradient/s, '窝垫必须提供与放大蛋体匹配的实时接触阴影');
 assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期必须提供常驻说话输入');
 assert.equal(homeTemplate.includes('/assets/icons/send.svg'), true, '说话输入框必须使用纸飞机发送图标');
 assert.equal(homeTemplate.includes('talk-send-arrow'), false, '说话输入框不得继续使用向上箭头');

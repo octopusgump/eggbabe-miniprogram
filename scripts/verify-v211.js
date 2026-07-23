@@ -184,4 +184,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('PRD v2.26 前端契约校验通过：首页孵化反馈、v2.25 露珠道具、九字段收藏卡、遇见规则与正式时间门禁正常。');
+console.log('历史前端契约校验通过：既有孵化反馈、demo 露珠道具、收藏卡与正式时间门禁正常；普通版发布边界以 PRD v2.27 为准。');

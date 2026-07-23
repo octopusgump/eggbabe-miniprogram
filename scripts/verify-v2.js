@@ -288,7 +288,11 @@ async function main() {
   assert.equal(cloudApiSource.includes("call('tapEggCurrency', { request_id: requestId, mode: 'live' })"), true, 'live 点击必须把唯一请求 ID 与 mode 交给 CTO 接口');
   assert.equal(shopSource.indexOf('currency.purchase(item.id)') < shopSource.indexOf("title: '已经放进背包'"), true, '购买成功反馈必须晚于服务确认');
   assert.equal(bagTemplate.includes('{{item.actionLabel}}'), true, '背包必须区分装配、卸下、摆放、收起与投喂');
-  assert.equal(read('docs/蛋宝宝小程序_V2_PRD.md').includes('当前版本 | v2.26'), true, '仓库 PRD 必须同步为 v2.26');
+  const prdSource = read('docs/蛋宝宝小程序_V2_PRD.md');
+  assert.equal(prdSource.includes('当前版本 | v2.27'), true, '仓库 PRD 必须同步为 v2.27');
+  assert.equal(prdSource.includes('普通版整章停用（v2.27'), true, 'PRD 必须明确冻结普通版露珠、商店与背包');
+  assert.equal(prdSource.includes('禁止仅替换“掉落 / 抽卡”为“遇见 / 收集”'), true, 'PRD 必须按实际机制而非替换文案判断游戏风险');
+  assert.equal(prdSource.includes('普通小程序走到游戏小程序不是“在原账号里打开功能开关”'), true, 'PRD 必须保留普通版到独立游戏版的迁移门禁');
   assert.equal(read('miniprogram/config/v2.js').includes("version: '2.26.0-preview'"), true, '小程序前端版本必须升级为 2.26');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
@@ -367,7 +371,7 @@ async function main() {
   config.backendEnabled = originalBackendEnabled;
   cloudApi.serverTime = originalServerTime;
   cloudApi.trackEvents = originalTrackEvents;
-  console.log('V2.26 校验通过：首页孵化反馈、v2.25 露珠道具、FUHUAQIAN 正常孵化与 FUHUAHOU 10/10 完全状态正常。');
+  console.log('V2.27 文档与历史前端校验通过：普通版合规冻结门禁、既有 demo 能力及测试码状态正常。');
 }
 
 main().catch(error => {

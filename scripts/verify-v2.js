@@ -128,7 +128,7 @@ async function main() {
   assert.equal(repeated.repeated, true, '重复点击同一互动点不得再次参与判定');
   assert.equal(sceneCards.dailyState().attempts, attemptsBeforeRepeat, '重复点击不得增加尝试次数');
   for (let index = 0; index < 20; index += 1) await sceneCards.attemptDrop('grass', `互动${index}`, '玉兔');
-  assert.equal(sceneCards.list().length <= 2, true, '每日最多遇见 2 张收藏卡');
+  assert.equal(sceneCards.list().length <= 2, true, '历史 demo 迁移回归：每日场景卡上限仍为 2 张');
   assert.equal(new Set(sceneCards.list().map(card => card.cardId)).size, sceneCards.list().length, '已拥有的收藏位不得重复遇见');
   const firstCard = sceneCards.list()[0];
   assert.equal(firstCard.setCode, 'YT-S01', '遇见的收藏卡必须记录系列代码');
@@ -144,6 +144,10 @@ async function main() {
   assert.equal(duplicatedSummary.ownedUnique, summary.ownedUnique, '旧数据中的重复副本不得增加收藏完成度');
   assert.equal(duplicatedSummary.duplicateCount, 0, '前端不得展示或计算重复获取');
 
+  // Historical demo migration regression only. The following card/economy assertions
+  // preserve existing demo behavior until it is moved to an independent build; they
+  // are not ordinary-release requirements. Current release authority is the v2.28
+  // PRD + compliance checklist verified below.
   const lifePage = read('miniprogram/pages/life-scene/life-scene.js');
   const lifeTemplate = read('miniprogram/pages/life-scene/life-scene.wxml');
   const lifeStyles = read('miniprogram/pages/life-scene/life-scene.wxss');
@@ -159,9 +163,9 @@ async function main() {
   const app = JSON.parse(read('miniprogram/app.json'));
   assert.equal(app.pages.includes('pages/life-scenes/life-scenes'), true, '必须注册生活场景选择页');
   assert.equal(app.pages.includes('pages/life-scene/life-scene'), true, '必须注册生活场景详情页');
-  assert.equal(app.pages.includes('pages/shop/shop'), true, '当前 V2.0 必须注册露珠商店');
-  assert.equal(app.pages.includes('pages/bag/bag'), true, '当前 V2.0 必须注册背包');
-  assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '独立孵化手册页必须下线，由首页任务列表承接');
+  assert.equal(app.pages.includes('pages/shop/shop'), true, '迁移前历史 demo 仍应保留露珠商店资产');
+  assert.equal(app.pages.includes('pages/bag/bag'), true, '迁移前历史 demo 仍应保留背包资产');
+  assert.equal(app.pages.includes('pages/hatch-guide/hatch-guide'), false, '普通版不得注册独立孵化手册页，首页只保留自由陪伴入口');
   const removedRouteFragments = [['exhib', 'ition'].join(''), ['set-card-', 'preview'].join('')];
   assert.equal(app.pages.some(page => removedRouteFragments.some(fragment => page.includes(fragment))), false, '不得注册任何旧直达或全卡预览页面');
 
@@ -190,15 +194,15 @@ async function main() {
   assert.equal(homePage.includes("require('../../services/egg-shell-art')"), true, '孵化首页必须通过统一蛋壳绘图渲染器使用透明蛋主体');
   assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '蛋宝宝必须在 U 形孵化窝中具有接触阴影');
   assert.equal(homeTemplate.includes('跟我说说话'), true, '孵化期首页必须提供常驻说话入口');
-  assert.equal(homeTemplate.includes('这是我的孵化进度'), true, '进度圆环必须提供轻量说明');
-  assert.equal(homeTemplate.includes('conic-gradient'), true, '进度圆环必须按孵化百分比填充');
-  assert.equal(homeTemplate.includes('class="dew-balance'), true, '首页右上角必须有独立露珠余额组件');
-  assert.equal(homeTemplate.includes('今日通过点击已收集'), true, '露珠余额入口必须只展示今日点击收集进度');
-  assert.equal(homeTemplate.includes('class="dew-drop-flight"'), true, '露珠到账必须从点击位置飞向余额');
-  assert.equal(homeTemplate.includes('class="dew-gain"'), true, '露珠到账必须显示 +1 露珠反馈');
-  assert.equal(homePage.includes('currency.tapEgg(requestId)'), true, '每次轻触必须携带唯一请求 ID 通过服务适配层判定露珠');
-  assert.equal(homeStyles.includes('@keyframes dew-flight'), true, '首页必须实现露珠柔和飞行动效');
-  assert.equal(homeStyles.includes('.dew-drop-flight { animation: dew-fade-in'), true, '弱动效模式必须将露珠飞行降级为淡入');
+  assert.equal(homeTemplate.includes('这是我的孵化进度'), true, '迁移前历史 demo 仍应保留进度圆环说明');
+  assert.equal(homeTemplate.includes('conic-gradient'), true, '迁移前历史 demo 仍应保留进度圆环样式');
+  assert.equal(homeTemplate.includes('class="dew-balance'), true, '迁移前历史 demo 仍应保留露珠余额组件');
+  assert.equal(homeTemplate.includes('今日通过点击已收集'), true, '迁移前历史 demo 仍应保留露珠收集说明');
+  assert.equal(homeTemplate.includes('class="dew-drop-flight"'), true, '迁移前历史 demo 仍应保留露珠飞行动效');
+  assert.equal(homeTemplate.includes('class="dew-gain"'), true, '迁移前历史 demo 仍应保留 +1 反馈');
+  assert.equal(homePage.includes('currency.tapEgg(requestId)'), true, '迁移前历史 demo 仍应保留露珠适配调用');
+  assert.equal(homeStyles.includes('@keyframes dew-flight'), true, '迁移前历史 demo 仍应保留露珠动效定义');
+  assert.equal(homeStyles.includes('.dew-drop-flight { animation: dew-fade-in'), true, '迁移前历史 demo 仍应保留弱动效降级');
   assert.equal(homeTemplate.includes("stage === 'prepared'") && homeTemplate.includes("stage === 'soon'"), true, '准备完成与即将破壳状态必须显示等待按钮');
   assert.equal(homePage.includes('/pages/nickname/nickname'), true, '破壳后必须保留可达的每日改名入口');
   assert.equal(homeTemplate.includes("stage === 'hatched' && dailyStatus"), true, '每日状态只能在破壳后显示');
@@ -275,7 +279,6 @@ async function main() {
   assert.equal(read('miniprogram/config/v2.js').includes("localActivationCode: 'FUHUAQIAN'"), true, '孵化前测试码必须固定为 FUHUAQIAN');
   assert.equal(read('miniprogram/config/v2.js').includes("localHatchedActivationCode: 'FUHUAHOU'"), true, '孵化后完全状态测试码必须固定为 FUHUAHOU');
   const currencySource = read('miniprogram/services/currency-store.js');
-  const cloudApiSource = read('miniprogram/services/cloud-api.js');
   const shopSource = read('miniprogram/pages/shop/shop.js');
   const bagTemplate = read('miniprogram/pages/bag/bag.wxml');
   assert.equal(currencySource.includes('DEMO_CLICK_THRESHOLDS = [1, 2, 1, 2, 3, 2, 3, 3, 4, 5]'), true, 'demo 应以独立固定序列复现约 26 次收齐 10 个露珠');
@@ -285,14 +288,36 @@ async function main() {
   assert.equal(currencySource.includes("write(DEMO_ECONOMY_KEY, snapshot)"), true, 'demo 余额、流水、点击状态与库存必须通过单快照写入');
   assert.equal(currencySource.includes("result.mode !== 'live'"), true, 'live 必须拒绝非 live 模式的后端数据');
   assert.equal(currencySource.includes('item_used'), false, '未列入 §18.9 的投喂行为不得新增埋点');
-  assert.equal(cloudApiSource.includes("call('tapEggCurrency', { request_id: requestId, mode: 'live' })"), true, 'live 点击必须把唯一请求 ID 与 mode 交给 CTO 接口');
   assert.equal(shopSource.indexOf('currency.purchase(item.id)') < shopSource.indexOf("title: '已经放进背包'"), true, '购买成功反馈必须晚于服务确认');
   assert.equal(bagTemplate.includes('{{item.actionLabel}}'), true, '背包必须区分装配、卸下、摆放、收起与投喂');
   const prdSource = read('docs/蛋宝宝小程序_V2_PRD.md');
-  assert.equal(prdSource.includes('当前版本 | v2.27'), true, '仓库 PRD 必须同步为 v2.27');
-  assert.equal(prdSource.includes('普通版整章停用（v2.27'), true, 'PRD 必须明确冻结普通版露珠、商店与背包');
-  assert.equal(prdSource.includes('禁止仅替换“掉落 / 抽卡”为“遇见 / 收集”'), true, 'PRD 必须按实际机制而非替换文案判断游戏风险');
-  assert.equal(prdSource.includes('普通小程序走到游戏小程序不是“在原账号里打开功能开关”'), true, 'PRD 必须保留普通版到独立游戏版的迁移门禁');
+  const complianceSource = read('docs/蛋宝宝普通小程序_合规与提审清单.md');
+  const technicalSource = read('docs/蛋宝宝小程序_技术与数据接口规格.md');
+  const futureGameSource = read('docs/蛋宝宝未来游戏版_需求存档.md');
+  const archivedPrdSource = read('docs/archive/蛋宝宝小程序_V2_PRD_v2.27_切割前归档.md');
+  assert.equal(prdSource.includes('当前版本 | v2.28'), true, '普通版主 PRD 必须同步为 v2.28');
+  assert.equal(prdSource.includes('./蛋宝宝普通小程序_合规与提审清单.md'), true, '主 PRD 必须链接合规与提审清单');
+  assert.equal(prdSource.includes('./蛋宝宝小程序_技术与数据接口规格.md'), true, '主 PRD 必须链接技术与数据接口规格');
+  assert.equal(prdSource.includes('./蛋宝宝未来游戏版_需求存档.md'), true, '主 PRD 必须链接未来游戏版存档');
+  assert.equal(complianceSource.includes('禁止仅替换“掉落 / 抽卡”为“遇见 / 收集”'), true, '合规文档必须按实际机制而非替换文案判断游戏风险');
+  assert.equal(complianceSource.includes('普通小程序走到游戏小程序不是“在原账号里打开功能开关”'), true, '合规文档必须保留普通版到独立游戏版的迁移门禁');
+  assert.equal(technicalSource.includes('普通版 live 数据白名单'), true, '技术文档必须定义普通版 live 数据白名单');
+  assert.equal(futureGameSource.includes('存档，不允许进入普通版开发排期'), true, '未来游戏版文档必须明确不进入普通版排期');
+  assert.equal(prdSource.includes('内部展会 demo（非普通版提审包）'), true, '主 PRD 必须把历史玩法限定为独立内部 demo');
+  assert.equal(prdSource.includes('普通版提审包不注册 demo 入口'), true, '主 PRD 必须禁止普通版进入 demo');
+  assert.equal(complianceSource.includes('| C-01 |') && complianceSource.includes('| C-10 |'), true, '合规红线必须使用稳定规则 ID');
+  assert.equal(archivedPrdSource.includes('不允许进入开发排期、提审材料或普通版验收'), true, 'v2.27 归档必须有明确失效声明');
+  [
+    'docs/V2_IMPLEMENTATION.md',
+    'docs/V2_DATA_MODEL.md',
+    'docs/CARD_COLLECTION_SYSTEM.md',
+    'docs/SCENE_CARD_ASSETS.md',
+    'docs/MVP_IMPLEMENTATION.md',
+    'docs/蛋宝宝小程序MVP_PRD.md'
+  ].forEach(file => {
+    const firstScreen = read(file).split('\n').slice(0, 8).join('\n');
+    assert.equal(firstScreen.includes('历史') && firstScreen.includes('蛋宝宝小程序_V2_PRD.md'), true, `${file} 必须在首屏标记为历史文档并链接当前 PRD`);
+  });
   assert.equal(read('miniprogram/config/v2.js').includes("version: '2.26.0-preview'"), true, '小程序前端版本必须升级为 2.26');
 
   const wrongBrand = new RegExp(oldBrand, 'i');
@@ -371,7 +396,7 @@ async function main() {
   config.backendEnabled = originalBackendEnabled;
   cloudApi.serverTime = originalServerTime;
   cloudApi.trackEvents = originalTrackEvents;
-  console.log('V2.27 文档与历史前端校验通过：普通版合规冻结门禁、既有 demo 能力及测试码状态正常。');
+  console.log('V2.28 文档职责校验通过；历史玩法断言仅用于独立 demo 迁移回归，不代表普通版发布合规。');
 }
 
 main().catch(error => {

@@ -5,6 +5,9 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
 const app = JSON.parse(read('miniprogram/app.json'));
+// Historical demo migration regression only. Collection/dew/shop assertions below
+// protect the existing demo until an independent demo build is cut; they do not
+// define ordinary-release requirements. See PRD v2.28 and the compliance checklist.
 const userFacingFiles = [
   ...app.pages.map(page => `miniprogram/${page}.wxml`),
   'h5/birth-card/index.html',
@@ -13,7 +16,7 @@ const userFacingFiles = [
 const userFacing = userFacingFiles.map(file => `${file}\n${read(file)}`).join('\n');
 
 assert.equal(/破壳卡|场景卡|套卡|我的卡册/.test(userFacing), false, '用户界面只能使用“收藏卡”，不得出现旧卡类名称');
-assert.equal(/卡池|掉落|抽卡|稀有度/.test(userFacing), false, '用户界面必须统一使用“遇见 / 收集”表达');
+assert.equal(/卡池|掉落|抽卡|稀有度/.test(userFacing), false, '历史 demo 迁移回归：用户界面不得直接出现卡池 / 掉落 / 抽卡 / 稀有度');
 const forbiddenBrand = new RegExp(['egg', 'baby'].join(''), 'i');
 assert.equal(forbiddenBrand.test(userFacing), false, '品牌英文只能写 eggbabe');
 assert.equal(/>EGGBABE</.test(userFacing), false, '用户可见品牌字标必须使用小写 eggbabe');
@@ -85,10 +88,10 @@ assert.equal(read('miniprogram/pages/h5-card/h5-card.js').includes('saveImageToP
 
 const config = read('miniprogram/config/v2.js');
 assert.equal(config.includes("version: '2.26.0-preview'"), true, '前端版本必须为 v2.26');
-assert.equal(config.includes('sceneCardDropRate: 0.18'), true, 'v2.23 初始遇见概率必须为约 18%');
-assert.equal(config.includes('sceneCardDailyLimit: 2'), true, '每日最多遇见 2 张收藏卡');
-assert.equal(app.pages.includes('pages/shop/shop'), true, 'v2.25 已将露珠商店纳入当前 V2.0');
-assert.equal(app.pages.includes('pages/bag/bag'), true, 'v2.25 已将背包纳入当前 V2.0');
+assert.equal(config.includes('sceneCardDropRate: 0.18'), true, '历史 demo 迁移回归：旧场景卡概率仍为 18%');
+assert.equal(config.includes('sceneCardDailyLimit: 2'), true, '历史 demo 迁移回归：旧场景卡每日上限仍为 2 张');
+assert.equal(app.pages.includes('pages/shop/shop'), true, '历史 demo 迁移回归：迁移前仍保留露珠商店资产');
+assert.equal(app.pages.includes('pages/bag/bag'), true, '历史 demo 迁移回归：迁移前仍保留背包资产');
 assert.equal(read('miniprogram/pages/home/home.wxml').includes('今日通过点击已收集'), true, '首页露珠余额必须提供今日 X / 10 轻量说明');
 const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
@@ -149,7 +152,7 @@ assert.equal(doodleTemplate.includes('散落图样') && doodleTemplate.includes(
 assert.equal(doodleLogic.includes('draggingStickerId') && doodleLogic.includes('onDeleteSticker'), true, '贴纸移动与删除必须有真实交互逻辑');
 assert.equal(/chooseImage|chooseMedia|chooseMessageFile/.test(doodleLogic), false, '首版蛋壳绘图不得开放图片上传');
 assert.equal(homeTemplate.includes('暂不命名'), true, '命名弹层必须允许暂不命名');
-assert.equal(homeTemplate.includes('conic-gradient'), true, '孵化进度圆环必须显示比例填充');
+assert.equal(homeTemplate.includes('conic-gradient'), true, '历史 demo 迁移回归：迁移前仍保留孵化进度圆环样式');
 assert.equal(homeLogic.includes('/pages/nickname/nickname'), true, '破壳后必须可以进入改名页');
 assert.equal(homeTemplate.includes("stage === 'hatched' && dailyStatus"), true, '孵化期不得展示每日心情');
 assert.equal(/还剩\s*\{\{|天\s*\{\{|小时/.test(homeTemplate), false, '首页不得展示天数或时分倒计时');
@@ -184,4 +187,4 @@ assert.equal(chatSafety.shouldShowRestReminder(Date.parse('2026-07-15T00:30:00+0
 assert.equal(read('miniprogram/pages/privacy/privacy.wxml').includes('行为数据与个性化'), true, '隐私政策必须披露行为数据与个性化用途');
 assert.equal(read('miniprogram/services/subscription-messages.js').includes('requestSubscribeMessage'), true, '前端必须提供订阅消息授权封装');
 
-console.log('历史前端契约校验通过：既有孵化反馈、demo 露珠道具、收藏卡与正式时间门禁正常；普通版发布边界以 PRD v2.27 为准。');
+console.log('历史 demo 迁移回归通过；露珠、商店、收集断言不代表普通版要求，发布边界以 PRD v2.28 与合规清单为准。');

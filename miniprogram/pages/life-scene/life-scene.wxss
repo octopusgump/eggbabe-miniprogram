@@ -339,38 +339,3 @@
   .butterfly-effect,
   .scene-effect { display: none; }
 }
-.placed-decoration { position: absolute; z-index: 6; right: 14%; bottom: 17%; width: 86rpx; height: 86rpx; display: flex; align-items: center; justify-content: center; border-radius: 24rpx; background: rgba(255,253,247,.88); color: #536448; font-size: 42rpx; box-shadow: 0 10rpx 28rpx rgba(30,50,35,.16); }
-
-.drop-mask { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; padding: 32rpx 28rpx calc(32rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: rgba(20,28,23,.42); backdrop-filter: blur(10rpx); animation: drop-mask-in .3s ease-out both; }
-.drop-panel { width: 100%; min-height: 820rpx; padding: 42rpx 36rpx 24rpx; box-sizing: border-box; border-radius: 40rpx; overflow: hidden; background: linear-gradient(180deg,#FFFEF8 0%,#FFF 64%); text-align: center; box-shadow: 0 28rpx 80rpx rgba(13,31,20,.2); animation: drop-panel-in .52s cubic-bezier(.22,.61,.36,1) both; }
-.drop-kicker { display: block; min-height: 36rpx; font-size: 24rpx; line-height: 36rpx; color: #607164; letter-spacing: 2rpx; transition: opacity .24s ease; }
-.drop-stage { position: relative; width: 330rpx; height: 390rpx; margin: 18rpx auto 6rpx; display: flex; align-items: center; justify-content: center; }
-.drop-halo { position: absolute; left: 50%; top: 49%; width: 290rpx; height: 290rpx; border-radius: 50%; background: radial-gradient(circle,rgba(237,231,142,.38) 0%,rgba(237,231,142,.12) 46%,rgba(237,231,142,0) 72%); transform: translate(-50%,-50%) scale(.82); opacity: .5; transition: transform .8s ease,opacity .8s ease; }
-.drop-card { position: relative; z-index: 2; width: 250rpx; height: 330rpx; border-radius: 34rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 22rpx 50rpx rgba(24,54,35,.16); transform: translateY(6rpx) rotate(-1.5deg); animation: drop-card-wait 1.4s ease-in-out infinite alternate; transition: transform .7s cubic-bezier(.22,.61,.36,1),box-shadow .7s ease; }
-.drop-card-image { position: absolute; inset: 0; width: 100%; height: 100%; }
-.drop-card-brand,.drop-card-number { position: absolute; z-index: 2; padding: 7rpx 11rpx; border-radius: 999rpx; background: rgba(255,255,255,.88); color: #35483B; font-size: 16rpx; line-height: 1; letter-spacing: 1rpx; }
-.drop-card-brand { left: 14rpx; top: 14rpx; font-weight: 600; }
-.drop-card-number { right: 14rpx; bottom: 14rpx; }
-.drop-mark { font-size: 88rpx; color: #3F5A47; font-weight: 600; }
-.drop-veil { position: absolute; z-index: 3; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg,#F6F3DF,#E7EDDA); color: rgba(63,90,71,.55); font-size: 54rpx; transition: opacity .52s ease,transform .68s cubic-bezier(.22,.61,.36,1); }
-.drop-veil::after { content: ''; position: absolute; left: 46rpx; right: 46rpx; bottom: 58rpx; height: 2rpx; background: rgba(63,90,71,.12); }
-.drop-mote { position: absolute; z-index: 1; width: 9rpx; height: 9rpx; border-radius: 50%; background: #EDE78E; box-shadow: 0 0 14rpx rgba(237,231,142,.58); opacity: 0; }
-.drop-mote--one { left: 18rpx; top: 128rpx; }.drop-mote--two { right: 12rpx; top: 82rpx; }.drop-mote--three { right: 34rpx; bottom: 82rpx; }
-.drop-details { opacity: 0; transform: translateY(10rpx); pointer-events: none; transition: opacity .42s ease .12s,transform .52s ease .12s; }
-.drop-name { display: block; font-size: 38rpx; color: #1A1A1A; font-weight: 600; }.drop-meta { display: block; margin-top: 10rpx; font-size: 23rpx; color: #77756E; }
-.drop-copy-code { display: block; margin-top: 8rpx; min-height: 24rpx; font-size: 18rpx; letter-spacing: 1rpx; color: #A09E96; }
-.drop-primary,.drop-ghost { width: 100%; height: 92rpx; line-height: 92rpx; margin-top: 26rpx; padding: 0; border: 0; border-radius: 999rpx; font-size: 28rpx; }.drop-primary { background: #3F5A47; color: #FFF; }.drop-primary::after,.drop-ghost::after { border: 0; }.drop-ghost { margin-top: 4rpx; background: transparent; color: #3F5A47; }
-.drop-panel--revealed .drop-halo { opacity: .88; transform: translate(-50%,-50%) scale(1.1); }
-.drop-panel--revealed .drop-card { animation: drop-card-settle .76s cubic-bezier(.22,.61,.36,1) both; box-shadow: 0 28rpx 58rpx rgba(24,54,35,.2); }
-.drop-panel--revealed .drop-veil { opacity: 0; transform: translateY(-26rpx) scale(1.04); pointer-events: none; }
-.drop-panel--revealed .drop-details { opacity: 1; transform: none; pointer-events: auto; }
-.drop-panel--revealed .drop-mote { animation: drop-mote-rise 1.5s ease-out both; }.drop-panel--revealed .drop-mote--two { animation-delay: .14s; }.drop-panel--revealed .drop-mote--three { animation-delay: .28s; }
-@keyframes drop-mask-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes drop-panel-in { from { opacity: 0; transform: translateY(42rpx) scale(.98); } to { opacity: 1; transform: none; } }
-@keyframes drop-card-wait { from { transform: translateY(7rpx) rotate(-1.5deg) scale(.985); } to { transform: translateY(-3rpx) rotate(-.6deg) scale(1); } }
-@keyframes drop-card-settle { 0% { transform: translateY(5rpx) rotate(-1.5deg) scale(.985); } 60% { transform: translateY(-5rpx) rotate(.35deg) scale(1.018); } 100% { transform: translateY(0) rotate(0) scale(1); } }
-@keyframes drop-mote-rise { 0% { opacity: 0; transform: translateY(18rpx) scale(.7); } 38% { opacity: .82; } 100% { opacity: 0; transform: translateY(-40rpx) scale(1); } }
-@media (prefers-reduced-motion: reduce) {
-  .drop-mask,.drop-panel,.drop-card,.drop-panel--revealed .drop-card,.drop-panel--revealed .drop-mote { animation: none; }
-  .drop-halo,.drop-card,.drop-veil,.drop-details { transition: none; }
-}

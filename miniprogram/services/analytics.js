@@ -5,6 +5,31 @@ const dataApi = require('./cloud-api');
 
 const storage = require('./storage-migration');
 const QUEUE_KEY = 'eggbabe_analytics_queue_v2';
+const EVENT_ALLOWLIST = new Set([
+  'app_open',
+  'login_result',
+  'activation_submit',
+  'activation_result',
+  'egg_bound',
+  'hatch_home_view',
+  'companion_interaction',
+  'room_element_interaction',
+  'egg_creation_saved',
+  'hatch_receive_start',
+  'hatch_card_ready',
+  'card_save',
+  'card_share',
+  'role_home_view',
+  'scene_enter',
+  'scene_exit',
+  'chat_open',
+  'chat_message_sent',
+  'chat_reply_result',
+  'account_delete_request',
+  'account_delete_cancel',
+  'data_write_fail',
+  'network_error'
+]);
 
 function readQueue() {
   return storage.read(QUEUE_KEY, []);
@@ -16,22 +41,28 @@ function getContext() {
   const user = petStore.getUser();
   const mode = runtime.getMode();
   const context = {
-    user_id: mode === 'demo' || !user || user.mode !== 'live' ? '' : user.id,
+    user_id: config.backendEnabled && user && user.mode === 'live' ? user.id : '',
     mode,
     session_id: runtime.getSessionId(),
     egg_id: pet ? pet.id : '',
-    pet_id: pet && pet.collectionCard ? pet.id : '',
     prototype: pet ? pet.prototype : '',
     stage: pet ? petStore.getStage(pet) : 'empty',
     source_channel: pet ? (pet.sourceChannel || '') : ''
   };
-  if (time.isAuthoritative() || mode === 'demo') context.server_ts = time.now();
+  if (time.isAuthoritative()) context.server_ts = time.now();
   else context.server_time_pending = true;
   return context;
 }
 
 function track(eventName, properties) {
-  const event = Object.assign({}, getContext(), properties || {}, { event_name: eventName, event_id: `evt-${time.now()}-${Math.random().toString(36).slice(2, 8)}` });
+  if (!EVENT_ALLOWLIST.has(eventName)) return { ok: false, skipped: true, code: 'EVENT_NOT_ALLOWED' };
+  const safeProperties = Object.keys(properties || {}).reduce((result, key) => {
+    if (!/currency|reward|drop|inventory|shop|quest|streak|growth|relationship|preference/i.test(key)) {
+      result[key] = properties[key];
+    }
+    return result;
+  }, {});
+  const event = Object.assign({}, getContext(), safeProperties, { event_name: eventName, event_id: `evt-${time.now()}-${Math.random().toString(36).slice(2, 8)}` });
   const queue = readQueue().concat(event).slice(-200);
   try { storage.set(QUEUE_KEY, queue); } catch (error) { return { ok: false, event }; }
   if (config.backendEnabled && queue.length >= 10) flush();
@@ -40,7 +71,7 @@ function track(eventName, properties) {
 
 function flush() {
   const queuedEvents = readQueue();
-  const events = queuedEvents.filter(event => event.mode === 'live');
+  const events = queuedEvents.filter(event => event.mode === 'live' && EVENT_ALLOWLIST.has(event.event_name));
   if (!queuedEvents.length || !config.backendEnabled) return Promise.resolve({ ok: false, pending: events.length });
   if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: events.length, code: 'LIVE_MODE_REQUIRED' });
   if (!time.isAuthoritative()) return Promise.resolve({ ok: false, pending: events.length, code: 'SERVER_TIME_REQUIRED' });
@@ -63,4 +94,13 @@ function flush() {
   }).catch(() => ({ ok: false, pending: events.length }));
 }
 
-module.exports = { track, flush };
+function clearQueue() {
+  try {
+    storage.set(QUEUE_KEY, []);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+module.exports = { EVENT_ALLOWLIST, track, flush, clearQueue };

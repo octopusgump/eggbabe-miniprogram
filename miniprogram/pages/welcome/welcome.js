@@ -1,6 +1,5 @@
 const petStore = require('../../utils/pet-store');
-const timeService = require('../../services/time-service');
-
+const config = require('../../config/v2');
 Page({
   data: {
     agreed: false,
@@ -26,34 +25,19 @@ Page({
       wx.showToast({ title: '请先阅读并同意隐私政策', icon: 'none' });
       return;
     }
-    const timeGate = timeService.requireAuthoritative();
-    if (!timeGate.ok) {
-      wx.showToast({ title: timeGate.message, icon: 'none' });
-      return;
-    }
     if (this.data.authorizing) return;
     this.setData({ authorizing: true });
-
-    const finish = (profile) => {
-      const businessNow = timeService.now();
-      const gender = profile.gender === 1 ? '男' : profile.gender === 2 ? '女' : '';
-      const city = [profile.province, profile.city].filter(Boolean).join(' · ');
-      petStore.saveUser({
-        id: petStore.getIdentityId() || `user-${businessNow}`,
-        nickname: profile.nickName || '微信用户',
-        avatarUrl: profile.avatarUrl || '',
-        gender,
-        city,
-        authorizedAt: businessNow
-      });
-      wx.switchTab({ url: '/pages/home/home' });
-    };
-
-    wx.getUserProfile({
-      desc: '用于展示你的蛋宝宝主人身份',
-      success: ({ userInfo }) => finish(userInfo || {}),
-      fail: () => wx.showToast({ title: '需要完成微信授权后才能进入', icon: 'none' }),
-      complete: () => this.setData({ authorizing: false })
-    });
+    if (!config.backendEnabled) {
+      this.setData({ authorizing: false });
+      wx.showToast({ title: '账号服务尚未接入，请稍后再试', icon: 'none' });
+      return;
+    }
+    const user = petStore.getUser();
+    this.setData({ authorizing: false });
+    if (!user) {
+      wx.showToast({ title: '正在连接账号服务，请稍后重试', icon: 'none' });
+      return;
+    }
+    wx.switchTab({ url: '/pages/home/home' });
   }
 });

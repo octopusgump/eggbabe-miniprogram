@@ -9,20 +9,6 @@
       <view class="nickname-row" bindtap="onEditNickname"><text class="nickname-text">{{nickname}}</text><view class="chevron"></view></view>
       <text class="user-id">ID：{{publicId}}</text>
     </view>
-
-    <view class="field-panel">
-      <list-row label="性别" value="{{gender}}" bind:rowtap="onEditGender"></list-row>
-      <picker mode="date" value="{{birthday}}" end="{{today}}" disabled="{{birthdayLocked}}" bindchange="onBirthdayChange">
-        <list-row label="生日" value="{{birthday}}"></list-row>
-      </picker>
-      <list-row label="星座" value="{{zodiac}}" show-chevron="{{false}}"></list-row>
-      <list-row label="常驻城市" value="{{city}}" bind:rowtap="onEditCity"></list-row>
-      <view class="form-row">
-        <text class="form-label">MBTI</text>
-        <input class="mbti-input" value="{{mbtiDraft}}" maxlength="4" placeholder="请输入，如 INFP" confirm-type="done" bindinput="onMbtiInput" bindblur="onMbtiBlur" bindconfirm="onMbtiBlur" />
-      </view>
-    </view>
-
-    <card tint="tint-yellow" ext-class="hint-card"><text class="hint-text">性别和生日设置后不可修改，请确认后再保存。</text></card>
+    <card tint="tint-yellow" ext-class="hint-card"><text class="hint-text">头像和昵称只用于账号与陪伴页面展示，不用于建立兴趣或成长画像。</text></card>
   </scroll-view>
 </view>

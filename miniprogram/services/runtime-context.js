@@ -1,5 +1,4 @@
 const storage = require('./storage-migration');
-const MODE_KEY = 'eggbabe_runtime_mode_v2';
 const SESSION_KEY = 'eggbabe_session_id_v2';
 
 function read(key, fallback) {
@@ -16,11 +15,12 @@ function write(key, value) {
 }
 
 function getMode() {
-  return read(MODE_KEY, 'live') === 'demo' ? 'demo' : 'live';
+  return 'live';
 }
 
 function setMode(mode) {
-  return write(MODE_KEY, mode === 'demo' ? 'demo' : 'live');
+  if (mode !== 'live') return { ok: false, code: 'ORDINARY_LIVE_ONLY' };
+  return { ok: true, value: 'live' };
 }
 
 function getSessionId() {
@@ -33,7 +33,7 @@ function getSessionId() {
 }
 
 function scopedKey(key, mode) {
-  return `eggbabe_${mode || getMode()}_${key}_v2`;
+  return `eggbabe_live_${key}_v2`;
 }
 
 module.exports = { getMode, setMode, getSessionId, scopedKey };

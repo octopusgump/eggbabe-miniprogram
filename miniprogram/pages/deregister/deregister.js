@@ -4,6 +4,12 @@ const timeService = require('../../services/time-service');
 const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
+const petStore = require('../../utils/pet-store');
+
+function deregisterKey() {
+  const user = petStore.getUser();
+  return `${DEREGISTER_KEY}_${user ? user.id : 'signed-out'}`;
+}
 
 Page({
   data: { pending: false, endDate: '' },
@@ -11,18 +17,20 @@ Page({
   onShow() {
     if (config.backendEnabled) {
       cloudApi.manageDeletion('query').then(result => {
-        if (result.ok && result.request) {
-          safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_query');
-          this.showRequest(result.request);
-        } else if (result.ok) this.setData({ pending: false, endDate: '' });
+        if (result.ok && result.mode === 'live' && result.request) {
+          const request = Object.assign({}, result.request, { mode: 'live' });
+          safeStorage.set(deregisterKey(), request, 'account_delete_query');
+          this.showRequest(request);
+        } else if (result.ok && result.mode === 'live') this.setData({ pending: false, endDate: '' });
       });
     }
-    const request = safeStorage.get(DEREGISTER_KEY, null);
+    const request = safeStorage.get(deregisterKey(), null);
     if (!request) return this.setData({ pending: false, endDate: '' });
     this.showRequest(request);
   },
 
   showRequest(request) {
+    if (!request || request.mode !== 'live') return this.setData({ pending: false, endDate: '' });
     this.setData({
       pending: true,
       endDate: timeService.formatBeijingDate(request.endAt)
@@ -40,21 +48,17 @@ Page({
       confirmColor: '#D9463C',
       success: (res) => {
         if (!res.confirm) return;
-        if (config.backendEnabled) {
-          cloudApi.manageDeletion('request').then(result => {
-            if (!result.ok) return wx.showToast({ title: result.message || '提交失败，请重试', icon: 'none' });
-            const saved = safeStorage.set(DEREGISTER_KEY, result.request, 'account_delete_request');
-            if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
-            analytics.track('account_delete_request'); this.onShow(); wx.showToast({ title: '注销申请已提交', icon: 'success' });
-          });
+        if (!config.backendEnabled) {
+          wx.showToast({ title: '账户服务尚未接入，请稍后再试', icon: 'none' });
           return;
         }
-        const submittedAt = timeService.now();
-        const saved = safeStorage.set(DEREGISTER_KEY, { submittedAt, endAt: submittedAt + 15 * 24 * 60 * 60 * 1000 }, 'account_delete_request');
-        if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
-        analytics.track('account_delete_request');
-        this.onShow();
-        wx.showToast({ title: '注销申请已提交', icon: 'success' });
+        cloudApi.manageDeletion('request').then(result => {
+          if (!result.ok || result.mode !== 'live' || !result.request) return wx.showToast({ title: result.message || '提交失败，请重试', icon: 'none' });
+          const request = Object.assign({}, result.request, { mode: 'live' });
+          const saved = safeStorage.set(deregisterKey(), request, 'account_delete_request');
+          if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
+          analytics.track('account_delete_request'); this.onShow(); wx.showToast({ title: '注销申请已提交', icon: 'success' });
+        });
       }
     });
   },
@@ -65,18 +69,14 @@ Page({
       content: '取消后账号会恢复正常，可以继续使用蛋宝宝、收藏卡和对话。',
       success: (res) => {
         if (!res.confirm) return;
-        if (config.backendEnabled) {
-          cloudApi.manageDeletion('cancel').then(result => {
-            if (!result.ok) return wx.showToast({ title: result.message || '取消失败，请重试', icon: 'none' });
-            safeStorage.remove(DEREGISTER_KEY, 'account_delete_cancel'); analytics.track('account_delete_cancel'); this.onShow(); wx.showToast({ title: '已取消注销', icon: 'success' });
-          });
+        if (!config.backendEnabled) {
+          wx.showToast({ title: '账户服务尚未接入，请稍后再试', icon: 'none' });
           return;
         }
-        const removed = safeStorage.remove(DEREGISTER_KEY, 'account_delete_cancel');
-        if (!removed.ok) return wx.showToast({ title: removed.message, icon: 'none' });
-        analytics.track('account_delete_cancel');
-        this.onShow();
-        wx.showToast({ title: '已取消注销', icon: 'success' });
+        cloudApi.manageDeletion('cancel').then(result => {
+          if (!result.ok || result.mode !== 'live') return wx.showToast({ title: result.message || '取消失败，请重试', icon: 'none' });
+          safeStorage.remove(deregisterKey(), 'account_delete_cancel'); analytics.track('account_delete_cancel'); this.onShow(); wx.showToast({ title: '已取消注销', icon: 'success' });
+        });
       }
     });
   },

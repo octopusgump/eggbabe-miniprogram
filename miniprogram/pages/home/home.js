@@ -1,14 +1,14 @@
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
+const cloudApi = require('../../services/cloud-api');
+const config = require('../../config/v2');
 const timeService = require('../../services/time-service');
 const sceneConfig = require('../../utils/life-scenes');
 const syncQueue = require('../../services/sync-queue');
 const environmentService = require('../../services/incubation-environment');
 const shellArtService = require('../../services/egg-shell-art');
+const roomSound = require('../../services/room-sound');
 const canvas2d = require('../../utils/canvas-2d');
-const config = require('../../config/v2');
-const currency = require('../../services/currency-store');
-const runtime = require('../../services/runtime-context');
 
 const TOUCH_LINES = ['你碰到我啦。', '我轻轻晃了一下。', '我听见你了。', '壳里传来我小小的回应。'];
 const TALK_REACTIONS = [
@@ -19,6 +19,13 @@ const TALK_REACTIONS = [
   { motion: 'egg--talk-knock', text: '' }
 ];
 const WEATHER_PARTICLES = Array.from({ length: 12 }, (_, index) => index);
+const ROOM_ELEMENTS = [
+  { key: 'lamp', label: '台灯', icon: '灯', position: 'room-element--lamp', effect: 'scene--lamp', motion: 'egg--quiet' },
+  { key: 'coffee', label: '咖啡机', icon: '暖', position: 'room-element--coffee', effect: 'scene--coffee', motion: 'egg--quiet', feedback: '房间里暖了一点。' },
+  { key: 'brush', label: '画笔', icon: '画', position: 'room-element--brush', effect: 'scene--draw', motion: 'egg--quiet', feedback: '纸上多了一笔柔和的颜色。', route: '/pages/doodle/doodle' },
+  { key: 'scarf', label: '围巾', icon: '软', position: 'room-element--scarf', effect: 'scene--scarf', motion: 'egg--warm', feedback: '这条围巾摸起来软软的。' },
+  { key: 'window', label: '窗户', icon: '窗', position: 'room-element--window', effect: 'scene--window', motion: 'egg--quiet' }
+];
 const COMPANION_ACTIONS = [
   { key: 'touch', title: '摸摸我', desc: '轻轻碰一下', icon: '/assets/scenes/incubation/svg/interaction_touch.svg' },
   { key: 'talk', title: '跟我说句话', desc: '我会用身体回应', icon: '/assets/scenes/incubation/svg/interaction_talk.svg' },
@@ -40,17 +47,13 @@ Page({
     feedback: '',
     eggMotion: '',
     sceneEffect: '',
-    cuddleProgress: 0,
     hasScenes: false,
     syncPending: 0,
-    activationCode: config.localActivationCode,
-    hatchedActivationCode: config.localHatchedActivationCode,
     sceneImage: '',
     environment: environmentService.resolve(),
     weatherParticles: WEATHER_PARTICLES,
     companionActions: COMPANION_ACTIONS,
     greeting: '',
-    progressTip: false,
     talkDraft: '',
     talkFocused: false,
     talkPlaceholder: '最多 50 个字，我会认真听',
@@ -62,14 +65,8 @@ Page({
     savingName: false,
     homeEggBasePreview: '',
     homeEggArtPreview: '',
-    dewBalance: 0,
-    dailyClickEarned: 0,
-    dailyClickCap: currency.DAILY_CLICK_CAP,
-    dewTip: false,
-    dewBalanceBumpClass: '',
-    dewDrops: [],
-    dewGains: [],
-    equippedItems: []
+    roomElements: ROOM_ELEMENTS,
+    lampOn: false
   },
 
   async onShow() {
@@ -100,11 +97,6 @@ Page({
     }
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const currencyAccount = await currency.loadAccount();
-    const equipped = currencyAccount.inventory
-      .filter(item => item.equipped)
-      .map(owned => currencyAccount.catalog.find(item => item.id === owned.itemId))
-      .filter(Boolean);
     this.setData({
       pet,
       stage,
@@ -119,11 +111,7 @@ Page({
       hasScenes: hatched && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
       sceneImage: hatched ? sceneConfig.getScene('grass', pet.prototype).image : '',
       environment: environmentService.resolve(serverEnvironment),
-      syncPending: syncQueue.pendingCount(),
-      dewBalance: currencyAccount.balance,
-      dailyClickEarned: currencyAccount.dailyClickEarned,
-      dailyClickCap: currencyAccount.dailyClickCap,
-      equippedItems: equipped
+      syncPending: syncQueue.pendingCount()
     }, () => {
       if (!hatched) {
         this.setupWindowFog();
@@ -131,7 +119,6 @@ Page({
       }
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
-    if (hatched && this.data.dailyStatus) analytics.track('daily_status_viewed', { where: 'role_home', mood_type: this.data.dailyStatus.mood });
   },
 
   onReady() {
@@ -289,76 +276,16 @@ Page({
     });
   },
 
-  playDewAward(point, result) {
-    if (!this.pageActive) return;
-    const id = `dew-${result.requestId}`;
-    const query = wx.createSelectorQuery().in(this);
-    query.select('.egg-zone').boundingClientRect();
-    query.select('.dew-balance').boundingClientRect();
-    query.exec(rects => {
-      if (!this.pageActive) return;
-      const zone = rects && rects[0];
-      const wallet = rects && rects[1];
-      const dx = zone && wallet ? wallet.left + wallet.width / 2 - zone.left - point.x : 230;
-      const dy = zone && wallet ? wallet.top + wallet.height / 2 - zone.top - point.y : -180;
-      const pulse = this.dewPulseSequence = (this.dewPulseSequence || 0) + 1;
-      this.setData({
-        dewBalance: result.balance,
-        dailyClickEarned: result.dailyClickEarned,
-        dailyClickCap: result.dailyClickCap,
-        dewBalanceBumpClass: pulse % 2 ? 'dew-balance--bump-a' : 'dew-balance--bump-b',
-        dewGains: this.data.dewGains.concat({ id, text: `+${result.amount} 露珠`, top: 286 + ((pulse - 1) % 3) * 46 }).slice(-3),
-        dewDrops: this.data.dewDrops.concat({ id, x: point.x, y: point.y, dx, dy }).slice(-3)
-      });
-      const timer = setTimeout(() => {
-        if (this.pageActive) {
-          this.setData({
-            dewGains: this.data.dewGains.filter(item => item.id !== id),
-            dewDrops: this.data.dewDrops.filter(item => item.id !== id)
-          });
-        }
-        this.dewTimers = (this.dewTimers || []).filter(item => item !== timer);
-      }, 1050);
-      this.dewTimers = (this.dewTimers || []).concat(timer);
-      if (result.dailyClickEarned >= result.dailyClickCap && !this.capNotified) {
-        this.capNotified = true;
-        this.showFeedback('今天的 10 个露珠已经收好啦');
-      }
-    });
-  },
-
-  requestDewForTap(pointPromise) {
-    const requestId = `${runtime.getSessionId()}-egg-tap-${timeService.now()}-${this.currencyTapSequence = (this.currencyTapSequence || 0) + 1}`;
-    const run = () => currency.tapEgg(requestId).then(async result => {
-      if (!this.pageActive) return result;
-      if (!result.ok) {
-        if (!this.currencyErrorShown) {
-          this.currencyErrorShown = true;
-          this.showFeedback('露珠暂时没有同步，蛋宝宝的回应还在。');
-        }
-        return result;
-      }
-      this.setData({
-        dailyClickEarned: result.dailyClickEarned,
-        dailyClickCap: result.dailyClickCap
-      });
-      if (result.awarded) this.playDewAward(await pointPromise, result);
-      return result;
-    });
-    this.currencyTapQueue = (this.currencyTapQueue || Promise.resolve()).then(run, run);
-  },
-
   onEggTap(event) {
     if (this.completedLongPress) {
       this.completedLongPress = false;
       return;
     }
-    const tapPoint = this.spawnTapParticles(event);
+    this.spawnTapParticles(event);
     const now = timeService.now();
     this.runSceneEffect('scene--touch', 'egg--wobble', 760);
     petStore.recordTouch();
-    analytics.track('egg_tap', { tap_count: 1 });
-    this.requestDewForTap(tapPoint);
+    analytics.track('companion_interaction', { interaction_type: 'touch', result: 'played' });
     if (this.lastTapAt && now - this.lastTapAt < 2000) return;
     this.lastTapAt = now;
     this.showFeedback(TOUCH_LINES[Math.floor(Math.random() * TOUCH_LINES.length)]);
@@ -376,31 +303,17 @@ Page({
     this.clearEffectTimers();
     this.completedLongPress = false;
     this.vibrationCount = 0;
-    const started = timeService.now();
-    this.setData({ eggMotion: 'egg--warming', sceneEffect: 'scene--cuddle', cuddleProgress: 1 });
-    this.cuddleTicker = setInterval(() => {
-      const progress = Math.min(99, Math.round((timeService.now() - started) / 30));
-      this.setData({ cuddleProgress: progress });
-    }, 90);
+    this.setData({ eggMotion: 'egg--warming', sceneEffect: 'scene--cuddle' });
     this.cuddleVibrationTicker = setInterval(() => this.vibrateCuddleTick(), 1000);
     this.cuddleTimer = setTimeout(() => {
-      clearInterval(this.cuddleTicker);
       clearInterval(this.cuddleVibrationTicker);
       if (this.vibrationCount < 3) this.vibrateCuddleTick();
-      const result = this.data.stage === 'hatched' ? { ok: true, added: 0 } : petStore.completeCuddle();
-      if (!result.ok) {
-        this.clearCuddleTimers();
-        this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '' });
-        this.showFeedback(result.message || '这次没有记录成功，请再试一次');
-        return;
-      }
-      analytics.track(this.data.stage === 'hatched' ? 'role_cuddle_complete' : 'pat_egg_complete');
-      if (this.data.stage !== 'hatched') analytics.track('incubation_action', { action_type: 'cuddle', is_first_time: !!result.added, progress_delta: result.added || 0 });
+      analytics.track('companion_interaction', { interaction_type: 'cuddle', result: 'played' });
       this.completedLongPress = true;
-      this.setData({ cuddleProgress: 100, eggMotion: 'egg--warm' });
-      this.showFeedback(result.added ? '我暖起来了。' : '我又往你这边靠了靠。');
+      this.setData({ eggMotion: 'egg--warm' });
+      this.showFeedback('我暖起来了。');
       this.cuddleResetTimer = setTimeout(() => {
-        this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '' });
+        this.setData({ eggMotion: '', sceneEffect: '' });
         this.onShow();
       }, 900);
     }, 3000);
@@ -408,15 +321,13 @@ Page({
 
   onTouchEnd() {
     clearTimeout(this.cuddleTimer);
-    clearInterval(this.cuddleTicker);
     clearInterval(this.cuddleVibrationTicker);
-    if (!this.completedLongPress) this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '' });
+    if (!this.completedLongPress) this.setData({ eggMotion: '', sceneEffect: '' });
   },
 
   clearCuddleTimers() {
     clearTimeout(this.cuddleTimer);
     clearTimeout(this.cuddleResetTimer);
-    clearInterval(this.cuddleTicker);
     clearInterval(this.cuddleVibrationTicker);
   },
 
@@ -466,26 +377,22 @@ Page({
     this.setData({ greeting: '' });
   },
 
-  onProgressTap() {
-    this.setData({ progressTip: true });
-    clearTimeout(this.progressTipTimer);
-    this.progressTipTimer = setTimeout(() => this.setData({ progressTip: false }), 2000);
-  },
-
-  onDewBalanceTap() {
-    this.setData({ dewTip: true });
-    clearTimeout(this.dewTipTimer);
-    this.dewTipTimer = setTimeout(() => {
-      if (this.pageActive) this.setData({ dewTip: false });
-    }, 2200);
-  },
-
-  onOpenShop() {
-    wx.navigateTo({ url: '/pages/shop/shop' });
-  },
-
-  onOpenBag() {
-    wx.navigateTo({ url: '/pages/bag/bag' });
+  onRoomElementTap(event) {
+    const elementId = event.currentTarget.dataset.key;
+    const element = ROOM_ELEMENTS.find(item => item.key === elementId);
+    if (!element) return;
+    let feedback = element.feedback;
+    if (elementId === 'lamp') feedback = this.data.lampOn ? '灯暗下来，我们安静待一会儿。' : '灯亮了，我也看清你啦。';
+    if (elementId === 'window') feedback = this.data.environment.weather === 'rain' ? '我在这里听着雨。' : '窗外的光慢慢落进房间。';
+    if (elementId === 'lamp') this.setData({ lampOn: !this.data.lampOn });
+    if (elementId === 'coffee') roomSound.playCoffeeChime();
+    this.runSceneEffect(element.effect, element.motion, 900);
+    this.showFeedback(feedback);
+    analytics.track('room_element_interaction', { element_id: elementId, result: 'played' });
+    if (element.route) {
+      clearTimeout(this.roomElementRouteTimer);
+      this.roomElementRouteTimer = setTimeout(() => wx.navigateTo({ url: element.route }), 820);
+    }
   },
 
   onTalkInput(event) {
@@ -572,7 +479,7 @@ Page({
     this.setData({ talkDraft: '', talkFocused: false, talkPlaceholder: '最多 50 个字，我会认真听' });
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
     if (reaction.text) this.showFeedback(reaction.text);
-    analytics.track('incubation_action', { action_type: 'talk', is_first_time: !!result.added, progress_delta: result.added || 0 });
+    analytics.track('companion_interaction', { interaction_type: 'talk', result: 'played' });
     this.runSceneEffect('scene--listening', reaction.motion, 900, () => {
       this.onShow();
     });
@@ -583,17 +490,31 @@ Page({
     this.setData({ nameDraft: value, nameCount: Array.from(value).length, nameError: '' });
   },
 
-  onSaveName() {
+  async onSaveName() {
     if (this.data.savingName) return;
     this.setData({ savingName: true, nameError: '' });
-    const result = petStore.updateNickname(this.data.nameDraft);
-    if (!result.ok) {
-      this.setData({ savingName: false, nameError: result.message || '名字没有保存成功' });
+    const validation = petStore.validateNickname(this.data.nameDraft);
+    if (!validation.ok) {
+      this.setData({ savingName: false, nameError: validation.message || '名字没有保存成功' });
       return;
     }
-    analytics.track('incubation_action', { action_type: 'nickname', is_first_time: !!result.added, progress_delta: result.added || 0 });
+    if (!config.backendEnabled) {
+      this.setData({ savingName: false, nameError: '账号资料服务尚未接入，请稍后再试' });
+      return;
+    }
+    const response = await cloudApi.updateEggName(this.data.pet.id, validation.value);
+    if (!response.ok || response.mode !== 'live') {
+      this.setData({ savingName: false, nameError: response.message || '名字没有保存成功，请重试' });
+      return;
+    }
+    const result = petStore.applyConfirmedNickname(response.display_name || validation.value);
+    if (!result.ok) {
+      this.setData({ savingName: false, nameError: result.message || '名字没有保存成功，请重试' });
+      return;
+    }
+    analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
     this.setData({ savingName: false, showNameSheet: false });
-    this.showFeedback(result.added ? '我记住自己的名字啦。' : '我记住新名字啦。');
+    this.showFeedback('我记住自己的名字啦。');
     this.onShow();
   },
 
@@ -614,20 +535,18 @@ Page({
   clearInteractionTimers() {
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
-    clearTimeout(this.progressTipTimer);
-    clearTimeout(this.dewTipTimer);
+    clearTimeout(this.roomElementRouteTimer);
     this.clearEffectTimers();
     (this.particleTimers || []).forEach(clearTimeout);
     this.particleTimers = [];
-    (this.dewTimers || []).forEach(clearTimeout);
-    this.dewTimers = [];
   },
 
   onHide() {
     this.pageActive = false;
     this.clearInteractionTimers();
     this.completedLongPress = false;
-    this.setData({ cuddleProgress: 0, eggMotion: '', sceneEffect: '', feedback: '', progressTip: false, dewTip: false, dewBalanceBumpClass: '', dewGains: [], dewDrops: [], tapParticles: [] });
+    roomSound.stop();
+    this.setData({ eggMotion: '', sceneEffect: '', feedback: '', tapParticles: [] });
   },
 
   onUnload() {

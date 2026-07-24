@@ -1,5 +1,7 @@
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
+const cloudApi = require('../../services/cloud-api');
+const config = require('../../config/v2');
 const shellArtService = require('../../services/egg-shell-art');
 const canvas2d = require('../../utils/canvas-2d');
 
@@ -267,16 +269,28 @@ Page({
     this.finishStroke();
   },
 
-  onSave() {
+  async onSave() {
     if (this.data.saving) return;
     this.setData({ saving: true });
-    const result = petStore.saveDoodle(this.shellArt);
+    if (!config.backendEnabled) {
+      this.setData({ saving: false });
+      wx.showToast({ title: '蛋壳创作服务尚未接入，请稍后再试', icon: 'none' });
+      return;
+    }
+    const pet = petStore.getPet();
+    const response = await cloudApi.saveEggCreation(pet && pet.id, shellArtService.normalizeShellArt(this.shellArt));
+    if (!response.ok || response.mode !== 'live') {
+      this.setData({ saving: false });
+      wx.showToast({ title: response.message || '蛋壳没有保存成功，请重试', icon: 'none' });
+      return;
+    }
+    const result = petStore.applyConfirmedDoodle(response.creation || this.shellArt);
     if (!result.ok) {
       this.setData({ saving: false });
       wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
       return;
     }
-    analytics.track('egg_doodle_generate', shellArtService.operationSummary(this.shellArt));
+    analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
     wx.showToast({ title: result.added ? '我记住这个样子啦' : '我的蛋壳换好啦', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
   },

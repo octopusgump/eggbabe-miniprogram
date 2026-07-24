@@ -1,23 +1,30 @@
 <view class="page">
   <nav-bar title="收藏卡"></nav-bar>
   <scroll-view class="content" scroll-y>
-    <view wx:if="{{isNew}}" class="new-banner">获得第一张收藏卡 · 已自动收入我的收藏卡</view>
-    <view class="card">
-      <view class="card-title-section"><view class="title-copy"><text class="name">{{cardView.name}}</text><text wx:if="{{isCollectible}}" class="collect-context">{{sceneCard.setName}} · {{sceneCard.name}}</text></view><text wx:if="{{isCollectible}}" class="collect-badge">{{sceneCard.collectorLabel}}</text></view>
-      <view class="card-illustration-section"><image wx:if="{{illustration}}" class="illustration" src="{{illustration}}" mode="aspectFill"></image><pet-avatar wx:else pet-type="{{cardView.prototype_name}}" size="{{250}}"></pet-avatar></view>
-      <view class="card-data-section">
-        <view class="stat-grid">
-          <view class="stat-cell"><text class="stat-label">类型</text><text class="stat-value">{{cardView.prototype_name}}</text></view>
-          <view class="stat-cell"><text class="stat-label">生日</text><text class="stat-value">{{birthdayLabel}}</text></view>
-          <view class="stat-cell"><text class="stat-label">星座</text><text class="stat-value">{{cardView.constellation}} {{zodiacSymbol}}</text></view>
-          <view class="stat-cell"><text class="stat-label">性别</text><text class="stat-value">{{genderLabel}}</text></view>
-          <view class="stat-cell"><text class="stat-label">血型</text><text class="stat-value">{{cardView.blood_type}} 型</text></view>
-          <view class="stat-cell"><text class="stat-label">MBTI</text><text class="stat-value">{{cardView.mbti}}</text></view>
+    <view wx:if="{{isNew}}" class="new-banner">我的收藏卡已经准备好啦</view>
+    <view wx:if="{{cardView}}" class="card">
+      <view class="card-title-section">
+        <view class="card-avatar"><pet-avatar pet-type="{{cardView.prototype_name}}" size="{{44}}"></pet-avatar></view>
+        <view class="title-copy">
+          <text class="name">{{cardView.display_name}}</text>
+          <text class="prototype">{{cardView.prototype_name}} · {{cardView.style}}</text>
         </view>
-        <text class="card-signature {{signatureClass}}">“{{cardView.signature}}”</text>
+        <text class="brand">eggbabe</text>
+      </view>
+      <view class="card-illustration-section">
+        <image class="card-illustration" src="{{cardView.illustration_url}}" mode="aspectFit"></image>
+      </view>
+      <view class="card-data-section">
+        <view class="data-row"><text class="data-label">破壳日期</text><text class="data-value">{{hatchedAtLabel}}</text></view>
+        <view class="data-row"><text class="data-label">身份编号</text><text class="data-value">{{cardView.identity_code}}</text></view>
+        <view wx:if="{{cardView.source_batch}}" class="data-row"><text class="data-label">来源批次</text><text class="data-value">{{cardView.source_batch}}</text></view>
+        <text class="card-note">这是一枚实体蛋的一份身份与纪念档案</text>
       </view>
     </view>
-    <view class="actions"><button class="save-image-button" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">保存图片</text></button></view>
+    <view class="actions">
+      <button class="save-image-button" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">{{savingImage ? '正在保存…' : '保存图片'}}</text></button>
+      <button class="share-button" open-type="share"><text class="button-label">分享给好友</text></button>
+    </view>
     <canvas canvas-id="cardPosterCanvas" class="card-poster-canvas"></canvas>
   </scroll-view>
 </view>

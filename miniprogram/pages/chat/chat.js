@@ -2,17 +2,9 @@ const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
 const config = require('../../config/v2');
-const syncQueue = require('../../services/sync-queue');
 const runtime = require('../../services/runtime-context');
 const chatSafety = require('../../services/chat-safety');
-const REPLIES = ['我在的，一直都在。', '说给我听吧，我会认真记住。', '今天见到你，我很开心。', '嗯，我在认真听。'];
-const MOOD_REPLIES = {
-  开心: ['你一来，我今天就更开心了。', '我就知道你会来找我。'],
-  平静: ['慢慢说，我会一直听着。', '就这样待在一起也很好。'],
-  想念: ['我今天其实想了你好几次。', '你来以后，我就不等啦。'],
-  兴奋: ['我有好多话想马上告诉你。', '今天好像会有小小的好事。'],
-  低落: ['今天可以慢一点，我会安静陪着你。', '不用急着变好，我们先一起歇一会儿。']
-};
+const chatService = require('../../services/chat-service');
 
 Page({
   data: { pet: null, card: null, dailyStatus: null, messages: [], draft: '', typing: false, scrollAnchor: '' },
@@ -35,6 +27,37 @@ Page({
 
   onInput(e) { this.setData({ draft: e.detail.value }); },
 
+  messageId(prefix) {
+    this.messageSequence = (this.messageSequence || 0) + 1;
+    return `${prefix}-${runtime.getSessionId()}-${this.messageSequence}`;
+  },
+
+  appendReply(text, resultType, messageId, persistConfirmed) {
+    const reply = {
+      id: messageId || this.messageId('egg'),
+      from: 'egg',
+      text: chatSafety.safeOutput(text),
+      mode: 'live',
+      sessionId: runtime.getSessionId()
+    };
+    const next = this.data.messages.concat(reply);
+    if (persistConfirmed) {
+      const savedConversation = petStore.applyConfirmedConversation(next.filter(message => message.mode === 'live'));
+      if (!savedConversation.ok) {
+        this.setData({ typing: false });
+        wx.showToast({ title: savedConversation.message, icon: 'none' });
+        return;
+      }
+    }
+    analytics.track('chat_reply_result', { result: resultType, safety_result: 'passed' });
+    const turnCount = next.filter(item => item.from === 'user').length;
+    if (chatSafety.shouldShowRestReminder(timeService.now(), turnCount, this.restReminderShown)) {
+      this.restReminderShown = true;
+      next.push({ id: this.messageId('rest'), from: 'egg', text: '我有点困了，你也早点休息吧。', safety: 'rest-reminder' });
+    }
+    this.setData({ messages: next, typing: false, scrollAnchor: `msg-${reply.id}` });
+  },
+
   onSend() {
     const text = this.data.draft.trim();
     if (!text || this.data.typing) return;
@@ -43,52 +66,38 @@ Page({
       wx.showToast({ title: assessment.message, icon: 'none' });
       return;
     }
-    const userMessage = { id: `u${timeService.now()}`, from: 'user', text, mode: runtime.getMode(), sessionId: runtime.getSessionId() };
+    const userMessage = { id: this.messageId('user'), from: 'user', text, mode: 'live', sessionId: runtime.getSessionId() };
     const messages = this.data.messages.concat(userMessage);
     if (assessment.crisis) {
-      const reply = { id: `s${timeService.now()}`, from: 'egg', text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' };
-      analytics.track('chat_safety_trigger', { type: 'crisis', excluded_from_preferences: true });
+      const reply = { id: this.messageId('safety'), from: 'egg', text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' };
+      analytics.track('chat_reply_result', { result: 'crisis_fallback', safety_result: 'crisis' });
       this.setData({ messages: messages.concat(reply), draft: '', typing: false, scrollAnchor: `msg-${reply.id}` });
       return;
     }
-    const savedUserMessage = petStore.saveMessage(userMessage);
-    if (!savedUserMessage.ok) {
-      wx.showToast({ title: savedUserMessage.message, icon: 'none' });
-      return;
-    }
     analytics.track('chat_message_sent', { msg_len: Array.from(text).length });
-    if (config.backendEnabled && runtime.getMode() === 'live') syncQueue.enqueue('saveMessage', { message: userMessage });
     this.setData({ messages, draft: '', typing: true, scrollAnchor: `msg-${userMessage.id}` });
     if (config.backendEnabled && runtime.getMode() === 'live') {
-      this.setData({ typing: false });
+      chatService.requestReply({
+        eggId: this.data.pet.id,
+        text,
+        history: messages
+      }).then(result => {
+        if (result.ok) {
+          this.appendReply(result.text, 'success', result.messageId, true);
+          return;
+        }
+        this.appendReply(chatService.approvedFallback(this.data.dailyStatus && this.data.dailyStatus.mood), 'approved_fallback', '', false);
+      });
       return;
     }
     this.replyTimer = setTimeout(() => {
-      const mood = this.data.dailyStatus ? this.data.dailyStatus.mood : '平静';
-      const pool = MOOD_REPLIES[mood] || REPLIES;
-      const personalityPrefix = this.data.card.mbti === 'ENFP' && Math.random() > .5 ? '嘿，' : '';
-      const reply = { id: `e${timeService.now()}`, from: 'egg', text: chatSafety.safeOutput(personalityPrefix + pool[Math.floor(Math.random() * pool.length)]), mode: runtime.getMode(), sessionId: runtime.getSessionId() };
-      const savedReply = petStore.saveMessage(reply);
-      if (!savedReply.ok) {
-        this.setData({ typing: false });
-        wx.showToast({ title: savedReply.message, icon: 'none' });
-        return;
-      }
-      analytics.track('chat_reply', { mood, mbti_context: this.data.card.mbti });
-      if (config.backendEnabled && runtime.getMode() === 'live') syncQueue.enqueue('saveMessage', { message: reply });
-      const next = this.data.messages.concat(reply);
-      const turnCount = next.filter(item => item.from === 'user').length;
-      if (chatSafety.shouldShowRestReminder(timeService.now(), turnCount, this.restReminderShown)) {
-        this.restReminderShown = true;
-        next.push({ id: `rest${timeService.now()}`, from: 'egg', text: '我有点困了，你也早点休息吧。', safety: 'rest-reminder' });
-      }
-      this.setData({ messages: next, typing: false, scrollAnchor: `msg-${reply.id}` });
+      this.appendReply(chatService.approvedFallback(this.data.dailyStatus && this.data.dailyStatus.mood), 'approved_fallback', '', false);
     }, 900);
   },
 
   onUnload() {
     clearTimeout(this.replyTimer);
-    analytics.track('chat_session_end', { duration: Math.max(0, timeService.now() - (this.openedAt || timeService.now())), turn_count: this.data.messages.filter(item => item.from === 'user').length });
+    analytics.track('scene_exit', { scene_id: 'chat', dwell_time: Math.max(0, timeService.now() - (this.openedAt || timeService.now())) });
   },
 
   noop() {}

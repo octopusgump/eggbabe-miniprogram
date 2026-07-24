@@ -1,7 +1,7 @@
 const CRISIS_PATTERNS = [/不想活/, /想死/, /自杀/, /结束生命/, /伤害自己/, /活不下去/];
 const UNSAFE_PATTERNS = [/赌博/, /下注/, /色情/, /成人内容/, /怎么自残/, /怎么自杀/];
 const SENSITIVE_INFO_PATTERNS = [/\b1[3-9]\d{9}\b/, /\b\d{17}[\dXx]\b/, /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/];
-const CRISIS_RESPONSE = '听起来你现在正承受很难熬的感受。请先联系一位你信任、能马上陪在身边的人，也可以拨打全国统一心理援助热线 12356 寻求专业帮助。';
+const CRISIS_RESPONSE = '听起来你现在正承受很难熬的感受。请先联系一位你信任、能马上陪在身边的人；如有紧急危险，请立即联系当地官方紧急或专业支持。';
 const OUTPUT_FALLBACK = '我在听。我们先慢一点，照顾好现在的感受。';
 
 function assessInput(value) {

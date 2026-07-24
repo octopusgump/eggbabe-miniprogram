@@ -1,41 +1,20 @@
 # eggbabe 收藏卡 H5
 
-本目录只包含收藏卡移动端 H5 视图。身份信息已经统一收敛到收藏卡，不再提供重复的角色档案页。H5 只负责展示收藏卡和生成分享长图，不在浏览器内随机生成姓名、插画、编号或角色属性。
+本目录是普通版“一蛋一份”收藏卡的移动端 H5。H5 只根据 `card_id` 从受信任的服务端读取已经确定的 `live` JSON，再完成展示和分享长图渲染。
 
-卡面采用三段式 9:16 模板：顶部不显示 IP 头像，只保留名字与放大的系列序号；中部为服务端已选定的 4:5 水彩插画；底部依次显示「类型 / 生日 / 星座 / 性别 / 血型 / MBTI」六个两列三行信息块，并在其下完整展示可换行的性情独白。信息块文字保持放大 20% 的可读基线；性情独白使用 Google Fonts OFL 版 `ZCOOL KuaiLe`，字号为上一版的两倍，与信息块之间保留明确上方留白。窄屏通过内收插画与轻量标题区释放高度，保持生日和独白完整。插画使用 cover 方式铺满视口，卡面不使用黑色内描边。名字与性情独白一起按需加载 `ZCOOL KuaiLe` 的 `text=` 子集，失败时回退 PingFang SC。
+H5 不接受 URL 注入卡片 JSON，不提供预览参数，不生成名字、插画、编号、时间或其他业务字段，也不接受 `demo` 数据。
 
-## 本地预览
+## 数据字段
 
-在项目根目录启动任意静态文件服务器，然后打开：
-
-`/h5/birth-card/index.html?preview=1`
-
-预览固定读取 `sample/card.json`。
-
-第一季系列收藏卡预览：
-
-`/h5/birth-card/index.html?preview=collectible`
-
-该预览读取 `sample/collectible-card.json`，正面显示名字、六个身份信息块、完整性情独白和系列内编号；全局编号只进入分享图脚注。
-
-## 数据入口
-
-页面按以下顺序读取数据：
-
-1. `card_data`：仅供内部开发预览注入的 URL 编码 JSON，不作为用户入口。
-2. `card_id`：正式卡通过 `runtime-config.js` 固定的可信 API 读取 `GET {apiBase}/cards/{card_id}?mode=live`。页面不接受 URL 传入 API 地址，防止切换到伪造服务。
-3. `preview=1` 或 `preview=collectible`：仅本地预览固定样例。
-
-字段契约和合法性由 `card-model.js` 统一校验；姓名为空时只展示“未命名”，不会在 H5 随机起名。
+必需字段为 `card_id`、`egg_id`、`mode=live`、`prototype`、`style`、`display_name`、`hatched_at`、`identity_code` 和 `illustration_key`；`source_batch` 可空。插画地址与真实小程序码由服务端返回。
 
 ## 上线接入
 
-1. 将本目录发布到已备案的 HTTPS 域名。
-2. 在微信公众平台把该域名加入小程序“业务域名”。
-3. 在 `miniprogram/config/v2.js` 配置 `birthCardH5Url` 和 `birthCardApiBase`；前者用于打开 H5，后者用于正式模式启用前的安全门禁。
-4. H5 未部署或地址不可用时，小程序会用相同的已定稿数据打开原生完整卡面；不会再把用户留在“配置后开放”的提示上。
-5. 在 H5 的 `runtime-config.js` 固定填写同一可信 `apiBase`，并部署卡片查询接口；正式模式缺少接口时会安全回退原生页或显示错误。
-6. 如需后台更新款式素材，在 `runtime-config.js` 配置 `assetManifestUrl`，返回与 `asset-config.js` 相同结构的 JSON。
-7. 配置 `miniProgramCodeUrl` 或在卡片接口返回 `mini_program_code_url`；任何模式缺少真实小程序码时都会阻止导出，不生成占位码。
+1. 将本目录发布到备案域名 `eggbabe.com` 下的 HTTPS 地址。
+2. 在微信公众平台配置业务域名和下载域名。
+3. 在 `runtime-config.js` 固定可信 `apiBase`。
+4. 在小程序 `config/v2.js` 配置 `birthCardH5Url` 与 `birthCardApiBase`。
+5. 服务端实现 `GET {apiBase}/cards/{card_id}?mode=live`，并保证幂等返回同一枚实体蛋的同一张有效收藏卡。
+6. 真机验收相册授权、H5 `postMessage` 回传和小程序侧保存流程。
 
-在上述配置未完成前，小程序自动使用原生收藏卡，不会出现空白 `web-view`。
+未完成 H5 接入时，小程序自动使用相同字段的原生收藏卡兜底。

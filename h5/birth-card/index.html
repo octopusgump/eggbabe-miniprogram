@@ -3,78 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#131a34">
+  <meta name="theme-color" content="#f6f5ef">
   <title>eggbabe 收藏卡</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <main class="app-shell" aria-live="polite">
-    <section id="loading" class="state-panel">
-      <span class="loading-egg" aria-hidden="true"></span>
-      <p>正在打开这份小小的惊喜…</p>
-    </section>
-
-    <section id="error" class="state-panel" hidden>
-      <p class="state-title">收藏卡暂时没有打开</p>
-      <p id="error-message" class="state-copy">请回到小程序稍后再试。</p>
-    </section>
-
+    <section id="loading" class="state-panel"><span class="loading-egg" aria-hidden="true"></span><p>正在打开收藏卡…</p></section>
+    <section id="error" class="state-panel" hidden><p class="state-title">收藏卡暂时没有打开</p><p id="error-message" class="state-copy">请回到小程序稍后再试。</p></section>
     <div id="content" hidden>
-      <div id="mode-chip" class="mode-chip" hidden>内部开发预览 · DEMO</div>
-
-      <section id="card-view" class="view-section">
+      <section class="view-section">
         <article id="birth-card" class="birth-card" aria-label="蛋宝宝收藏卡">
           <header class="card-title-section">
-            <div class="card-title-copy">
-              <h1 data-field="name">—</h1>
-              <p id="collect-context" class="collect-context" hidden><span data-field="setName">—</span> · <span data-field="cardTitle">—</span></p>
-            </div>
-            <span id="collect-badge" class="collect-badge" hidden>001/010</span>
+            <div class="card-avatar" aria-hidden="true"><span id="card-avatar-mark">兔</span></div>
+            <div class="card-title-copy"><h1 data-field="displayName">—</h1><p><span data-field="prototypeLabel">—</span> · <span data-field="style">—</span></p></div>
+            <span class="card-wordmark">eggbabe</span>
           </header>
-
           <div class="card-illustration-section">
             <div class="illustration-frame">
-              <img id="hero-background" class="hero-background" alt="" hidden>
-              <div id="fallback-mark" class="fallback-mark" aria-hidden="true">兔</div>
-              <img id="hero-figure" class="hero-figure" alt="蛋宝宝角色形象" hidden>
+              <img id="hero-figure" class="hero-figure" alt="蛋宝宝固定款式插画" hidden>
             </div>
           </div>
-
           <div class="card-data card-data-section">
-            <dl class="stat-grid">
-              <div class="stat-cell"><dt>类型</dt><dd data-field="prototypeLabel">—</dd></div>
-              <div class="stat-cell"><dt>生日</dt><dd id="card-birthday" data-field="birthday">—</dd></div>
-              <div class="stat-cell"><dt>星座</dt><dd id="card-constellation" data-field="constellation">—</dd></div>
-              <div class="stat-cell"><dt>性别</dt><dd data-field="genderSymbol">—</dd></div>
-              <div class="stat-cell"><dt>血型</dt><dd><span data-field="bloodType">—</span> 型</dd></div>
-              <div class="stat-cell"><dt>MBTI</dt><dd data-field="mbti">—</dd></div>
+            <dl class="identity-list">
+              <div><dt>破壳日期</dt><dd data-field="hatchedAtLabel">—</dd></div>
+              <div><dt>身份编号</dt><dd data-field="identityCode">—</dd></div>
+              <div id="source-row"><dt>来源批次</dt><dd data-field="sourceBatch">—</dd></div>
             </dl>
-            <blockquote class="card-signature">“<span data-field="signature">—</span>”</blockquote>
+            <p class="card-signature">这是一枚实体蛋的一份身份与纪念档案</p>
           </div>
         </article>
-
-        <div class="actions">
-          <button id="poster-button" class="primary-button" type="button">保存分享长图</button>
-          <p id="action-message" class="action-message" role="status" hidden></p>
-        </div>
+        <div class="actions"><button id="poster-button" class="primary-button" type="button">保存分享长图</button><p id="action-message" class="action-message" role="status" hidden></p></div>
       </section>
     </div>
   </main>
-
   <div id="poster-modal" class="poster-modal" role="dialog" aria-modal="true" aria-labelledby="poster-title" hidden>
-    <div class="poster-sheet">
-      <button id="poster-close" class="close-button" type="button" aria-label="关闭">×</button>
-      <h2 id="poster-title">分享长图已生成</h2>
-      <p>已交给小程序保存；浏览器预览时可使用下方下载入口。</p>
-      <img id="poster-image" alt="蛋宝宝收藏卡分享长图">
-      <a id="poster-download" class="download-link" download="eggbabe-birth-card.png">在浏览器中下载图片</a>
-    </div>
+    <div class="poster-sheet"><button id="poster-close" class="close-button" type="button" aria-label="关闭">×</button><h2 id="poster-title">分享长图已生成</h2><p>已交给小程序保存。</p><img id="poster-image" alt="蛋宝宝收藏卡分享长图"><a id="poster-download" class="download-link" download="eggbabe-card.png">在浏览器中下载图片</a></div>
   </div>
-
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
   <script src="./runtime-config.js"></script>
   <script src="./card-model.js"></script>
-  <script src="./asset-config.js"></script>
   <script src="./poster-renderer.js"></script>
   <script src="./app.js"></script>
 </body>

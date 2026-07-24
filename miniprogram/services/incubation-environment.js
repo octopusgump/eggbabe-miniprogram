@@ -1,5 +1,4 @@
 const config = require('../config/v2');
-const runtime = require('./runtime-context');
 const timeService = require('./time-service');
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
@@ -38,8 +37,7 @@ function sceneAssetPath(season, period) {
 }
 
 function resolve(serverPresentation) {
-  const preview = config.incubationEnvironmentPreview || {};
-  const source = serverPresentation || (runtime.getMode() === 'demo' ? preview : {});
+  const source = serverPresentation || {};
   const season = valid(source.season, SEASONS, seasonFromBeijingDate());
   const weather = valid(source.weather, WEATHER, 'sunny');
   const period = valid(source.period, PERIODS, periodFromBeijingTime());

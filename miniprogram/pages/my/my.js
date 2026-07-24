@@ -1,13 +1,13 @@
 const petStore = require('../../utils/pet-store');
 
 Page({
-  data: { userName: '蛋友3024', eggCount: 0 },
+  data: { userName: '微信用户', eggCount: 0 },
 
   onShow() {
     const user = petStore.getUser();
     const pet = petStore.getPet();
     this.setData({
-      userName: (user && user.nickname) || '蛋友3024',
+      userName: (user && user.nickname) || '微信用户',
       eggCount: pet ? 1 : 0
     });
   },

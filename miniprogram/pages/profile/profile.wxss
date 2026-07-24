@@ -10,9 +10,5 @@
 .nickname-text { font-size: 36rpx; font-weight: 600; color: #1A1A1A; }
 .chevron { width: 16rpx; height: 16rpx; border-top: 3rpx solid #8C8C88; border-right: 3rpx solid #8C8C88; transform: rotate(45deg); flex-shrink: 0; }
 .user-id { max-width: 650rpx; padding: 0 28rpx; font-size: 21rpx; color: #8C8C88; letter-spacing: .5rpx; text-align: center; word-break: break-all; }
-.field-panel { margin: 24rpx 40rpx 0; background: #FFFFFF; border-radius: 32rpx; overflow: hidden; border: 1rpx solid #E5E3DF; box-shadow: 0 2rpx 4rpx rgba(0,41,0,.06),0 4rpx 8rpx rgba(0,41,0,.04); }
-.form-row { min-height: 104rpx; padding: 0 40rpx; display: flex; align-items: center; gap: 24rpx; background: #FFFFFF; }
-.form-label { flex: 1; font-size: 30rpx; color: #1A1A1A; }
-.mbti-input { width: 250rpx; height: 72rpx; padding: 0; text-align: right; font-size: 24rpx; color: #1A1A1A; text-transform: uppercase; }
 .hint-card { display: block; margin: 24rpx 40rpx 40rpx; }
 .hint-text { display: block; width: 100%; font-size: 24rpx; line-height: 1.5; color: #6E6B35; text-align: center; }

@@ -2,8 +2,6 @@
   "pages": [
     "pages/welcome/welcome",
     "pages/home/home",
-    "pages/shop/shop",
-    "pages/bag/bag",
     "pages/add-device/add-device",
     "pages/nickname/nickname",
     "pages/wish/wish",

@@ -40,13 +40,13 @@ Page({
         cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
         return;
       }
-      this.handleHatchResult(petStore.createCollectionCard());
+      this.handleHatchResult({ ok: false, code: 'BACKEND_REQUIRED', message: '收藏卡需要由实体服务确认后生成' });
     }, 1450);
   },
 
   handleHatchResult(result) {
-      if (!result.ok) {
-        analytics.track('hatch_card_generate_fail', { error_code: result.reason || 'GENERATE_FAILED' });
+      if (!result.ok || result.mode !== 'live') {
+        analytics.track('data_write_fail', { where: 'hatch_card', error_code: result.reason || result.code || 'GENERATE_FAILED' });
         this.setData({ phase: 'confirm' });
         wx.showToast({ title: result.message, icon: 'none' });
         return;
@@ -59,7 +59,7 @@ Page({
           return;
         }
       }
-      analytics.track('hatch_card_generated', { card_id: result.card.id, style: result.card.style, rarity: result.card.collectible, mbti: result.card.mbti });
+      analytics.track('hatch_card_ready', { card_id: result.card.card_id || result.card.id });
       wx.redirectTo({ url: '/pages/collection-card/collection-card?new=1' });
   },
 

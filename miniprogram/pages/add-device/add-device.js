@@ -3,12 +3,11 @@ const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const runtime = require('../../services/runtime-context');
+const timeService = require('../../services/time-service');
 const subscriptionMessages = require('../../services/subscription-messages');
 
 Page({
-  data: { code: '', error: '', canSubmit: false, success: null, submitting: false, activationCode: config.localActivationCode, hatchedActivationCode: config.localHatchedActivationCode },
-
-  onLoad() { analytics.track('add_egg_page_view'); },
+  data: { code: '', error: '', canSubmit: false, success: null, submitting: false },
 
   onCodeInput(e) {
     const code = e.detail.value;
@@ -18,13 +17,17 @@ Page({
   onValidate() {
     if (!this.data.canSubmit || this.data.submitting) return;
     this.setData({ submitting: true, error: '' });
-    if (!config.backendEnabled) runtime.setMode('demo');
-    analytics.track('activation_submit', { code_type: config.backendEnabled ? 'server' : 'local_full' });
-    if (config.backendEnabled) {
-      cloudApi.redeemActivationCode(this.data.code).then(result => this.handleResult(result));
+    analytics.track('activation_submit', { code_type: 'server' });
+    if (!config.backendEnabled) {
+      this.handleResult({ ok: false, code: 'BACKEND_NOT_CONNECTED', message: '实体蛋绑定服务尚未接入，请稍后重试' });
       return;
     }
-    this.handleResult(petStore.bindPet(this.data.code));
+    const requestId = `${runtime.getSessionId()}-activation-${timeService.now()}`;
+    cloudApi.call('redeemActivationCode', {
+      code: this.data.code.trim(),
+      request_id: requestId,
+      mode: 'live'
+    }).then(result => this.handleResult(result));
   },
 
   handleResult(result) {
@@ -34,8 +37,10 @@ Page({
       return;
     }
     analytics.track('activation_result', { success: true, fail_reason: '' });
-    if (!result.pet && config.backendEnabled) {
-      const imported = petStore.importCloudPet(result);
+    if (config.backendEnabled) {
+      const imported = petStore.importCloudPet(Object.assign({}, result.pet || result, {
+        mode: (result.pet && result.pet.mode) || result.mode
+      }), 'live');
       if (!imported.ok) {
         this.setData({ error: imported.message, submitting: false });
         return;
@@ -43,9 +48,8 @@ Page({
       result.pet = imported.pet;
     }
     const prototype = result.pet ? result.pet.prototype : result.prototype;
-    analytics.track('egg_bound', { prototype, code_type: config.backendEnabled ? 'server' : 'local_full' });
+    analytics.track('egg_bound', { prototype, code_type: 'server' });
     this.setData({ success: { prototype } });
-    analytics.track('add_success_feedback_shown', { prototype });
     subscriptionMessages.requestHatchReminders();
     setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 1150);
   }

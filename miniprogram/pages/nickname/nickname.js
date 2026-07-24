@@ -1,7 +1,7 @@
 const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
-const runtime = require('../../services/runtime-context');
-const syncQueue = require('../../services/sync-queue');
+const cloudApi = require('../../services/cloud-api');
+const analytics = require('../../services/analytics');
 
 Page({
   data: { name: '', count: 0, error: '', saving: false },
@@ -16,17 +16,22 @@ Page({
   },
   async onSave() {
     if (this.data.saving) return;
-    const result = petStore.updateNickname(this.data.name);
-    if (!result.ok) return this.setData({ error: result.message });
-    if (config.backendEnabled && runtime.getMode() === 'live' && result.pet.collectionCard) {
-      this.setData({ saving: true, error: '' });
-      const synced = await syncQueue.flush();
-      if (!synced.ok) {
-        this.setData({ saving: false, error: '名字已保存在本机，但云端还没同步成功。请检查网络后再试。' });
-        return;
-      }
+    const validation = petStore.validateNickname(this.data.name);
+    if (!validation.ok) return this.setData({ error: validation.message });
+    if (!config.backendEnabled) return this.setData({ error: '账号资料服务尚未接入，请稍后再试' });
+    this.setData({ saving: true, error: '' });
+    const response = await cloudApi.updateEggName((petStore.getPet() || {}).id, validation.value);
+    if (!response.ok || response.mode !== 'live') {
+      this.setData({ saving: false, error: response.message || '名字没有保存成功，请重试' });
+      return;
     }
-    wx.showToast({ title: result.added ? '我记住自己的名字啦' : '我记住新名字啦', icon: 'none' });
+    const result = petStore.applyConfirmedNickname(response.display_name || validation.value);
+    if (!result.ok) {
+      this.setData({ saving: false, error: result.message || '名字没有保存成功，请重试' });
+      return;
+    }
+    analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
+    wx.showToast({ title: '我记住新名字啦', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
   }
 });

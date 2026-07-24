@@ -1,6 +1,6 @@
 :root {
-  --title-ratio: 8%;
-  --illustration-inset: 74px;
+  --title-ratio: 9.5%;
+  --illustration-inset: 44px;
   --ink: #2d251f;
   --muted: #77756e;
   --paper: #fffdf7;
@@ -13,7 +13,6 @@
 * { box-sizing: border-box; }
 html { background: #f2f1eb; color: var(--ink); font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
 .has-google-sans { --latin-font: "Google Sans", "Helvetica Neue", Arial, sans-serif; }
-[data-field="mbti"], [data-field="bloodType"], code, .collect-badge { font-family: var(--latin-font); }
 body { min-height: 100vh; margin: 0; }
 button, a { font: inherit; }
 button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offset: 3px; }
@@ -25,28 +24,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 .state-copy { max-width: 280px; margin: 0; line-height: 1.7; }
 .loading-egg { width: 62px; height: 78px; border-radius: 50% 50% 46% 46%; background: #fff8db; box-shadow: 0 12px 32px rgba(34, 48, 37, .12); animation: egg-breathe 1.5s ease-in-out infinite; }
 @keyframes egg-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.025); } }
-.mode-chip { width: fit-content; margin: 0 auto 12px; padding: 7px 12px; border-radius: 999px; background: #fff0c8; color: #604812; font-size: 12px; font-weight: 600; letter-spacing: .06em; }
-
 .birth-card { aspect-ratio: 9 / 16; overflow: hidden; display: flex; flex-direction: column; padding: 14px; gap: 8px; border-radius: 28px; background: var(--paper); box-shadow: 0 20px 60px rgba(25, 34, 27, .18); }
-.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: flex; align-items: center; justify-content: center; flex: 0 0 var(--title-ratio); padding: 0 4px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
-.card-title-copy { width: calc(100% - 150px); min-width: 0; }
+.card-title-section { position: relative; height: var(--title-ratio); min-height: 0; display: grid; grid-template-columns: 48px minmax(0, 1fr) 70px; align-items: center; flex: 0 0 var(--title-ratio); gap: 10px; padding: 0 4px; background: linear-gradient(180deg, #fffefb, #fffaf0); text-align: center; }
+.card-avatar { position: relative; width: 40px; height: 47px; overflow: hidden; display: grid; place-items: center; border: 1px solid #dce4d2; border-radius: 50% 50% 46% 46%; background: #f4f7ec; color: #6a7c59; font-family: serif; font-size: 22px; }
+.card-title-copy { min-width: 0; }
 .card-title-section h1 { overflow: hidden; margin: 0; color: #3c2d24; font-family: var(--name-font); font-size: clamp(25px, 7vw, 37px); font-weight: 400; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-.collect-context { overflow: hidden; margin: 4px 0 0; color: #667168; font-size: 9px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
-.collect-badge { position: absolute; right: 0; top: 50%; padding: 6px 10px; border-radius: 999px; background: #f6f5ee; color: #526054; font-size: 13px; font-weight: 600; transform: translateY(-50%); }
 
 .card-illustration-section { flex: 0 0 auto; background: var(--paper); }
 .illustration-frame { position: relative; width: calc(100% - var(--illustration-inset)); aspect-ratio: 4 / 5; overflow: hidden; margin: 0 auto; border-radius: 18px; background: linear-gradient(155deg, #eaf3f4, #f5f0dd 58%, #ece7f5); }
-.hero-background, .hero-figure, .fallback-mark { position: absolute; inset: 0; }
-.hero-background { width: 100%; height: 100%; object-fit: cover; opacity: .82; }
+.hero-figure { position: absolute; inset: 0; }
 .hero-figure { z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.fallback-mark { display: grid; place-items: center; color: rgba(63, 90, 71, .32); font-family: serif; font-size: clamp(140px, 48vw, 240px); text-shadow: 0 0 70px rgba(255, 255, 255, .9); }
 
 .card-data-section { min-height: 0; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; padding: 7px 0 9px; gap: 5px; background: var(--paper); }
-.stat-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 4px 8px; margin: 0; }
-.stat-cell { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 3px 4px; border-radius: 10px; background: #f6f6f0; }
-.stat-grid dt { flex: 0 0 auto; color: #7a807a; font-size: 14.4px; font-weight: 400; line-height: 1.2; }
-.stat-grid dd { overflow: hidden; margin: 0; color: var(--ink); font-size: 15.6px; font-weight: 600; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
-.card-signature { margin: 12px 0 0; padding: 2px 8px; color: #536057; font-family: var(--name-font); font-size: 28.8px; font-weight: 400; line-height: 1.45; overflow-wrap: anywhere; text-align: center; white-space: normal; }
+.card-signature { margin: 1px 0 0; padding: 2px 8px; color: #536057; font-family: var(--name-font); font-size: 14.4px; line-height: 1.45; overflow-wrap: anywhere; text-align: center; white-space: normal; }
 
 .actions { display: grid; gap: 10px; margin-top: 22px; }
 .primary-button { min-height: 50px; border-radius: 16px; font-weight: 600; cursor: pointer; }
@@ -65,7 +55,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid #e0bd62; outline-offs
 @media (max-width: 360px) {
   .app-shell { padding-right: 10px; padding-left: 10px; }
   .birth-card { border-radius: 22px; }
-  .card-title-copy { width: calc(100% - 136px); }
-  #card-birthday { letter-spacing: -.04em; }
+  .card-title-section { grid-template-columns: 42px minmax(0, 1fr) 68px; }
 }
 @media (prefers-reduced-motion: reduce) { .loading-egg { animation: none; } }
+.card-wordmark { color: #637261; font-size: 11px; letter-spacing: .12em; }
+.identity-list { margin: 0; padding: 0; }
+.identity-list > div { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid #ecebe4; }
+.identity-list dt { color: #7a807a; font-size: 12px; }
+.identity-list dd { margin: 0; color: #2d352f; font-size: 13px; font-weight: 600; text-align: right; overflow-wrap: anywhere; }

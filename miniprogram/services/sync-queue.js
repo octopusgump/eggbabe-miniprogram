@@ -7,6 +7,7 @@ const time = require('./time-service');
 const storage = require('./storage-migration');
 const KEY = 'eggbabe_sync_queue_v2';
 let inFlight = null;
+let generation = 0;
 
 function read() {
   return storage.read(runtime.scopedKey(KEY), []);
@@ -25,14 +26,22 @@ function enqueue(api, data) {
 
 function pendingCount() { return read().length; }
 
+function clear() {
+  generation += 1;
+  inFlight = null;
+  return write([]);
+}
+
 function flush() {
   if (inFlight) return inFlight;
   if (!config.backendEnabled || runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: pendingCount() });
+  const activeGeneration = generation;
   const run = async () => {
     let queue = read();
     while (queue.length) {
       const item = queue[0];
       const result = await cloudApi.call(item.api, item.data);
+      if (generation !== activeGeneration) return { ok: false, pending: 0, cancelled: true };
       if (!result.ok) {
         item.attempts += 1;
         queue[0] = item;
@@ -45,8 +54,14 @@ function flush() {
     }
     return { ok: true, pending: 0 };
   };
-  inFlight = run().then(result => { inFlight = null; return result; }, error => { inFlight = null; return { ok: false, error, pending: pendingCount() }; });
+  inFlight = run().then(result => {
+    if (generation === activeGeneration) inFlight = null;
+    return result;
+  }, error => {
+    if (generation === activeGeneration) inFlight = null;
+    return { ok: false, error, pending: generation === activeGeneration ? pendingCount() : 0 };
+  });
   return inFlight;
 }
 
-module.exports = { enqueue, flush, pendingCount };
+module.exports = { enqueue, flush, pendingCount, clear };

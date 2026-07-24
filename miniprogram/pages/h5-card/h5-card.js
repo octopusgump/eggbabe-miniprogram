@@ -2,13 +2,11 @@ const config = require('../../config/v2');
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const h5Bridge = require('../../services/birth-card-h5');
-const sceneCardStore = require('../../services/scene-card-store');
 
 Page({
   data: { src: '', savingPoster: false },
 
-  onLoad(query) {
-    this.sceneCardId = String(query.sceneCardId || '');
+  onLoad() {
     this.initialShowPending = true;
     this.refreshSource(false);
   },
@@ -23,23 +21,18 @@ Page({
 
   refreshSource(forceReload) {
     const pet = petStore.getPet();
-    const sceneCard = this.sceneCardId ? sceneCardStore.list().find(card => card.id === this.sceneCardId) : null;
-    const cardData = sceneCard ? h5Bridge.toH5CollectibleCard(pet, sceneCard, config) : h5Bridge.toH5Card(pet, config);
+    const cardData = h5Bridge.toH5Card(pet, config);
     let src = h5Bridge.buildH5Url(config.birthCardH5Url, cardData, config.birthCardApiBase);
     if (!src) {
-      this.openNativeFallback(Boolean(this.sceneCardId));
+      this.openNativeFallback();
       return;
     }
     if (forceReload) src += `${src.includes('?') ? '&' : '?'}refresh=${Date.now()}`;
     this.setData({ src });
-    analytics.track(forceReload ? 'h5_birth_card_refreshed' : 'h5_birth_card_opened', { view: 'card', card_type: sceneCard ? 'collectible' : 'birth' });
   },
 
-  openNativeFallback(isSetCard) {
-    const destination = isSetCard
-      ? `/pages/collection-card/collection-card?sceneCardId=${encodeURIComponent(this.sceneCardId)}&native=1`
-      : '/pages/collection-card/collection-card?native=1';
-    wx.redirectTo({ url: destination });
+  openNativeFallback() {
+    wx.redirectTo({ url: '/pages/collection-card/collection-card?native=1' });
   },
 
   onMessage(event) {
@@ -51,7 +44,6 @@ Page({
         this.savePoster(message.data_url);
         return;
       }
-      analytics.track(message.event_name, { view: 'card', reason: message.reason || '' });
     });
   },
 
@@ -71,7 +63,7 @@ Page({
       success: () => wx.saveImageToPhotosAlbum({
         filePath,
         success: () => {
-          analytics.track('card_saved', { source: 'h5_bridge' });
+          analytics.track('card_save', { source: 'h5_bridge' });
           wx.showToast({ title: '收藏卡已保存', icon: 'success' });
         },
         fail: () => wx.showToast({ title: '请允许保存到相册', icon: 'none' }),

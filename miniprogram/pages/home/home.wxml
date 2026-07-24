@@ -4,8 +4,8 @@
   <scroll-view class="content" scroll-y>
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
-      <text class="empty-title">领取我的蛋宝宝</text>
-      <text class="empty-desc">输入 {{activationCode}} 完整孵化；输入 {{hatchedActivationCode}} 直接查看已孵化版本。</text>
+      <text class="empty-title">添加我的蛋宝宝</text>
+      <text class="empty-desc">输入随实体蛋提供的激活码，把这枚蛋宝宝带回家。</text>
       <button class="primary-button" bindtap="onAddDevice"><text class="button-label">添加蛋宝宝</text></button>
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
@@ -14,26 +14,13 @@
       <view class="top-row">
         <view>
           <view class="pet-name-row" bindtap="onPetNameTap">
-            <text class="pet-name">{{pet.name || '还没有名字'}}</text>
+            <text class="pet-name">{{pet.name || '我的蛋宝宝'}}</text>
             <text wx:if="{{stage === 'hatched'}}" class="pet-name-edit">改名</text>
-          </view>
-        </view>
-        <view class="home-info">
-          <view class="dew-balance {{dewBalanceBumpClass}}" bindtap="onDewBalanceTap" aria-role="button" aria-label="当前露珠 {{dewBalance}}">
-            <view class="dew-icon"><view class="dew-icon-shine"></view></view>
-            <text class="dew-value">{{dewBalance}}</text>
-            <view wx:if="{{dewTip}}" class="dew-tip">今日通过点击已收集 {{dailyClickEarned}} / {{dailyClickCap}}</view>
-          </view>
-          <view wx:if="{{stage !== 'hatched'}}" class="progress-wrap" bindtap="onProgressTap">
-            <view class="progress-ring" style="background:conic-gradient(#9DB65B 0% {{pet.progress}}%, #E5E9DD {{pet.progress}}% 100%);">
-              <view class="progress-ring-core"><text>{{pet.progress}}%</text></view>
-            </view>
-            <view wx:if="{{progressTip}}" class="progress-tip">这是我的孵化进度</view>
           </view>
         </view>
       </view>
 
-      <view class="egg-zone {{environment.className}} {{sceneEffect}}">
+      <view class="egg-zone {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : ''}}">
         <view wx:if="{{stage !== 'hatched'}}" class="incubation-scene {{environment.className}}">
           <image class="incubation-scene-image" src="{{environment.backgroundImage}}" mode="aspectFill"></image>
           <view class="scene-color-layer"></view>
@@ -63,6 +50,19 @@
             <canvas type="2d" id="windowFogCanvas" class="window-fog-canvas" catchtouchstart="onWindowTouchStart" catchtouchmove="onWindowTouchMove" catchtouchend="onWindowTouchEnd" catchtouchcancel="onWindowTouchEnd"></canvas>
           </view>
           <view class="room-light-breathe"></view>
+          <view class="room-element-layer">
+            <view wx:for="{{roomElements}}" wx:key="key" class="room-element {{item.position}}" data-key="{{item.key}}" aria-role="button" aria-label="{{item.label}}" bindtap="onRoomElementTap">
+              <text class="room-element-icon">{{item.icon}}</text>
+              <text class="room-element-label">{{item.label}}</text>
+              <view wx:if="{{item.key === 'coffee'}}" class="room-coffee-effect" aria-hidden="true">
+                <view class="coffee-steam coffee-steam--one"></view>
+                <view class="coffee-steam coffee-steam--two"></view>
+                <view class="coffee-cup-ring"></view>
+              </view>
+              <view wx:elif="{{item.key === 'brush'}}" class="room-brush-stroke" aria-hidden="true"></view>
+              <view wx:elif="{{item.key === 'scarf'}}" class="room-scarf-weave" aria-hidden="true"></view>
+            </view>
+          </view>
         </view>
 
         <view wx:if="{{greeting}}" class="daily-greeting" bindtap="onGreetingTap">{{greeting}}</view>
@@ -83,11 +83,6 @@
           <view class="tap-particle tap-particle--two">•</view>
           <view class="tap-particle tap-particle--three">✧</view>
         </view>
-        <view wx:for="{{dewDrops}}" wx:key="id" class="dew-drop-flight" style="left:{{item.x}}px;top:{{item.y}}px;--dew-x:{{item.dx}}px;--dew-y:{{item.dy}}px;">
-          <view class="dew-drop-core"></view>
-        </view>
-        <view wx:for="{{dewGains}}" wx:key="id" class="dew-gain" style="top:{{item.top}}rpx;">{{item.text}}</view>
-        <view wx:if="{{cuddleProgress > 0}}" class="cuddle-track"><view class="cuddle-fill" style="width: {{cuddleProgress}}%;"></view></view>
       </view>
 
       <view class="state-card">
@@ -95,22 +90,8 @@
         <text class="state-title">{{stageText}}</text>
       </view>
 
-      <view class="item-entry">
-        <view class="item-entry-copy">
-          <text class="item-entry-title">给我添一点可爱</text>
-          <text class="item-entry-desc">{{equippedItems.length ? '当前道具状态已保存到背包' : '装扮、零食与摆件都不会改变数值'}}</text>
-          <view wx:if="{{equippedItems.length}}" class="equipped-summary">
-            <text wx:for="{{equippedItems}}" wx:key="id" class="equipped-summary-item">{{item.category === 'scene-decor' ? '已摆放' : '已装配'}} · {{item.name}}</text>
-          </view>
-        </view>
-        <view class="item-entry-actions">
-          <view class="item-entry-button" bindtap="onOpenShop">商店</view>
-          <view class="item-entry-button item-entry-button--light" bindtap="onOpenBag">背包</view>
-        </view>
-      </view>
-
       <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
-        <text class="status-meta">今日心情 · {{dailyStatus.mood}}</text>
+        <text class="status-meta">此刻 · {{dailyStatus.mood}}</text>
         <text class="status-line">{{dailyStatus.line}}</text>
       </view>
 
@@ -150,7 +131,7 @@
     <view class="name-sheet">
       <view class="name-handle"></view>
       <text class="name-sheet-title">我还没有名字</text>
-      <text class="name-sheet-copy">给我起一个昵称吧，之后每天最多可以改一次。</text>
+      <text class="name-sheet-copy">给我起一个昵称吧，也可以以后再决定。</text>
       <view class="name-input-wrap">
         <input class="name-input" value="{{nameDraft}}" maxlength="10" placeholder="最多 10 个字" bindinput="onNameInput" focus />
         <text class="name-count">{{nameCount}}/10</text>

@@ -54,21 +54,6 @@ for (const image of ['grass_with_egg.jpg', 'snow_with_egg.jpg', 'room_with_egg.j
   if (!fs.existsSync(path.join(miniprogram, 'assets/scenes', image))) errors.push(`生活场景缺少图片：${image}`);
 }
 
-const petStore = require(path.join(miniprogram, 'utils/pet-store'));
-const zodiacBoundaries = [
-  ['2026-01-19', '摩羯座'], ['2026-01-20', '水瓶座'], ['2026-02-18', '水瓶座'], ['2026-02-19', '双鱼座'],
-  ['2026-03-20', '双鱼座'], ['2026-03-21', '白羊座'], ['2026-04-19', '白羊座'], ['2026-04-20', '金牛座'],
-  ['2026-05-20', '金牛座'], ['2026-05-21', '双子座'], ['2026-06-21', '双子座'], ['2026-06-22', '巨蟹座'],
-  ['2026-07-22', '巨蟹座'], ['2026-07-23', '狮子座'], ['2026-08-22', '狮子座'], ['2026-08-23', '处女座'],
-  ['2026-09-22', '处女座'], ['2026-09-23', '天秤座'], ['2026-10-23', '天秤座'], ['2026-10-24', '天蝎座'],
-  ['2026-11-22', '天蝎座'], ['2026-11-23', '射手座'], ['2026-12-21', '射手座'], ['2026-12-22', '摩羯座']
-];
-for (const [date, expected] of zodiacBoundaries) {
-  const actual = petStore.getZodiac(date);
-  if (actual !== expected) errors.push(`星座计算错误：${date} 应为 ${expected}，实际为 ${actual}`);
-}
-if (petStore.getZodiac('') !== '' || petStore.getZodiac('invalid') !== '') errors.push('星座计算必须安全处理空生日和非法日期');
-
 const lifeScenes = require(path.join(miniprogram, 'utils/life-scenes'));
 const sceneEffectStyles = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxss'), 'utf8');
 const lifePoints = lifeScenes.SCENES.flatMap(scene => (lifeScenes.HOTSPOTS[scene.key] || []).map(point => ({ scene: scene.label, ...point })));

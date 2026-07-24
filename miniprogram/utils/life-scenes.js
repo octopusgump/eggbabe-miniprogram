@@ -3,8 +3,8 @@ const SCENES = [
   { key: 'snow', label: '雪地', subtitle: '踩出一串小脚印', image: '/assets/scenes/snow_with_egg.jpg', petLine: '我踩着雪印，走一步，就回头看你一眼。' },
   { key: 'room', label: '房间', subtitle: '窝在窗边听钟声', image: '/assets/scenes/room_with_egg.jpg', petLine: '我窝在窗边，听着屋里的钟走得很慢。' },
   { key: 'seaside', label: '海边', subtitle: '看海浪来了又退', image: '/assets/scenes/sea_with_egg.jpg', petLine: '我蹲在礁石上，看海浪来了又退。' },
-  { key: 'desk', label: '桌面', subtitle: '陪你写下今天', image: '/assets/scenes/desk_with_egg.jpg', petLine: '我趴在桌上，尾巴扫过你的笔记本。' },
-  { key: 'roof', label: '屋顶', subtitle: '一起数路过的云', image: '/assets/scenes/rooftop_with_egg.jpg', petLine: '我坐在屋顶边缘，数着路过的云。' }
+  { key: 'desk', label: '书桌', subtitle: '陪你写下今天', image: '/assets/scenes/desk_with_egg.jpg', petLine: '我趴在桌上，看纸页轻轻翻过去。' },
+  { key: 'roof', label: '天台', subtitle: '一起数路过的云', image: '/assets/scenes/rooftop_with_egg.jpg', petLine: '我坐在天台边缘，数着路过的云。' }
 ];
 
 const HOTSPOTS = {
@@ -25,78 +25,13 @@ const KOI_SCENE_IMAGES = {
   roof: '/assets/scenes/rooftop_with_egg_koi.jpg'
 };
 
-const CHARACTER_SCENE_GROUPS = { 玉兔: SCENES.map(scene => scene.key), 锦鲤: SCENES.map(scene => scene.key) };
-
-const CARD_SETS = {
-  'YT-S01': {
-    setCode: 'YT-S01',
-    setName: '玉兔初见·水彩日常',
-    character: '玉兔',
-    status: 'frozen-mvp',
-    treatment: 'BASE',
-    cards: [
-      { cardId: 'yt-s01-001', cardDefinitionId: 'yt-s01-001', collectorNumber: 1, collectorLabel: '001/010', name: '花间初见', heroAssetId: 'YT__watercolor__hi', image: '/assets/cards/YT-S01/yt-s01-001.webp', mark: '花', sceneKeys: ['grass'] },
-      { cardId: 'yt-s01-002', cardDefinitionId: 'yt-s01-002', collectorNumber: 2, collectorLabel: '002/010', name: '竹林问候', heroAssetId: 'YT__watercolor__salute', image: '/assets/cards/YT-S01/yt-s01-002.webp', mark: '竹', sceneKeys: ['grass', 'roof'] },
-      { cardId: 'yt-s01-003', cardDefinitionId: 'yt-s01-003', collectorNumber: 3, collectorLabel: '003/010', name: '轻盈起舞', heroAssetId: 'YT__watercolor__dance', image: '/assets/cards/YT-S01/yt-s01-003.webp', mark: '舞', sceneKeys: ['grass'] },
-      { cardId: 'yt-s01-004', cardDefinitionId: 'yt-s01-004', collectorNumber: 4, collectorLabel: '004/010', name: '纸箱躲猫猫', heroAssetId: 'YT__watercolor__box', image: '/assets/cards/YT-S01/yt-s01-004.webp', mark: '箱', sceneKeys: ['room'] },
-      { cardId: 'yt-s01-005', cardDefinitionId: 'yt-s01-005', collectorNumber: 5, collectorLabel: '005/010', name: '古镇骑行', heroAssetId: 'YT__watercolor__cycle', image: '/assets/cards/YT-S01/yt-s01-005.webp', mark: '骑', sceneKeys: ['seaside', 'roof'] },
-      { cardId: 'yt-s01-006', cardDefinitionId: 'yt-s01-006', collectorNumber: 6, collectorLabel: '006/010', name: '晨间读报', heroAssetId: 'YT__watercolor__newspaper', image: '/assets/cards/YT-S01/yt-s01-006.webp', mark: '报', sceneKeys: ['room', 'desk'] },
-      { cardId: 'yt-s01-007', cardDefinitionId: 'yt-s01-007', collectorNumber: 7, collectorLabel: '007/010', name: '月下冥想', heroAssetId: 'YT__watercolor__meditate', image: '/assets/cards/YT-S01/yt-s01-007.webp', mark: '月', sceneKeys: ['snow', 'roof'] },
-      { cardId: 'yt-s01-008', cardDefinitionId: 'yt-s01-008', collectorNumber: 8, collectorLabel: '008/010', name: '初次滑板', heroAssetId: 'YT__watercolor__skateboard', image: '/assets/cards/YT-S01/yt-s01-008.webp', mark: '滑', sceneKeys: ['seaside', 'roof'] },
-      { cardId: 'yt-s01-009', cardDefinitionId: 'yt-s01-009', collectorNumber: 9, collectorLabel: '009/010', name: '月宫实验', heroAssetId: 'YT__watercolor__chemistry', image: '/assets/cards/YT-S01/yt-s01-009.webp', mark: '试', sceneKeys: ['desk'] },
-      { cardId: 'yt-s01-010', cardDefinitionId: 'yt-s01-010', collectorNumber: 10, collectorLabel: '010/010', name: '月夜泡泡浴', heroAssetId: 'YT__watercolor__bath', image: '/assets/cards/YT-S01/yt-s01-010.webp', mark: '浴', sceneKeys: ['room', 'snow'] }
-    ]
-  },
-  'KOI-S01': {
-    setCode: 'KOI-S01',
-    setName: '锦鲤初见·好运日常',
-    character: '锦鲤',
-    status: 'frozen-mvp',
-    treatment: 'BASE',
-    cards: [
-      { cardId: 'koi-s01-001', cardDefinitionId: 'koi-s01-001', collectorNumber: 1, collectorLabel: '001/010', name: '初次见面', heroAssetId: 'KOI__watercolor__standing', image: '/assets/cards/KOI-S01/koi-s01-001.webp', mark: '见', sceneKeys: ['grass'] },
-      { cardId: 'koi-s01-002', cardDefinitionId: 'koi-s01-002', collectorNumber: 2, collectorLabel: '002/010', name: '给花浇水', heroAssetId: 'KOI__watercolor__watering-plant', image: '/assets/cards/KOI-S01/koi-s01-002.webp', mark: '花', sceneKeys: ['grass', 'desk'] },
-      { cardId: 'koi-s01-003', cardDefinitionId: 'koi-s01-003', collectorNumber: 3, collectorLabel: '003/010', name: '撑伞散步', heroAssetId: 'KOI__watercolor__umbrella-walk', image: '/assets/cards/KOI-S01/koi-s01-003.webp', mark: '伞', sceneKeys: ['grass', 'roof'] },
-      { cardId: 'koi-s01-004', cardDefinitionId: 'koi-s01-004', collectorNumber: 4, collectorLabel: '004/010', name: '滑板车', heroAssetId: 'KOI__watercolor__scooter', image: '/assets/cards/KOI-S01/koi-s01-004.webp', mark: '滑', sceneKeys: ['roof'] },
-      { cardId: 'koi-s01-005', cardDefinitionId: 'koi-s01-005', collectorNumber: 5, collectorLabel: '005/010', name: '向前奔跑', heroAssetId: 'KOI__watercolor__running', image: '/assets/cards/KOI-S01/koi-s01-005.webp', mark: '跑', sceneKeys: ['grass', 'roof'] },
-      { cardId: 'koi-s01-006', cardDefinitionId: 'koi-s01-006', collectorNumber: 6, collectorLabel: '006/010', name: '海滩躺椅', heroAssetId: 'KOI__watercolor__beach-chair', image: '/assets/cards/KOI-S01/koi-s01-006.webp', mark: '海', sceneKeys: ['seaside'] },
-      { cardId: 'koi-s01-007', cardDefinitionId: 'koi-s01-007', collectorNumber: 7, collectorLabel: '007/010', name: '潜水准备', heroAssetId: 'KOI__watercolor__diving-goggles', image: '/assets/cards/KOI-S01/koi-s01-007.webp', mark: '潜', sceneKeys: ['seaside'] },
-      { cardId: 'koi-s01-008', cardDefinitionId: 'koi-s01-008', collectorNumber: 8, collectorLabel: '008/010', name: '抱鱼而归', heroAssetId: 'KOI__watercolor__holding-fish', image: '/assets/cards/KOI-S01/koi-s01-008.webp', mark: '鱼', sceneKeys: ['seaside', 'desk'] },
-      { cardId: 'koi-s01-009', cardDefinitionId: 'koi-s01-009', collectorNumber: 9, collectorLabel: '009/010', name: '举旗出发', heroAssetId: 'KOI__watercolor__flag', image: '/assets/cards/KOI-S01/koi-s01-009.webp', mark: '旗', sceneKeys: ['roof', 'snow'] },
-      { cardId: 'koi-s01-010', cardDefinitionId: 'koi-s01-010', collectorNumber: 10, collectorLabel: '010/010', name: '浴缸时光', heroAssetId: 'KOI__watercolor__bath-tub', image: '/assets/cards/KOI-S01/koi-s01-010.webp', mark: '浴', sceneKeys: ['room', 'snow'] }
-    ]
-  }
-};
-
-Object.keys(CARD_SETS).forEach(setCode => {
-  const set = CARD_SETS[setCode];
-  set.cards = set.cards.map(card => Object.assign({ setCode, setName: set.setName, treatment: set.treatment, tint: '#F6F2E8', checklistNumber: card.collectorNumber, checklistTotal: set.cards.length }, card));
-});
-
-const CHARACTER_CARD_SETS = { 玉兔: 'YT-S01', 锦鲤: 'KOI-S01' };
-
 function getScene(key, character) {
   const scene = SCENES.find(item => item.key === key) || SCENES[0];
   return character === '锦鲤' ? Object.assign({}, scene, { image: KOI_SCENE_IMAGES[scene.key] }) : scene;
 }
 
 function getScenesForCharacter(character) {
-  const keys = CHARACTER_SCENE_GROUPS[character] || [];
-  return keys.map(key => getScene(key, character));
+  return SCENES.map(scene => scene.key).map(key => getScene(key, character));
 }
 
-function getCardPool(character, sceneKey) {
-  const setCode = CHARACTER_CARD_SETS[character];
-  const set = CARD_SETS[setCode];
-  return set ? set.cards.filter(card => card.sceneKeys.includes(sceneKey)) : [];
-}
-
-function getCardSet(setCode) {
-  return CARD_SETS[setCode] || null;
-}
-
-function getCardSetForCharacter(character) {
-  return getCardSet(CHARACTER_CARD_SETS[character]);
-}
-
-module.exports = { SCENES, HOTSPOTS, KOI_SCENE_IMAGES, CHARACTER_SCENE_GROUPS, CHARACTER_CARD_SETS, CARD_SETS, getScene, getScenesForCharacter, getCardPool, getCardSet, getCardSetForCharacter };
+module.exports = { SCENES, HOTSPOTS, KOI_SCENE_IMAGES, getScene, getScenesForCharacter };

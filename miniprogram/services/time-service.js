@@ -4,12 +4,10 @@ const dataApi = require('./cloud-api');
 
 const storage = require('./storage-migration');
 const OFFSET_KEY = 'eggbabe_server_time_offset_v2';
-const DEMO_EPOCH_MS = Date.parse('2026-07-14T12:00:00+08:00');
 let offset = 0;
 let serverBase = 0;
 let monotonicBase = 0;
 let authoritative = false;
-const demoMonotonicBase = monotonicNow();
 
 function monotonicNow() {
   if (typeof performance !== 'undefined' && performance.now) return performance.now();
@@ -24,7 +22,6 @@ function loadOffset() {
 
 function now() {
   if (authoritative) return serverBase + (monotonicNow() - monotonicBase);
-  if (runtime.getMode() === 'demo') return DEMO_EPOCH_MS + (monotonicNow() - demoMonotonicBase);
   // live 模式没有服务端基准时不提供业务时间，避免设备时钟进入判定。
   return 0;
 }
@@ -33,7 +30,6 @@ function isAuthoritative() { return authoritative; }
 
 function requireAuthoritative() {
   if (authoritative) return { ok: true, now: now(), authoritative: true, mode: runtime.getMode() };
-  if (runtime.getMode() === 'demo') return { ok: true, now: now(), authoritative: false, demoFixture: true, mode: 'demo' };
   return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步北京时间，请稍后再试', mode: 'live' };
 }
 
@@ -49,7 +45,6 @@ function formatBeijingDate(timestamp) {
 }
 
 function sync() {
-  if (runtime.getMode() === 'demo') return Promise.resolve({ ok: true, demoFixture: true, now: now() });
   if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED' });
   const startedAt = Date.now();
   return dataApi.serverTime().then(result => {

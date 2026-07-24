@@ -3,52 +3,29 @@
   <scroll-view class="content" scroll-y>
     <view class="collection-section">
       <view class="section-heading">
-        <view><text class="section-eyebrow">IDENTITY</text><text class="section-title">身份收藏</text></view>
-        <text class="section-count">{{card ? '1 张' : '0 张'}}</text>
-      </view>
-      <view wx:if="{{card}}" class="album-card" bindtap="onOpen">
-        <view class="baby-mark">{{card.prototype === '锦鲤' ? '锦' : '兔'}}</view>
-        <view class="copy"><text class="name">{{card.name}}</text><text class="meta">{{card.prototype}} · {{card.style}}</text><text class="identity-note">一蛋一张 · 永久记录</text></view><text class="arrow">›</text>
-      </view>
-      <view wx:else class="identity-empty"><view class="identity-empty-mark">兔</view><view><text class="identity-empty-title">还没有身份收藏</text><text class="identity-empty-copy">到达预设破壳日后，第一张收藏卡会自动来到这里。</text></view></view>
-    </view>
-
-    <view class="collection-section series-section">
-      <view class="section-heading">
-        <view><text class="section-eyebrow">COLLECTION SERIES</text><text class="section-title">收集系列</text></view>
-        <text wx:if="{{summary}}" class="section-count">{{summary.ownedUnique}} / {{summary.total}}</text>
-      </view>
-      <view wx:if="{{summary}}" class="set-overview">
-        <view><text class="set-code">{{summary.setCode}}</text><text class="set-name">{{summary.setName}}</text></view>
-        <view class="set-progress"><text>{{summary.ownedUnique}}</text><text class="set-progress-total"> / {{summary.total}}</text></view>
-        <view class="progress-track"><view class="progress-value" style="width:{{summary.total ? summary.ownedUnique / summary.total * 100 : 0}}%;"></view></view>
-        <text class="set-note">固定 {{summary.total}} 个收藏位 · 已遇见的收藏卡不会重复出现</text>
-      </view>
-      <view wx:if="{{summary && setSlots.length}}" class="scene-grid">
-        <view wx:for="{{setSlots}}" wx:key="cardId" class="scene-card {{item.owned ? '' : 'scene-card--locked'}}" data-id="{{item.instanceId}}" data-card-id="{{item.cardId}}" bindtap="onOpenSetCard">
-          <view class="scene-art" style="background:{{item.tint}};">
-            <image wx:if="{{item.owned && item.image && !item.imageFailed}}" class="scene-card-image" src="{{item.image}}" mode="aspectFit" data-card-id="{{item.cardId}}" binderror="onSceneCardImageError"></image>
-            <view wx:else class="locked-art"><text class="locked-number">{{item.collectorLabel}}</text><text class="locked-mark">{{item.owned ? item.mark : '?'}}</text></view>
-            <text class="collector-chip">{{item.collectorLabel}}</text>
-          </view>
-          <text class="scene-name">{{item.owned ? item.name : '尚未遇见'}}</text>
-          <text class="scene-meta">{{item.collectorLabel}}</text>
-          <text wx:if="{{item.owned && item.uniqueCode}}" class="scene-serial">{{item.uniqueCode}}</text>
-          <view wx:if="{{item.owned}}" class="copy-detail">
-            <text>{{item.obtainedLabel ? '获得 ' + item.obtainedLabel : '获得时间未记录'}}</text>
-          </view>
-          <view wx:if="{{item.owned}}" class="card-actions">
-            <button class="card-action card-share" open-type="share" data-id="{{item.instanceId}}" catchtap="onSelectShare"><text class="button-label">分享</text></button>
-          </view>
+        <view>
+          <text class="section-eyebrow">MY EGG</text>
+          <text class="section-title">实体蛋纪念档案</text>
         </view>
       </view>
-      <view wx:if="{{summary && summary.complete}}" class="set-panel set-panel--complete">
-        <text class="set-title">第一季已集齐</text>
-        <text class="complete-copy">十个固定收藏位已经全部点亮。这份完成记录会一直留在你的收藏里。</text>
-        <view class="unlock-cta" bindtap="onEcommerce">查看集齐权益</view>
+
+      <view wx:if="{{card}}" class="album-card" bindtap="onOpen">
+        <view class="baby-mark">{{card.prototype === '锦鲤' || card.prototype === 'KOI' ? '锦' : '兔'}}</view>
+        <view class="copy">
+          <text class="name">{{card.display_name || card.name || '我的蛋宝宝'}}</text>
+          <text class="meta">{{card.prototype}} · {{card.style}}</text>
+          <text class="identity-note">一蛋一份 · 身份与纪念</text>
+        </view>
+        <text class="arrow">›</text>
       </view>
-      <view wx:if="{{!summary}}" class="empty"><view class="empty-card empty-card--scene"></view><text class="empty-title">破壳后开启第一个系列</text><text class="empty-desc">进入蛋宝宝的生活场景，与周围的小物件互动，慢慢遇见这一系列的收藏卡。</text></view>
+
+      <view wx:else class="identity-empty">
+        <view class="identity-empty-mark">蛋</view>
+        <view>
+          <text class="identity-empty-title">收藏卡会在破壳后出现</text>
+          <text class="identity-empty-copy">到达预设时间并完成承接后，这枚实体蛋唯一的纪念档案会保存在这里。</text>
+        </view>
+      </view>
     </view>
-    <view class="safe-space"></view>
   </scroll-view>
 </view>

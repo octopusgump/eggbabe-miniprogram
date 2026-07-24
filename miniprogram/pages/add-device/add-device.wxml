@@ -5,6 +5,7 @@
     <view class="intro">
       <text class="intro-title">输入激活码</text>
       <text class="intro-desc">请输入随实体蛋提供的激活码。具体款式会在破壳后揭晓。</text>
+      <text wx:if="{{isDemo}}" class="intro-desc">开发验收码已自动填入，数据不会进入正式账号。</text>
     </view>
 
     <view class="code-block">

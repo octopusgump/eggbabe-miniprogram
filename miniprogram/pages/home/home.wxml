@@ -90,6 +90,11 @@
         <text class="state-title">{{stageText}}</text>
       </view>
 
+      <view wx:if="{{isDemo && stage !== 'ready' && stage !== 'hatched'}}" class="demo-toolbar">
+        <text class="demo-toolbar__note">开发验收模式 · 当前可测试孵化互动</text>
+        <button class="demo-toolbar__button" bindtap="onDemoAdvance"><text class="button-label">进入破壳验收</text></button>
+      </view>
+
       <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
         <text class="status-meta">此刻 · {{dailyStatus.mood}}</text>
         <text class="status-line">{{dailyStatus.line}}</text>

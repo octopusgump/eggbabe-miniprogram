@@ -3,6 +3,7 @@ const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const shellArtService = require('../../services/egg-shell-art');
+const runtime = require('../../services/runtime-context');
 const canvas2d = require('../../utils/canvas-2d');
 
 Page({
@@ -272,6 +273,18 @@ Page({
   async onSave() {
     if (this.data.saving) return;
     this.setData({ saving: true });
+    if (runtime.getMode() === 'demo') {
+      const result = petStore.applyConfirmedDoodle(shellArtService.normalizeShellArt(this.shellArt));
+      this.setData({ saving: false });
+      if (!result.ok) {
+        wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
+        return;
+      }
+      analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
+      wx.showToast({ title: '我的蛋壳换好啦', icon: 'none' });
+      setTimeout(() => wx.navigateBack(), 700);
+      return;
+    }
     if (!config.backendEnabled) {
       this.setData({ saving: false });
       wx.showToast({ title: '蛋壳创作服务尚未接入，请稍后再试', icon: 'none' });

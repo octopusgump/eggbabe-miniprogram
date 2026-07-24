@@ -21,7 +21,7 @@
     <view class="ambient-piece ambient-piece--seven"></view>
     <view class="ambient-piece ambient-piece--eight"></view>
   </view>
-  <view class="topbar" style="padding-top:{{statusBarHeight}}px;"><view class="round-btn" bindtap="onBack"><view class="back-icon"></view></view></view>
+  <view class="topbar" style="padding-top:{{statusBarHeight}}px;"><view class="round-btn" bindtap="onBack"><view class="back-icon"></view></view><text wx:if="{{isDemo}}" class="demo-scene-badge">DEMO</text></view>
   <view class="pet-hotspot" bindtap="onTapPet"></view>
   <view class="hotspot" wx:for="{{hotspots}}" wx:key="label" style="left:{{item.x}};top:{{item.y}};" data-index="{{index}}" catchtap="onTapHotspot"><view class="hotspot-dot"></view><text>{{item.label}}</text></view>
   <view wx:if="{{ripple}}" class="ripple" style="left:{{ripple.x}};top:{{ripple.y}};"></view>

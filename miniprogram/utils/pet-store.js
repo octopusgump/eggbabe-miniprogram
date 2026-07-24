@@ -14,7 +14,7 @@ const shellArtService = require('../services/egg-shell-art');
 let greetingShownThisSession = false;
 
 function scopedKey(key) {
-  return runtime.scopedKey(key, 'live');
+  return runtime.scopedKey(key);
 }
 
 function read(key) {
@@ -33,28 +33,31 @@ function write(key, value) {
 }
 
 function getUser() {
+  const mode = runtime.getMode();
   const user = read(USER_KEY);
-  return user && user.mode === 'live' && user.id ? user : null;
+  return user && user.mode === mode && user.id ? user : null;
 }
 
 function saveUser(user) {
   const source = user || {};
   const current = getUser() || {};
+  const mode = runtime.getMode();
   const id = source.id || current.id || '';
   if (!id) return null;
   const normalized = Object.assign({}, current, source, {
     id,
     publicId: source.publicId || current.publicId || '',
-    mode: 'live'
+    mode
   });
-  write(IDENTITY_KEY, { id: normalized.id, publicId: normalized.publicId, mode: 'live' });
+  write(IDENTITY_KEY, { id: normalized.id, publicId: normalized.publicId, mode });
   const result = write(USER_KEY, normalized);
   return result.ok ? result.value : null;
 }
 
 function getIdentityId() {
+  const mode = runtime.getMode();
   const identity = read(IDENTITY_KEY);
-  return identity && identity.mode === 'live' ? identity.id || '' : '';
+  return identity && identity.mode === mode ? identity.id || '' : '';
 }
 
 function clearUser() {
@@ -86,17 +89,19 @@ function normalizeLifecycle(value, hasCard) {
 }
 
 function getPet() {
+  const mode = runtime.getMode();
   const user = getUser();
   const pet = read(PET_KEY);
-  if (!user || !pet || pet.mode !== 'live' || !pet.ownerId || pet.ownerId !== user.id) return null;
+  if (!user || !pet || pet.mode !== mode || !pet.ownerId || pet.ownerId !== user.id) return null;
   pet.shell = shellArtService.normalizeShellArt(pet.shell);
   pet.lifecycleStage = normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard);
   return pet;
 }
 
 function savePet(pet) {
+  const mode = runtime.getMode();
   const normalized = Object.assign({}, pet, {
-    mode: 'live',
+    mode,
     lifecycleStage: normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard)
   });
   delete normalized.progress;
@@ -121,6 +126,7 @@ function bindPet() {
 }
 
 function importCloudPet(record, mode) {
+  if (runtime.getMode() !== 'live') return { ok: false, message: 'demo 环境不得导入 live 实体蛋' };
   if (mode && mode !== 'live') return { ok: false, message: '普通版只接受 live 数据' };
   const source = record || {};
   if (source.mode !== 'live') return { ok: false, message: '实体蛋数据缺少 live 标识' };
@@ -146,6 +152,31 @@ function importCloudPet(record, mode) {
     nicknamePromptDismissed: !!source.nicknamePromptDismissed
   };
   return savePet(pet) ? { ok: true, pet } : { ok: false, message: '云端数据缓存失败，请重试' };
+}
+
+function importDemoPet(record) {
+  if (runtime.getMode() !== 'demo') return { ok: false, message: '仅开发验收模式可以导入 demo 实体蛋' };
+  const source = record || {};
+  if (source.mode !== 'demo' || !source.id || !source.ownerId) return { ok: false, message: 'demo 实体蛋数据无效' };
+  const pet = {
+    id: source.id,
+    mode: 'demo',
+    ownerId: source.ownerId,
+    prototype: source.prototype || '玉兔',
+    style: source.style || '',
+    name: source.name || '',
+    createdAt: source.createdAt || '',
+    hatchAt: source.hatchAt || '',
+    lifecycleStage: normalizeLifecycle(source.lifecycleStage, source.collectionCard),
+    serverBacked: false,
+    shell: shellArtService.normalizeShellArt(source.shell),
+    qualitativeStatus: source.qualitativeStatus || null,
+    collectionCard: source.collectionCard || null,
+    inviteCodes: [],
+    messages: source.messages || [],
+    nicknamePromptDismissed: !!source.nicknamePromptDismissed
+  };
+  return savePet(pet) ? { ok: true, pet } : { ok: false, message: 'demo 实体蛋保存失败，请重试' };
 }
 
 function validateNickname(name) {
@@ -194,7 +225,7 @@ function markDailyGreetingShown() {
 }
 
 function recordCompanionInteraction(interactionType, payload) {
-  if (config.backendEnabled) {
+  if (config.backendEnabled && runtime.getMode() === 'live') {
     const pet = getPet();
     syncQueue.enqueue('recordCompanionInteraction', {
       egg_id: pet ? pet.id : '',
@@ -285,6 +316,7 @@ function createCollectionCard() {
 }
 
 function applyCloudHatchCard(card) {
+  if (runtime.getMode() !== 'live') return { ok: false, message: 'demo 环境不得写入 live 收藏卡' };
   const pet = getPet();
   if (!pet || !card || card.mode !== 'live' || String(card.egg_id || '') !== String(pet.id)) return { ok: false, message: '收藏卡数据无效' };
   if (!card.card_id || !card.identity_code || !card.illustration_key || !/^https:\/\//i.test(String(card.illustration_url || ''))) {
@@ -295,11 +327,25 @@ function applyCloudHatchCard(card) {
   return savePet(pet) ? { ok: true, card, pet } : { ok: false, message: '收藏卡缓存失败，请重试' };
 }
 
+function applyDemoHatchCard(card) {
+  const pet = getPet();
+  if (runtime.getMode() !== 'demo' || !pet || !card || card.mode !== 'demo' || String(card.egg_id || '') !== String(pet.id)) {
+    return { ok: false, message: 'demo 收藏卡数据无效' };
+  }
+  if (!card.card_id || !card.identity_code || !card.illustration_key || !/^\/assets\//.test(String(card.illustration_url || ''))) {
+    return { ok: false, message: 'demo 收藏卡数据不完整' };
+  }
+  pet.collectionCard = card;
+  pet.lifecycleStage = 'HATCHED';
+  return savePet(pet) ? { ok: true, card, pet } : { ok: false, message: 'demo 收藏卡保存失败，请重试' };
+}
+
 function applyConfirmedConversation(messages) {
   const pet = getPet();
   if (!pet) return { ok: false, message: '还没有蛋宝宝' };
   const source = Array.isArray(messages) ? messages : [];
-  if (source.some(message => !message || message.mode !== 'live')) return { ok: false, message: '对话数据无效' };
+  const mode = runtime.getMode();
+  if (source.some(message => !message || message.mode !== mode)) return { ok: false, message: '对话数据无效' };
   pet.messages = source.map(message => {
     const safeMessage = Object.assign({}, message);
     delete safeMessage.preference;
@@ -318,6 +364,7 @@ module.exports = {
   isBound,
   bindPet,
   importCloudPet,
+  importDemoPet,
   validateNickname,
   applyConfirmedNickname,
   shouldPromptNickname,
@@ -335,5 +382,6 @@ module.exports = {
   recordTouch,
   createCollectionCard,
   applyCloudHatchCard,
+  applyDemoHatchCard,
   applyConfirmedConversation
 };

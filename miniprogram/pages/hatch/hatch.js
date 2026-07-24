@@ -2,11 +2,14 @@ const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
+const runtime = require('../../services/runtime-context');
+const demoExperience = require('../../services/demo-experience');
 
 Page({
   data: {
     phase: 'confirm',
     pet: null,
+    isDemo: config.localDemoEnabled,
     particles: [
       { tx: '-140rpx', ty: '-110rpx', color: '#EDE78E' },
       { tx: '150rpx', ty: '-90rpx', color: '#F4B9AE' },
@@ -36,7 +39,11 @@ Page({
     if (this.data.phase !== 'confirm' || !this.data.pet) return;
     this.setData({ phase: 'reveal' });
     this.revealTimer = setTimeout(() => {
-      if (config.backendEnabled) {
+      if (runtime.getMode() === 'demo') {
+        this.handleHatchResult(demoExperience.generateHatchCard());
+        return;
+      }
+      if (config.backendEnabled && runtime.getMode() === 'live') {
         cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
         return;
       }
@@ -45,13 +52,13 @@ Page({
   },
 
   handleHatchResult(result) {
-      if (!result.ok || result.mode !== 'live') {
+      if (!result.ok || result.mode !== runtime.getMode()) {
         analytics.track('data_write_fail', { where: 'hatch_card', error_code: result.reason || result.code || 'GENERATE_FAILED' });
         this.setData({ phase: 'confirm' });
         wx.showToast({ title: result.message, icon: 'none' });
         return;
       }
-      if (config.backendEnabled) {
+      if (config.backendEnabled && runtime.getMode() === 'live') {
         const applied = petStore.applyCloudHatchCard(result.card);
         if (!applied.ok) {
           this.setData({ phase: 'confirm' });

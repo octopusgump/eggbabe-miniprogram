@@ -1,6 +1,12 @@
+const environment = require('./build-environment');
+const policy = environment.currentPolicy();
+
 module.exports = {
   version: '2.28.0-ordinary',
-  buildTarget: 'ordinary-live',
+  buildTarget: policy.buildTarget,
+  envVersion: policy.envVersion,
+  localDemoEnabled: policy.localDemoEnabled,
+  defaultMode: policy.mode,
   backendEnabled: false,
   apiBase: '',
   timezone: 'Asia/Shanghai',

@@ -1,5 +1,7 @@
 const storage = require('./storage-migration');
+const config = require('../config/v2');
 const SESSION_KEY = 'eggbabe_session_id_v2';
+let activeMode = config.defaultMode === 'demo' && config.localDemoEnabled ? 'demo' : 'live';
 
 function read(key, fallback) {
   return storage.read(key, fallback);
@@ -15,25 +17,30 @@ function write(key, value) {
 }
 
 function getMode() {
-  return 'live';
+  return activeMode;
 }
 
 function setMode(mode) {
-  if (mode !== 'live') return { ok: false, code: 'ORDINARY_LIVE_ONLY' };
-  return { ok: true, value: 'live' };
+  if (mode === 'demo' && !config.localDemoEnabled) return { ok: false, code: 'DEMO_NOT_ALLOWED' };
+  if (mode !== 'live' && mode !== 'demo') return { ok: false, code: 'MODE_INVALID' };
+  activeMode = mode;
+  return { ok: true, value: activeMode };
 }
 
 function getSessionId() {
-  let sessionId = read(SESSION_KEY, '');
+  const key = scopedKey(SESSION_KEY);
+  let sessionId = read(key, '');
   if (!sessionId) {
     sessionId = `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    write(SESSION_KEY, sessionId);
+    write(key, sessionId);
   }
   return sessionId;
 }
 
 function scopedKey(key, mode) {
-  return `eggbabe_live_${key}_v2`;
+  const requested = mode || activeMode;
+  const safeMode = requested === 'demo' && config.localDemoEnabled ? 'demo' : 'live';
+  return `eggbabe_${safeMode}_${key}_v2`;
 }
 
 module.exports = { getMode, setMode, getSessionId, scopedKey };

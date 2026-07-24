@@ -1,6 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -113,5 +114,15 @@ assert.equal(h5Data.display_name, '我的蛋宝宝', '未命名回退必须固�
 assert.equal(h5Bridge.buildH5Url('https://eggbabe.com/card', h5Data, 'https://api.eggbabe.com').includes('card_data='), false, 'live H5 不得注入客户端业务结果');
 petStore.clearUser();
 assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋缓存');
+
+[
+  'build-environment.test.js',
+  'demo-experience.test.js',
+  'demo-network-isolation.test.js',
+  'demo-pages.test.js',
+  'release-gate.test.js'
+].forEach(test => {
+  execFileSync(process.execPath, [path.join(root, 'miniprogram/services/tests', test)], { stdio: 'pipe' });
+});
 
 console.log('v2.28 普通小程序核心合规回归通过。');

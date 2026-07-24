@@ -3,6 +3,7 @@ const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const chatSafety = require('../../services/chat-safety');
+const runtime = require('../../services/runtime-context');
 
 Page({
   data: { nickname: '微信用户', publicId: '', avatarUrl: '', saving: false },
@@ -27,6 +28,10 @@ Page({
   onChooseAvatar(event) {
     const avatarUrl = event.detail.avatarUrl;
     if (!avatarUrl) return;
+    if (runtime.getMode() === 'demo' && this.saveConfirmed({ avatarUrl })) {
+      wx.showToast({ title: '头像已更新（开发验收）', icon: 'success' });
+      return;
+    }
     if (!config.backendEnabled) {
       wx.showToast({ title: '头像服务尚未接入', icon: 'none' });
       return;
@@ -53,6 +58,11 @@ Page({
         if (!result.confirm || !nickname) return;
         if (!chatSafety.isSafeDisplayText(nickname)) {
           wx.showToast({ title: '昵称含有不适合的内容，请换一个', icon: 'none' });
+          return;
+        }
+        if (runtime.getMode() === 'demo' && this.saveConfirmed({ nickname })) {
+          analytics.track('companion_interaction', { interaction_type: 'profile_name', result: 'saved' });
+          wx.showToast({ title: '昵称已更新（开发验收）', icon: 'success' });
           return;
         }
         if (!config.backendEnabled) {

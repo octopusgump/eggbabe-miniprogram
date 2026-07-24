@@ -1,13 +1,15 @@
 const config = require('../config/v2');
 const storage = require('./storage-migration');
+const runtime = require('./runtime-context');
 
 const KEY = 'eggbabe_subscription_permissions_v216';
 
 function readState() {
-  return storage.read(KEY, { hatchDeclined: false, accepted: [] });
+  return storage.read(runtime.scopedKey(KEY), { hatchDeclined: false, accepted: [] });
 }
 
 function request(templateIds) {
+  if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, code: 'LIVE_MODE_REQUIRED' });
   const state = readState();
   const tmplIds = templateIds.filter(Boolean);
   if (!tmplIds.length) return Promise.resolve({ ok: false, code: 'TEMPLATES_NOT_CONFIGURED' });
@@ -23,7 +25,7 @@ function request(templateIds) {
           hatchDeclined: declined,
           accepted: Array.from(new Set((state.accepted || []).concat(accepted)))
         });
-        try { storage.set(KEY, next); }
+        try { storage.set(runtime.scopedKey(KEY), next); }
         catch (error) { resolve({ ok: false, code: 'LOCAL_WRITE_FAILED' }); return; }
         resolve({ ok: accepted.length > 0, accepted, declined });
       },

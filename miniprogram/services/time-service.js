@@ -30,7 +30,7 @@ function isAuthoritative() { return authoritative; }
 
 function requireAuthoritative() {
   if (authoritative) return { ok: true, now: now(), authoritative: true, mode: runtime.getMode() };
-  return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步北京时间，请稍后再试', mode: 'live' };
+  return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步北京时间，请稍后再试', mode: runtime.getMode() };
 }
 
 function beijingDateKey(timestamp) {
@@ -45,6 +45,7 @@ function formatBeijingDate(timestamp) {
 }
 
 function sync() {
+  if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, code: 'LIVE_MODE_REQUIRED' });
   if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED' });
   const startedAt = Date.now();
   return dataApi.serverTime().then(result => {

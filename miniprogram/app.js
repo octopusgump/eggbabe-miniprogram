@@ -14,9 +14,9 @@ App({
   },
 
   onLaunch() {
-    // 普通版生产构建固定使用 live。内部演示必须使用独立项目，
-    // 不能再通过“后端未连接”等条件把生产包切到 demo。
-    runtime.setMode('live');
+    // develop 使用隔离 demo；trial / release 固定 live。
+    // demo 没有用户界面开关，也不会进入正式存储与接口。
+    runtime.setMode(config.defaultMode);
     timeService.sync().then(result => {
       if (!result.ok || typeof getCurrentPages === 'undefined') return;
       const pages = getCurrentPages();
@@ -29,7 +29,7 @@ App({
       success: ({ code }) => {
         this.globalData.loginCode = code || '';
         analytics.track('login_result', { success: !!code, fail_reason: code ? '' : 'EMPTY_CODE' });
-        if (code && config.backendEnabled) {
+        if (code && config.backendEnabled && runtime.getMode() === 'live') {
           cloudApi.bootstrap(code).then(result => {
             if (!result.ok || result.mode !== 'live' || !result.user) return;
             this.globalData.backendReady = true;

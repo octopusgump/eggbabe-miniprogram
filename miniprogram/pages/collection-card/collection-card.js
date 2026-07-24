@@ -39,7 +39,7 @@ Page({
       return;
     }
     const cardView = h5Bridge.toH5Card(pet, config);
-    if (!cardView || !cardView.card_id || !cardView.identity_code || !/^https:\/\//i.test(cardView.illustration_url)) {
+    if (!cardView || !cardView.card_id || !cardView.identity_code || !h5Bridge.isValidCardAssetUrl(cardView.illustration_url, cardView.mode)) {
       wx.showToast({ title: '收藏卡数据不完整，请稍后重试', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 600);
       return;
@@ -53,7 +53,7 @@ Page({
   },
 
   loadPosterAsset(source, errorCode) {
-    if (!/^https:\/\//i.test(String(source || '')) || !wx.getImageInfo) return Promise.reject(new Error(errorCode));
+    if (!h5Bridge.isValidCardAssetUrl(source, this.data.cardView && this.data.cardView.mode) || !wx.getImageInfo) return Promise.reject(new Error(errorCode));
     return new Promise((resolve, reject) => {
       wx.getImageInfo({
         src: source,

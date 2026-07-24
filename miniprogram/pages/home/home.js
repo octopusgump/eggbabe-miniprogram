@@ -9,6 +9,8 @@ const environmentService = require('../../services/incubation-environment');
 const shellArtService = require('../../services/egg-shell-art');
 const roomSound = require('../../services/room-sound');
 const canvas2d = require('../../utils/canvas-2d');
+const runtime = require('../../services/runtime-context');
+const demoExperience = require('../../services/demo-experience');
 
 const TOUCH_LINES = ['你碰到我啦。', '我轻轻晃了一下。', '我听见你了。', '壳里传来我小小的回应。'];
 const TALK_REACTIONS = [
@@ -66,7 +68,8 @@ Page({
     homeEggBasePreview: '',
     homeEggArtPreview: '',
     roomElements: ROOM_ELEMENTS,
-    lampOn: false
+    lampOn: false,
+    isDemo: config.localDemoEnabled
   },
 
   async onShow() {
@@ -111,7 +114,8 @@ Page({
       hasScenes: hatched && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
       sceneImage: hatched ? sceneConfig.getScene('grass', pet.prototype).image : '',
       environment: environmentService.resolve(serverEnvironment),
-      syncPending: syncQueue.pendingCount()
+      syncPending: syncQueue.pendingCount(),
+      isDemo: runtime.getMode() === 'demo'
     }, () => {
       if (!hatched) {
         this.setupWindowFog();
@@ -498,6 +502,16 @@ Page({
       this.setData({ savingName: false, nameError: validation.message || '名字没有保存成功' });
       return;
     }
+    if (runtime.getMode() === 'demo') {
+      const result = petStore.applyConfirmedNickname(validation.value);
+      this.setData({ savingName: false, showNameSheet: !result.ok, nameError: result.ok ? '' : result.message });
+      if (result.ok) {
+        analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
+        this.showFeedback('我记住自己的名字啦。');
+        this.onShow();
+      }
+      return;
+    }
     if (!config.backendEnabled) {
       this.setData({ savingName: false, nameError: '账号资料服务尚未接入，请稍后再试' });
       return;
@@ -526,6 +540,16 @@ Page({
   },
 
   noop() {},
+
+  onDemoAdvance() {
+    const result = demoExperience.advanceToHatchable();
+    if (!result.ok) {
+      wx.showToast({ title: result.message, icon: 'none' });
+      return;
+    }
+    wx.showToast({ title: '已进入破壳验收阶段', icon: 'none' });
+    this.onShow();
+  },
 
   onPrimaryAction() {
     if (this.data.stage === 'ready') wx.navigateTo({ url: '/pages/hatch/hatch' });

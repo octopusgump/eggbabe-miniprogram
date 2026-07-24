@@ -32,7 +32,7 @@ const EVENT_ALLOWLIST = new Set([
 ]);
 
 function readQueue() {
-  return storage.read(QUEUE_KEY, []);
+  return storage.read(runtime.scopedKey(QUEUE_KEY), []);
 }
 
 function getContext() {
@@ -64,7 +64,7 @@ function track(eventName, properties) {
   }, {});
   const event = Object.assign({}, getContext(), safeProperties, { event_name: eventName, event_id: `evt-${time.now()}-${Math.random().toString(36).slice(2, 8)}` });
   const queue = readQueue().concat(event).slice(-200);
-  try { storage.set(QUEUE_KEY, queue); } catch (error) { return { ok: false, event }; }
+  try { storage.set(runtime.scopedKey(QUEUE_KEY), queue); } catch (error) { return { ok: false, event }; }
   if (config.backendEnabled && queue.length >= 10) flush();
   return { ok: true, event };
 }
@@ -76,7 +76,7 @@ function flush() {
   if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, pending: events.length, code: 'LIVE_MODE_REQUIRED' });
   if (!time.isAuthoritative()) return Promise.resolve({ ok: false, pending: events.length, code: 'SERVER_TIME_REQUIRED' });
   if (!events.length) {
-    storage.set(QUEUE_KEY, []);
+    storage.set(runtime.scopedKey(QUEUE_KEY), []);
     return Promise.resolve({ ok: true, count: 0, discarded: queuedEvents.length });
   }
   const uploadEvents = events.map(event => {
@@ -89,14 +89,14 @@ function flush() {
     if (!result.ok) return { ok: false, pending: events.length };
     const current = readQueue();
     const processedIds = new Set(queuedEvents.map(event => event.event_id));
-    storage.set(QUEUE_KEY, current.filter(event => !processedIds.has(event.event_id)));
+    storage.set(runtime.scopedKey(QUEUE_KEY), current.filter(event => !processedIds.has(event.event_id)));
     return { ok: true, count: events.length };
   }).catch(() => ({ ok: false, pending: events.length }));
 }
 
 function clearQueue() {
   try {
-    storage.set(QUEUE_KEY, []);
+    storage.set(runtime.scopedKey(QUEUE_KEY), []);
     return true;
   } catch (error) {
     return false;

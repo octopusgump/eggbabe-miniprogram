@@ -3,6 +3,7 @@ const runtime = require('./runtime-context');
 let requestSequence = 0;
 
 function call(name, data) {
+  if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, code: 'LIVE_MODE_REQUIRED', message: '开发验收数据不访问正式服务' });
   if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED', message: '正式数据服务尚未接入' });
   if (!config.apiBase || typeof wx === 'undefined' || !wx.request) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONFIGURED', message: '正式数据服务尚未配置' });
   return new Promise(resolve => {
@@ -48,6 +49,7 @@ function manageDeletion(action) { return call('manageDeletion', { action }); }
 function trackEvents(events) { return call('trackEvents', { events }); }
 function serverTime() { return call('serverTime'); }
 function uploadAvatar(localPath) {
+  if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, code: 'LIVE_MODE_REQUIRED', message: '开发验收头像不上传正式服务' });
   if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED', message: '正式头像服务尚未接入' });
   if (!config.apiBase || typeof wx === 'undefined' || !wx.uploadFile) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONFIGURED', message: '正式头像服务尚未配置' });
   return new Promise(resolve => {

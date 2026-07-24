@@ -2,9 +2,10 @@ const petStore = require('../../utils/pet-store');
 const lifeScenes = require('../../utils/life-scenes');
 const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
+const config = require('../../config/v2');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, sceneKicker: '' },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, sceneKicker: '', isDemo: config.localDemoEnabled },
 
   onLoad(query) {
     this.pageActive = true;

@@ -18,12 +18,13 @@
   </view>
 
   <view class="bottom-panel page-safe-bottom">
+    <view wx:if="{{isDemo}}" class="demo-notice">开发验收模式 · 数据与正式环境隔离</view>
     <view class="agreement" bindtap="onToggleAgreement">
       <view class="check {{agreed ? 'check--on' : ''}}"><text wx:if="{{agreed}}">✓</text></view>
       <text class="agreement-text">我已阅读并同意</text>
       <text class="privacy-link" catchtap="onPrivacy">《蛋宝宝隐私政策》</text>
     </view>
-    <button class="auth-button" loading="{{authorizing}}" bindtap="onAuthorize"><text class="button-label">微信授权并进入</text></button>
+    <button class="auth-button" loading="{{authorizing}}" bindtap="onAuthorize"><text class="button-label">{{isDemo ? '进入开发验收' : '微信授权并进入'}}</text></button>
     <text class="auth-note">仅用于建立账号身份，不会自动发布任何内容</text>
   </view>
 </view>

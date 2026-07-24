@@ -33,16 +33,17 @@ Page({
   },
 
   appendReply(text, resultType, messageId, persistConfirmed) {
+    const mode = runtime.getMode();
     const reply = {
       id: messageId || this.messageId('egg'),
       from: 'egg',
       text: chatSafety.safeOutput(text),
-      mode: 'live',
+      mode,
       sessionId: runtime.getSessionId()
     };
     const next = this.data.messages.concat(reply);
     if (persistConfirmed) {
-      const savedConversation = petStore.applyConfirmedConversation(next.filter(message => message.mode === 'live'));
+      const savedConversation = petStore.applyConfirmedConversation(next.filter(message => message.mode === mode));
       if (!savedConversation.ok) {
         this.setData({ typing: false });
         wx.showToast({ title: savedConversation.message, icon: 'none' });
@@ -66,7 +67,8 @@ Page({
       wx.showToast({ title: assessment.message, icon: 'none' });
       return;
     }
-    const userMessage = { id: this.messageId('user'), from: 'user', text, mode: 'live', sessionId: runtime.getSessionId() };
+    const mode = runtime.getMode();
+    const userMessage = { id: this.messageId('user'), from: 'user', text, mode, sessionId: runtime.getSessionId() };
     const messages = this.data.messages.concat(userMessage);
     if (assessment.crisis) {
       const reply = { id: this.messageId('safety'), from: 'egg', text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' };
@@ -91,7 +93,7 @@ Page({
       return;
     }
     this.replyTimer = setTimeout(() => {
-      this.appendReply(chatService.approvedFallback(this.data.dailyStatus && this.data.dailyStatus.mood), 'approved_fallback', '', false);
+      this.appendReply(chatService.approvedFallback(this.data.dailyStatus && this.data.dailyStatus.mood), 'approved_fallback', '', mode === 'demo');
     }, 900);
   },
 

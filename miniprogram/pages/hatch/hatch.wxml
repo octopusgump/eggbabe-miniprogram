@@ -1,4 +1,5 @@
 <view class="page">
+  <text wx:if="{{isDemo}}" class="demo-badge">开发验收模式</text>
   <!-- 破壳仪式：情感时刻，全程 520ms cubic-bezier(0.34,1.56,0.64,1)，尊重 prefers-reduced-motion -->
 
   <!-- 阶段一：确认（物理装置已在预设破壳日打开） -->

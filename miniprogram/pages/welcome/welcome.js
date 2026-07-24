@@ -1,9 +1,12 @@
 const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
+const runtime = require('../../services/runtime-context');
+const demoExperience = require('../../services/demo-experience');
 Page({
   data: {
     agreed: false,
-    authorizing: false
+    authorizing: false,
+    isDemo: config.localDemoEnabled
   },
 
   onLoad() {
@@ -27,6 +30,16 @@ Page({
     }
     if (this.data.authorizing) return;
     this.setData({ authorizing: true });
+    if (runtime.getMode() === 'demo') {
+      const result = demoExperience.bootstrap();
+      this.setData({ authorizing: false });
+      if (!result.ok) {
+        wx.showToast({ title: result.message, icon: 'none' });
+        return;
+      }
+      wx.switchTab({ url: '/pages/home/home' });
+      return;
+    }
     if (!config.backendEnabled) {
       this.setData({ authorizing: false });
       wx.showToast({ title: '账号服务尚未接入，请稍后再试', icon: 'none' });

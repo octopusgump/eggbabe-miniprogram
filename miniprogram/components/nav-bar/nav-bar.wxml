@@ -6,6 +6,6 @@
     </view>
     <view wx:else class="nav-side"></view>
     <text class="nav-title">{{title}}</text>
-    <view class="nav-side"></view>
+    <view class="nav-side"><text wx:if="{{isDemo}}" class="demo-chip">DEMO</text></view>
   </view>
 </view>

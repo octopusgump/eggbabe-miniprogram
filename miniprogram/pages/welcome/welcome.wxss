@@ -23,3 +23,4 @@
 .auth-button { height: 96rpx; line-height: 96rpx; border: none; border-radius: 999rpx; background: #002900; color: white; font-size: 30rpx; font-weight: 600; box-shadow: 0 14rpx 30rpx rgba(0,41,0,.18); }
 .auth-button::after { border: none; }
 .auth-note { display: block; margin-top: 18rpx; text-align: center; font-size: 20rpx; color: #9B9992; }
+.demo-notice { margin-bottom: 18rpx; padding: 12rpx 20rpx; border-radius: 999rpx; background: #F1F4E8; color: #687548; font-size: 20rpx; text-align: center; }

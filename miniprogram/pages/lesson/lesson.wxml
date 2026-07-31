@@ -1,1 +1,46 @@
-<view class="page"><nav-bar title="教我一件小事"></nav-bar><view class="content"><text class="kicker">LITTLE CLASS</text><text class="title">想教我什么？</text><text class="desc">我会认真听你说完，这不会改变破壳结果。</text><view class="options"><view wx:for="{{options}}" wx:key="value" class="option {{selected === item.value ? 'option--selected' : ''}}" data-value="{{item.value}}" bindtap="onSelect"><view class="icon">{{item.icon}}</view><text>{{item.value}}</text><text class="arrow">{{selected === item.value ? '✓' : '›'}}</text></view></view><view class="spacer"></view><button class="primary {{!selected ? 'primary--disabled' : ''}}" bindtap="onSubmit"><text class="button-label">把这件小事教给我</text></button></view></view>
+<view class="page">
+  <nav-bar title="早教班"></nav-bar>
+  <view class="content">
+    <view wx:if="{{loading}}" class="center-note">我正在坐好，等你来教我…</view>
+    <view wx:elif="{{error && !options.length}}" class="center-note">{{error}}</view>
+    <block wx:else>
+      <text class="kicker">LITTLE CLASS</text>
+      <text class="title">今天想教我什么？</text>
+      <text class="desc">没有对错，我只想看看你会怎么教我。</text>
+
+      <view wx:if="{{storedOption}}" class="lesson-stage">
+        <view class="lesson-egg lesson-egg--{{animation}}">
+          <view class="lesson-shine"></view>
+          <view wx:if="{{animation === 'sleep'}}" class="sleep-bubble">z</view>
+          <view wx:if="{{animation === 'bath'}}" class="bath-bubble bath-bubble--one"></view>
+          <view wx:if="{{animation === 'bath'}}" class="bath-bubble bath-bubble--two"></view>
+          <text wx:if="{{animation === 'song'}}" class="song-note">♪</text>
+        </view>
+        <text class="answer-intro">今天你教过我啦 ——</text>
+        <text class="answer-value">{{storedOption.label}}</text>
+        <text class="answer-response">{{animationLine || '我还记得这件小事。'}}</text>
+      </view>
+
+      <view wx:else class="options">
+        <view
+          wx:for="{{options}}"
+          wx:key="id"
+          class="option {{selected === item.id ? 'option--selected' : ''}}"
+          data-id="{{item.id}}"
+          aria-role="radio"
+          aria-checked="{{selected === item.id}}"
+          bindtap="onSelect"
+        >
+          <text class="option-label">{{item.label}}</text>
+          <view class="radio"><view wx:if="{{selected === item.id}}" class="radio-dot"></view></view>
+        </view>
+      </view>
+
+      <text wx:if="{{error}}" class="error">{{error}}</text>
+      <view class="spacer"></view>
+      <button wx:if="{{!storedOption}}" class="primary" disabled="{{!selected || submitting}}" bindtap="onSubmit">
+        <text class="button-label">{{submitting ? '我在认真听…' : '把这件小事教给我'}}</text>
+      </button>
+    </block>
+  </view>
+</view>

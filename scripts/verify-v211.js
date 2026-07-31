@@ -17,8 +17,11 @@ assert.equal(new RegExp(['egg', 'baby'].join(''), 'i').test(userFacing), false, 
 const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
-assert.equal(homeTemplate.includes('一起待一会儿'), true, '首页必须提供无任务压力的自由陪伴入口');
-assert.equal(homeTemplate.includes('跟我说说话'), true, '等待破壳首页必须提供常驻文字输入');
+const doodleTemplate = read('miniprogram/pages/doodle/doodle.wxml');
+const doodleLogic = read('miniprogram/pages/doodle/doodle.js');
+const doodleStyles = read('miniprogram/pages/doodle/doodle.wxss');
+assert.equal(homeLogic.includes("key: 'wish'") && homeLogic.includes("key: 'learn'") && homeLogic.includes("key: 'draw'") && homeLogic.includes("title: '早教班'"), true, '首页必须并列保留许愿池、早教班与画画入口');
+assert.equal(homeTemplate.includes('talkUnlocked') || homeTemplate.includes('talk-input'), false, '孵化前首页不得展示说话输入框');
 assert.equal(homeTemplate.includes('暂不命名'), true, '命名必须允许跳过');
 assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '首页必须保留三层蛋壳 Canvas');
 assert.equal(homeLogic.includes('shellArtService.drawEggBase') && homeLogic.includes('shellArtService.drawEggArt'), true, '首页必须回显免费蛋壳创作');
@@ -26,14 +29,18 @@ assert.equal(homeStyles.includes('-webkit-mask-image: url("/assets/scenes/incuba
 assert.equal(homeStyles.includes('.egg-contact-shadow'), true, '必须保留窝垫实时阴影');
 assert.equal(homeLogic.includes('vibrateCuddleTick'), true, '长按贴贴必须保留体感反馈');
 assert.equal(homeTemplate.includes('cuddle-track'), false, '长按贴贴不得显示任务式进度条');
-assert.equal(homeTemplate.includes('room-element-layer'), true, '首页必须提供固定小房间小物层');
-assert.equal(/room-coffee-effect[\s\S]*room-brush-stroke[\s\S]*room-scarf-weave/.test(homeTemplate), true, '咖啡机、画笔和围巾必须有独立即时表现');
-const roomElementsSource = homeLogic.slice(homeLogic.indexOf('const ROOM_ELEMENTS'), homeLogic.indexOf('const COMPANION_ACTIONS'));
-assert.deepEqual(
-  Array.from(roomElementsSource.matchAll(/key: '([^']+)'/g), match => match[1]),
-  ['lamp', 'coffee', 'brush', 'scarf', 'window'],
-  '五类房间小物必须默认可用'
-);
+assert.equal(homeTemplate.includes('room-lamp-hotspot') && homeLogic.includes('onLampTap'), true, '台灯必须作为画面热区直接互动');
+assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾与旧物件按钮层必须移除');
+assert.equal(homeStyles.includes('.companion-grid { display: flex') && homeStyles.includes('.companion-item--completed') && homeStyles.includes('.companion-item--draw'), true, '三个入口必须保持同排，已回答入口折叠为勾选图标，画画保持独立绘图图标');
+assert.equal(homeLogic.includes('companionActionsFor(state.records, state.serverDate)') && homeTemplate.includes('completed-check'), true, '许愿池与早教班必须按当天记录折叠并允许点击回看');
+assert.equal(homeTemplate.includes('draw-icon-button') && homeTemplate.includes("item.key === 'draw'"), true, '画画入口必须始终显示为非白色绘图图标');
+assert.equal(doodleTemplate.indexOf('class="preview"') < doodleTemplate.indexOf('class="content"'), true, '绘图蛋体必须位于滚动区域外并固定在页面顶端');
+assert.equal(doodleTemplate.includes('figma-toolbar') && doodleTemplate.includes('bindchanging="onToolSizeChange"'), true, '绘图页必须提供紧凑工具栏和连续尺寸调节');
+assert.equal(doodleTemplate.includes('canvas-expand-button') && doodleLogic.includes('onToggleCanvasSize') && doodleStyles.includes('height: 62vh'), true, '蛋体必须支持占屏 60% 以上的专注画布');
+assert.equal(/亲手画一点|像 Figma|history-count|tool-hint|保存后，首页窝里/.test(`${doodleTemplate}\n${doodleStyles}`), false, '绘图工具盘不得保留解释性冗余文字');
+assert.equal(doodleLogic.includes('ERASER_MIN_PX') && doodleLogic.includes('ERASER_MAX_PX') && doodleLogic.includes('eraserWidthForPixels'), true, '橡皮擦必须支持连续像素尺寸');
+assert.equal(['onTool', 'onUndo', 'onClear', 'onPattern'].every(handler => doodleLogic.includes(`${handler}(`)), true, '绘图页必须提供画笔、橡皮擦、贴纸、逐步撤销与可撤销清空');
+assert.equal(/删除贴纸|调整贴纸|onDeleteSticker/.test(`${doodleTemplate}\n${doodleLogic}`), false, '贴纸删除必须统一由橡皮擦完成');
 
 const petStore = read('miniprogram/utils/pet-store.js');
 assert.equal(/function addProgress|function completeDailyTask|inactiveDays|CARD_NAME_POOLS|CARD_SETS/.test(petStore), false, 'live 用户模型不得保留成长、日任务或随机卡片逻辑');
@@ -49,11 +56,11 @@ assert.equal(chatSafety.includes('SENSITIVE_INFO_PATTERNS'), true, '对话安全
 assert.equal(chatSafety.includes('当地官方紧急或专业支持'), true, '危机兜底不得临时生成未经核验的具体资源');
 
 const privacy = read('miniprogram/pages/privacy/privacy.wxml');
-assert.equal(privacy.includes('适用版本 v2.28'), true, '隐私说明必须对齐当前版本');
-assert.equal(privacy.includes('普通版不处理兴趣画像'), true, '隐私说明必须披露数据最小化边界');
+assert.equal(privacy.includes('适用版本 v3.5'), true, '隐私说明必须对齐当前版本');
+assert.equal(privacy.includes('不用于用户画像或蛋宝宝性格生成'), true, '隐私说明必须声明愿望答案不用于画像');
 assert.equal(privacy.includes('演示数据边界'), true, '隐私说明必须披露 live 与演示隔离');
 
 const h5Sources = ['h5/birth-card/app.js', 'h5/birth-card/card-model.js', 'h5/birth-card/poster-renderer.js'].map(read).join('\n');
 assert.equal(/Math\.random|card_data|preview=|new Date\(/.test(h5Sources), false, 'H5 不得生成或注入正式业务结果');
 
-console.log('v2.28 普通版页面、文案、房间互动与数据边界校验通过。');
+console.log('V3.5 普通版页面、文案、房间互动与数据边界校验通过。');

@@ -1,13 +1,21 @@
 <view class="page">
-  <text wx:if="{{isDemo}}" class="demo-badge">开发验收模式</text>
   <!-- 破壳仪式：情感时刻，全程 520ms cubic-bezier(0.34,1.56,0.64,1)，尊重 prefers-reduced-motion -->
 
-  <!-- 阶段一：确认（物理装置已在预设破壳日打开） -->
+  <view wx:if="{{phase === 'blocked'}}" class="stage">
+    <view class="egg-pulse" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
+    <text class="headline">我还在准备破壳。</text>
+    <text class="gate-message">{{gateMessage}}</text>
+  </view>
+
+  <!-- 阶段一：孵化回顾 -->
   <view wx:if="{{phase === 'confirm'}}" class="stage">
     <view class="egg-pulse" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
-    <text class="sub">物理装置已在预设时间打开</text>
-    <text class="headline">我终于见到你了。</text>
-    <btn text="揭晓收藏卡" bind:tap="onReveal"></btn>
+    <text class="sub">破壳前，再看一眼我们一起经历的事</text>
+    <text class="headline">这些时刻，我都记得。</text>
+    <view wx:if="{{reviewItems.length}}" class="review-list">
+      <text wx:for="{{reviewItems}}" wx:key="*this" class="review-item">· {{item}}</text>
+    </view>
+    <btn text="我记得了，准备破壳" bind:tap="onReveal"></btn>
   </view>
 
   <!-- 阶段二：破壳 + 粒子迸发 + 收藏卡生成 -->

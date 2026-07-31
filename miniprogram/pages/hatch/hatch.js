@@ -4,12 +4,26 @@ const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const runtime = require('../../services/runtime-context');
 const demoExperience = require('../../services/demo-experience');
+const practice = require('../../services/incubation-practice');
+
+const REVIEW_LABELS = {
+  nickname: '你给了我一个名字',
+  wish_pool: '我们一起把愿望放进了许愿池',
+  touch: '你轻轻摸过我的蛋壳',
+  doodle: '你亲手画过我的蛋壳',
+  edu_class: '你在早教班教过我',
+  pre_hatch_talk: '你隔着蛋壳和我说过话',
+  heartbeat: '你听见了我的心跳',
+  birth_gift: '你为我准备了出生礼物',
+  personality_test: '我们完成了性格小测试'
+};
 
 Page({
   data: {
     phase: 'confirm',
     pet: null,
-    isDemo: config.localDemoEnabled,
+    gateMessage: '',
+    reviewItems: [],
     particles: [
       { tx: '-140rpx', ty: '-110rpx', color: '#EDE78E' },
       { tx: '150rpx', ty: '-90rpx', color: '#F4B9AE' },
@@ -20,7 +34,7 @@ Page({
     ]
   },
 
-  onLoad() {
+  async onLoad() {
     const pet = petStore.getPet();
     if (pet && pet.collectionCard) {
       wx.redirectTo({ url: '/pages/collection-card/collection-card' });
@@ -31,12 +45,39 @@ Page({
       this.backTimer = setTimeout(() => wx.navigateBack(), 600);
       return;
     }
-    this.setData({ pet });
+    const gateState = await practice.getHatchGateState();
+    if (!gateState.ok) {
+      this.setData({ pet, phase: 'blocked', gateMessage: gateState.message || '破壳准备状态暂时无法确认' });
+      return;
+    }
+    const missing = [];
+    if (!gateState.gates.incubation_ready) missing.push('修炼值还没有达到 100%');
+    if (!gateState.gates.nickname_ready) missing.push('还没有名字');
+    if (!gateState.gates.birth_gift_ready) missing.push('出生礼物内容尚未完成');
+    const reviewItems = Array.from(new Set(
+      (gateState.records || []).map(record => REVIEW_LABELS[record.module]).filter(Boolean)
+    ));
+    this.setData({
+      pet,
+      phase: gateState.canStartReview ? 'confirm' : 'blocked',
+      gateMessage: missing.join('；'),
+      reviewItems
+    });
     analytics.track('hatch_receive_start');
   },
 
-  onReveal() {
+  async onReveal() {
     if (this.data.phase !== 'confirm' || !this.data.pet) return;
+    const reviewResult = await practice.submitOnce('review');
+    if (!reviewResult.ok && reviewResult.code !== 'already_done') {
+      wx.showToast({ title: reviewResult.message || '回顾状态没有保存，请重试', icon: 'none' });
+      return;
+    }
+    const gateState = await practice.getHatchGateState();
+    if (!gateState.ok || !gateState.canHatch) {
+      wx.showToast({ title: '破壳准备还没有全部完成', icon: 'none' });
+      return;
+    }
     this.setData({ phase: 'reveal' });
     this.revealTimer = setTimeout(() => {
       if (runtime.getMode() === 'demo') {

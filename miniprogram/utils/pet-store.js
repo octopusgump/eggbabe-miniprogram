@@ -62,6 +62,8 @@ function getIdentityId() {
 
 function clearUser() {
   try {
+    storage.remove(scopedKey('eggbabe_incubation_practice_v35'));
+    storage.remove(scopedKey('eggbabe_incubation_practice_v13'));
     storage.remove(scopedKey(USER_KEY));
     storage.remove(scopedKey(PET_KEY));
     storage.remove(scopedKey(IDENTITY_KEY));
@@ -141,6 +143,7 @@ function importCloudPet(record, mode) {
     name: source.display_name || source.name || '',
     createdAt: source.created_at || source.createdAt || '',
     hatchAt: source.hatch_at || source.hatchAt || '',
+    originalHatchAt: source.original_hatch_at || source.originalHatchAt || source.hatch_at || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycle_stage || source.lifecycleStage || source.stage, source.collection_card || source.collectionCard),
     afterSaleStatus: source.after_sale_status || source.afterSaleStatus || '',
     serverBacked: true,
@@ -167,6 +170,7 @@ function importDemoPet(record) {
     name: source.name || '',
     createdAt: source.createdAt || '',
     hatchAt: source.hatchAt || '',
+    originalHatchAt: source.originalHatchAt || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycleStage, source.collectionCard),
     serverBacked: false,
     shell: shellArtService.normalizeShellArt(source.shell),
@@ -201,6 +205,14 @@ function applyConfirmedNickname(name) {
   }
   if (!savePet(pet)) return { ok: false, message: '昵称保存失败，请重试' };
   return { ok: true, pet };
+}
+
+function applyConfirmedHatchAt(hatchAt) {
+  const pet = getPet();
+  const timestamp = Date.parse(hatchAt || '');
+  if (!pet || !Number.isFinite(timestamp)) return { ok: false, message: '预计破壳时间无效' };
+  pet.hatchAt = new Date(timestamp).toISOString();
+  return savePet(pet) ? { ok: true, pet } : { ok: false, message: '预计破壳时间保存失败' };
 }
 
 function shouldPromptNickname() {
@@ -367,6 +379,7 @@ module.exports = {
   importDemoPet,
   validateNickname,
   applyConfirmedNickname,
+  applyConfirmedHatchAt,
   shouldPromptNickname,
   dismissNicknamePrompt,
   shouldShowDailyGreeting,

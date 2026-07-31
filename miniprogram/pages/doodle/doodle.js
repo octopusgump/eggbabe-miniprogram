@@ -5,6 +5,8 @@ const config = require('../../config/v2');
 const shellArtService = require('../../services/egg-shell-art');
 const runtime = require('../../services/runtime-context');
 const canvas2d = require('../../utils/canvas-2d');
+const practice = require('../../services/incubation-practice');
+const BRUSH_PREVIEW_SIZES = [4, 8, 14, 22];
 
 Page({
   data: {
@@ -13,14 +15,20 @@ Page({
     selectedColor: shellArtService.COLORS[0].value,
     selectedColorName: shellArtService.COLORS[0].name,
     selectedPattern: '',
-    patternPlacement: 'single',
     activeTool: 'brush',
-    operationCount: 0,
+    brushSizeIndex: 2,
+    eraserSizePx: shellArtService.ERASER_DEFAULT_PX,
+    toolSizeValue: 2,
+    toolSizeMin: 1,
+    toolSizeMax: 4,
+    toolSizeStep: 1,
+    toolSizeLabel: shellArtService.BRUSH_SIZES[1].label,
+    toolPreviewSize: BRUSH_PREVIEW_SIZES[1],
     canUndo: false,
     canClear: false,
-    canDeleteSticker: false,
     saving: false,
-    canvasReady: false
+    canvasReady: false,
+    expandedCanvas: false
   },
 
   onLoad() {
@@ -28,7 +36,6 @@ Page({
     this.shellArt = shellArtService.normalizeShellArt(pet && pet.shell);
     this.undoStack = [];
     this.operationSequence = this.shellArt.operations.length;
-    this.selectedStickerId = '';
     this.syncViewState();
   },
 
@@ -37,10 +44,13 @@ Page({
   },
 
   setupCanvases() {
+    const setupToken = (this.canvasSetupToken || 0) + 1;
+    this.canvasSetupToken = setupToken;
     Promise.all([
       canvas2d.createLayer(this, '#eggBaseCanvas'),
       canvas2d.createLayer(this, '#eggArtCanvas')
     ]).then(layers => {
+      if (setupToken !== this.canvasSetupToken) return;
       this.baseLayer = layers[0];
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) return;
@@ -48,6 +58,7 @@ Page({
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),
         canvas2d.loadImage(this.artLayer, shellArtService.BASE_ASSET)
       ]).then(images => {
+        if (setupToken !== this.canvasSetupToken) return;
         this.baseImage = images[0];
         this.artMaskImage = images[1];
         this.setData({ canvasReady: true });
@@ -62,16 +73,14 @@ Page({
     this.setData(Object.assign({
       selectedColor: shell.color,
       selectedColorName: shell.colorName,
-      operationCount: shell.operations.length,
       canUndo: !!(this.undoStack && this.undoStack.length),
-      canClear: shell.operations.length > 0,
-      canDeleteSticker: !!this.selectedStickerId && shell.operations.some(item => item.id === this.selectedStickerId && item.type === 'sticker')
+      canClear: shell.operations.length > 0
     }, extra || {}));
   },
 
   pushHistory() {
     const operations = JSON.parse(JSON.stringify(this.shellArt.operations || []));
-    this.undoStack = (this.undoStack || []).concat([operations]).slice(-30);
+    this.undoStack = (this.undoStack || []).concat([operations]).slice(-120);
   },
 
   renderBase() {
@@ -118,37 +127,67 @@ Page({
   onPattern(event) {
     const pattern = event.currentTarget.dataset.pattern;
     if (!shellArtService.PATTERNS.some(item => item.type === pattern)) return;
-    this.pushHistory();
-    const count = this.data.patternPlacement === 'repeat' ? 5 : 1;
-    const stickers = Array.from({ length: count }, () => {
-      const sticker = shellArtService.createSticker(pattern, this.operationSequence);
-      this.operationSequence += 1;
-      return sticker;
+    this.setData({
+      selectedPattern: pattern,
+      activeTool: 'sticker'
     });
-    this.selectedStickerId = stickers[stickers.length - 1].id;
-    this.shellArt.operations = this.shellArt.operations.concat(stickers).slice(-120);
-    this.syncViewState({ selectedPattern: pattern, activeTool: 'sticker' });
-    this.renderArt();
-  },
-
-  onPatternPlacement(event) {
-    const placement = event.currentTarget.dataset.placement;
-    if (placement !== 'single' && placement !== 'repeat') return;
-    this.setData({ patternPlacement: placement });
   },
 
   onTool(event) {
     const tool = event.currentTarget.dataset.tool;
     if (tool !== 'brush' && tool !== 'eraser' && tool !== 'sticker') return;
-    this.setData({ activeTool: tool });
+    const extra = { activeTool: tool };
+    if (tool === 'brush') {
+      extra.toolSizeValue = this.data.brushSizeIndex;
+      extra.toolSizeMin = 1;
+      extra.toolSizeMax = 4;
+      extra.toolSizeStep = 1;
+      extra.toolSizeLabel = shellArtService.BRUSH_SIZES[this.data.brushSizeIndex - 1].label;
+      extra.toolPreviewSize = BRUSH_PREVIEW_SIZES[this.data.brushSizeIndex - 1];
+    }
+    if (tool === 'eraser') {
+      extra.toolSizeValue = this.data.eraserSizePx;
+      extra.toolSizeMin = shellArtService.ERASER_MIN_PX;
+      extra.toolSizeMax = shellArtService.ERASER_MAX_PX;
+      extra.toolSizeStep = 1;
+      extra.toolSizeLabel = `${this.data.eraserSizePx} px`;
+      extra.toolPreviewSize = Math.max(6, Math.min(28, this.data.eraserSizePx));
+    }
+    this.setData(extra);
+  },
+
+  onToolSizeChange(event) {
+    if (this.data.activeTool !== 'brush' && this.data.activeTool !== 'eraser') return;
+    const value = Math.max(1, Math.min(4, Math.round(Number(event.detail.value) || 1)));
+    if (this.data.activeTool === 'brush') {
+      this.setData({
+        brushSizeIndex: value,
+        toolSizeValue: value,
+        toolSizeLabel: shellArtService.BRUSH_SIZES[value - 1].label,
+        toolPreviewSize: BRUSH_PREVIEW_SIZES[value - 1]
+      });
+      return;
+    }
+    const pixels = Math.max(shellArtService.ERASER_MIN_PX, Math.min(shellArtService.ERASER_MAX_PX, Math.round(Number(event.detail.value) || shellArtService.ERASER_DEFAULT_PX)));
+    this.setData({
+      eraserSizePx: pixels,
+      toolSizeValue: pixels,
+      toolSizeLabel: `${pixels} px`,
+      toolPreviewSize: Math.max(6, Math.min(28, pixels))
+    });
+  },
+
+  onToggleCanvasSize() {
+    const expandedCanvas = !this.data.expandedCanvas;
+    this.setData({ expandedCanvas, canvasReady: false }, () => {
+      wx.nextTick(() => this.setupCanvases());
+    });
   },
 
   onUndo() {
     if (!this.undoStack || !this.undoStack.length) return;
     this.shellArt.operations = this.undoStack.pop();
-    if (!this.shellArt.operations.some(item => item.id === this.selectedStickerId)) this.selectedStickerId = '';
     this.currentStroke = null;
-    this.draggingStickerId = '';
     this.syncViewState();
     this.renderAll();
   },
@@ -157,43 +196,20 @@ Page({
     if (!this.shellArt.operations.length) return;
     this.pushHistory();
     this.shellArt.operations = [];
-    this.selectedStickerId = '';
     this.currentStroke = null;
-    this.draggingStickerId = '';
     this.syncViewState({ selectedPattern: '' });
     this.renderArt();
-  },
-
-  onDeleteSticker() {
-    if (!this.selectedStickerId) return;
-    const exists = this.shellArt.operations.some(item => item.id === this.selectedStickerId && item.type === 'sticker');
-    if (!exists) return;
-    this.pushHistory();
-    this.shellArt.operations = this.shellArt.operations.filter(item => item.id !== this.selectedStickerId);
-    this.selectedStickerId = '';
-    this.syncViewState();
-    this.renderArt();
-  },
-
-  stickerAt(point) {
-    const operations = this.shellArt.operations || [];
-    for (let index = operations.length - 1; index >= 0; index -= 1) {
-      const operation = operations[index];
-      if (operation.type !== 'sticker') continue;
-      const radius = 0.12 * Number(operation.scale || 1);
-      const distance = Math.hypot(operation.x - point.x, operation.y - point.y);
-      if (distance <= radius) return operation;
-    }
-    return null;
   },
 
   canvasPoint(event) {
     const touch = (event.touches || event.changedTouches || [])[0];
     const layer = this.artLayer;
     if (!touch || !layer) return null;
-    const hasLocalPoint = Number.isFinite(Number(touch.x)) && Number.isFinite(Number(touch.y));
-    const localX = hasLocalPoint ? Number(touch.x) : Number(touch.clientX) - layer.left;
-    const localY = hasLocalPoint ? Number(touch.y) : Number(touch.clientY) - layer.top;
+    const clientX = Number(touch.clientX);
+    const clientY = Number(touch.clientY);
+    const hasClientPoint = Number.isFinite(clientX) && Number.isFinite(clientY);
+    const localX = hasClientPoint ? clientX - layer.left : Number(touch.x);
+    const localY = hasClientPoint ? clientY - layer.top : Number(touch.y);
     if (!Number.isFinite(localX) || !Number.isFinite(localY)) return null;
     return {
       x: Math.max(0, Math.min(1, localX / layer.width)),
@@ -206,37 +222,35 @@ Page({
     const point = this.canvasPoint(event);
     if (!point) return;
     if (this.data.activeTool === 'sticker') {
-      const sticker = this.stickerAt(point);
-      this.selectedStickerId = sticker ? sticker.id : '';
-      if (!sticker) {
-        this.syncViewState();
+      if (!this.data.selectedPattern) {
+        wx.showToast({ title: '先选择一种贴纸', icon: 'none' });
         return;
       }
       this.pushHistory();
-      this.draggingStickerId = sticker.id;
+      const sticker = shellArtService.createSticker(this.data.selectedPattern, this.operationSequence, point);
+      this.operationSequence += 1;
+      this.shellArt.operations = this.shellArt.operations.concat(sticker).slice(-shellArtService.MAX_OPERATIONS);
       this.syncViewState();
+      this.renderArt();
       return;
     }
     this.pushHistory();
-    this.currentStroke = shellArtService.createStroke(this.data.activeTool, [point], this.operationSequence += 1);
+    const strokeWidth = this.data.activeTool === 'eraser'
+      ? shellArtService.eraserWidthForPixels(
+        this.data.eraserSizePx,
+        this.artLayer ? Math.min(this.artLayer.width, this.artLayer.height) : undefined
+      )
+      : shellArtService.BRUSH_SIZES[this.data.brushSizeIndex - 1].width;
+    this.currentStroke = shellArtService.createStroke(
+      this.data.activeTool,
+      [point],
+      this.operationSequence += 1,
+      strokeWidth
+    );
     this.renderArt(this.currentStroke);
   },
 
   onCanvasTouchMove(event) {
-    if (this.draggingStickerId) {
-      const point = this.canvasPoint(event);
-      if (!point) return;
-      this.shellArt.operations = this.shellArt.operations.map(operation => (
-        operation.id === this.draggingStickerId
-          ? Object.assign({}, operation, {
-            x: Math.max(0.12, Math.min(0.88, point.x)),
-            y: Math.max(0.12, Math.min(0.9, point.y))
-          })
-          : operation
-      ));
-      this.renderArt();
-      return;
-    }
     if (!this.currentStroke) return;
     const point = this.canvasPoint(event);
     if (!point) return;
@@ -249,14 +263,8 @@ Page({
   },
 
   finishStroke() {
-    if (this.draggingStickerId) {
-      this.draggingStickerId = '';
-      this.syncViewState();
-      this.renderArt();
-      return;
-    }
     if (!this.currentStroke) return;
-    this.shellArt.operations = this.shellArt.operations.concat(this.currentStroke).slice(-120);
+    this.shellArt.operations = this.shellArt.operations.concat(this.currentStroke).slice(-shellArtService.MAX_OPERATIONS);
     this.currentStroke = null;
     this.syncViewState();
     this.renderArt();
@@ -275,13 +283,14 @@ Page({
     this.setData({ saving: true });
     if (runtime.getMode() === 'demo') {
       const result = petStore.applyConfirmedDoodle(shellArtService.normalizeShellArt(this.shellArt));
+      const progress = result.ok ? await practice.submit('doodle') : null;
       this.setData({ saving: false });
       if (!result.ok) {
         wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
         return;
       }
       analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
-      wx.showToast({ title: '我的蛋壳换好啦', icon: 'none' });
+      wx.showToast({ title: progress && !progress.alreadyDone ? '蛋壳换好啦，也离你近了一点点' : '我的蛋壳换好啦', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 700);
       return;
     }
@@ -303,6 +312,7 @@ Page({
       wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
       return;
     }
+    if (response.hatch_at) petStore.applyConfirmedHatchAt(response.hatch_at);
     analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
     wx.showToast({ title: result.added ? '我记住这个样子啦' : '我的蛋壳换好啦', icon: 'none' });
     setTimeout(() => wx.navigateBack(), 700);
@@ -314,7 +324,6 @@ Page({
     this.baseImage = null;
     this.artMaskImage = null;
     this.currentStroke = null;
-    this.draggingStickerId = '';
-    this.selectedStickerId = '';
+    this.canvasSetupToken = (this.canvasSetupToken || 0) + 1;
   }
 });

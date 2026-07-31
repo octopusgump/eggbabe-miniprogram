@@ -1,1 +1,39 @@
-<view class="page"><nav-bar title="一个愿望"></nav-bar><view class="content"><text class="kicker">A LITTLE WISH</text><text class="title">现在想告诉我哪个愿望？</text><view class="options"><view wx:for="{{options}}" wx:key="*this" class="option {{selected === item ? 'option--selected' : ''}}" data-value="{{item}}" bindtap="onSelect"><view class="radio"><view wx:if="{{selected === item}}" class="radio-dot"></view></view><text>{{item}}</text></view></view><view class="spacer"></view><button class="primary {{!selected ? 'primary--disabled' : ''}}" bindtap="onSubmit"><text class="button-label">把愿望告诉我</text></button></view></view>
+<view class="page">
+  <nav-bar title="许愿池"></nav-bar>
+  <view class="content">
+    <view wx:if="{{loading}}" class="center-note">愿望正在轻轻浮上来…</view>
+    <view wx:elif="{{error && !question}}" class="center-note">{{error}}</view>
+    <block wx:else>
+      <text class="kicker">A LITTLE WISH</text>
+      <text class="title">{{question.text}}</text>
+
+      <view wx:if="{{storedOption}}" class="answer-card">
+        <text class="answer-intro">今天你许过愿啦 ——</text>
+        <text class="answer-value">{{storedOption.label}}</text>
+        <text class="answer-response">{{successLine || '我把它好好放在心里。'}}</text>
+      </view>
+
+      <view wx:else class="options">
+        <view
+          wx:for="{{question.options}}"
+          wx:key="id"
+          class="option {{selected === item.id ? 'option--selected' : ''}}"
+          data-id="{{item.id}}"
+          aria-role="radio"
+          aria-checked="{{selected === item.id}}"
+          bindtap="onSelect"
+        >
+          <view class="radio"><view wx:if="{{selected === item.id}}" class="radio-dot"></view></view>
+          <text class="option-label">{{item.label}}</text>
+        </view>
+      </view>
+
+      <text wx:if="{{error}}" class="error">{{error}}</text>
+      <view class="spacer"></view>
+      <button wx:if="{{!storedOption}}" class="primary" disabled="{{!selected || submitting}}" bindtap="onSubmit">
+        <text class="button-label">{{submitting ? '正在告诉我…' : '把愿望告诉我'}}</text>
+      </button>
+    </block>
+  </view>
+
+</view>

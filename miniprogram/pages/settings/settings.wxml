@@ -22,7 +22,7 @@
     </view>
 
     <view class="hint-box">
-      <text class="hint-text">当前预览版会在本机保存你的偏好。正式消息推送仍需接入微信订阅消息并由服务端发送。</text>
+      <text class="hint-text">当前预览版会在本机保存你的通知设置。正式消息推送仍需接入微信订阅消息并由服务端发送。</text>
     </view>
 
   </scroll-view>

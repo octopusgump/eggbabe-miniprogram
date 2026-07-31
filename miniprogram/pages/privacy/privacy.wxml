@@ -2,8 +2,8 @@
   <nav-bar title="隐私协议"></nav-bar>
   <scroll-view scroll-y class="content" scroll-into-view="{{scrollTarget}}" scroll-with-animation="{{true}}">
     <text class="doc-title">蛋宝宝隐私政策</text>
-    <text class="doc-meta">更新日期：2026年7月24日 · 适用版本 v2.28</text>
-    <text class="doc-intro">本政策说明上海爱予慧科技有限责任公司如何在 eggbabe 普通小程序中处理个人信息。我们只处理实体蛋绑定、自由陪伴、安全对话、收藏卡和账户服务所必需的信息。正式发布文本须以法务审核并部署在 eggbabe.com 的版本为准。</text>
+    <text class="doc-meta">更新日期：2026年7月25日 · 适用版本 v3.5</text>
+    <text class="doc-intro">本政策说明上海爱予慧科技有限责任公司如何在 eggbabe 普通小程序中处理个人信息。我们会处理实体蛋绑定、孵化互动、安全对话、收藏卡和账户服务所必需的信息。正式发布文本须以法务审核并部署在 eggbabe.com 的版本为准。</text>
 
     <view class="toc">
       <text class="toc-title">目录</text>
@@ -26,13 +26,14 @@
       <text class="p">账号服务会处理微信登录凭证及服务端生成的用户编号；实体服务会处理激活码状态、实体蛋编号、绑定关系、原型、实体款式、生命周期和必要售后状态。</text>
       <text class="p">你主动选择时，我们会处理昵称、头像、蛋壳颜色、预设图样、贴纸和归一化手绘轨迹；你使用说话或对话功能时，我们会处理必要消息、内容安全结果、保存期限和删除状态。</text>
       <text class="p">收藏卡会处理实体蛋身份编号、原型、款式、显示名称、服务端破壳时间、来源批次和固定插画配置。技术诊断仅处理必要的功能结果、错误码、服务端时间和设备运行信息。</text>
-      <text class="p"><text class="strong">普通版不处理兴趣画像、成长、关系、任务、连续到访、系列集卡、虚拟资源、商品库存或交易数据。</text></text>
+      <text class="p">许愿池会处理题目编号、选项编号和答题日期；孵化互动会处理动作类型、服务端日期和本次增加的修炼值。许愿池答案仅用于当日回顾与固定回应，不用于用户画像或蛋宝宝性格生成。普通版不处理关系等级、系列集卡、虚拟资源、商品库存或交易数据。</text>
     </view>
 
     <view id="s2" class="section">
       <text class="h2">二、处理目的</text>
       <text class="p">上述信息只用于建立账号、核验并绑定实体蛋、同步生命周期、保存免费蛋壳创作、提供即时互动和安全对话、生成同一枚实体蛋的收藏卡、处理售后与注销，以及保障服务稳定和安全。</text>
-      <text class="p">对话正文、愿望正文和具体手绘轨迹不会直接写入分析平台，也不会据此建立商业兴趣画像。</text>
+      <text class="p"><text class="strong">愿望内容用途：</text>许愿池答案只用于展示当日选择、生成对应固定回应和孵化回顾；不映射作息、性格、感官偏好或角色设定，也不参与蛋宝宝人格生成。</text>
+      <text class="p">对话正文与具体手绘轨迹不会直接写入分析平台。已保存数据的查询、更正或删除可通过帮助中心提出。</text>
     </view>
 
     <view id="s3" class="section">

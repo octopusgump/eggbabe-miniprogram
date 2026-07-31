@@ -2,7 +2,7 @@ const environment = require('./build-environment');
 const policy = environment.currentPolicy();
 
 module.exports = {
-  version: '2.28.0-ordinary',
+  version: '3.5.0-ordinary',
   buildTarget: policy.buildTarget,
   envVersion: policy.envVersion,
   localDemoEnabled: policy.localDemoEnabled,

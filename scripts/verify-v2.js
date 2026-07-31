@@ -20,7 +20,7 @@ const petStore = require('../miniprogram/utils/pet-store');
 const analytics = require('../miniprogram/services/analytics');
 const h5Bridge = require('../miniprogram/services/birth-card-h5');
 
-assert.equal(config.version, '2.28.0-ordinary', '前端版本必须对齐 v2.28 普通版');
+assert.equal(config.version, '3.5.0-ordinary', '前端版本必须对齐 V3.5 普通版');
 assert.equal(config.buildTarget, 'ordinary-live', '生产构建必须明确为普通版 live');
 assert.equal(runtime.getMode(), 'live', '普通版运行时只能使用 live');
 assert.equal(runtime.setMode('demo').ok, false, '普通版不得切换到 demo');
@@ -36,16 +36,17 @@ const homeTemplate = read('miniprogram/pages/home/home.wxml');
 const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
 assert.equal(/露珠|余额|孵化进度|conic-gradient|商店|背包/.test(homeTemplate), false, '首页不得显示虚拟资源、百分比或停用入口');
-['lamp', 'coffee', 'brush', 'scarf', 'window'].forEach(id => {
-  assert.equal(homeLogic.includes(`key: '${id}'`), true, `固定小房间缺少 ${id} 互动`);
-});
+assert.equal(homeTemplate.includes('id="windowFogCanvas"') && homeLogic.includes('onWindowTouchStart') && homeLogic.includes('onWindowTouchMove'), true, '窗户必须保留直接擦拭互动');
+assert.equal(homeTemplate.includes('room-lamp-hotspot') && homeLogic.includes('onLampTap'), true, '台灯必须融入房间画面并可直接开关');
+assert.equal(homeTemplate.includes('room-clock') && homeLogic.includes('onClockTap'), true, '孵化房间左上角必须保留可交互设备时钟');
+assert.equal(homeLogic.includes("require('../../services/device-clock')") && homeLogic.includes('millisecondsUntilNextSecond'), true, '设备时钟必须按手机本地时间整秒校准');
+assert.equal(/longpress|longtap|12\/24|十二小时|二十四小时/.test(`${homeTemplate}\n${homeLogic}`), false, '设备时钟不得加入长按或 12/24 小时设置');
+assert.equal(homeLogic.includes("key: 'draw'") && homeLogic.includes("route: '/pages/doodle/doodle'"), true, '画画必须与许愿池、早教班同列');
 assert.equal(homeLogic.includes("analytics.track('room_element_interaction'"), true, '房间小物必须只发送白名单可用性事件');
-['coffee-steam-rise', 'coffee-cup-chime', 'brush-color-sweep', 'scarf-soft-glow'].forEach(effect => {
-  assert.equal(homeStyles.includes(effect), true, `房间小物缺少 ${effect} 即时反馈`);
-});
-const roomSound = read('miniprogram/services/room-sound.js');
-assert.equal(homeLogic.includes('roomSound.playCoffeeChime()'), true, '咖啡机必须调用独立声音服务');
-assert.equal(roomSound.includes('createInnerAudioContext') && roomSound.includes('obeyMuteSwitch = true'), true, '咖啡机必须提供服从静音开关的轻响反馈');
+assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾及旧物件按钮层必须完全移除');
+assert.equal(fs.existsSync(path.join(root, 'miniprogram/services/room-sound.js')), false, '咖啡机声音服务必须移除');
+const incubationEnvironment = read('miniprogram/services/incubation-environment.js');
+assert.equal(incubationEnvironment.includes('shanghaiSolarTimes') && incubationEnvironment.includes('seasonFromIncubationDay'), true, '昼夜与四季必须按上海太阳时间和孵化天数计算');
 assert.equal(/tapEggCurrency|currencyAccount|requestDewForTap/.test(homeLogic), false, '轻触蛋体不得请求虚拟资源');
 assert.equal(homeTemplate.includes('egg_base_day.webp') || homeLogic.includes('shellArtService.drawEggBase'), true, '必须保留真实蛋体渲染');
 
@@ -120,9 +121,11 @@ assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋�
   'demo-experience.test.js',
   'demo-network-isolation.test.js',
   'demo-pages.test.js',
+  'device-clock.test.js',
+  'incubation-environment.test.js',
   'release-gate.test.js'
 ].forEach(test => {
   execFileSync(process.execPath, [path.join(root, 'miniprogram/services/tests', test)], { stdio: 'pipe' });
 });
 
-console.log('v2.28 普通小程序核心合规回归通过。');
+console.log('V3.5 普通小程序核心合规回归通过。');

@@ -8,6 +8,11 @@ global.wx = {
 };
 
 const environment = require('../incubation-environment');
+const createdAt = '2026-07-26T08:00:00+08:00';
+const firstDayNoon = Date.parse('2026-07-26T12:00:00+08:00');
+const firstDayNight = Date.parse('2026-07-26T21:00:00+08:00');
+const secondDayNoon = Date.parse('2026-07-27T12:00:00+08:00');
+const fourthDayNoon = Date.parse('2026-07-29T12:00:00+08:00');
 
 assert.equal(
   environment.sceneAssetPath('autumn', 'night'),
@@ -18,29 +23,24 @@ assert.equal(
   '/assets/scenes/incubation/webp/incubation_spring_day.webp',
   '非法季节或昼夜枚举必须降级到安全素材'
 );
-assert.deepEqual(
-  environment.resolve({ season: 'summer', weather: 'rain', period: 'night' }),
-  {
-    season: 'summer',
-    weather: 'rain',
-    period: 'night',
-    backgroundImage: '/assets/scenes/incubation/webp/incubation_summer_night.webp',
-    eggImage: '/assets/scenes/incubation/webp/egg_base_day.webp',
-    locationLabel: '上海',
-    className: 'season-summer weather-rain period-night'
-  }
+assert.equal(
+  environment.resolve({ season: 'winter', weather: 'rain', period: 'night' }, { createdAt, timestamp: firstDayNoon }).backgroundImage,
+  '/assets/scenes/incubation/webp/incubation_spring_day.webp',
+  '昼夜和四季必须按上海太阳时间与孵化天数选择本地素材'
 );
 assert.equal(
-  environment.resolve({ season: 'winter', period: 'day', backgroundImage: 'https://cdn.example.com/incubation.webp' }).backgroundImage,
-  'https://cdn.example.com/incubation.webp',
-  '服务端下发的备案 HTTPS 场景图优先于本地素材'
-);
-assert.equal(environment.resolve({ weather: 'storm' }).weather, 'sunny', '未知天气必须降级为晴天');
-
-assert.equal(
-  environment.resolve().season,
+  environment.resolve({}, { createdAt, timestamp: firstDayNoon }).season,
   'spring',
-  'live 模式缺少服务端环境枚举时必须使用固定安全回退'
+  '孵化第 1 天必须是春天'
 );
+assert.equal(environment.resolve({}, { createdAt, timestamp: secondDayNoon }).season, 'summer', '孵化第 2 天必须是夏天');
+assert.equal(environment.resolve({}, { createdAt, timestamp: fourthDayNoon }).season, 'winter', '孵化第 4 天必须是冬天');
+assert.equal(environment.resolve({}, { createdAt, timestamp: firstDayNight }).period, 'night', '上海日落后必须使用夜景');
+assert.equal(environment.resolve({}, { createdAt, timestamp: firstDayNoon }).period, 'day', '上海日出后、日落前必须使用日景');
+assert.equal(environment.resolve({ weather: 'storm' }, { createdAt, timestamp: firstDayNoon }).weather, 'sunny', '未知天气必须降级为晴天');
 
-console.log('v2.28 孵化场景服务端枚举与安全回退校验通过。');
+const solarTimes = environment.shanghaiSolarTimes(firstDayNoon);
+assert.equal(solarTimes.sunriseMinutes > 240 && solarTimes.sunriseMinutes < 420, true, '上海日出时间应落在合理范围');
+assert.equal(solarTimes.sunsetMinutes > 1020 && solarTimes.sunsetMinutes < 1200, true, '上海日落时间应落在合理范围');
+
+console.log('V3.5 上海日出日落、昼夜素材与孵化日四季循环校验通过。');

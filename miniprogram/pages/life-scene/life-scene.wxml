@@ -1,5 +1,5 @@
-<view class="page {{isActive ? '' : 'page--paused'}}">
-  <image class="scene-bg" src="{{scene.image}}" mode="aspectFill"></image><view class="scene-dim"></view><view class="scene-enter-gradient"></view>
+<view class="page {{isActive ? '' : 'page--paused'}} {{enterFromHome ? 'page--expanded-entry' : ''}}">
+  <image class="scene-bg" src="{{scene.image}}" mode="aspectFill"></image><view class="scene-dim"></view><view wx:if="{{!enterFromHome}}" class="scene-enter-gradient"></view>
   <view wx:if="{{scene && scene.key === 'grass'}}" class="grass-ambient">
     <view class="grass-sky-dim"></view>
     <view class="grass-shimmer grass-shimmer--one"></view>
@@ -59,4 +59,8 @@
   </view>
   <view class="scene-title"><text class="kicker">{{sceneKicker}}</text><text class="name">{{scene.label}}</text></view>
   <view wx:if="{{bubble}}" class="bubble">{{bubble}}</view>
+  <view wx:if="{{isExiting}}" class="scene-exit-backdrop"></view>
+  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}">
+    <image class="scene-exit-image" src="{{scene.image}}" mode="aspectFill"></image>
+  </view>
 </view>

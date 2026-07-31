@@ -4,6 +4,7 @@ Page({
   data: { userName: '微信用户', eggCount: 0 },
 
   onShow() {
+    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 1 });
     const user = petStore.getUser();
     const pet = petStore.getPet();
     this.setData({

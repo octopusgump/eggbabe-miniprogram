@@ -10,10 +10,20 @@ App({
   globalData: {
     version: config.version,
     backendReady: false,
-    incubationEnvironment: null
+    incubationEnvironment: null,
+    windowMetrics: null
   },
 
   onLaunch() {
+    const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const menu = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+    this.globalData.windowMetrics = {
+      width: Number(windowInfo.windowWidth || 0),
+      height: Number(windowInfo.windowHeight || 0),
+      safeTop: Number((windowInfo.safeArea && windowInfo.safeArea.top) || windowInfo.statusBarHeight || 0),
+      safeBottom: Math.max(0, Number(windowInfo.screenHeight || 0) - Number((windowInfo.safeArea && windowInfo.safeArea.bottom) || windowInfo.screenHeight || 0)),
+      menuBottom: Number((menu && menu.bottom) || 0)
+    };
     // develop 使用隔离 demo；trial / release 固定 live。
     // demo 没有用户界面开关，也不会进入正式存储与接口。
     runtime.setMode(config.defaultMode);

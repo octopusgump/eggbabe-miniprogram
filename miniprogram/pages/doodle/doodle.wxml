@@ -1,28 +1,94 @@
-<view class="page">
-  <nav-bar title="画我的蛋壳"></nav-bar>
+<view class="page {{expandedCanvas ? 'page--expanded' : ''}}">
+  <nav-bar wx:if="{{!expandedCanvas}}" title="画我的蛋壳"></nav-bar>
+  <view class="preview">
+    <view class="canvas-expand-button" aria-role="button" aria-label="{{expandedCanvas ? '缩小画布' : '放大画布'}}" bindtap="onToggleCanvasSize">
+      <text>{{expandedCanvas ? '↙' : '↗'}}</text>
+    </view>
+    <view class="preview-aura"></view>
+    <view class="egg-canvas-stack">
+      <canvas type="2d" id="eggBaseCanvas" class="egg-canvas egg-canvas--base"></canvas>
+      <canvas
+        type="2d"
+        id="eggArtCanvas"
+        class="egg-canvas egg-canvas--art"
+        disable-scroll
+        catchtouchstart="onCanvasTouchStart"
+        catchtouchmove="onCanvasTouchMove"
+        catchtouchend="onCanvasTouchEnd"
+        catchtouchcancel="onCanvasTouchCancel"
+      ></canvas>
+    </view>
+    <text wx:if="{{!canvasReady}}" class="canvas-loading">正在准备蛋壳…</text>
+  </view>
+
   <scroll-view class="content" scroll-y>
-    <view class="preview">
-      <view class="preview-aura"></view>
-      <view class="egg-canvas-stack">
-        <canvas type="2d" id="eggBaseCanvas" class="egg-canvas egg-canvas--base"></canvas>
-        <canvas
-          type="2d"
-          id="eggArtCanvas"
-          class="egg-canvas egg-canvas--art"
-          disable-scroll
-          catchtouchstart="onCanvasTouchStart"
-          catchtouchmove="onCanvasTouchMove"
-          catchtouchend="onCanvasTouchEnd"
-          catchtouchcancel="onCanvasTouchCancel"
-        ></canvas>
+    <view class="section tool-section">
+      <view class="figma-toolbar">
+        <view class="tool-button {{activeTool === 'brush' ? 'tool-button--selected' : ''}}" data-tool="brush" aria-role="button" aria-label="像素画笔" bindtap="onTool">
+          <view class="pixel-brush-icon"><view></view><view></view><view></view></view>
+          <text>画笔</text>
+        </view>
+        <view class="tool-button {{activeTool === 'eraser' ? 'tool-button--selected' : ''}}" data-tool="eraser" aria-role="button" aria-label="橡皮擦" bindtap="onTool">
+          <view class="eraser-icon"></view>
+          <text>橡皮擦</text>
+        </view>
+        <view class="tool-button {{activeTool === 'sticker' ? 'tool-button--selected' : ''}}" data-tool="sticker" aria-role="button" aria-label="贴纸" bindtap="onTool">
+          <text class="toolbar-symbol">✦</text>
+          <text>贴纸</text>
+        </view>
+        <view class="tool-button {{!canUndo ? 'tool-button--disabled' : ''}}" aria-role="button" aria-label="撤销一步" bindtap="onUndo">
+          <text class="toolbar-symbol">↶</text>
+          <text>撤销</text>
+        </view>
+        <view class="tool-button tool-button--danger {{!canClear ? 'tool-button--disabled' : ''}}" aria-role="button" aria-label="清空画面" bindtap="onClear">
+          <text class="toolbar-symbol">⌫</text>
+          <text>清空</text>
+        </view>
       </view>
-      <text wx:if="{{!canvasReady}}" class="canvas-loading">正在准备蛋壳…</text>
-      <text wx:else class="preview-name">{{selectedColorName}} · {{operationCount > 0 ? '已经留下小记号' : '还没有小记号'}}</text>
+
+      <view wx:if="{{activeTool === 'brush' || activeTool === 'eraser'}}" class="tool-options">
+        <view class="size-heading">
+          <text class="size-value">{{toolSizeLabel}}</text>
+        </view>
+        <view class="size-control">
+          <view class="size-preview {{activeTool === 'eraser' ? 'size-preview--round' : ''}}" style="--preview-size:{{toolPreviewSize}}rpx;"></view>
+          <slider
+            class="size-slider"
+            min="{{toolSizeMin}}"
+            max="{{toolSizeMax}}"
+            step="{{toolSizeStep}}"
+            value="{{toolSizeValue}}"
+            show-value="{{false}}"
+            activeColor="#65744B"
+            backgroundColor="#DDE2D8"
+            block-color="#FFFFFF"
+            block-size="20"
+            bindchanging="onToolSizeChange"
+            bindchange="onToolSizeChange"
+          ></slider>
+        </view>
+      </view>
+
+      <view wx:if="{{activeTool === 'sticker'}}" class="tool-options sticker-options">
+        <view class="pattern-row">
+          <view
+            wx:for="{{patterns}}"
+            wx:key="type"
+            class="pattern {{selectedPattern === item.type ? 'pattern--selected' : ''}}"
+            data-pattern="{{item.type}}"
+            aria-role="button"
+            aria-label="添加{{item.name}}贴纸"
+            bindtap="onPattern"
+          >
+            <text class="pattern-symbol">{{item.symbol}}</text>
+            <text>{{item.name}}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <view class="section">
+    <view wx:if="{{!expandedCanvas}}" class="section">
       <text class="label">蛋壳颜色</text>
-      <text class="section-note">颜色会轻轻透过原有高光，不会盖住蛋宝宝的立体感。</text>
       <view class="color-grid">
         <view
           wx:for="{{colors}}"
@@ -39,53 +105,8 @@
       </view>
     </view>
 
-    <view class="section">
-      <text class="label">添加图样 / 贴纸</text>
-      <text class="section-note">可以放一个贴纸，也可以让同一种图样轻轻散落在蛋壳上。</text>
-      <view class="placement-row">
-        <view class="placement {{patternPlacement === 'single' ? 'placement--selected' : ''}}" data-placement="single" aria-role="button" bindtap="onPatternPlacement">单个贴纸</view>
-        <view class="placement {{patternPlacement === 'repeat' ? 'placement--selected' : ''}}" data-placement="repeat" aria-role="button" bindtap="onPatternPlacement">散落图样</view>
-      </view>
-      <view class="pattern-row">
-        <view
-          wx:for="{{patterns}}"
-          wx:key="type"
-          class="pattern {{selectedPattern === item.type ? 'pattern--selected' : ''}}"
-          data-pattern="{{item.type}}"
-          aria-role="button"
-          aria-label="添加{{item.name}}"
-          bindtap="onPattern"
-        >
-          <text class="pattern-symbol">{{item.symbol}}</text>
-          <text>{{item.name}}</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="section">
-      <text class="label">亲手画一点</text>
-      <text class="section-note">只有一种圆润笔触。橡皮擦只擦掉图样和笔迹；选择“调整贴纸”后，可以按住贴纸移动。</text>
-      <view class="tool-row">
-        <view class="tool {{activeTool === 'brush' ? 'tool--selected' : ''}}" data-tool="brush" aria-role="button" aria-label="圆形画笔" bindtap="onTool">
-          <view class="tool-dot"></view><text>画笔</text>
-        </view>
-        <view class="tool {{activeTool === 'eraser' ? 'tool--selected' : ''}}" data-tool="eraser" aria-role="button" aria-label="橡皮擦" bindtap="onTool">
-          <view class="eraser-icon"></view><text>橡皮擦</text>
-        </view>
-        <view class="tool {{activeTool === 'sticker' ? 'tool--selected' : ''}}" data-tool="sticker" aria-role="button" aria-label="调整贴纸" bindtap="onTool">
-          <view class="sticker-icon">✦</view><text>调整贴纸</text>
-        </view>
-      </view>
-      <view class="edit-row">
-        <view class="edit-action {{!canUndo ? 'edit-action--disabled' : ''}}" aria-role="button" aria-label="撤销" bindtap="onUndo">撤销</view>
-        <view class="edit-action {{!canDeleteSticker ? 'edit-action--disabled' : ''}}" aria-role="button" aria-label="删除所选贴纸" bindtap="onDeleteSticker">删除贴纸</view>
-        <view class="edit-action {{!canClear ? 'edit-action--disabled' : ''}}" aria-role="button" aria-label="清空" bindtap="onClear">清空</view>
-      </view>
-    </view>
-
-    <button class="primary" disabled="{{saving || !canvasReady}}" bindtap="onSave">
+    <button wx:if="{{!expandedCanvas}}" class="primary" disabled="{{saving || !canvasReady}}" bindtap="onSave">
       <text class="button-label">{{saving ? '正在保存…' : '保存我的蛋壳'}}</text>
     </button>
-    <text class="save-note">保存后，首页窝里的蛋宝宝会立即变成这个样子。</text>
   </scroll-view>
 </view>

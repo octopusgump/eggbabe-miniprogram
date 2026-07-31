@@ -1,7 +1,7 @@
 <view class="page">
-  <nav-bar title="蛋宝宝" show-back="{{false}}"></nav-bar>
+  <nav-bar wx:if="{{!pet || stage === 'hatched'}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
-  <scroll-view class="content" scroll-y>
+  <scroll-view class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet || stage === 'hatched'}}">
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">添加我的蛋宝宝</text>
@@ -10,20 +10,22 @@
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
 
-    <view wx:else class="pet-view">
+    <view wx:else class="pet-view {{stage !== 'hatched' ? 'pet-view--incubating' : ''}}">
       <view class="top-row">
         <view>
+          <text wx:if="{{stage === 'hatched'}}" class="eyebrow">{{pet.prototype}} · 已破壳</text>
           <view class="pet-name-row" bindtap="onPetNameTap">
-            <text class="pet-name">{{pet.name || '我的蛋宝宝'}}</text>
-            <text wx:if="{{stage === 'hatched'}}" class="pet-name-edit">改名</text>
+            <text class="pet-name">{{pet.name || '还没有名字'}}</text>
           </view>
         </view>
+        <view wx:if="{{stage === 'hatched'}}" class="progress-ring"><text>{{displayProgress}}%</text></view>
       </view>
 
-      <view class="egg-zone {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : ''}}">
+      <view class="egg-zone {{stage !== 'hatched' ? 'egg-zone--incubating' : 'egg-zone--hatched'}} {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : 'room-lamp-off'}}">
         <view wx:if="{{stage !== 'hatched'}}" class="incubation-scene {{environment.className}}">
           <image class="incubation-scene-image" src="{{environment.backgroundImage}}" mode="aspectFill"></image>
           <view class="scene-color-layer"></view>
+          <view class="room-lamp-state"></view>
           <view wx:if="{{!environment.backgroundImage}}" class="scene-fallback">
             <view class="window-glow"></view>
             <view class="room-floor"></view>
@@ -50,22 +52,31 @@
             <canvas type="2d" id="windowFogCanvas" class="window-fog-canvas" catchtouchstart="onWindowTouchStart" catchtouchmove="onWindowTouchMove" catchtouchend="onWindowTouchEnd" catchtouchcancel="onWindowTouchEnd"></canvas>
           </view>
           <view class="room-light-breathe"></view>
-          <view class="room-element-layer">
-            <view wx:for="{{roomElements}}" wx:key="key" class="room-element {{item.position}}" data-key="{{item.key}}" aria-role="button" aria-label="{{item.label}}" bindtap="onRoomElementTap">
-              <text class="room-element-icon">{{item.icon}}</text>
-              <text class="room-element-label">{{item.label}}</text>
-              <view wx:if="{{item.key === 'coffee'}}" class="room-coffee-effect" aria-hidden="true">
-                <view class="coffee-steam coffee-steam--one"></view>
-                <view class="coffee-steam coffee-steam--two"></view>
-                <view class="coffee-cup-ring"></view>
-              </view>
-              <view wx:elif="{{item.key === 'brush'}}" class="room-brush-stroke" aria-hidden="true"></view>
-              <view wx:elif="{{item.key === 'scarf'}}" class="room-scarf-weave" aria-hidden="true"></view>
+          <view class="room-lamp-hotspot" aria-role="button" aria-label="{{lampOn ? '关闭台灯' : '打开台灯'}}" catchtap="onLampTap"></view>
+          <view
+            class="room-clock room-clock--{{clockMode}}"
+            style="top:{{clockTopPx}}px;left:{{clockLeftPx}}px;"
+            aria-role="button"
+            aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
+            catchtap="onClockTap"
+          >
+            <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
+              <text class="clock-number clock-number--twelve">12</text>
+              <text class="clock-number clock-number--three">3</text>
+              <text class="clock-number clock-number--six">6</text>
+              <text class="clock-number clock-number--nine">9</text>
+              <view class="clock-hand clock-hand--hour" style="{{clockHourStyle}}"></view>
+              <view class="clock-hand clock-hand--minute" style="{{clockMinuteStyle}}"></view>
+              <view class="clock-hand clock-hand--second" style="{{clockSecondStyle}}"></view>
+              <view class="clock-pin"></view>
+            </view>
+            <view wx:else class="clock-digital">
+              <text class="clock-time">{{clockTimeText}}</text>
+              <text class="clock-date">{{clockDateText}}</text>
             </view>
           </view>
         </view>
 
-        <view wx:if="{{greeting}}" class="daily-greeting" bindtap="onGreetingTap">{{greeting}}</view>
         <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg-aura {{eggMotion}}"></view>
 
@@ -85,14 +96,12 @@
         </view>
       </view>
 
-      <view class="state-card">
+      <view wx:if="{{stage === 'hatched'}}" class="state-card">
         <view class="state-dot"></view>
-        <text class="state-title">{{stageText}}</text>
-      </view>
-
-      <view wx:if="{{isDemo && stage !== 'ready' && stage !== 'hatched'}}" class="demo-toolbar">
-        <text class="demo-toolbar__note">开发验收模式 · 当前可测试孵化互动</text>
-        <button class="demo-toolbar__button" bindtap="onDemoAdvance"><text class="button-label">进入破壳验收</text></button>
+        <view class="state-copy">
+          <text class="state-title">{{stageText}}</text>
+          <text wx:if="{{expectedHatchLabel}}" class="hatch-date">{{expectedHatchLabel}}</text>
+        </view>
       </view>
 
       <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
@@ -100,22 +109,31 @@
         <text class="status-line">{{dailyStatus.line}}</text>
       </view>
 
-      <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section">
-        <text class="section-title">一起待一会儿</text>
+      <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
         <view class="companion-grid">
-          <view wx:for="{{companionActions}}" wx:key="key" class="companion-item" hover-class="companion-item--pressed" data-key="{{item.key}}" aria-role="button" aria-label="{{item.title}}" bindtap="onCompanionTap">
-            <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
-            <view class="companion-copy"><text class="companion-title">{{item.title}}</text><text class="companion-desc">{{item.desc}}</text></view>
-          </view>
-        </view>
-      </view>
-
-      <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="talk-panel">
-        <text class="section-title">跟我说说话</text>
-        <view class="talk-composer">
-          <input class="talk-input" value="{{talkDraft}}" focus="{{talkFocused}}" maxlength="50" placeholder="{{talkPlaceholder}}" confirm-type="send" bindinput="onTalkInput" bindconfirm="onTalkSubmit" />
-          <view class="talk-send" hover-class="talk-send--pressed" aria-role="button" aria-label="发送" bindtap="onTalkSubmit">
-            <image class="talk-send-icon" src="/assets/icons/send.svg" mode="aspectFit"></image>
+          <view
+            wx:for="{{companionActions}}"
+            wx:key="key"
+            class="companion-item companion-item--{{item.appearance}} {{item.key === 'learn' && !learnUnlocked ? 'companion-item--locked' : ''}}"
+            hover-class="companion-item--pressed"
+            data-key="{{item.key}}"
+            aria-role="button"
+            aria-label="{{item.ariaLabel}}"
+            bindtap="onCompanionTap"
+          >
+            <view wx:if="{{item.completed}}" class="completed-mark">
+              <text class="completed-check">✓</text>
+              <text class="completed-spark">✦</text>
+              <view class="completed-source"><image class="completed-source-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
+            </view>
+            <view wx:elif="{{item.key === 'draw'}}" class="draw-icon-button">
+              <image class="draw-action-icon" src="{{item.icon}}" mode="aspectFit"></image>
+              <text class="draw-action-spark">✦</text>
+            </view>
+            <block wx:else>
+              <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
+              <view class="companion-copy"><text class="companion-title">{{item.title}}</text><text class="companion-desc">{{item.desc}}</text></view>
+            </block>
           </view>
         </view>
       </view>
@@ -131,6 +149,10 @@
 
   <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>
   <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggArtCanvas" class="egg-render-cache egg-render-cache--art"></canvas>
+
+  <view wx:if="{{sceneOpening}}" class="scene-expand-overlay" style="{{sceneTransitionStyle}}">
+    <image class="scene-expand-image" src="{{sceneImage}}" mode="aspectFill"></image>
+  </view>
 
   <view wx:if="{{showNameSheet}}" class="name-mask" catchtouchmove="noop">
     <view class="name-sheet">

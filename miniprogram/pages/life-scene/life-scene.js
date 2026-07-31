@@ -5,7 +5,7 @@ const timeService = require('../../services/time-service');
 const config = require('../../config/v2');
 
 Page({
-  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, sceneKicker: '', isDemo: config.localDemoEnabled },
+  data: { statusBarHeight: 20, pet: null, scene: null, hotspots: [], bubble: '', ripple: null, flowerEffect: null, butterflyEffect: null, sceneEffect: null, isActive: true, sceneKicker: '', isDemo: config.localDemoEnabled, enterFromHome: false, isExiting: false, exitTransitionStyle: '' },
 
   onLoad(query) {
     this.pageActive = true;
@@ -17,12 +17,59 @@ Page({
       return;
     }
     const scene = lifeScenes.getScene(query.scene, pet.prototype);
+    const origin = {
+      left: Number(query.origin_left),
+      top: Number(query.origin_top),
+      width: Number(query.origin_width),
+      height: Number(query.origin_height)
+    };
+    this.homeOrigin = Object.values(origin).every(Number.isFinite) && origin.width > 0 && origin.height > 0
+      ? origin
+      : null;
     this.enteredAt = timeService.now();
-    this.setData({ statusBarHeight: info.statusBarHeight || 20, pet, scene, hotspots: lifeScenes.HOTSPOTS[scene.key] || [], sceneKicker: `${pet.prototype} · 生活场景` });
+    this.setData({
+      statusBarHeight: info.statusBarHeight || 20,
+      pet,
+      scene,
+      hotspots: lifeScenes.HOTSPOTS[scene.key] || [],
+      sceneKicker: `${pet.prototype} · 生活场景`,
+      enterFromHome: query.entry === 'home-expand'
+    });
     analytics.track('scene_enter', { scene_id: scene.key, character: pet.prototype, entry_type: query.entry || 'scene' });
   },
 
-  onBack() { wx.navigateBack(); },
+  onBack() {
+    if (this.data.isExiting) return;
+    const reducedMotion = (() => {
+      try {
+        const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+        return !!(system.reducedMotion || system.enableReduceMotion);
+      } catch (error) {
+        return false;
+      }
+    })();
+    const duration = reducedMotion ? 20 : 560;
+    const origin = this.homeOrigin || { left: 0, top: 0, width: '100vw', height: '100vh' };
+    const size = value => typeof value === 'number' ? `${value}px` : value;
+    this.setData({
+      isExiting: true,
+      exitTransitionStyle: [
+        `--scene-origin-left:${size(origin.left)}`,
+        `--scene-origin-top:${size(origin.top)}`,
+        `--scene-origin-width:${size(origin.width)}`,
+        `--scene-origin-height:${size(origin.height)}`,
+        `--scene-exit-duration:${duration}ms`
+      ].join(';')
+    });
+    clearTimeout(this.exitTimer);
+    this.exitTimer = setTimeout(() => {
+      if (this.data.enterFromHome) {
+        wx.switchTab({ url: '/pages/home/home' });
+        return;
+      }
+      wx.navigateBack();
+    }, Math.max(0, duration - 20));
+  },
   onTapPet() { this.showReaction(this.data.scene.petLine, '50%', '52%'); },
   onTapHotspot(event) {
     const spot = this.data.hotspots[event.currentTarget.dataset.index];
@@ -85,6 +132,7 @@ Page({
 
   onUnload() {
     this.pageActive = false;
+    clearTimeout(this.exitTimer);
     this.clearEffectTimers();
     analytics.track('scene_exit', { scene_id: this.data.scene ? this.data.scene.key : '', dwell_time: Math.max(0, timeService.now() - (this.enteredAt || timeService.now())) });
   }

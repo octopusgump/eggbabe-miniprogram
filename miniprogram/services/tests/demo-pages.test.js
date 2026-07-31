@@ -83,20 +83,11 @@ homeContext.showFeedback = feedback => homeContext.setData({ feedback });
 home.onEggTap.call(homeContext, { detail: {} });
 assert.equal(homeContext.data.eggMotion, 'egg--wobble', '开发版孵化期轻触必须触发原有蛋体反馈');
 assert.equal(Boolean(homeContext.data.feedback), true, '开发版孵化期轻触必须显示情绪回应');
-let homeRefreshCount = 0;
-homeContext.onShow = () => {
-  homeRefreshCount += 1;
-};
-home.onDemoAdvance.call(homeContext);
-assert.equal(homeRefreshCount, 1, '首页开发验收控制必须刷新到待破壳状态');
-assert.equal(require('../../utils/pet-store').getStage(require('../../utils/pet-store').getPet()), 'ready', '首页开发验收控制必须进入真实破壳阶段');
+assert.equal(typeof home.onDemoAdvance, 'undefined', '首页不得暴露直接进入破壳的验收控制');
 
-const hatch = loadPage('../../pages/hatch/hatch');
-const hatchContext = contextFor(hatch);
-hatch.onLoad.call(hatchContext);
-hatch.onReveal.call(hatchContext);
-assert.equal(routes.pop(), '/pages/collection-card/collection-card?new=1', '开发版破壳后必须进入收藏卡');
-
+const demoExperience = require('../../services/demo-experience');
+assert.equal(demoExperience.advanceToHatchable().ok, true, '测试夹具应能准备隔离破壳状态');
+assert.equal(demoExperience.generateHatchCard().ok, true, '测试夹具应能生成隔离收藏卡');
 const collectionCard = loadPage('../../pages/collection-card/collection-card');
 const cardContext = contextFor(collectionCard);
 collectionCard.onLoad.call(cardContext, { native: '1', new: '1' });

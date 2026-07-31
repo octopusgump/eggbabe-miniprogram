@@ -1,5 +1,4 @@
 .page { height: 100vh; background: #F5F8ED; overflow: hidden; }
-.demo-badge { position: fixed; z-index: 20; top: calc(24rpx + env(safe-area-inset-top)); right: 28rpx; padding: 9rpx 16rpx; border-radius: 999rpx; background: rgba(238,242,227,.94); color: #687548; font-size: 18rpx; }
 .stage {
   height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 48rpx 56rpx; box-sizing: border-box;
@@ -13,6 +12,9 @@
 }
 .sub { font-size: 24rpx; color: #8C8C88; margin-bottom: 20rpx; }
 .headline { font-size: 38rpx; font-weight: 600; color: #1A1A1A; margin-bottom: 56rpx; }
+.gate-message { max-width: 560rpx; color: #77756E; font-size: 25rpx; line-height: 1.7; text-align: center; }
+.review-list { width: 100%; max-height: 300rpx; margin: -28rpx 0 42rpx; padding: 22rpx 28rpx; box-sizing: border-box; border-radius: 28rpx; background: rgba(255,255,255,.74); }
+.review-item { display: block; color: #596050; font-size: 23rpx; line-height: 1.8; }
 @keyframes eggPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
 
 /* 阶段二 */

@@ -1,11 +1,74 @@
-const petStore = require('../../utils/pet-store');
+const practice = require('../../services/incubation-practice');
+const analytics = require('../../services/analytics');
+
 Page({
-  data: { selected: '', options: ['希望今天慢一点', '希望窗外有好天气', '希望我们都好好休息'] },
-  onSelect(e) { this.setData({ selected: e.currentTarget.dataset.value }); },
+  data: {
+    loading: true,
+    submitting: false,
+    question: null,
+    selected: '',
+    storedOption: null,
+    error: '',
+    successLine: ''
+  },
+
+  async onLoad() {
+    const state = await practice.getState('wish_pool');
+    if (!state.ok) {
+      this.setData({ loading: false, error: state.message || '今天的愿望还没有来到这里' });
+      return;
+    }
+    const storedOption = state.record && state.question
+      ? practice.optionById(state.question.options, state.record.option_id)
+      : null;
+    this.setData({
+      loading: false,
+      question: state.question,
+      storedOption,
+      selected: storedOption ? storedOption.id : '',
+      error: ''
+    });
+  },
+
+  onSelect(event) {
+    if (this.data.storedOption || this.data.submitting) return;
+    this.setData({ selected: event.currentTarget.dataset.id });
+  },
+
   onSubmit() {
-    if (!this.data.selected) return wx.showToast({ title: '先选一个愿望吧', icon: 'none' });
-    const result = petStore.completeWish(this.data.selected);
-    wx.showToast({ title: result.ok ? '我把愿望听进心里啦' : '这句话没有送达，请重试', icon: 'none' });
-    setTimeout(() => wx.navigateBack(), 700);
+    if (!this.data.selected || this.data.submitting) {
+      if (!this.data.selected) wx.showToast({ title: '先选一个愿望吧', icon: 'none' });
+      return;
+    }
+    this.submitAnswer();
+  },
+
+  async submitAnswer() {
+    const question = this.data.question;
+    const selectedOption = question && practice.optionById(question.options, this.data.selected);
+    if (!question || !selectedOption) return;
+    this.setData({ submitting: true, error: '' });
+    const result = await practice.submit('wish_pool', {
+      questionId: question.id,
+      optionId: selectedOption.id
+    });
+    if (!result.ok) {
+      this.setData({ submitting: false, error: result.message || '这个愿望没有送达，请重试' });
+      return;
+    }
+    const record = result.record || { option_id: selectedOption.id };
+    const storedOption = practice.optionById(question.options, record.option_id) || selectedOption;
+    this.setData({
+      submitting: false,
+      storedOption,
+      selected: storedOption.id,
+      successLine: result.responseLine || (result.alreadyDone ? '' : '我把这个愿望收好啦，感觉离你近了一点点。')
+    });
+    analytics.track('companion_interaction', {
+      interaction_type: 'wish_pool',
+      result: result.alreadyDone ? 'already_done' : 'recorded',
+      question_id: question.id,
+      option_id: storedOption.id
+    });
   }
 });

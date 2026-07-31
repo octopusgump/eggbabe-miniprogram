@@ -5,7 +5,7 @@ assert.equal(shellArt.COLORS.length >= 6 && shellArt.COLORS.length <= 8, true, '
 assert.deepEqual(shellArt.PATTERNS.map(item => item.type), ['star', 'heart', 'leaf'], '首版图样只保留星星、爱心、叶子');
 
 const blank = shellArt.defaultShellArt();
-assert.equal(blank.version, 2, '绘图记录必须使用新版结构');
+assert.equal(blank.version, 3, '绘图记录必须使用可变笔宽与像素贴纸结构');
 assert.equal(blank.operations.length, 0, '新蛋默认不得自带装饰');
 assert.equal(blank.baseAsset, shellArt.BASE_ASSET, '母版蛋必须使用受控本地素材');
 assert.equal(blank.colorToken, 'white', '配置缺失时必须回退白色母版');
@@ -31,7 +31,18 @@ const remoteAttempt = shellArt.normalizeShellArt({
 assert.equal(remoteAttempt.baseAsset, shellArt.BASE_ASSET, '不得接受用户上传或远程母版');
 assert.equal(remoteAttempt.operations.length, 2, '非法上传型图样必须被过滤');
 assert.deepEqual(remoteAttempt.operations[1].points[0], { x: 0, y: 1 }, '手绘坐标必须归一化');
-assert.equal(remoteAttempt.operations[1].width, shellArt.FIXED_STROKE_WIDTH, '画笔和橡皮擦必须固定粗细');
+assert.equal(remoteAttempt.operations[0].scale, 1, '贴纸必须统一为固定像素尺寸');
+assert.equal(remoteAttempt.operations[0].rotation, 0, '像素贴纸不得发生旋转插值');
+const positionedSticker = shellArt.createSticker('star', 1, { x: 0.7, y: 0.4 });
+assert.equal(positionedSticker.x, 0.7, '贴纸必须可以按用户点击位置落在蛋壳上');
+assert.equal(positionedSticker.y, 0.4, '贴纸纵向位置必须使用画布点击坐标');
+assert.equal(remoteAttempt.operations[1].width, shellArt.ERASER_MAX_WIDTH, '异常橡皮擦大小必须收敛到安全上限');
+const thinBrush = shellArt.createStroke('brush', [{ x: 0.5, y: 0.5 }], 1, shellArt.BRUSH_SIZES[0].width);
+const thickBrush = shellArt.createStroke('brush', [{ x: 0.5, y: 0.5 }], 2, shellArt.BRUSH_SIZES[3].width);
+assert.equal(thinBrush.width < thickBrush.width, true, '画笔必须支持多档粗细');
+const smallEraser = shellArt.createStroke('eraser', [{ x: 0.5, y: 0.5 }], 3, shellArt.eraserWidthForPixels(4));
+const largeEraser = shellArt.createStroke('eraser', [{ x: 0.5, y: 0.5 }], 4, shellArt.eraserWidthForPixels(30));
+assert.equal(smallEraser.width < largeEraser.width, true, '橡皮擦必须支持多档大小');
 
 const withOperations = shellArt.normalizeShellArt({
   colorToken: 'lavender',
@@ -88,4 +99,4 @@ shellArt.drawEggArt(artLog.context, {}, 280, 400, withOperations);
 assert.equal(artLog.composites.includes('destination-out'), true, '橡皮擦必须只作用于装饰画布');
 assert.equal(artLog.composites.includes('destination-in'), true, '装饰必须裁切在蛋体 Alpha 内');
 
-console.log('蛋壳绘图校验通过：三层数据、固定笔刷、图样和安全边界正常。');
+console.log('蛋壳绘图校验通过：像素画笔、可变尺寸橡皮擦、固定像素贴纸和安全边界正常。');

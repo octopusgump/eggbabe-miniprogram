@@ -24,6 +24,7 @@
     "pages/privacy/privacy"
   ],
   "tabBar": {
+    "custom": true,
     "color": "#8C8C88",
     "selectedColor": "#002900",
     "backgroundColor": "#FFFFFF",

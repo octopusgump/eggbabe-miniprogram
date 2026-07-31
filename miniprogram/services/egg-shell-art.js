@@ -1,8 +1,22 @@
 const BASE_ASSET = '/assets/scenes/incubation/webp/egg_base_day.webp';
-const SHELL_VERSION = 2;
+const SHELL_VERSION = 3;
 const BASE_VERSION = 'v2.26-realistic';
 const COLOR_ALPHA = 0.32;
-const FIXED_STROKE_WIDTH = 0.052;
+const MAX_OPERATIONS = 240;
+const BRUSH_SIZES = [
+  { label: '2 px', width: 0.014 },
+  { label: '4 px', width: 0.028 },
+  { label: '7 px', width: 0.05 },
+  { label: '11 px', width: 0.08 }
+];
+const ERASER_MIN_PX = 4;
+const ERASER_MAX_PX = 30;
+const ERASER_DEFAULT_PX = 15;
+const ERASER_REFERENCE_PX = 150;
+const ERASER_MIN_WIDTH = 0.008;
+const ERASER_MAX_WIDTH = 0.3;
+const DEFAULT_BRUSH_WIDTH = BRUSH_SIZES[1].width;
+const DEFAULT_ERASER_WIDTH = ERASER_DEFAULT_PX / ERASER_REFERENCE_PX;
 
 const COLORS = [
   { token: 'cream', name: '奶油白', value: '#F2EBD8' },
@@ -19,6 +33,33 @@ const PATTERNS = [
   { type: 'heart', name: '爱心', symbol: '♡' },
   { type: 'leaf', name: '叶子', symbol: '⌁' }
 ];
+const PIXEL_STICKERS = {
+  star: [
+    '0001000',
+    '0001000',
+    '1101011',
+    '0111110',
+    '0011100',
+    '0110110',
+    '1100011'
+  ],
+  heart: [
+    '0110110',
+    '1111111',
+    '1111111',
+    '0111110',
+    '0011100',
+    '0001000'
+  ],
+  leaf: [
+    '0000110',
+    '0001110',
+    '0011100',
+    '0111000',
+    '1110000',
+    '0100000'
+  ]
+};
 
 const STICKER_POSITIONS = [
   { x: 0.38, y: 0.42, scale: 1, rotation: -0.18 },
@@ -31,6 +72,11 @@ const STICKER_POSITIONS = [
 function clamp(value, min, max) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? Math.max(min, Math.min(max, numeric)) : min;
+}
+
+function eraserWidthForPixels(pixels, canvasSize) {
+  const reference = Math.max(1, Number(canvasSize) || ERASER_REFERENCE_PX);
+  return clamp(clamp(pixels, ERASER_MIN_PX, ERASER_MAX_PX) / reference, ERASER_MIN_WIDTH, ERASER_MAX_WIDTH);
 }
 
 function colorByValue(value) {
@@ -70,8 +116,8 @@ function normalizeOperation(operation, index) {
       pattern: source.pattern,
       x: clamp(source.x, 0.12, 0.88),
       y: clamp(source.y, 0.12, 0.9),
-      scale: clamp(source.scale || 1, 0.5, 1.5),
-      rotation: clamp(source.rotation || 0, -Math.PI, Math.PI)
+      scale: 1,
+      rotation: 0
     };
   }
   if (source.type === 'stroke' && (source.tool === 'brush' || source.tool === 'eraser')) {
@@ -82,7 +128,9 @@ function normalizeOperation(operation, index) {
       type: 'stroke',
       tool: source.tool,
       color: '#536447',
-      width: FIXED_STROKE_WIDTH,
+      width: source.tool === 'eraser'
+        ? clamp(source.width || DEFAULT_ERASER_WIDTH, ERASER_MIN_WIDTH, ERASER_MAX_WIDTH)
+        : clamp(source.width || DEFAULT_BRUSH_WIDTH, BRUSH_SIZES[0].width, BRUSH_SIZES[BRUSH_SIZES.length - 1].width),
       points
     };
   }
@@ -101,7 +149,7 @@ function normalizeShellArt(input) {
   const matchedColor = colorByToken(source.colorToken) || colorByValue(source.color) || legacyColor;
   const fallback = defaultShellArt();
   let operations = Array.isArray(source.operations)
-    ? source.operations.slice(0, 120).map(normalizeOperation).filter(Boolean)
+    ? source.operations.slice(0, MAX_OPERATIONS).map(normalizeOperation).filter(Boolean)
     : [];
   if (!operations.length && source.version !== SHELL_VERSION) {
     const legacy = legacyPatternOperation(source.pattern);
@@ -123,27 +171,30 @@ function cloneShellArt(shell) {
   return JSON.parse(JSON.stringify(normalizeShellArt(shell)));
 }
 
-function createSticker(pattern, sequence) {
+function createSticker(pattern, sequence, point) {
   const safePattern = PATTERNS.some(item => item.type === pattern) ? pattern : PATTERNS[0].type;
   const index = Math.max(0, Number(sequence) || 0);
   const position = STICKER_POSITIONS[index % STICKER_POSITIONS.length];
+  const hasPoint = point && Number.isFinite(Number(point.x)) && Number.isFinite(Number(point.y));
   return {
     id: `sticker-${index + 1}`,
     type: 'sticker',
     pattern: safePattern,
-    x: position.x,
-    y: position.y,
-    scale: position.scale,
-    rotation: position.rotation
+    x: hasPoint ? clamp(point.x, 0.12, 0.88) : position.x,
+    y: hasPoint ? clamp(point.y, 0.12, 0.9) : position.y,
+    scale: 1,
+    rotation: 0
   };
 }
 
-function createStroke(tool, points, sequence) {
+function createStroke(tool, points, sequence, width) {
+  const safeTool = tool === 'eraser' ? 'eraser' : 'brush';
   return normalizeOperation({
     id: `stroke-${Math.max(0, Number(sequence) || 0) + 1}`,
     type: 'stroke',
-    tool: tool === 'eraser' ? 'eraser' : 'brush',
-    points
+    tool: safeTool,
+    points,
+    width: width || (safeTool === 'eraser' ? DEFAULT_ERASER_WIDTH : DEFAULT_BRUSH_WIDTH)
   }, sequence);
 }
 
@@ -209,66 +260,67 @@ function drawEggBase(context, image, width, height, shellInput) {
   }
 }
 
-function drawStar(context, radius) {
-  context.beginPath();
-  for (let index = 0; index < 10; index += 1) {
-    const angle = -Math.PI / 2 + index * Math.PI / 5;
-    const pointRadius = index % 2 === 0 ? radius : radius * 0.43;
-    const x = Math.cos(angle) * pointRadius;
-    const y = Math.sin(angle) * pointRadius;
-    if (index === 0) context.moveTo(x, y);
-    else context.lineTo(x, y);
-  }
-  context.closePath();
-  context.fill();
-}
-
-function drawHeart(context, radius) {
-  const width = radius * 1.8;
-  context.beginPath();
-  context.moveTo(0, radius * 0.9);
-  context.bezierCurveTo(-width, -radius * 0.15, -radius * 0.8, -radius, 0, -radius * 0.35);
-  context.bezierCurveTo(radius * 0.8, -radius, width, -radius * 0.15, 0, radius * 0.9);
-  context.closePath();
-  context.fill();
-}
-
-function drawLeaf(context, radius) {
-  context.beginPath();
-  context.moveTo(-radius, radius * 0.45);
-  context.quadraticCurveTo(-radius * 0.35, -radius, radius, -radius * 0.4);
-  context.quadraticCurveTo(radius * 0.35, radius, -radius, radius * 0.45);
-  context.closePath();
-  context.fill();
-  context.beginPath();
-  context.moveTo(-radius * 0.65, radius * 0.3);
-  context.lineTo(radius * 0.65, -radius * 0.25);
-  context.stroke();
-}
-
 function drawSticker(context, operation, width, height) {
-  const radius = Math.min(width, height) * 0.065 * operation.scale;
+  const pixels = PIXEL_STICKERS[operation.pattern] || PIXEL_STICKERS.star;
+  const cellSize = Math.max(2, Math.round(Math.min(width, height) * 0.012));
+  const columns = Math.max(...pixels.map(row => row.length));
+  const rows = pixels.length;
+  const startX = Math.round(operation.x * width - columns * cellSize / 2);
+  const startY = Math.round(operation.y * height - rows * cellSize / 2);
   context.save();
-  context.translate(operation.x * width, operation.y * height);
-  context.rotate(operation.rotation);
   context.fillStyle = 'rgba(70,91,62,.58)';
-  context.strokeStyle = 'rgba(70,91,62,.42)';
-  context.lineWidth = Math.max(1, radius * 0.1);
-  context.lineCap = 'round';
-  if (operation.pattern === 'heart') drawHeart(context, radius);
-  else if (operation.pattern === 'leaf') drawLeaf(context, radius);
-  else drawStar(context, radius);
+  pixels.forEach((row, rowIndex) => {
+    Array.from(row).forEach((pixel, columnIndex) => {
+      if (pixel !== '1') return;
+      context.fillRect(startX + columnIndex * cellSize, startY + rowIndex * cellSize, cellSize, cellSize);
+    });
+  });
   context.restore();
 }
 
-function drawStroke(context, operation, width, height) {
+function drawPixelStroke(context, operation, width, height) {
+  const points = operation.points || [];
+  if (!points.length) return;
+  const pixelSize = Math.max(1, Math.round(Math.min(width, height) * operation.width));
+  context.save();
+  context.globalCompositeOperation = 'source-over';
+  context.fillStyle = operation.color || '#536447';
+  const stamp = point => {
+    const x = Math.round(point.x * width - pixelSize / 2);
+    const y = Math.round(point.y * height - pixelSize / 2);
+    context.fillRect(x, y, pixelSize, pixelSize);
+  };
+  if (points.length === 1) {
+    stamp(points[0]);
+  } else {
+    points.slice(1).forEach((point, index) => {
+      const previous = points[index];
+      const startX = previous.x * width;
+      const startY = previous.y * height;
+      const endX = point.x * width;
+      const endY = point.y * height;
+      const distance = Math.hypot(endX - startX, endY - startY);
+      const steps = Math.max(1, Math.ceil(distance / Math.max(1, pixelSize * 0.55)));
+      for (let step = 0; step <= steps; step += 1) {
+        const ratio = step / steps;
+        stamp({
+          x: (startX + (endX - startX) * ratio) / width,
+          y: (startY + (endY - startY) * ratio) / height
+        });
+      }
+    });
+  }
+  context.restore();
+}
+
+function drawEraserStroke(context, operation, width, height) {
   const points = operation.points || [];
   if (!points.length) return;
   context.save();
-  context.globalCompositeOperation = operation.tool === 'eraser' ? 'destination-out' : 'source-over';
+  context.globalCompositeOperation = 'destination-out';
   context.strokeStyle = operation.color || '#536447';
   context.fillStyle = operation.color || '#536447';
-  context.lineWidth = Math.min(width, height) * FIXED_STROKE_WIDTH;
+  context.lineWidth = Math.min(width, height) * operation.width;
   context.lineCap = 'round';
   context.lineJoin = 'round';
   if (points.length === 1) {
@@ -294,7 +346,8 @@ function drawEggArt(context, image, width, height, shellInput, activeOperation) 
   }
   shell.operations.concat(activeOperation || []).forEach(operation => {
     if (operation.type === 'sticker') drawSticker(context, operation, width, height);
-    if (operation.type === 'stroke') drawStroke(context, operation, width, height);
+    if (operation.type === 'stroke' && operation.tool === 'eraser') drawEraserStroke(context, operation, width, height);
+    if (operation.type === 'stroke' && operation.tool === 'brush') drawPixelStroke(context, operation, width, height);
   });
   if (!image) {
     context.restore();
@@ -324,7 +377,15 @@ module.exports = {
   BASE_VERSION,
   COLORS,
   PATTERNS,
-  FIXED_STROKE_WIDTH,
+  MAX_OPERATIONS,
+  BRUSH_SIZES,
+  ERASER_MIN_PX,
+  ERASER_MAX_PX,
+  ERASER_DEFAULT_PX,
+  ERASER_MAX_WIDTH,
+  DEFAULT_BRUSH_WIDTH,
+  DEFAULT_ERASER_WIDTH,
+  eraserWidthForPixels,
   defaultShellArt,
   normalizeShellArt,
   cloneShellArt,

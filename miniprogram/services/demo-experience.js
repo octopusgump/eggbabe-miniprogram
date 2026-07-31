@@ -45,7 +45,7 @@ function redeemActivationCode(code) {
     style: '',
     name: '',
     createdAt: '2026-07-24T10:05:00+08:00',
-    hatchAt: '2026-07-24T10:30:00+08:00',
+    hatchAt: '2026-07-31T10:05:00+08:00',
     lifecycleStage: 'RESTING',
     shell: {},
     messages: []

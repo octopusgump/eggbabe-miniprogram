@@ -42,6 +42,20 @@ function chatReply(payload) { return call('chatReply', payload); }
 function recordCompanionInteraction(interactionType, payload) {
   return call('recordCompanionInteraction', { interactionType, payload: payload || {} });
 }
+function getIncubationPractice(eggId, module) {
+  return call('getIncubationPractice', { egg_id: eggId, module });
+}
+function getIncubationManual(eggId) {
+  return call('getIncubationManual', { egg_id: eggId });
+}
+function submitIncubationAction(eggId, module, questionId, optionId, payload) {
+  return call('submitIncubationAction', Object.assign({
+    egg_id: eggId,
+    module,
+    question_id: questionId || '',
+    option_id: optionId || ''
+  }, payload || {}));
+}
 function recordRoomElementInteraction(elementId, result) {
   return call('recordRoomElementInteraction', { element_id: elementId, result });
 }
@@ -85,6 +99,9 @@ module.exports = {
   saveEggCreation,
   chatReply,
   recordCompanionInteraction,
+  getIncubationPractice,
+  getIncubationManual,
+  submitIncubationAction,
   recordRoomElementInteraction,
   manageDeletion,
   trackEvents,

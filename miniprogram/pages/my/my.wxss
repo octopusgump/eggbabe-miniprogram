@@ -8,7 +8,7 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 40rpx 40rpx 56rpx;
+  padding: 40rpx 40rpx calc(148rpx + env(safe-area-inset-bottom));
   background: #FAFAF8;
   box-sizing: border-box;
 }

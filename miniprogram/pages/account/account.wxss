@@ -22,6 +22,18 @@
   box-shadow: 0rpx 2rpx 4rpx rgba(0, 41, 0, 0.06), 0rpx 4rpx 8rpx rgba(0, 41, 0, 0.04);
 }
 
+.research-panel {
+  margin-top: 24rpx;
+}
+
+.research-note {
+  display: block;
+  margin: 14rpx 12rpx 0;
+  color: #8C8C88;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
 .spacer {
   flex: 1;
 }

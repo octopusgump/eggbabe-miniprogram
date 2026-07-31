@@ -7,43 +7,54 @@ const sceneConfig = require('../../utils/life-scenes');
 const syncQueue = require('../../services/sync-queue');
 const environmentService = require('../../services/incubation-environment');
 const shellArtService = require('../../services/egg-shell-art');
-const roomSound = require('../../services/room-sound');
 const canvas2d = require('../../utils/canvas-2d');
 const runtime = require('../../services/runtime-context');
-const demoExperience = require('../../services/demo-experience');
+const practice = require('../../services/incubation-practice');
+const touchLines = require('../../services/egg-touch-lines');
+const deviceClock = require('../../services/device-clock');
 
-const TOUCH_LINES = ['你碰到我啦。', '我轻轻晃了一下。', '我听见你了。', '壳里传来我小小的回应。'];
-const TALK_REACTIONS = [
-  { motion: 'egg--talk-soft', text: '' },
-  { motion: 'egg--talk-happy', text: '我听见啦。' },
-  { motion: 'egg--talk-glow', text: '' },
-  { motion: 'egg--talk-color', text: '' },
-  { motion: 'egg--talk-knock', text: '' }
-];
 const WEATHER_PARTICLES = Array.from({ length: 12 }, (_, index) => index);
-const ROOM_ELEMENTS = [
-  { key: 'lamp', label: '台灯', icon: '灯', position: 'room-element--lamp', effect: 'scene--lamp', motion: 'egg--quiet' },
-  { key: 'coffee', label: '咖啡机', icon: '暖', position: 'room-element--coffee', effect: 'scene--coffee', motion: 'egg--quiet', feedback: '房间里暖了一点。' },
-  { key: 'brush', label: '画笔', icon: '画', position: 'room-element--brush', effect: 'scene--draw', motion: 'egg--quiet', feedback: '纸上多了一笔柔和的颜色。', route: '/pages/doodle/doodle' },
-  { key: 'scarf', label: '围巾', icon: '软', position: 'room-element--scarf', effect: 'scene--scarf', motion: 'egg--warm', feedback: '这条围巾摸起来软软的。' },
-  { key: 'window', label: '窗户', icon: '窗', position: 'room-element--window', effect: 'scene--window', motion: 'egg--quiet' }
-];
 const COMPANION_ACTIONS = [
-  { key: 'touch', title: '摸摸我', desc: '轻轻碰一下', icon: '/assets/scenes/incubation/svg/interaction_touch.svg' },
-  { key: 'talk', title: '跟我说句话', desc: '我会用身体回应', icon: '/assets/scenes/incubation/svg/interaction_talk.svg' },
-  { key: 'quiet', title: '安静陪我一会儿', desc: '一起慢慢呼吸', icon: '/assets/scenes/incubation/svg/interaction_quiet.svg' },
-  { key: 'window', title: '一起看看窗外', desc: '看看此刻的上海', icon: '/assets/scenes/incubation/svg/interaction_window.svg' },
-  { key: 'wish', title: '告诉我一个愿望', desc: '轻轻放在我这里', icon: '/assets/scenes/incubation/svg/interaction_wish.svg' },
-  { key: 'learn', title: '教我一件小事', desc: '让我再懂你一点', icon: '/assets/scenes/incubation/svg/interaction_learn.svg' },
-  { key: 'draw', title: '画一个小记号', desc: '留在我的蛋壳上', icon: '/assets/scenes/incubation/svg/interaction_draw.svg' },
-  { key: 'secret', title: '说一句秘密暗号', desc: '我会藏在壳里面', icon: '/assets/scenes/incubation/svg/interaction_secret.svg' }
+  { key: 'wish', title: '许愿池', desc: '今天想和我做什么', icon: '/assets/scenes/incubation/svg/interaction_wish.svg' },
+  { key: 'learn', title: '早教班', desc: '教我一件小事', icon: '/assets/scenes/incubation/svg/interaction_learn.svg' },
+  { key: 'draw', title: '画画', desc: '画下我们的记号', icon: '/assets/scenes/incubation/svg/interaction_draw.svg' }
 ];
+const DAILY_ACTION_MODULES = {
+  wish: 'wish_pool',
+  learn: 'edu_class'
+};
+
+function companionActionsFor(records, serverDate) {
+  const targetDate = String(serverDate || '');
+  const completedModules = new Set((records || [])
+    .filter(record => (
+      targetDate
+      && (record.server_date || record.serverDate) === targetDate
+      && record.module
+    ))
+    .map(record => record.module));
+
+  return COMPANION_ACTIONS.map(item => {
+    const module = DAILY_ACTION_MODULES[item.key];
+    const completed = !!(module && completedModules.has(module));
+    const appearance = item.key === 'draw' ? 'draw' : (completed ? 'completed' : 'card');
+    return Object.assign({}, item, {
+      completed,
+      appearance,
+      ariaLabel: completed
+        ? `${item.title}，今天已经回答，点击查看`
+        : (item.key === 'draw' ? '画画，点击打开绘图工具' : item.title)
+    });
+  });
+}
 
 Page({
   data: {
     pet: null,
     stage: 'empty',
     stageText: '',
+    expectedHatchLabel: '',
+    displayProgress: 100,
     actionLabel: '',
     dailyStatus: null,
     feedback: '',
@@ -54,11 +65,9 @@ Page({
     sceneImage: '',
     environment: environmentService.resolve(),
     weatherParticles: WEATHER_PARTICLES,
-    companionActions: COMPANION_ACTIONS,
-    greeting: '',
-    talkDraft: '',
-    talkFocused: false,
-    talkPlaceholder: '最多 50 个字，我会认真听',
+    companionActions: companionActionsFor([], ''),
+    wishUnlocked: true,
+    learnUnlocked: false,
     tapParticles: [],
     showNameSheet: false,
     nameDraft: '',
@@ -67,21 +76,48 @@ Page({
     savingName: false,
     homeEggBasePreview: '',
     homeEggArtPreview: '',
-    roomElements: ROOM_ELEMENTS,
     lampOn: false,
-    isDemo: config.localDemoEnabled
+    clockMode: 'analog',
+    clockTopPx: 88,
+    clockLeftPx: 18,
+    clockTimeText: '--:--',
+    clockDateText: '',
+    clockHourStyle: 'transform:rotate(0deg);',
+    clockMinuteStyle: 'transform:rotate(0deg);',
+    clockSecondStyle: 'transform:rotate(0deg);',
+    sceneOpening: false,
+    sceneTransitionStyle: ''
+  },
+
+  formatExpectedHatch(hatchAt) {
+    const timestamp = Date.parse(hatchAt || '');
+    if (!Number.isFinite(timestamp)) return '';
+    const date = new Date(timestamp + 8 * 60 * 60 * 1000);
+    return `预计 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日破壳`;
+  },
+
+  prefersReducedMotion() {
+    try {
+      const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+      return !!(system.reducedMotion || system.enableReduceMotion);
+    } catch (error) {
+      return false;
+    }
   },
 
   async onShow() {
     this.pageActive = true;
+    this.configureClockPosition();
+    if (this.data.sceneOpening) this.setData({ sceneOpening: false, sceneTransitionStyle: '' });
+    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 0 });
     const pet = petStore.getPet();
     if (!pet) {
+      this.stopClock();
       this.homeEggLayersReady = false;
       this.setData({
         pet: null,
         stage: 'empty',
         hasScenes: false,
-        greeting: '',
         showNameSheet: false,
         syncPending: syncQueue.pendingCount(),
         homeEggBasePreview: '',
@@ -93,41 +129,132 @@ Page({
     const presentation = petStore.getStagePresentation(stage);
     const hatched = stage === 'hatched';
     const showNameSheet = !hatched && petStore.shouldPromptNickname();
-    let greeting = '';
-    if (!hatched && !showNameSheet && petStore.shouldShowDailyGreeting()) {
-      greeting = '我在窝里。想来时，就陪我待一会儿吧。';
-      petStore.markDailyGreetingShown();
-    }
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
+    const environment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const lampStateKey = `${environment.dateKey}:${environment.period}`;
+    const lampOn = this.lampOverride && this.lampOverride.key === lampStateKey
+      ? this.lampOverride.value
+      : environment.period === 'night';
     this.setData({
       pet,
       stage,
       stageText: presentation.homeText,
+      expectedHatchLabel: hatched || stage === 'ready' ? '' : this.formatExpectedHatch(pet.hatchAt),
       actionLabel: presentation.actionLabel,
       dailyStatus: hatched ? petStore.getDailyStatus() : null,
-      greeting,
       showNameSheet,
       nameDraft: pet.name || '',
       nameCount: Array.from(pet.name || '').length,
       nameError: '',
       hasScenes: hatched && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
       sceneImage: hatched ? sceneConfig.getScene('grass', pet.prototype).image : '',
-      environment: environmentService.resolve(serverEnvironment),
-      syncPending: syncQueue.pendingCount(),
-      isDemo: runtime.getMode() === 'demo'
+      environment,
+      lampOn,
+      companionActions: companionActionsFor([], ''),
+      syncPending: syncQueue.pendingCount()
     }, () => {
       if (!hatched) {
+        this.startClock();
         this.setupWindowFog();
         this.setupHomeEgg();
+      } else {
+        this.stopClock();
       }
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
+    if (hatched) {
+      practice.getManualState().then(state => {
+        const rawTotal = state && state.points ? state.points.total : null;
+        const total = Number(rawTotal);
+        if (state.ok && rawTotal !== null && rawTotal !== undefined && Number.isFinite(total)) {
+          this.setData({ displayProgress: Math.max(0, Math.min(100, Math.round(total))) });
+        }
+      });
+    } else {
+      practice.getManualState().then(state => {
+        if (!state.ok) return;
+        const unlocked = state.unlockedModules || [];
+        const touchRecord = (state.records || []).find(record => (
+          record.module === 'touch' && record.server_date === state.serverDate
+        ));
+        if (touchRecord) this.touchRecordedDate = state.serverDate;
+        const currentPet = state.pet || this.data.pet;
+        const currentStage = petStore.getStage(currentPet);
+        const currentPresentation = petStore.getStagePresentation(currentStage);
+        this.setData({
+          pet: currentPet,
+          stage: currentStage,
+          stageText: currentPresentation.homeText,
+          actionLabel: currentPresentation.actionLabel,
+          expectedHatchLabel: currentStage === 'ready' ? '' : this.formatExpectedHatch(state.hatchAt || (state.pet && state.pet.hatchAt)),
+          wishUnlocked: unlocked.includes('wish_pool'),
+          learnUnlocked: unlocked.includes('edu_class'),
+          companionActions: companionActionsFor(state.records, state.serverDate)
+        });
+      });
+    }
   },
 
   onReady() {
+    this.configureClockPosition();
     this.setupWindowFog();
     this.setupHomeEgg();
+  },
+
+  configureClockPosition() {
+    try {
+      const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+      const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+      const statusBarHeight = Number(windowInfo.statusBarHeight || 20);
+      const safeLeft = windowInfo.safeArea ? Number(windowInfo.safeArea.left || 0) : 0;
+      const clockTopPx = menuRect && Number(menuRect.bottom)
+        ? Number(menuRect.bottom) + 8
+        : statusBarHeight + 42;
+      this.setData({
+        clockTopPx: Math.round(clockTopPx),
+        clockLeftPx: Math.round(safeLeft + 18)
+      });
+    } catch (error) {
+      this.setData({ clockTopPx: 88, clockLeftPx: 18 });
+    }
+  },
+
+  syncClock() {
+    if (!this.pageActive || !this.data.pet || this.data.stage === 'hatched') return;
+    const clock = deviceClock.snapshot(new Date());
+    this.setData({
+      clockTimeText: clock.timeText,
+      clockDateText: clock.dateText,
+      clockHourStyle: `transform:rotate(${clock.hourAngle}deg);`,
+      clockMinuteStyle: `transform:rotate(${clock.minuteAngle}deg);`,
+      clockSecondStyle: `transform:rotate(${clock.secondAngle}deg);`
+    });
+  },
+
+  startClock() {
+    this.stopClock();
+    this.syncClock();
+    const delay = deviceClock.millisecondsUntilNextSecond(Date.now());
+    this.clockBoundaryTimer = setTimeout(() => {
+      if (!this.pageActive || !this.data.pet || this.data.stage === 'hatched') return;
+      this.syncClock();
+      this.clockTimer = setInterval(() => this.syncClock(), 1000);
+    }, delay);
+  },
+
+  stopClock() {
+    clearTimeout(this.clockBoundaryTimer);
+    clearInterval(this.clockTimer);
+    this.clockBoundaryTimer = null;
+    this.clockTimer = null;
+  },
+
+  onClockTap() {
+    const clockMode = this.data.clockMode === 'analog' ? 'digital' : 'analog';
+    this.syncClock();
+    this.setData({ clockMode });
+    analytics.track('room_element_interaction', { element_id: 'clock', result: clockMode });
   },
 
   setupHomeEgg() {
@@ -222,7 +349,37 @@ Page({
       this.completedLongPress = false;
       return;
     }
-    wx.navigateTo({ url: '/pages/life-scene/life-scene?scene=grass' });
+    if (this.data.sceneOpening || !this.data.hasScenes) return;
+    wx.createSelectorQuery().in(this).select('.life-home-scene').boundingClientRect(rect => {
+      if (!rect) {
+        wx.navigateTo({
+          url: '/pages/life-scene/life-scene?scene=grass&entry=home-expand',
+          animationType: 'none',
+          animationDuration: 0
+        });
+        return;
+      }
+      const duration = this.prefersReducedMotion() ? 20 : 560;
+      this.setData({
+        sceneOpening: true,
+        sceneTransitionStyle: `left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;--scene-expand-duration:${duration}ms;`
+      });
+      const originQuery = [
+        `origin_left=${encodeURIComponent(rect.left.toFixed(2))}`,
+        `origin_top=${encodeURIComponent(rect.top.toFixed(2))}`,
+        `origin_width=${encodeURIComponent(rect.width.toFixed(2))}`,
+        `origin_height=${encodeURIComponent(rect.height.toFixed(2))}`
+      ].join('&');
+      clearTimeout(this.sceneOpenTimer);
+      this.sceneOpenTimer = setTimeout(() => {
+        wx.navigateTo({
+          url: `/pages/life-scene/life-scene?scene=grass&entry=home-expand&${originQuery}`,
+          animationType: 'none',
+          animationDuration: 0,
+          fail: () => this.setData({ sceneOpening: false, sceneTransitionStyle: '' })
+        });
+      }, Math.max(0, duration - 20));
+    }).exec();
   },
 
   onChangeScene() { wx.navigateTo({ url: '/pages/life-scenes/life-scenes' }); },
@@ -286,13 +443,35 @@ Page({
       return;
     }
     this.spawnTapParticles(event);
-    const now = timeService.now();
-    this.runSceneEffect('scene--touch', 'egg--wobble', 760);
-    petStore.recordTouch();
+    const now = Date.now();
+    this.runSceneEffect('scene--touch', this.prefersReducedMotion() ? '' : 'egg--wobble', 760);
+    if (!this.lastEggVibrationAt || now - this.lastEggVibrationAt >= 300) {
+      this.lastEggVibrationAt = now;
+      try {
+        if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+      } catch (error) {}
+    }
+    const currentDate = practice.dateKey();
+    if (!currentDate || this.touchRecordedDate !== currentDate) {
+      practice.submit('touch').then(result => {
+        if (!result.ok) return;
+        this.touchRecordedDate = result.serverDate || currentDate;
+        if (!result.alreadyDone) {
+          this.setData({ expectedHatchLabel: this.formatExpectedHatch(result.hatchAt) });
+          this.showFeedback('我好像离你近了一点点。');
+        }
+      });
+    }
     analytics.track('companion_interaction', { interaction_type: 'touch', result: 'played' });
     if (this.lastTapAt && now - this.lastTapAt < 2000) return;
     this.lastTapAt = now;
-    this.showFeedback(TOUCH_LINES[Math.floor(Math.random() * TOUCH_LINES.length)]);
+    const line = touchLines.choose({
+      period: this.data.environment.period,
+      weather: this.data.environment.weather,
+      nearHatch: this.data.stage === 'soon' || this.data.stage === 'ready'
+    }, this.recentTouchLines);
+    this.recentTouchLines = (this.recentTouchLines || []).concat(line).slice(-5);
+    this.showFeedback(line);
   },
 
   vibrateCuddleTick() {
@@ -315,7 +494,13 @@ Page({
       analytics.track('companion_interaction', { interaction_type: 'cuddle', result: 'played' });
       this.completedLongPress = true;
       this.setData({ eggMotion: 'egg--warm' });
-      this.showFeedback('我暖起来了。');
+      practice.submitOnce('heartbeat').then(result => {
+        if (result.ok && !result.alreadyDone) {
+          this.showFeedback('你听见了壳里的心跳。');
+          return;
+        }
+        this.showFeedback('我暖起来了。');
+      });
       this.cuddleResetTimer = setTimeout(() => {
         this.setData({ eggMotion: '', sceneEffect: '' });
         this.onShow();
@@ -338,32 +523,8 @@ Page({
   onCompanionTap(event) {
     const key = event.currentTarget.dataset.key;
     if (!COMPANION_ACTIONS.some(item => item.key === key)) return;
-    if (key === 'touch') {
-      this.onEggTap({ detail: {} });
-      return;
-    }
-    if (key === 'talk') {
-      this.runSceneEffect('scene--listening', 'egg--talk-soft', 900);
-      this.setData({ talkFocused: true, talkPlaceholder: '最多 50 个字，我会认真听' });
-      this.showFeedback('我在听。');
-      return;
-    }
-    if (key === 'quiet') {
-      this.runSceneEffect('scene--quiet', 'egg--quiet', 8000);
-      this.showFeedback('我们就这样安静待一会儿。');
-      return;
-    }
-    if (key === 'window') {
-      this.runSceneEffect('scene--window', 'egg--window', 3600);
-      this.showFeedback('窗外是此刻的上海，也可以在玻璃上轻轻划一划。');
-      return;
-    }
-    if (key === 'secret') {
-      this.runSceneEffect('scene--secret', 'egg--talk-knock', 1100);
-      this.setData({ talkFocused: true, talkPlaceholder: '轻轻告诉我一句秘密暗号' });
-      this.showFeedback('轻轻说给我听，我会藏在壳里面。');
-      return;
-    }
+    if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
+    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('再陪我一天，早教班就会打开。');
     const routes = {
       wish: { route: '/pages/wish/wish', sceneEffect: 'scene--wish', eggMotion: 'egg--talk-glow' },
       learn: { route: '/pages/lesson/lesson', sceneEffect: 'scene--learn', eggMotion: 'egg--talk-knock' },
@@ -377,31 +538,16 @@ Page({
     }
   },
 
-  onGreetingTap() {
-    this.setData({ greeting: '' });
-  },
-
-  onRoomElementTap(event) {
-    const elementId = event.currentTarget.dataset.key;
-    const element = ROOM_ELEMENTS.find(item => item.key === elementId);
-    if (!element) return;
-    let feedback = element.feedback;
-    if (elementId === 'lamp') feedback = this.data.lampOn ? '灯暗下来，我们安静待一会儿。' : '灯亮了，我也看清你啦。';
-    if (elementId === 'window') feedback = this.data.environment.weather === 'rain' ? '我在这里听着雨。' : '窗外的光慢慢落进房间。';
-    if (elementId === 'lamp') this.setData({ lampOn: !this.data.lampOn });
-    if (elementId === 'coffee') roomSound.playCoffeeChime();
-    this.runSceneEffect(element.effect, element.motion, 900);
-    this.showFeedback(feedback);
-    analytics.track('room_element_interaction', { element_id: elementId, result: 'played' });
-    if (element.route) {
-      clearTimeout(this.roomElementRouteTimer);
-      this.roomElementRouteTimer = setTimeout(() => wx.navigateTo({ url: element.route }), 820);
-    }
-  },
-
-  onTalkInput(event) {
-    const value = Array.from(event.detail.value || '').slice(0, 50).join('');
-    this.setData({ talkDraft: value });
+  onLampTap() {
+    const lampOn = !this.data.lampOn;
+    const environment = this.data.environment || {};
+    this.lampOverride = {
+      key: `${environment.dateKey || ''}:${environment.period || ''}`,
+      value: lampOn
+    };
+    this.setData({ lampOn });
+    this.showFeedback(lampOn ? '台灯亮起来了。' : '台灯关好了。');
+    analytics.track('room_element_interaction', { element_id: 'lamp', result: lampOn ? 'on' : 'off' });
   },
 
   setupWindowFog() {
@@ -476,19 +622,6 @@ Page({
     this.showFeedback('这样看得更清楚啦。');
   },
 
-  onTalkSubmit() {
-    const result = petStore.completeTalk(this.data.talkDraft);
-    if (!result.ok) return this.showFeedback(result.message || '换个说法告诉我吧');
-    const reaction = TALK_REACTIONS[Math.floor(timeService.now()) % TALK_REACTIONS.length];
-    this.setData({ talkDraft: '', talkFocused: false, talkPlaceholder: '最多 50 个字，我会认真听' });
-    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
-    if (reaction.text) this.showFeedback(reaction.text);
-    analytics.track('companion_interaction', { interaction_type: 'talk', result: 'played' });
-    this.runSceneEffect('scene--listening', reaction.motion, 900, () => {
-      this.onShow();
-    });
-  },
-
   onNameInput(event) {
     const value = Array.from(event.detail.value || '').slice(0, 10).join('');
     this.setData({ nameDraft: value, nameCount: Array.from(value).length, nameError: '' });
@@ -504,10 +637,11 @@ Page({
     }
     if (runtime.getMode() === 'demo') {
       const result = petStore.applyConfirmedNickname(validation.value);
+      const progress = result.ok ? await practice.submitOnce('nickname') : null;
       this.setData({ savingName: false, showNameSheet: !result.ok, nameError: result.ok ? '' : result.message });
       if (result.ok) {
         analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
-        this.showFeedback('我记住自己的名字啦。');
+        this.showFeedback(progress && !progress.alreadyDone ? '我记住名字啦，也离你近了一点点。' : '我记住自己的名字啦。');
         this.onShow();
       }
       return;
@@ -526,6 +660,8 @@ Page({
       this.setData({ savingName: false, nameError: result.message || '名字没有保存成功，请重试' });
       return;
     }
+    if (response.hatch_at) petStore.applyConfirmedHatchAt(response.hatch_at);
+    await practice.submitOnce('nickname');
     analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
     this.setData({ savingName: false, showNameSheet: false });
     this.showFeedback('我记住自己的名字啦。');
@@ -541,16 +677,6 @@ Page({
 
   noop() {},
 
-  onDemoAdvance() {
-    const result = demoExperience.advanceToHatchable();
-    if (!result.ok) {
-      wx.showToast({ title: result.message, icon: 'none' });
-      return;
-    }
-    wx.showToast({ title: '已进入破壳验收阶段', icon: 'none' });
-    this.onShow();
-  },
-
   onPrimaryAction() {
     if (this.data.stage === 'ready') wx.navigateTo({ url: '/pages/hatch/hatch' });
     else if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/chat/chat' });
@@ -559,7 +685,7 @@ Page({
   clearInteractionTimers() {
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
-    clearTimeout(this.roomElementRouteTimer);
+    clearTimeout(this.sceneOpenTimer);
     this.clearEffectTimers();
     (this.particleTimers || []).forEach(clearTimeout);
     this.particleTimers = [];
@@ -567,14 +693,15 @@ Page({
 
   onHide() {
     this.pageActive = false;
+    this.stopClock();
     this.clearInteractionTimers();
     this.completedLongPress = false;
-    roomSound.stop();
     this.setData({ eggMotion: '', sceneEffect: '', feedback: '', tapParticles: [] });
   },
 
   onUnload() {
     this.pageActive = false;
+    this.stopClock();
     this.clearInteractionTimers();
     this.windowFogContext = null;
     this.windowEffectsRect = null;
@@ -588,5 +715,6 @@ Page({
     this.homeEggSetupPending = false;
     this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
     this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
+    this.recentTouchLines = [];
   }
 });

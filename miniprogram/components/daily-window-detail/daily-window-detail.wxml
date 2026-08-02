@@ -53,6 +53,19 @@
     ></view>
   </view>
 
+  <view
+    wx:if="{{magicEnabled && !loading && !empty && !failed}}"
+    class="daily-window__magic-entry"
+    aria-role="button"
+    aria-label="打开东京魔法窗外预览"
+    catchtap="onMagicTap"
+  >
+    <view class="daily-window__magic-halo"></view>
+    <view class="daily-window__magic-ring"></view>
+    <view class="daily-window__magic-core"></view>
+    <text class="daily-window__magic-label">远方</text>
+  </view>
+
   <view wx:if="{{loading && !failed}}" class="daily-window__state">
     <view class="daily-window__loader"></view>
     <text>正在靠近窗外…</text>

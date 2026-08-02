@@ -33,11 +33,11 @@
   padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid #E5E3DF; background: #FFFFFF;
 }
 .composer__input {
-  flex: 1; height: 80rpx; border-radius: 999rpx; border: 1rpx solid #E5E3DF;
+  flex: 1; height: 112rpx; border-radius: 999rpx; border: 1rpx solid #E5E3DF;
   background: #FAFAF8; padding: 0 32rpx; font-size: 28rpx; color: #1A1A1A;
 }
 .composer__send {
-  width: 80rpx; height: 80rpx; border-radius: 50%; background: #002900;
+  width: 112rpx; height: 112rpx; border-radius: 50%; background: #002900;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .composer__send--pressed { background: #001A00; transform: scale(0.98); }

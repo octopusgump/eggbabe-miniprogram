@@ -19,7 +19,14 @@ const MOODS = [
 function key() { return runtime.scopedKey(STATE_KEY); }
 function readState() {
   const value = storage.read(key(), null);
-  return value && value.version === 36 ? value : { version: 36, actions: {}, keepsakes: [], letters: [], postcards: [], decorations: [], wishes: {} };
+  if (!value || value.version !== 36) return { version: 36, actions: {}, keepsakes: [], letters: [], postcards: [] };
+  return {
+    version: 36,
+    actions: value.actions || {},
+    keepsakes: Array.isArray(value.keepsakes) ? value.keepsakes : [],
+    letters: Array.isArray(value.letters) ? value.letters : [],
+    postcards: Array.isArray(value.postcards) ? value.postcards : []
+  };
 }
 function writeState(value) {
   try { storage.set(key(), value); return { ok: true }; }
@@ -35,12 +42,12 @@ function businessNow() {
 }
 function hatchTimestamp(pet) {
   const cardTime = pet && pet.collectionCard && (pet.collectionCard.hatched_at || pet.collectionCard.hatchedAt);
-  const candidates = [cardTime, pet && pet.hatchAt, pet && pet.createdAt];
+  const candidates = [cardTime, pet && pet.hatchedAt, pet && pet.hatchAt, pet && pet.boundAt, pet && pet.createdAt];
   for (const value of candidates) {
     const parsed = Date.parse(value || '');
     if (Number.isFinite(parsed)) return parsed;
   }
-  return businessNow();
+  return hash(pet && pet.id) % SLOT_MS;
 }
 function slotMeta(pet) {
   const now = businessNow();
@@ -57,23 +64,23 @@ function moodFor(pet, now) {
   const day = dateKey(now);
   return Object.assign({ businessDate: day, source: 'approved-fallback' }, MOODS[hash(`${pet.id}:${day}`) % MOODS.length]);
 }
-function normalizeDecorations(items) {
-  const position = (value, fallback, min, max) => {
-    const number = Number(value);
-    return Math.max(min, Math.min(max, Number.isFinite(number) ? number : fallback));
-  };
-  return (Array.isArray(items) ? items : []).map((item, index) => {
-    const source = item && typeof item === 'object' ? item : {};
-    return Object.assign({}, source, {
-      id: String(source.id || `decor-${index}`),
-      label: String(source.label || '我的小家具'),
-      asset: String(source.asset || source.image_url || ''),
-      x: position(source.x, 32 + (index % 3) * 20, 12, 88),
-      y: position(source.y, 54 + (index % 2) * 12, 24, 76),
-      z: position(source.z, index + 1, 1, 50),
-      renderZ: 4 + position(source.z, index + 1, 1, 50)
-    });
+function normalizeKeepsake(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const id = String(source.id || source.keepsake_id || '');
+  return Object.assign({}, source, {
+    id,
+    name: String(source.name || source.title || '一件小东西'),
+    story: String(source.story || source.line || ''),
+    asset: String(source.asset || source.asset_url || lifeScenes.assets.POST_HATCH.keepsakes[id] || '')
   });
+}
+function normalizeMemories(memories) {
+  const source = memories && typeof memories === 'object' ? memories : {};
+  return {
+    keepsakes: (Array.isArray(source.keepsakes) ? source.keepsakes : []).map(normalizeKeepsake),
+    postcards: Array.isArray(source.postcards) ? source.postcards : [],
+    cardRecommendation: source.cardRecommendation || source.card_recommendation || null
+  };
 }
 function deliverReplies(state) {
   let changed = false;
@@ -120,15 +127,14 @@ function localSnapshot(pet) {
   return {
     ok: true,
     mode: runtime.getMode(),
-    mood: moodFor(pet, meta.slotStart),
+    mood: moodFor(pet, businessNow()),
     currentState: Object.assign({}, scene, meta, {
       actionDone: !!actionRecord,
       actionFeedback: actionRecord ? actionRecord.feedback : '',
       letterSent: !!(actionRecord && actionRecord.kind === 'letter')
     }),
     previewImage: scene.previewImage,
-    memories: { keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) },
-    decorations: normalizeDecorations(state.decorations)
+    memories: normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) })
   };
 }
 function normalizeLiveSnapshot(result) {
@@ -136,38 +142,34 @@ function normalizeLiveSnapshot(result) {
     return { ok: false, code: result && result.code || 'POST_HATCH_INVALID', message: result && result.message || '此刻状态没有加载好，请重试' };
   }
   const source = result.current_state;
-  const actionSource = source.action || {};
-  const screenValue = source.screen_index !== undefined ? source.screen_index : source.screen;
-  const actionScreenValue = actionSource.screen_index !== undefined ? actionSource.screen_index : actionSource.screen;
-  const state = Object.assign({}, source, {
-    key: source.small_scene_id,
-    major: source.major_scene_id,
-    majorLabel: source.major_scene_label,
-    label: source.small_scene_label,
-    line: source.line,
-    screen: Number(screenValue !== undefined ? screenValue : 1),
-    atHome: source.major_scene_id === 'home',
-    canTalk: source.major_scene_id === 'home' && !!source.can_talk,
-    action: {
-      id: actionSource.id || actionSource.action_id || source.action_id || '',
-      kind: actionSource.kind || actionSource.action_kind || source.action_kind || '',
-      screen: Number(actionScreenValue !== undefined ? actionScreenValue : screenValue !== undefined ? screenValue : 1),
-      feedback: actionSource.feedback || source.action_feedback || ''
-    },
-    slotIndex: source.slot_index,
-    slotStart: Date.parse(source.slot_start),
-    slotEnd: Date.parse(source.slot_end),
-    actionDone: !!source.action_done,
-    letterSent: !!source.letter_sent,
-    previewImage: source.preview_image || lifeScenes.assets.POST_HATCH.panoramaFallback
-  });
-  if (!['home', 'travel', 'work', 'school'].includes(state.major)
-    || !state.key || !state.label || !state.action.id || !state.action.kind
-    || !Number.isFinite(state.slotStart) || !Number.isFinite(state.slotEnd)
-    || state.slotEnd <= state.slotStart) {
+  const definition = lifeScenes.resolveDefinition(source.major_scene_id, source.small_scene_id);
+  const slotStart = Date.parse(source.slot_start);
+  const slotEnd = Date.parse(source.slot_end);
+  if (!definition || !Number.isFinite(slotStart) || !Number.isFinite(slotEnd) || slotEnd <= slotStart) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
-  return { ok: true, mode: 'live', mood: result.mood, currentState: state, previewImage: state.previewImage, memories: result.memories || { keepsakes: [], postcards: [], cardRecommendation: null }, decorations: normalizeDecorations(result.decorations) };
+  const state = Object.assign({}, source, definition, {
+    // 动作、所在屏和能否说话全部来自审核过的固定映射，服务端不得随机改写。
+    line: String(source.line || definition.line),
+    slotIndex: Number(source.slot_index),
+    slotStart,
+    slotEnd,
+    actionDone: !!source.action_done,
+    actionFeedback: source.action_feedback || definition.action.feedback,
+    letterSent: !!source.letter_sent,
+    previewImage: lifeScenes.assets.POST_HATCH.panoramaFallback
+  });
+  if (!Number.isInteger(state.slotIndex)) {
+    return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
+  }
+  return {
+    ok: true,
+    mode: 'live',
+    mood: result.mood,
+    currentState: state,
+    previewImage: state.previewImage,
+    memories: normalizeMemories(result.memories)
+  };
 }
 function getSnapshot(pet) {
   if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
@@ -238,79 +240,18 @@ function cardRecommendation(pet) {
 function getMemories(pet) {
   if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.getPostHatchMemories(pet.id).then(result => result && result.ok ? {
-      ok: true,
-      mode: 'live',
-      keepsakes: Array.isArray(result.keepsakes) ? result.keepsakes : [],
-      postcards: Array.isArray(result.postcards) ? result.postcards : [],
-      cardRecommendation: result.cardRecommendation || result.card_recommendation || null
-    } : result);
+    return cloudApi.getPostHatchMemories(pet.id).then(result => {
+      if (!result || !result.ok || result.mode !== 'live') return result;
+      return Object.assign({ ok: true, mode: 'live' }, normalizeMemories(result));
+    });
   }
   if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '回忆服务尚未接入' });
   const state = readState();
-  return Promise.resolve({ ok: true, mode: runtime.getMode(), keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) });
-}
-function localDecorationState() {
-  const state = readState();
-  const today = dateKey();
-  const used = Number(state.wishes[today] || 0);
-  return { ok: true, remaining: Math.max(0, 3 - used), decorations: state.decorations };
-}
-function getDecorationState(pet) {
-  if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.getPostHatchDecorations(pet.id).then(result => result && result.ok ? {
-      ok: true,
-      mode: 'live',
-      remaining: Number(result.remaining !== undefined ? result.remaining : result.remaining_wishes || 0),
-      decorations: normalizeDecorations(result.decorations)
-    } : result);
-  }
-  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '装扮服务尚未接入' });
-  const local = localDecorationState();
-  return Promise.resolve(Object.assign({}, local, { decorations: normalizeDecorations(local.decorations) }));
-}
-function createDecoration(pet, sketchSummary) {
-  const value = String(sketchSummary || '').trim();
-  if (!value) return Promise.resolve({ ok: false, code: 'SKETCH_EMPTY', message: '先画一点什么吧' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.createRoomDecoration(pet.id, value).then(result => {
-      if (!result || !result.ok) return result;
-      const decoration = normalizeDecorations([result.decoration])[0];
-      if (!result.decoration || !decoration.asset) return { ok: false, code: 'DECORATION_INVALID', message: '生成结果没有准备好，请重试' };
-      return {
-        ok: true,
-        mode: 'live',
-        decoration,
-        remaining: Number(result.remaining !== undefined ? result.remaining : result.remaining_wishes || 0)
-      };
-    });
-  }
-  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '绘画转译服务尚未接入' });
-  const state = readState();
-  const today = dateKey();
-  const used = Number(state.wishes[today] || 0);
-  if (used >= 3) return Promise.resolve({ ok: false, code: 'DAILY_LIMIT', message: '今天的许愿次数用完了' });
-  const decoration = { id: `decor-${today}-${used + 1}`, label: `我的小家具 ${used + 1}`, placeholder: true, x: 32 + used * 20, y: 56 + (used % 2) * 10, z: used + 1, renderZ: used + 5, createdAt: businessNow() };
-  state.wishes[today] = used + 1;
-  state.decorations.push(decoration);
-  const saved = writeState(state);
-  return Promise.resolve(saved.ok ? { ok: true, decoration, remaining: 2 - used } : saved);
+  return Promise.resolve(Object.assign({ ok: true, mode: runtime.getMode() }, normalizeMemories({
+    keepsakes: state.keepsakes,
+    postcards: state.postcards,
+    cardRecommendation: cardRecommendation(pet)
+  })));
 }
 
-function moveDecoration(pet, decorationId, x, y, z) {
-  const normalized = normalizeDecorations([{ id: decorationId, x, y, z }])[0];
-  if (!pet || !decorationId) return Promise.resolve({ ok: false, code: 'DECORATION_REQUIRED', message: '没有找到这件装饰' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.moveRoomDecoration(pet.id, decorationId, normalized.x, normalized.y, normalized.z);
-  }
-  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '装扮服务尚未接入' });
-  const state = readState();
-  const index = state.decorations.findIndex(item => item.id === decorationId);
-  if (index < 0) return Promise.resolve({ ok: false, code: 'DECORATION_NOT_FOUND', message: '没有找到这件装饰' });
-  state.decorations[index] = Object.assign({}, state.decorations[index], { x: normalized.x, y: normalized.y, z: normalized.z, movedAt: businessNow() });
-  const saved = writeState(state);
-  return Promise.resolve(saved.ok ? { ok: true, x: normalized.x, y: normalized.y, z: normalized.z } : saved);
-}
-
-module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, getDecorationState, createDecoration, moveDecoration };
+module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, normalizeLiveSnapshot };

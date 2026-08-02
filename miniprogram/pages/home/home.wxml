@@ -1,7 +1,7 @@
 <view class="page">
-  <nav-bar wx:if="{{!pet || stage === 'hatched'}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
+  <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
-  <scroll-view class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet || stage === 'hatched'}}">
+  <scroll-view class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">添加我的蛋宝宝</text>
@@ -10,15 +10,13 @@
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
 
-    <view wx:else class="pet-view {{stage !== 'hatched' ? 'pet-view--incubating' : ''}}">
+    <view wx:elif="{{stage !== 'hatched'}}" class="pet-view pet-view--incubating">
       <view class="top-row" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">
         <view>
-          <text wx:if="{{stage === 'hatched'}}" class="eyebrow">{{pet.prototype}} · 已破壳</text>
           <view class="pet-name-row" bindtap="onPetNameTap">
             <text class="pet-name">{{pet.name || '还没有名字'}}</text>
           </view>
         </view>
-        <mood-badge wx:if="{{stage === 'hatched' && dailyStatus}}" mood="{{dailyStatus.mood}}"></mood-badge>
       </view>
 
       <view class="egg-zone {{stage !== 'hatched' ? 'egg-zone--incubating' : 'egg-zone--hatched'}} {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : 'room-lamp-off'}} {{timeSceneIntro ? 'time-intro--' + timeSceneIntro : ''}} {{dailyWindowVisible ? 'scene-paused' : ''}}">
@@ -111,19 +109,6 @@
         <view wx:if="{{feedback}}" class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">{{feedback}}</view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg-aura {{eggMotion}}"></view>
 
-        <view wx:if="{{stage === 'hatched' && postHatchLoading}}" class="post-hatch-loading">
-          <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
-        </view>
-        <view wx:elif="{{stage === 'hatched' && postHatchError}}" class="post-hatch-error">
-          <text>{{postHatchError}}</text><view class="retry-link" bindtap="onRetryPostHatch">重新看看</view>
-        </view>
-        <view wx:elif="{{stage === 'hatched' && hasScenes}}" class="life-home-scene {{eggMotion}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
-          <image class="life-home-scene-image" src="{{sceneImage}}" mode="aspectFill"></image>
-          <view class="life-home-shade"></view>
-          <pet-avatar wx:if="{{postHatchSnapshot.currentState.atHome}}" class="life-home-character" pet-type="{{pet.prototype}}" size="{{118}}"></pet-avatar>
-          <view wx:else class="life-home-away"><text>{{postHatchSnapshot.currentState.line}}</text></view>
-        </view>
-        <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></pet-avatar>
         <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
@@ -135,26 +120,6 @@
           <view class="tap-particle tap-particle--two">•</view>
           <view class="tap-particle tap-particle--three">✧</view>
         </view>
-      </view>
-
-      <view wx:if="{{stage === 'hatched' && postHatchSnapshot}}" class="state-card">
-        <view class="state-dot"></view>
-        <view class="state-copy">
-          <text class="state-title">{{stageText}}</text>
-          <text class="state-scene-line">{{postHatchSnapshot.currentState.line}}</text>
-          <text wx:if="{{expectedHatchLabel}}" class="hatch-date">{{expectedHatchLabel}}</text>
-        </view>
-      </view>
-
-      <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
-        <text class="status-meta">今日心情 · {{dailyStatus.mood}}</text>
-        <text class="status-line">{{dailyStatus.line}}</text>
-      </view>
-
-      <view wx:if="{{stage === 'hatched' && postHatchSnapshot}}" class="post-hatch-entries">
-        <view class="post-hatch-entry" data-section="keepsakes" bindtap="onChangeScene"><text class="entry-mark">小物</text><text>ta 带回来的东西</text></view>
-        <view class="post-hatch-entry" data-section="postcards" bindtap="onChangeScene"><text class="entry-mark">信</text><text>明信片</text></view>
-        <view class="post-hatch-entry" data-section="card" bindtap="onChangeScene"><text class="entry-mark">卡</text><text>今日收藏卡</text></view>
       </view>
 
       <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
@@ -196,12 +161,20 @@
 
       <view wx:if="{{syncPending > 0}}" class="sync-note">{{syncPending}} 项记录正在等待网络同步</view>
 
-      <view wx:if="{{stage === 'prepared' || stage === 'soon' || stage === 'ready' || stage === 'hatched'}}" class="home-actions">
+      <view wx:if="{{stage === 'prepared' || stage === 'soon' || stage === 'ready'}}" class="home-actions">
         <button class="primary-button home-actions__chat" disabled="{{stage === 'prepared' || stage === 'soon'}}" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
-        <button wx:if="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">看看回忆</text></button>
       </view>
     </view>
   </scroll-view>
+
+  <view wx:if="{{pet && stage === 'hatched'}}" class="post-hatch-landing">
+    <image class="post-hatch-landing__image" src="{{sceneImage}}" mode="aspectFill"></image>
+    <view class="post-hatch-landing__shade"></view>
+    <view wx:if="{{postHatchLoading}}" class="post-hatch-landing__state"><view class="loading-orbit"></view></view>
+    <view wx:elif="{{postHatchError}}" class="post-hatch-landing__state"><text>{{postHatchError}}</text><view class="retry-link" bindtap="onRetryPostHatch">重新看看</view></view>
+    <pet-avatar wx:elif="{{postHatchSnapshot && postHatchSnapshot.currentState.atHome}}" class="post-hatch-landing__character" pet-type="{{pet.prototype}}" size="{{186}}" bindtap="openPostHatchLanding"></pet-avatar>
+    <view class="post-hatch-landing__memory" aria-role="button" aria-label="看看回忆" bindtap="onChangeScene">看看回忆</view>
+  </view>
 
   <!-- DEV-ONLY：季节/时令/天气验收器，正式上线前整体删除。 -->
   <view wx:if="{{isDemo && pet && stage !== 'hatched'}}" class="scene-tester" style="top:{{sceneTesterTopPx}}px;">

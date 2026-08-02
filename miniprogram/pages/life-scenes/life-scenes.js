@@ -25,8 +25,7 @@ Page({
         this.setData({ loading: false, error: result.message || '回忆没有加载好，请重试' });
         return;
       }
-      const keepsakes = (result.keepsakes || []).map(item => Object.assign({}, item, { mark: Array.from(item.name || '物')[0] }));
-      this.setData({ loading: false, error: '', keepsakes, postcards: result.postcards || [], cardRecommendation: result.cardRecommendation || null });
+      this.setData({ loading: false, error: '', keepsakes: result.keepsakes || [], postcards: result.postcards || [], cardRecommendation: result.cardRecommendation || null });
     }).catch(() => {
       if (this.pageActive && token === this.loadToken) this.setData({ loading: false, error: '回忆没有加载好，请重试' });
     });

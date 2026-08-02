@@ -43,9 +43,9 @@ assert.equal(template.includes('class="companion-primary-dock"') && template.inc
 assert.equal(template.includes('completed-check') || template.includes('completed-mark'), false, '首页入口不得出现完成勾选或完成章');
 assert.match(styles, /\.companion-section--incubating\s*\{[^}]*right:\s*34rpx;[^}]*bottom:\s*calc\(160rpx \+ env\(safe-area-inset-bottom\)\)/s, '右侧入口列必须锚定在独立画画按钮和底部安全区上方');
 assert.match(styles, /\.companion-grid\s*\{[^}]*flex-direction:\s*column;[^}]*gap:\s*20rpx;/s, '许愿池、早教班与画画必须沿右侧垂直排列');
-assert.match(styles, /\.companion-primary-dock\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*248rpx;[^}]*flex-direction:\s*column;[^}]*border-radius:\s*56rpx;[^}]*background:\s*rgba\(255,253,247,\.82\)/s, '许愿池与早教班必须使用右侧半透明竖向胶囊');
+assert.match(styles, /\.companion-primary-dock\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*224rpx;[^}]*flex-direction:\s*column;[^}]*border-radius:\s*56rpx;[^}]*background:\s*rgba\(255,253,247,\.82\)/s, '许愿池与早教班必须使用右侧半透明竖向胶囊');
 assert.match(styles, /\.companion-item--learn::before\s*\{[^}]*left:\s*22rpx;[^}]*right:\s*22rpx;[^}]*top:\s*0;[^}]*height:\s*1rpx;/s, '两个竖向入口之间必须使用克制的横向分隔线');
-assert.match(styles, /\.companion-item--draw\s*\{[^}]*width:\s*104rpx;[^}]*height:\s*104rpx;/s, '独立画画入口必须保留不小于 44px 的触控区域');
+assert.match(styles, /\.companion-item--draw\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;/s, '独立画画入口必须保留不小于 44px 的触控区域');
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none;/s, '弱动效模式必须取消入口缩放反馈');
 
 const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets')).PRE_HATCH;

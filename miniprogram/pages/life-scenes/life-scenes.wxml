@@ -11,7 +11,7 @@
     <block wx:elif="{{section === 'keepsakes'}}">
       <view wx:if="{{keepsakes.length}}" class="memory-list">
         <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-card">
-          <view class="keepsake-art"><text>{{item.mark}}</text><view class="asset-note">图片待补</view></view>
+          <view wx:if="{{item.asset}}" class="keepsake-art"><image class="keepsake-image" src="{{item.asset}}" mode="aspectFit"></image></view>
           <view class="keepsake-copy"><text class="memory-title">{{item.name}}</text><text class="memory-meta">{{item.sourceScene}}</text><text class="memory-story">{{item.story}}</text></view>
         </view>
       </view>
@@ -20,7 +20,7 @@
     <block wx:elif="{{section === 'postcards'}}">
       <view wx:if="{{postcards.length}}" class="postcard-list">
         <view wx:for="{{postcards}}" wx:key="id" class="postcard-card">
-          <view class="postcard-art"><text>POST</text><view class="asset-note">图片待补</view></view>
+          <image wx:if="{{item.asset}}" class="postcard-art" src="{{item.asset}}" mode="aspectFill"></image>
           <text class="memory-meta">{{item.sceneLabel}}</text><text class="memory-story">{{item.line}}</text>
         </view>
       </view>
@@ -31,7 +31,7 @@
         <text class="recommend-kicker">今天想再看一次</text><pet-avatar pet-type="{{pet.prototype}}" size="{{144}}"></pet-avatar>
         <text class="recommend-name">{{pet.name || '我的蛋宝宝'}}</text><text class="recommend-line">{{cardRecommendation.line}}</text><text class="recommend-open">查看收藏卡</text>
       </view>
-      <view wx:else class="empty-memory"><view class="empty-mark">卡</view><text class="empty-title">今天的收藏卡还没准备好</text><text class="empty-copy">稍后再进入时会重新加载；已有收藏卡不会因此改变。</text></view>
+      <view wx:else class="empty-memory"><view class="empty-mark">卡</view><text class="empty-title">收藏卡留在这里</text><text class="empty-copy">完成破壳承接后，这枚实体蛋唯一的收藏卡会保存在账号里。</text></view>
     </block>
   </scroll-view>
 </view>

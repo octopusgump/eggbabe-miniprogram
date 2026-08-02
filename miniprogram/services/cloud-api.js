@@ -71,15 +71,6 @@ function sendPostHatchLetter(eggId, slotIndex, message) {
 function getPostHatchMemories(eggId) {
   return call('getPostHatchMemories', { egg_id: eggId });
 }
-function getPostHatchDecorations(eggId) {
-  return call('getPostHatchDecorations', { egg_id: eggId });
-}
-function createRoomDecoration(eggId, sketchSummary) {
-  return call('createRoomDecoration', { egg_id: eggId, sketch_summary: sketchSummary });
-}
-function moveRoomDecoration(eggId, decorationId, x, y, z) {
-  return call('moveRoomDecoration', { egg_id: eggId, decoration_id: decorationId, x, y, z });
-}
 function manageDeletion(action) { return call('manageDeletion', { action }); }
 function trackEvents(events) { return call('trackEvents', { events }); }
 function serverTime() { return call('serverTime'); }
@@ -128,9 +119,6 @@ module.exports = {
   performPostHatchAction,
   sendPostHatchLetter,
   getPostHatchMemories,
-  getPostHatchDecorations,
-  createRoomDecoration,
-  moveRoomDecoration,
   manageDeletion,
   trackEvents,
   serverTime,

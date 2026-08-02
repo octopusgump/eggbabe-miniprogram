@@ -34,7 +34,8 @@ Component({
     lightPhase: { type: String, value: 'midday' },
     weatherLabel: { type: String, value: '晴朗' },
     periodLabel: { type: String, value: '日间' },
-    originStyle: { type: String, value: '' }
+    originStyle: { type: String, value: '' },
+    magicEnabled: { type: Boolean, value: false }
   },
 
   data: {
@@ -80,6 +81,11 @@ Component({
 
   methods: {
     noop() {},
+
+    onMagicTap() {
+      if (!this.properties.visible || !this.properties.magicEnabled || this.data.loading || this.data.empty || this.data.failed) return;
+      this.triggerEvent('magic');
+    },
 
     configureTopbar() {
       try {

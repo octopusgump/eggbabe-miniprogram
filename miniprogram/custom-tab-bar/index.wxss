@@ -14,9 +14,9 @@
   background: transparent;
 }
 .tab-item {
-  width: 88rpx;
-  height: 88rpx;
-  flex: 0 0 88rpx;
+  width: 112rpx;
+  height: 112rpx;
+  flex: 0 0 112rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +31,7 @@
   transition: transform .16s ease, background .16s ease;
 }
 .tab-item--pressed { background: rgba(238,243,228,.96); transform: scale(.96); }
-.tab-icon { width: 44rpx; height: 44rpx; display: block; }
+.tab-icon { width: 52rpx; height: 52rpx; display: block; }
 
 @media (prefers-reduced-motion: reduce) {
   .tab-item { transition: none; }

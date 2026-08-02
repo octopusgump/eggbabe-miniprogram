@@ -1,14 +1,14 @@
 # 蛋宝宝生命周期图片生成清单
 
-更新时间：2026-08-01
+更新时间：2026-08-02
 依据：主 PRD §11、辅助 PRD §10.11、`lifecycle/README.md` 锁定基准。
 统一交付：WebP；透明素材必须带真实 Alpha；角色固定 `1254 × 1254`；窗外素材固定 `941 × 1672`。
 
 ## 总进度
 
-- 固定清单：47 张。
+- 固定清单：85 张。
 - 已就绪：19 张，其中复用并复核 10 张，本轮正式新增 9 张。
-- 待生成：28 张。
+- 待生成：66 张。
 - 角色基准：玉兔与锦鲤标准参考均已确认；锦鲤无需标记“参考不足”。
 
 ## 逐项状态
@@ -34,8 +34,8 @@
 | 19 | `pre-hatch/20-room-objects/interactive-props/coffee_machine.webp` | 破壳前 / 互动小物 | 1254×1254 / 43274 | RGBA，四角透明 | 正式·新增 |
 | 20 | `pre-hatch/20-room-objects/interactive-props/drawing_paper_set.webp` | 破壳前 / 互动小物 | 1254×1254 / 47810 | RGBA，四角透明 | 正式·新增 |
 | 21 | `pre-hatch/20-room-objects/interactive-props/scarf.webp` | 破壳前 / 互动小物 | 1254×1254 / 76220 | RGBA，四角透明 | 正式·新增 |
-| 22 | `post-hatch/10-background/left-living/left_living.webp` | 破壳后 / 左屏背景 | — | 待检 | 待生成 |
-| 23 | `post-hatch/10-background/right-decor/right_decor.webp` | 破壳后 / 右屏背景 | — | 待检 | 待生成 |
+| 22 | `post-hatch/10-background/left-living/scene-sets/{scene_key}_left_living.webp`（20 张） | 破壳后 / 左屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
+| 23 | `post-hatch/10-background/right-decor/scene-sets/{scene_key}_right_decor.webp`（20 张） | 破壳后 / 右屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
 | 24 | `post-hatch/30-character/jade-rabbit/sleep.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 25 | `post-hatch/30-character/jade-rabbit/lazy.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 26 | `post-hatch/30-character/jade-rabbit/stare.webp` | 玉兔 / 角色 | 1254×1254 / 93122 | RGBA，四角透明 | 正式·复用基准 |

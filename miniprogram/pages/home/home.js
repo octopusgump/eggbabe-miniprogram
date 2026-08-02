@@ -364,6 +364,10 @@ Page({
     const stage = petStore.getStage(pet);
     const presentation = petStore.getStagePresentation(stage);
     const hatched = stage === 'hatched';
+    const returningFromPostHatchScene = hatched && Boolean(this.postHatchLandingActive);
+    if (returningFromPostHatchScene) this.postHatchLandingActive = false;
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ selected: 0, hidden: hatched });
     const showNameSheet = !hatched && petStore.shouldPromptNickname();
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
@@ -385,7 +389,7 @@ Page({
       stage,
       stageText: presentation.homeText,
       expectedHatchLabel: hatched || stage === 'ready' ? '' : this.formatExpectedHatch(pet.hatchAt),
-      actionLabel: presentation.actionLabel,
+      actionLabel: hatched ? '' : presentation.actionLabel,
       dailyStatus: null,
       postHatchSnapshot: null,
       postHatchLoading: hatched,
@@ -439,7 +443,8 @@ Page({
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
     if (hatched) {
-      this.loadPostHatchSnapshot(pet);
+      if (returningFromPostHatchScene) this.loadPostHatchSnapshot(pet);
+      else this.openPostHatchLanding();
     } else {
       practice.getManualState().then(state => {
         if (!state.ok) return;
@@ -467,6 +472,7 @@ Page({
 
   loadPostHatchSnapshot(pet) {
     const requestToken = this.postHatchRequestToken = (this.postHatchRequestToken || 0) + 1;
+    clearTimeout(this.postHatchSlotTimer);
     this.setData({ postHatchLoading: true, postHatchError: '' });
     postHatch.getSnapshot(pet || this.data.pet).then(result => {
       if (!this.pageActive || requestToken !== this.postHatchRequestToken) return;
@@ -481,9 +487,9 @@ Page({
         postHatchSnapshot: result,
         dailyStatus: result.mood,
         stageText: `${current.majorLabel} · ${current.label}`,
-        sceneImage: result.previewImage || sceneConfig.assets.POST_HATCH.panoramaFallback,
-        actionLabel: current.atHome ? '看看 ta 此刻在做什么' : '看看 ta 留下的空房间'
+        sceneImage: result.previewImage || sceneConfig.assets.POST_HATCH.panoramaFallback
       });
+      this.schedulePostHatchRefresh(current.slotEnd);
     }).catch(() => {
       if (this.pageActive && requestToken === this.postHatchRequestToken) {
         this.setData({ postHatchLoading: false, postHatchError: '此刻状态没有加载好，请重试' });
@@ -491,9 +497,35 @@ Page({
     });
   },
 
+  openPostHatchLanding() {
+    if (this.postHatchLandingActive || this.postHatchLandingOpening) return;
+    this.postHatchLandingOpening = true;
+    this.postHatchLandingActive = true;
+    wx.navigateTo({
+      url: '/pages/life-scene/life-scene?entry=post-hatch-landing',
+      animationType: 'none',
+      animationDuration: 0,
+      success: () => { this.postHatchLandingOpening = false; },
+      fail: () => {
+        this.postHatchLandingOpening = false;
+        this.postHatchLandingActive = false;
+        if (this.pageActive) this.loadPostHatchSnapshot(this.data.pet);
+      }
+    });
+  },
+
   onRetryPostHatch() {
     if (!this.data.pet || this.data.postHatchLoading) return;
     this.loadPostHatchSnapshot(this.data.pet);
+  },
+
+  schedulePostHatchRefresh(slotEnd) {
+    clearTimeout(this.postHatchSlotTimer);
+    const delay = Number(slotEnd) - timeService.now();
+    if (!Number.isFinite(delay) || delay <= 0) return;
+    this.postHatchSlotTimer = setTimeout(() => {
+      if (this.pageActive && this.data.stage === 'hatched') this.loadPostHatchSnapshot(this.data.pet);
+    }, Math.min(delay + 500, 2147483000));
   },
 
   onReady() {
@@ -961,6 +993,7 @@ Page({
 
   onTouchStart() {
     if (!this.data.pet) return;
+    if (this.data.stage === 'hatched' && this.data.postHatchSnapshot && !this.data.postHatchSnapshot.currentState.atHome) return;
     this.clearCuddleTimers();
     this.clearEffectTimers();
     this.completedLongPress = false;
@@ -973,13 +1006,16 @@ Page({
       analytics.track('companion_interaction', { interaction_type: 'cuddle', result: 'played' });
       this.completedLongPress = true;
       this.setData({ eggMotion: 'egg--warm' });
-      practice.submitOnce('heartbeat').then(result => {
-        if (result.ok && !result.alreadyDone) {
-          this.showFeedback('你听见了壳里的心跳。');
-          return;
-        }
-        this.showFeedback('我暖起来了。');
-      });
+      if (this.data.stage === 'hatched') this.showFeedback('我暖起来了。');
+      else {
+        practice.submitOnce('heartbeat').then(result => {
+          if (result.ok && !result.alreadyDone) {
+            this.showFeedback('你听见了壳里的心跳。');
+            return;
+          }
+          this.showFeedback('我暖起来了。');
+        });
+      }
       this.cuddleResetTimer = setTimeout(() => {
         this.setData({ eggMotion: '', sceneEffect: '' });
         this.onShow();
@@ -1451,6 +1487,7 @@ Page({
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.sceneOpenTimer);
+    clearTimeout(this.postHatchSlotTimer);
     this.clearEffectTimers();
     (this.particleTimers || []).forEach(clearTimeout);
     this.particleTimers = [];
@@ -1469,7 +1506,7 @@ Page({
     this.clearInteractionTimers();
     this.completedLongPress = false;
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ hidden: false });
+    if (tabBar) tabBar.setData({ hidden: this.data.stage === 'hatched' });
     this.setData({
       dailyWindowVisible: false,
       eggMotion: '',

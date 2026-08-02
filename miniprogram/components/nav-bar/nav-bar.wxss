@@ -8,7 +8,7 @@
 }
 
 .nav-row {
-  height: 88rpx; /* 44px */
+  height: 112rpx; /* 与圆形导航按钮等高 */
   display: flex;
   align-items: center;
   position: relative;
@@ -16,12 +16,22 @@
 }
 
 .nav-side {
-  width: 88rpx;
-  height: 88rpx;
+  width: 112rpx;
+  height: 112rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.nav-side--back {
+  border-radius: 50%;
+  transition: transform 180ms ease-out, background 180ms ease-out;
+}
+
+.nav-side--pressed {
+  background: #F3F7E7;
+  transform: scale(.96);
 }
 
 .nav-title {
@@ -46,3 +56,8 @@
 }
 
 .demo-chip { padding: 5rpx 10rpx; border-radius: 999rpx; background: #EEF2E3; color: #687548; font-size: 16rpx; font-weight: 600; letter-spacing: 1rpx; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-side--back { transition: none; }
+  .nav-side--pressed { transform: none; }
+}

@@ -14,6 +14,8 @@
 
 `pre-hatch` 与 `post-hatch` 完全分开。正式图片建议导出为透明 WebP/PNG；背景建议同一套昼夜、季节图保持相同画幅和机位。
 
+破壳后三屏背景采用“同一母版制作、三屏独立运行”，中屏复用破壳前状态图，左、右按相同 scene key 成套扩图。权威生产与验收规范见 `post-hatch/10-background/THREE_PANEL_SCENE_SET_SPEC.md`。
+
 ## 已锁定视觉基准（2026-08-01）
 
 以下规则是后续所有批次的默认基准。除非产品负责人明确批准重新设计，否则不得改变固定机位、构图锚点、角色比例、材质、主光方向或整体色彩体系。
@@ -67,7 +69,7 @@
 
 ### 可继续复用
 
-- `post-hatch/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.png`：当前作为破壳后三屏空间的稳定占位底图。
+- `post-hatch/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.webp`：当前作为破壳后三屏空间的稳定占位底图。
 - `post-hatch/50-overlays/magic-window/magic_window_dali_with_jade_rabbit_back_placeholder.png`：当前作为魔法窗“大理”方向的临时占位图。
 
 ### 仅作构图参考，不作为正式分层素材

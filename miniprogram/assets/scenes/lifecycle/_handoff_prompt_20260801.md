@@ -100,12 +100,9 @@ A. 剩余一张蛋体，优先完成
 
 要求：严格对齐现有 egg_on_nest.webp，保持同一枚奶白色织物纹理蛋、相同 1254×1254 画布、缩放和中心锚点。egg_window_back 必须是真正背影，不出现正面五官。透明底，不含房间、窗户、桌面或整体投影。
 
-B. 破壳后三屏背景，2 张
+B. 破壳后三屏背景（本段已由 2026-08-02 三屏规范替代）
 
-- post-hatch/10-background/left-living/left_living.webp
-- post-hatch/10-background/right-decor/right_decor.webp
-
-要求：与 room_base.webp 属于同一个房间、同一空间体系、墙面颜色、木材色、地板高度和右上方自然光。左屏为小木床、浅蓝被子、白枕头、圆球小夜灯和无文字线稿画；不含角色和可切换被子前景。右屏是留白装扮区，不烘焙用户家具、角色或 UI。若有窗户，窗洞必须是真实透明 Alpha。
+不再生成两张单一通用背景。以破壳前 20 个有效状态为中屏锚点，分别生成 20 张左屏和 20 张右屏。文件名、画布、生产顺序和完整清单以 `post-hatch/10-background/THREE_PANEL_SCENE_SET_SPEC.md` 为准。
 
 C. 玉兔剩余姿态，6 张
 

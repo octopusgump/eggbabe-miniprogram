@@ -1,5 +1,12 @@
 const assets = require('../config/post-hatch-assets');
 
+const MAJOR_SCENES = Object.freeze({
+  home: '家',
+  travel: '旅行',
+  work: '打工',
+  school: '上学'
+});
+
 const HOME_STATES = [
   {
     key: 'sleep', major: 'home', majorLabel: '家', label: '睡觉', screen: 0,
@@ -35,12 +42,12 @@ const HOME_STATES = [
     key: 'gaming', major: 'home', majorLabel: '家', label: '打游戏', screen: 1,
     line: '这一关差一点就过去了，我连耳朵都没敢动。', canTalk: false,
     action: { id: 'tap_screen', kind: 'screen', screen: 1, feedback: '画面里的小角色跳了一下，我没有抬头。' },
-    keepsake: { id: 'paper-token', name: '纸做的小徽章', story: '有一关我试了很多次都没过去，就给自己剪了一枚歪歪的小徽章。它没有奖励任何东西，只是让我愿意再笑一次。后来卡住的时候，我都会把它摆在屏幕边。' }
+    keepsake: { id: 'paper-token', name: '纸做的小徽章', story: '有一关我试了很多次都没过去，就给自己剪了一枚歪歪的小徽章。它什么也不代表，只是让我愿意再笑一次。后来卡住的时候，我都会把它放在屏幕边。' }
   },
   {
     key: 'window', major: 'home', majorLabel: '家', label: '看窗外', screen: 2,
     line: '远处的云走得很慢，我想和你一起看一会儿。', canTalk: true,
-    action: { id: 'view_daily_window', kind: 'window', screen: 2, feedback: '窗外的光慢慢铺开，ta 陪你看着上海此刻的天空。' },
+    action: { id: 'view_daily_window', kind: 'window', screen: 2, feedback: '窗外的光慢慢铺开，我陪你看着上海此刻的天空。' },
     keepsake: { id: 'window-leaf', name: '窗边的叶子', story: '风把它送到窗沿时，叶脉还透着光。我没有把它夹进很厚的书里，只放在每天都看得见的地方。它变干以后，风吹过的纹路反而更清楚了。' }
   }
 ];
@@ -65,6 +72,12 @@ const STORY_LINE = [
   AWAY_STATES[6], AWAY_STATES[7], AWAY_STATES[9], AWAY_STATES[8]
 ];
 
+const STATE_BY_ID = HOME_STATES.concat(AWAY_STATES).reduce((result, state) => {
+  result[`${state.major}:${state.key}`] = state;
+  if (state.keepsake) state.keepsake.asset = assets.POST_HATCH.keepsakes[state.keepsake.id] || '';
+  return result;
+}, {});
+
 function isNightHour(hour) {
   return hour >= 23 || hour < 6;
 }
@@ -75,13 +88,23 @@ function stateForSlot(slotIndex, slotStart) {
   const state = isNightHour(hour) && base.major !== 'home'
     ? (hour < 4 ? HOME_STATES[0] : HOME_STATES[6])
     : base;
+  return resolveDefinition(state.major, state.key);
+}
+
+function resolveDefinition(major, key) {
+  const state = STATE_BY_ID[`${major}:${key}`];
+  if (!state) return null;
+  const atHome = state.major === 'home';
   return Object.assign({}, state, {
-    atHome: state.major === 'home',
-    screen: state.major === 'home' ? state.screen : 1,
-    canTalk: state.major === 'home' && !!state.canTalk,
-    action: state.major === 'home' ? state.action : { id: 'write_letter', kind: 'letter', screen: 1, feedback: '信已经寄出，家里又安静下来。' },
+    atHome,
+    screen: atHome ? state.screen : 1,
+    canTalk: atHome && !!state.canTalk,
+    action: atHome
+      ? Object.assign({}, state.action)
+      : { id: 'write_letter', kind: 'letter', screen: 1, feedback: '信已经寄出，家里又安静下来。' },
+    keepsake: state.keepsake ? Object.assign({}, state.keepsake) : null,
     previewImage: assets.POST_HATCH.panoramaFallback
   });
 }
 
-module.exports = { HOME_STATES, AWAY_STATES, STORY_LINE, stateForSlot, assets };
+module.exports = { MAJOR_SCENES, HOME_STATES, AWAY_STATES, STORY_LINE, resolveDefinition, stateForSlot, assets };

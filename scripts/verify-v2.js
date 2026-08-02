@@ -42,6 +42,7 @@ const dailyWindowTemplate = read('miniprogram/components/daily-window-detail/dai
 const dailyWindowLogic = read('miniprogram/components/daily-window-detail/daily-window-detail.js');
 const dailyWindowStyles = read('miniprogram/components/daily-window-detail/daily-window-detail.wxss');
 const windowWeatherCanvas = read('miniprogram/utils/window-weather-canvas.js');
+const postHatchAssets = read('miniprogram/config/post-hatch-assets.js');
 const customTabTemplate = read('miniprogram/custom-tab-bar/index.wxml');
 const customTabStyles = read('miniprogram/custom-tab-bar/index.wxss');
 const myTemplate = read('miniprogram/pages/my/my.wxml');
@@ -124,14 +125,16 @@ assert.equal(
 );
 assert.equal(windowWeatherCanvas.includes("weather === 'postSnow' && period === 'night'") && windowWeatherCanvas.includes('drawIceGlints'), true, '雪后夜间必须补充冰晶微光，避免全屏窗外静止');
 assert.equal(
-  lifeSceneTemplate.includes('wx:if="{{dailyWindowVisible && !magicWindowVisible}}"')
-    && lifeSceneTemplate.includes('catchtap="onOpenMagicWindow"')
-    && lifeSceneTemplate.includes('bindtap="onCloseMagicWindow"')
-    && lifeSceneLogic.includes('dailyWindowVisible: false')
-    && lifeSceneLogic.includes('magicWindowVisible: true')
-    && lifeSceneLogic.includes('dailyWindowVisible: true'),
+  lifeSceneTemplate.includes('<daily-window-detail')
+    && lifeSceneTemplate.includes('magic-enabled="{{true}}"')
+    && lifeSceneTemplate.includes('bindmagic="onOpenMagicWindow"')
+    && dailyWindowTemplate.includes('daily-window__magic-entry')
+    && dailyWindowLogic.includes("this.triggerEvent('magic')")
+    && lifeSceneLogic.includes('TOKYO_MAGIC_WINDOW_PREVIEW')
+    && lifeSceneLogic.includes('magic_window_tokyo_koi_walk_standard_v02.webp')
+    && /destinations:\s*\{[^}]*tokyo/.test(postHatchAssets) === false,
   true,
-  '魔法窗必须从日常窗外的远方微光进入，打开时隐藏日常窗外，关闭后返回日常窗外'
+  '正式三景区素材未齐时，东京只能通过独立预览入口接入且不得混入正式目的地配置'
 );
 assert.equal(dailyWindowTemplate.includes('正在靠近窗外') && dailyWindowTemplate.includes('窗外还没有准备好') && dailyWindowTemplate.includes('窗外景色没有加载好') && dailyWindowTemplate.includes('onRetry'), true, '日常窗外详情必须覆盖加载、空状态、失败与重试');
 assert.equal(dailyWindowLogic.includes('reducedMotionEnabled') && dailyWindowLogic.includes('drawFrame(4200, true)') && dailyWindowLogic.includes('cleanup()'), true, '日常窗外详情必须支持弱动效与离页清理');
@@ -139,7 +142,7 @@ assert.equal(dailyWindowStyles.includes('@keyframes daily-window-fade-in') && da
 assert.equal(customTabTemplate.includes('wx:if="{{!hidden}}"') && homeLogic.includes("tabBar.setData({ hidden: true })") && homeLogic.includes("hidden: false"), true, '日常窗外详情完全展开时必须隐藏底部 Tab，返回后恢复');
 assert.equal(customTabTemplate.includes('wx:if="{{selected !== index}}"') && customTabTemplate.includes('src="{{item.selectedIconPath}}"') && customTabTemplate.includes('tab-text') === false, true, '底部导航只显示前往另一页的小圆图标，不得保留当前页标签或文字');
 assert.match(customTabStyles, /\.tab-bar\s*\{[^}]*pointer-events:\s*none;[^}]*background:\s*transparent;/s, '底部导航必须移除整块白色 Tab 背景');
-assert.match(customTabStyles, /\.tab-item\s*\{[^}]*width:\s*88rpx;[^}]*height:\s*88rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*rgba\(255,253,247,\.92\)/s, '我的与蛋宝宝导航必须使用统一白底小圆按钮');
+assert.match(customTabStyles, /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*rgba\(255,253,247,\.92\)/s, '我的与蛋宝宝导航必须使用统一 112rpx 白底圆形按钮');
 assert.equal(myLogic.includes("selected: 1, hidden: true") && myTemplate.includes('fallback-url="/pages/home/home"'), true, '我的页必须隐藏右下导航按钮，并使用左上角返回入口');
 assert.equal(navBarLogic.includes('pages.length > 1') && navBarLogic.includes('this.properties.fallbackUrl') && navBarLogic.includes('wx.switchTab'), true, '左上角返回必须优先返回上一页，并在 Tab 页面栈为空时回到指定首页');
 assert.equal(dailyWindowLogic.includes('getMenuButtonBoundingClientRect') && dailyWindowLogic.includes('menuBottom + 14') && dailyWindowTemplate.includes('top:{{topbarTopPx}}px'), true, '日常窗外返回按钮必须放在微信胶囊下方的安全位置');
@@ -177,8 +180,12 @@ assert.equal(homeTemplate.includes('egg_on_nest.webp') || homeLogic.includes('sh
 const lifeScene = lifeSceneLogic;
 assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${lifeScene}\n${lifeSceneTemplate}`), false, '生活场景只能返回内容反馈');
 assert.equal(app.pages.includes('pages/chat/chat'), false, 'V3.6 不得注册独立聊天页');
+assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 PRD 未放行的 AI 布置额度页面不得注册');
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
 assert.equal(lifeSceneTemplate.includes('给远方的 ta 写一句') && lifeSceneTemplate.includes('currentState.canTalk'), true, '外出时必须可写信，对话只能在允许的小状态原地出现');
+assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
+assert.equal(lifeSceneTemplate.includes('class="memory-entry"') && /memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate) === false, true, '全屏生活空间只能保留一个“看看回忆”入口');
+assert.equal(homeLogic.includes('/pages/life-scene/life-scene?entry=post-hatch-landing'), true, '破壳后进入首页必须直接落到全屏生活空间');
 assert.equal(read('miniprogram/services/post-hatch-companion.js').includes('5 * 60 * 60 * 1000'), true, '破壳后当前状态必须按 5 小时时段推进');
 
 const album = read('miniprogram/pages/album/album.wxml');
@@ -192,7 +199,8 @@ assert.equal(cloudApi.includes('recordCompanionInteraction'), true, '服务层�
 assert.equal(cloudApi.includes('recordRoomElementInteraction'), true, '服务层必须预留房间小物接口');
 assert.equal(cloudApi.includes('chatReply'), true, '服务层必须预留正式对话回复接口');
 assert.equal(cloudApi.includes('saveEggCreation'), true, '服务层必须预留蛋壳创作写入接口');
-assert.equal(cloudApi.includes('getPostHatchHome') && cloudApi.includes('performPostHatchAction') && cloudApi.includes('sendPostHatchLetter') && cloudApi.includes('getPostHatchMemories') && cloudApi.includes('getPostHatchDecorations') && cloudApi.includes('createRoomDecoration') && cloudApi.includes('moveRoomDecoration'), true, '服务层必须预留 V3.6 破壳后接口');
+assert.equal(cloudApi.includes('getPostHatchHome') && cloudApi.includes('performPostHatchAction') && cloudApi.includes('sendPostHatchLetter') && cloudApi.includes('getPostHatchMemories'), true, '服务层必须预留主 PRD 的破壳后接口');
+assert.equal(/getPostHatchDecorations|createRoomDecoration|moveRoomDecoration/.test(cloudApi), false, '服务层不得预留装饰额度或装饰物库接口');
 assert.equal(cloudApi.includes("mode: 'live'") && cloudApi.includes('request_id'), true, '正式请求必须带 live 与唯一请求 ID');
 assert.equal(read('miniprogram/services/chat-service.js').includes("result.mode !== 'live'"), true, '对话适配层必须拒绝非 live 回复');
 

@@ -8,7 +8,7 @@
 
 .btn {
   width: 100%;
-  height: 100rpx; /* 50px */
+  height: 96rpx; /* 统一文字 CTA：48px */
   border-radius: 999rpx; /* --radius-full */
   display: flex;
   align-items: center;

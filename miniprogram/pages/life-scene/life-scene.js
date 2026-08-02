@@ -11,7 +11,12 @@ const WEATHER_LABELS = {
   storm: '雷雨', afterRain: '雨后', postSnow: '雪后', wind: '有风'
 };
 
-const TOKYO_MAGIC_WINDOW = assets.POST_HATCH.magicWindow && assets.POST_HATCH.magicWindow.tokyo || {};
+// 东京仅用于当前动效体验，不进入正式三景区素材门禁。
+const TOKYO_MAGIC_WINDOW_PREVIEW = {
+  base: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_base_v01.webp',
+  clouds: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_clouds_v03.webp',
+  koi: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_koi_walk_standard_v02.webp'
+};
 
 function reducedMotionEnabled() {
   try {
@@ -22,9 +27,39 @@ function reducedMotionEnabled() {
   }
 }
 
+function topControlPositions(info, demoVisible) {
+  const statusBarHeight = Number(info && info.statusBarHeight || 20);
+  let menuBottom = statusBarHeight + 40;
+  try {
+    const rect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+    if (rect && Number.isFinite(Number(rect.bottom))) menuBottom = Number(rect.bottom);
+  } catch (error) {}
+  const demoBadgeTop = menuBottom + 10;
+  return {
+    demoBadgeTop,
+    memoryEntryTop: menuBottom + (demoVisible ? 42 : 10)
+  };
+}
+
+function panelPresentation(sceneKey) {
+  const sceneSet = assets.resolvePanelSceneSet(sceneKey);
+  if (!sceneSet) {
+    return {
+      sceneSetId: 'panorama-fallback',
+      panelImages: [assets.POST_HATCH.leftLivingBackground, assets.POST_HATCH.centerDeskBackground, assets.POST_HATCH.rightDecorBackground]
+    };
+  }
+  return {
+    sceneSetId: sceneSet.id,
+    panelImages: [sceneSet.leftLiving, sceneSet.centerDesk, sceneSet.rightDecor]
+  };
+}
+
 Page({
   data: {
     statusBarHeight: 20,
+    demoBadgeTop: 70,
+    memoryEntryTop: 102,
     pet: null,
     snapshot: null,
     currentState: null,
@@ -41,28 +76,30 @@ Page({
     letterBusy: false,
     letterError: '',
     dailyWindowVisible: false,
+    magicWindowVisible: false,
+    magicWindowLoading: false,
+    magicWindowFailed: false,
+    magicKoiReacting: false,
+    magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base,
+    magicWindowClouds: TOKYO_MAGIC_WINDOW_PREVIEW.clouds,
+    magicWindowKoi: TOKYO_MAGIC_WINDOW_PREVIEW.koi,
     dailyWindowOriginStyle: '',
     dailyWindowEnvironment: environmentService.resolve(),
     dailyWindowWeatherLabel: '晴朗',
     dailyWindowPeriodLabel: '日间',
-    magicWindowVisible: false,
-    magicWindowLoading: false,
-    magicWindowFailed: false,
-    magicWindowReducedMotion: false,
-    magicKoiReacting: false,
-    magicWindowBaseSrc: TOKYO_MAGIC_WINDOW.base || '',
-    magicWindowCloudsSrc: TOKYO_MAGIC_WINDOW.clouds || '',
-    magicWindowKoiSrc: TOKYO_MAGIC_WINDOW.koi || '',
+    reducedMotion: false,
+    characterWarming: false,
     screens: [0, 1, 2],
     currentScreen: 1,
     scrollLeft: 0,
+    scrollIntoView: 'world-panel-1',
     panelWidth: 375,
     panelHeight: 667,
-    decorations: [],
     isDemo: config.localDemoEnabled,
     enterFromHome: false,
     isExiting: false,
     exitTransitionStyle: '',
+    panelSceneSetId: 'panorama-fallback',
     panelImages: [assets.POST_HATCH.leftLivingBackground, assets.POST_HATCH.centerDeskBackground, assets.POST_HATCH.rightDecorBackground],
     panoramaFallback: assets.POST_HATCH.panoramaFallback
   },
@@ -71,6 +108,7 @@ Page({
     this.pageActive = true;
     this.hasTrackedEnter = false;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const topControls = topControlPositions(info, config.localDemoEnabled);
     const pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') {
       wx.showToast({ title: '破壳后才能进入这里', icon: 'none' });
@@ -86,16 +124,21 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const dailyWindowEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const panels = panelPresentation(dailyWindowEnvironment.sceneKey);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
+      demoBadgeTop: topControls.demoBadgeTop,
+      memoryEntryTop: topControls.memoryEntryTop,
       panelWidth: Number(info.windowWidth || 375),
       panelHeight: Number(info.windowHeight || 667),
       pet,
-      enterFromHome: query.entry === 'home-expand',
+      panelSceneSetId: panels.sceneSetId,
+      panelImages: panels.panelImages,
+      enterFromHome: query.entry === 'home-expand' || query.entry === 'post-hatch-landing',
       dailyWindowEnvironment,
       dailyWindowWeatherLabel: WEATHER_LABELS[dailyWindowEnvironment.weather] || '晴朗',
       dailyWindowPeriodLabel: dailyWindowEnvironment.lightPhase === 'sunset' ? '日落' : (dailyWindowEnvironment.period === 'night' ? '夜晚' : '日间'),
-      magicWindowReducedMotion: reducedMotionEnabled()
+      reducedMotion: reducedMotionEnabled()
     });
     this.loadSnapshot();
   },
@@ -120,12 +163,12 @@ Page({
         currentState,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
+        scrollIntoView: `world-panel-${screen}`,
         feedback: currentState.actionDone ? currentState.actionFeedback : '',
         playedActionKind: currentState.actionDone ? currentState.action.kind : '',
         letterDraft: '',
         talkDraft: '',
-        talkReply: '',
-        decorations: result.decorations || []
+        talkReply: ''
       });
       if (!this.hasTrackedEnter) {
         analytics.track('scene_enter', { scene_id: `${currentState.major}:${currentState.key}`, entry_type: this.data.enterFromHome ? 'home_expand' : 'direct' });
@@ -152,6 +195,63 @@ Page({
     if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen });
   },
 
+  onResize(size) {
+    const next = size && size.size || size || {};
+    const panelWidth = Number(next.windowWidth || this.data.panelWidth);
+    const panelHeight = Number(next.windowHeight || this.data.panelHeight);
+    const screen = Number(this.data.currentScreen || 0);
+    const topControls = topControlPositions(next, this.data.isDemo);
+    this.setData({
+      panelWidth,
+      panelHeight,
+      demoBadgeTop: topControls.demoBadgeTop,
+      memoryEntryTop: topControls.memoryEntryTop,
+      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
+      scrollIntoView: `world-panel-${Math.max(0, Math.min(2, screen))}`
+    });
+  },
+
+  vibrateCuddleTick() {
+    if (this.cuddleVibrationCount >= 3) return;
+    this.cuddleVibrationCount += 1;
+    try { if (wx.vibrateShort) wx.vibrateShort({ type: 'light' }); } catch (error) {}
+  },
+
+  onCharacterTouchStart() {
+    if (!this.data.currentState || !this.data.currentState.atHome) return;
+    this.clearCuddleTimers();
+    this.cuddleCompleted = false;
+    this.cuddleVibrationCount = 0;
+    this.setData({ characterWarming: true });
+    this.cuddleVibrationTicker = setInterval(() => this.vibrateCuddleTick(), 1000);
+    this.cuddleTimer = setTimeout(() => {
+      this.cuddleCompleted = true;
+      clearInterval(this.cuddleVibrationTicker);
+      if (this.cuddleVibrationCount < 3) this.vibrateCuddleTick();
+      this.showFeedback('我暖起来了。');
+      analytics.track('companion_interaction', { interaction_type: 'cuddle', result: 'played' });
+      this.cuddleResetTimer = setTimeout(() => {
+        if (this.pageActive) this.setData({ characterWarming: false });
+      }, this.data.reducedMotion ? 20 : 900);
+    }, 3000);
+  },
+
+  onCharacterTouchEnd() {
+    clearTimeout(this.cuddleTimer);
+    clearInterval(this.cuddleVibrationTicker);
+    if (!this.cuddleCompleted) this.setData({ characterWarming: false });
+  },
+
+  clearCuddleTimers() {
+    clearTimeout(this.cuddleTimer);
+    clearTimeout(this.cuddleResetTimer);
+    clearInterval(this.cuddleVibrationTicker);
+    this.cuddleTimer = null;
+    this.cuddleResetTimer = null;
+    this.cuddleVibrationTicker = null;
+    this.cuddleCompleted = false;
+  },
+
   showFeedback(text) {
     clearTimeout(this.feedbackTimer);
     this.setData({ feedback: text || '' });
@@ -160,11 +260,32 @@ Page({
     }, 2600);
   },
 
+  onCharacterTap() {
+    if (this.cuddleCompleted) {
+      this.cuddleCompleted = false;
+      return;
+    }
+    const mood = this.data.snapshot && this.data.snapshot.mood;
+    if (!mood) return;
+    const moodText = `今日心情 · ${mood.mood}\n${mood.line}`;
+    const current = this.data.currentState;
+    if (current && current.action && current.action.kind === 'pet' && !current.actionDone) {
+      this.runSceneAction(false, moodText);
+    } else {
+      this.showFeedback(moodText);
+    }
+    analytics.track('companion_interaction', { interaction_type: 'mood_peek', result: 'shown' });
+  },
+
   onSceneAction() {
+    this.runSceneAction(this.data.currentState && this.data.currentState.action.kind === 'window');
+  },
+
+  runSceneAction(openWindowAfter, feedbackOverride) {
     const current = this.data.currentState;
     if (!current || !current.atHome || this.data.actionBusy) return;
     clearTimeout(this.feedbackTimer);
-    this.setData({ actionBusy: true, feedback: '正在回应…' });
+    this.setData({ actionBusy: true });
     postHatch.performAction(this.data.pet, this.data.snapshot).then(result => {
       if (!this.pageActive) return;
       this.setData({ actionBusy: false });
@@ -174,8 +295,8 @@ Page({
       }
       const actionDone = true;
       this.setData({ 'currentState.actionDone': actionDone, 'currentState.actionFeedback': result.feedback || current.action.feedback, playedActionKind: current.action.kind });
-      this.showFeedback(result.feedback || current.action.feedback);
-      if (current.action.kind === 'window') this.onDailyWindowTap();
+      this.showFeedback(feedbackOverride || result.feedback || current.action.feedback);
+      if (openWindowAfter) this.openDailyWindow();
     }).catch(() => {
       if (this.pageActive) {
         this.setData({ actionBusy: false });
@@ -216,6 +337,15 @@ Page({
   },
 
   onDailyWindowTap() {
+    const current = this.data.currentState;
+    if (current && current.atHome && current.action.kind === 'window' && !current.actionDone) {
+      this.runSceneAction(true);
+      return;
+    }
+    this.openDailyWindow();
+  },
+
+  openDailyWindow() {
     if (!this.pageActive || this.data.dailyWindowVisible) return;
     wx.createSelectorQuery().in(this).select('.daily-window-hotspot').boundingClientRect(rect => {
       const fallback = {
@@ -254,8 +384,11 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const environment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
+    const panels = panelPresentation(environment.sceneKey);
     this.setData({
       dailyWindowEnvironment: environment,
+      panelSceneSetId: panels.sceneSetId,
+      panelImages: panels.panelImages,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间')
     });
@@ -263,19 +396,16 @@ Page({
 
   onOpenMagicWindow() {
     if (!this.pageActive || this.data.magicWindowVisible) return;
-    const base = TOKYO_MAGIC_WINDOW.base || '';
+    clearTimeout(this.magicKoiTimer);
     this.setData({
       dailyWindowVisible: false,
       magicWindowVisible: true,
-      magicWindowLoading: Boolean(base),
-      magicWindowFailed: !base,
-      magicWindowReducedMotion: reducedMotionEnabled(),
+      magicWindowLoading: true,
+      magicWindowFailed: false,
       magicKoiReacting: false,
-      magicWindowBaseSrc: base,
-      magicWindowCloudsSrc: TOKYO_MAGIC_WINDOW.clouds || '',
-      magicWindowKoiSrc: TOKYO_MAGIC_WINDOW.koi || ''
+      magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base
     });
-    analytics.track('room_element_interaction', { element_id: 'far_glow', result: 'magic_window_tokyo_opened' });
+    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_preview', result: 'opened' });
   },
 
   onMagicWindowBaseLoad() {
@@ -290,27 +420,26 @@ Page({
 
   onMagicWindowRetry() {
     if (!this.data.magicWindowVisible || this.data.magicWindowLoading) return;
-    const source = TOKYO_MAGIC_WINDOW.base || '';
-    if (!source) {
-      this.setData({ magicWindowFailed: true });
-      return;
-    }
-    this.setData({ magicWindowBaseSrc: '', magicWindowLoading: true, magicWindowFailed: false }, () => {
-      const reload = () => this.pageActive && this.data.magicWindowVisible && this.setData({ magicWindowBaseSrc: source });
-      if (wx.nextTick) wx.nextTick(reload);
-      else setTimeout(reload, 0);
+    this.setData({ magicWindowBase: '', magicWindowLoading: true, magicWindowFailed: false }, () => {
+      wx.nextTick(() => {
+        if (this.data.magicWindowVisible) this.setData({ magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base });
+      });
     });
   },
 
   onMagicKoiTap() {
-    if (!this.data.magicWindowVisible || this.data.magicWindowReducedMotion) return;
+    if (!this.data.magicWindowVisible || this.data.magicWindowLoading || this.data.magicWindowFailed) return;
     clearTimeout(this.magicKoiTimer);
     this.setData({ magicKoiReacting: false }, () => {
-      this.setData({ magicKoiReacting: true });
-      this.magicKoiTimer = setTimeout(() => {
-        if (this.pageActive && this.data.magicWindowVisible) this.setData({ magicKoiReacting: false });
-      }, 720);
+      wx.nextTick(() => {
+        if (!this.data.magicWindowVisible) return;
+        this.setData({ magicKoiReacting: true });
+        this.magicKoiTimer = setTimeout(() => {
+          if (this.pageActive) this.setData({ magicKoiReacting: false });
+        }, 1050);
+      });
     });
+    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_koi', result: 'reacted' });
   },
 
   onCloseMagicWindow() {
@@ -323,48 +452,14 @@ Page({
       magicKoiReacting: false,
       dailyWindowVisible: true
     });
-    analytics.track('room_element_interaction', { element_id: 'far_glow', result: 'magic_window_tokyo_closed' });
+    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_preview', result: 'closed' });
   },
+
+  onMagicTouchMove() {},
+
   onOpenMemories(event) {
     const section = event.currentTarget.dataset.section || 'keepsakes';
     wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${section}` });
-  },
-  onOpenDecorStudio() { wx.navigateTo({ url: '/pages/decor-studio/decor-studio' }); },
-
-  onDecorTouchStart(event) {
-    if (this.decorSaveBusy) return;
-    const index = Number(event.currentTarget.dataset.index);
-    if (!Number.isInteger(index) || !this.data.decorations[index]) return;
-    const decorations = this.data.decorations.slice();
-    const nextZ = Math.min(50, Math.max.apply(null, decorations.map(item => Number(item.z || 0)).concat(0)) + 1);
-    decorations[index] = Object.assign({}, decorations[index], { z: nextZ, renderZ: nextZ + 4 });
-    this.dragDecorationIndex = index;
-    this.setData({ decorations, feedback: '拖到喜欢的位置，松手就会留在这里。' });
-  },
-  onDecorTouchMove(event) {
-    const index = this.dragDecorationIndex;
-    const touch = (event.touches || [])[0];
-    if (!Number.isInteger(index) || !touch || !this.data.decorations[index]) return;
-    const x = Math.max(12, Math.min(88, Number(touch.clientX || touch.x || 0) / this.data.panelWidth * 100));
-    const y = Math.max(24, Math.min(76, Number(touch.clientY || touch.y || 0) / this.data.panelHeight * 100));
-    const decorations = this.data.decorations.slice();
-    decorations[index] = Object.assign({}, decorations[index], { x, y });
-    this.setData({ decorations });
-  },
-  onDecorTouchEnd() {
-    const index = this.dragDecorationIndex;
-    this.dragDecorationIndex = null;
-    const decoration = this.data.decorations[index];
-    if (!decoration || this.decorSaveBusy) return;
-    this.decorSaveBusy = true;
-    postHatch.moveDecoration(this.data.pet, decoration.id, decoration.x, decoration.y, decoration.z).then(result => {
-      this.decorSaveBusy = false;
-      if (!this.pageActive) return;
-      this.showFeedback(result && result.ok ? '就放在这里了。' : result && result.message || '位置没有保存好，请重试');
-    }).catch(() => {
-      this.decorSaveBusy = false;
-      if (this.pageActive) this.showFeedback('位置没有保存好，请重试');
-    });
   },
 
   onBack() {
@@ -416,10 +511,10 @@ Page({
   },
   clearTransientState() {
     this.clearSlotTimer();
+    this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.magicKoiTimer);
-    this.dragDecorationIndex = null;
-    this.setData({ feedback: '', talkReply: '', dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false });
+    this.setData({ feedback: '', talkReply: '', dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false });
   },
   onUnload() {
     this.pageActive = false;

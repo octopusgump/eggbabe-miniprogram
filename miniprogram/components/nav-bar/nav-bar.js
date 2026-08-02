@@ -10,7 +10,8 @@ const config = require('../../config/v2');
 Component({
   properties: {
     title: { type: String, value: '' },
-    showBack: { type: Boolean, value: true }
+    showBack: { type: Boolean, value: true },
+    fallbackUrl: { type: String, value: '' }
   },
   data: {
     statusBarHeight: 20,
@@ -28,7 +29,9 @@ Component({
       const pages = getCurrentPages();
       if (pages.length > 1) {
         wx.navigateBack();
+        return;
       }
+      if (this.properties.fallbackUrl) wx.switchTab({ url: this.properties.fallbackUrl });
     }
   }
 });

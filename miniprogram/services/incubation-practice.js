@@ -193,6 +193,8 @@ function consecutiveDaysEndingAt(loginDates, serverDate) {
 }
 
 function contentDayFor(pet, serverDate, loginDates) {
+  const demoPreviewDay = runtime.getMode() === 'demo' ? Number(pet && pet.demoPreviewDay) : 0;
+  if (Number.isInteger(demoPreviewDay) && demoPreviewDay >= 1 && demoPreviewDay <= 7) return demoPreviewDay;
   const boundDate = String((pet && pet.createdAt) || serverDate || '').slice(0, 10);
   const naturalDay = Math.max(1, Math.min(7, dayNumber(serverDate) - dayNumber(boundDate) + 1));
   const streak = consecutiveDaysEndingAt(loginDates, serverDate);

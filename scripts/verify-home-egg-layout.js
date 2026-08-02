@@ -5,6 +5,7 @@ const path = require('path');
 const root = path.resolve(process.argv[2] || path.join(__dirname, '..'));
 const template = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.wxss'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.js'), 'utf8');
 
 const visibleEggMatch = template.match(/<view wx:if="\{\{stage !== 'hatched'\}\}" class="egg egg-shell[\s\S]*?<\/view>/);
 assert.ok(visibleEggMatch, '首页必须保留位于孵化窝中的可交互蛋体容器');
@@ -15,11 +16,45 @@ assert.equal(template.includes('class="egg-shell-depth"'), true, '真实蛋体�
 assert.equal(template.includes('class="egg-render-cache egg-render-cache--base"'), true, '底层合成 Canvas 必须移到屏幕外');
 assert.equal(template.includes('class="egg-render-cache egg-render-cache--art"'), true, '装饰合成 Canvas 必须移到屏幕外');
 assert.match(styles, /\.egg-render-cache\s*\{[^}]*position:\s*fixed;[^}]*left:\s*-2000px;/s, '合成 Canvas 必须直接固定在屏幕外，不能占据首页布局');
+assert.equal(template.includes(`style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}"`), true, '孵化首页昵称必须使用独立安全区锚点');
+assert.equal(template.includes(`class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}"`), true, '孵化首页提示气泡上沿必须与昵称上沿对齐');
+assert.equal(source.includes('clockTopPx: Math.round(nameTopPx + 44)'), true, '时钟必须位于昵称下方并保留稳定间距，不能与昵称重叠');
+assert.match(styles, /\.pet-view--incubating \.top-row\s*\{[^}]*top:\s*88px;/s, '昵称动态定位前必须提供安全的首屏回退位置');
+assert.match(styles, /\.pet-name-row\s*\{[^}]*border-radius:\s*999rpx;[^}]*background:\s*rgba\(255,252,243,\.82\)/s, '昵称必须使用蛋宝宝奶油色圆角铭牌保证可读性');
+assert.match(styles, /\.incubation-nest-image\s*\{[^}]*margin:\s*-20rpx 0 0 -250rpx;/s, '窝垫必须下移到桌面落点，同时保持与蛋体分层');
+assert.match(styles, /\.egg-zone--incubating \.egg\s*\{[^}]*margin-top:\s*-142rpx;/s, '孵化中蛋体必须下沉到窝垫中心，呈现被承托的关系');
+assert.equal(template.includes('incubation-nest-shadow'), false, '窝垫下方不得再叠加代码阴影，地板环境光影必须来自完整背景图');
+assert.equal(template.includes('egg-contact-shadow'), false, '蛋体接触阴影必须烘焙进透明蛋体层，避免运行时代码阴影割裂');
+assert.equal(template.includes('wx:if="{{isDemo && pet}}" class="stage-tester"'), true, '开发版必须提供显式隔离的阶段验收下拉控件');
+assert.equal(template.includes('class="scene-tester"') && template.includes('onSceneTesterSelect'), true, '开发版必须提供 20 场景季节天气验收下拉控件');
+assert.equal(source.includes('wx.getImageInfo'), false, '本地 WebP 场景不得再依赖 wx.getImageInfo 预检查');
+assert.equal((template.match(/class="scene-preloader-image"/g) || []).length, 3, '背景、窝垫和蛋体必须分别使用真实 image 组件预加载');
+assert.equal(template.includes('bindload="onScenePreloadLoad"') && template.includes('binderror="onScenePreloadError"'), true, '场景预加载必须同时处理成功和失败状态');
+assert.equal(source.includes("background: '背景'") && source.includes("nest: '窝垫'") && source.includes("egg: '蛋体'"), true, '场景预加载失败必须能区分背景、窝垫和蛋体');
+assert.equal(source.includes('scenePreloadRequestToken') && source.includes("every(key => this.scenePreloadLoaded[key])"), true, '场景预加载必须忽略过期请求，并在三层全部成功后提交');
+assert.match(styles, /\.stage-tester\s*\{[^}]*position:\s*fixed;[^}]*right:\s*28rpx;/s, '阶段验收控件必须固定在胶囊下方右侧测试位');
+assert.match(styles, /\.scene-tester\s*\{[^}]*position:\s*fixed;[^}]*right:\s*28rpx;/s, '场景验收控件必须固定在阶段验收控件上方的右侧测试位');
 assert.match(styles, /\.egg-shell-preview--art\s*\{[^}]*z-index:\s*4;/s, '用户贴纸和手绘必须位于动态光泽反馈之上');
-assert.match(styles, /\.egg-shell-depth,\s*\.egg-shell-specular\s*\{[^}]*opacity:\s*0;[^}]*-webkit-mask-image:\s*url\(['"]?\/assets\/scenes\/incubation\/webp\/egg_base_day\.webp/s, '表面光泽与体积反馈必须默认隐藏，并共享真实蛋体 Alpha 裁切');
+assert.match(styles, /\.egg-shell-depth,\s*\.egg-shell-specular\s*\{[^}]*opacity:\s*0;[^}]*-webkit-mask-image:\s*url\(['"]?\/assets\/scenes\/lifecycle\/pre-hatch\/30-character\/egg\/egg_on_nest\.webp/s, '表面光泽与体积反馈必须默认隐藏，并共享真实蛋体 Alpha 裁切');
 assert.match(styles, /\.egg-shell-specular\s*\{[^}]*radial-gradient/s, '表面光泽必须使用克制的渐变增强互动瞬间');
 assert.match(styles, /\.egg\.egg--wobble \.egg-shell-specular\s*\{[^}]*animation:\s*shell-glint-touch/s, '轻触蛋宝宝时高光必须产生即时位移反馈');
 assert.match(styles, /@keyframes shell-glint-touch\s*\{[\s\S]*background-position/s, '触摸高光反馈必须在蛋体 Alpha 内移动，而不是让整个遮罩越出蛋壳');
+assert.equal(template.includes('class="companion-primary-dock"') && template.includes("item.key !== 'draw'") && template.includes("item.key === 'draw'"), true, '许愿池与早教班必须共用柔光 Dock，画画必须保持独立');
+assert.equal(template.includes('completed-check') || template.includes('completed-mark'), false, '首页入口不得出现完成勾选或完成章');
+assert.match(styles, /\.companion-section--incubating\s*\{[^}]*right:\s*34rpx;[^}]*bottom:\s*calc\(160rpx \+ env\(safe-area-inset-bottom\)\)/s, '右侧入口列必须锚定在独立画画按钮和底部安全区上方');
+assert.match(styles, /\.companion-grid\s*\{[^}]*flex-direction:\s*column;[^}]*gap:\s*20rpx;/s, '许愿池、早教班与画画必须沿右侧垂直排列');
+assert.match(styles, /\.companion-primary-dock\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*248rpx;[^}]*flex-direction:\s*column;[^}]*border-radius:\s*56rpx;[^}]*background:\s*rgba\(255,253,247,\.82\)/s, '许愿池与早教班必须使用右侧半透明竖向胶囊');
+assert.match(styles, /\.companion-item--learn::before\s*\{[^}]*left:\s*22rpx;[^}]*right:\s*22rpx;[^}]*top:\s*0;[^}]*height:\s*1rpx;/s, '两个竖向入口之间必须使用克制的横向分隔线');
+assert.match(styles, /\.companion-item--draw\s*\{[^}]*width:\s*104rpx;[^}]*height:\s*104rpx;/s, '独立画画入口必须保留不小于 44px 的触控区域');
+assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none;/s, '弱动效模式必须取消入口缩放反馈');
+
+const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets')).PRE_HATCH;
+assert.equal(preHatch.sceneTesterOptions.length, 20, '季节天气验收器必须完整覆盖 20 个选项');
+preHatch.sceneTesterOptions.forEach(option => {
+  assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.background)), `缺少场景背景：${option.key}`);
+  assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.egg)), `缺少蛋体层：${option.key}`);
+  assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.nest)), `缺少窝垫层：${option.key}`);
+});
 
 const canvas2d = require(path.join(root, 'miniprogram/utils/canvas-2d'));
 const layer = { canvas: { width: 560, height: 800 }, width: 280, height: 400 };

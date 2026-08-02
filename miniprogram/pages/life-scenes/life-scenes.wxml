@@ -1,17 +1,37 @@
 <view class="page">
-  <nav-bar title="破壳后的生活"></nav-bar>
+  <nav-bar title="留在这里的回忆"></nav-bar>
+  <view class="section-tabs">
+    <view class="section-tab {{section === 'keepsakes' ? 'section-tab--active' : ''}}" data-section="keepsakes" bindtap="onSelectSection">ta 带回来的东西</view>
+    <view class="section-tab {{section === 'postcards' ? 'section-tab--active' : ''}}" data-section="postcards" bindtap="onSelectSection">明信片</view>
+    <view class="section-tab {{section === 'card' ? 'section-tab--active' : ''}}" data-section="card" bindtap="onSelectSection">今日收藏卡</view>
+  </view>
   <scroll-view class="content" scroll-y>
-    <view class="intro">
-      <view><text class="intro-kicker">{{introKicker}}</text><text class="intro-title">{{introTitle}}</text><text class="intro-desc">{{introDesc}}</text></view>
-      <image class="intro-rabbit" src="{{introImage}}" mode="aspectFill"></image>
-    </view>
-    <view class="scene-grid">
-      <view class="scene-card" wx:for="{{scenes}}" wx:key="key" data-scene="{{item.key}}" bindtap="onSelectScene" hover-class="scene-card--pressed">
-        <image class="scene-image" src="{{item.image}}" mode="aspectFill"></image>
-        <view class="scene-shade"></view>
-        <view class="scene-copy"><text class="scene-name">{{item.label}}</text><text class="scene-subtitle">{{item.subtitle}}</text></view>
+    <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在翻看回忆…</text></view>
+    <view wx:elif="{{error}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
+    <block wx:elif="{{section === 'keepsakes'}}">
+      <view wx:if="{{keepsakes.length}}" class="memory-list">
+        <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-card">
+          <view class="keepsake-art"><text>{{item.mark}}</text><view class="asset-note">图片待补</view></view>
+          <view class="keepsake-copy"><text class="memory-title">{{item.name}}</text><text class="memory-meta">{{item.sourceScene}}</text><text class="memory-story">{{item.story}}</text></view>
+        </view>
       </view>
-    </view>
-    <view class="tip">每个场景里都有 3 个可点击的小互动</view>
+      <view wx:else class="empty-memory"><view class="empty-mark">小物</view><text class="empty-title">这里暂时安安静静的</text><text class="empty-copy">当你在场景里自然地回应 ta，一些东西会慢慢留在桌边。</text></view>
+    </block>
+    <block wx:elif="{{section === 'postcards'}}">
+      <view wx:if="{{postcards.length}}" class="postcard-list">
+        <view wx:for="{{postcards}}" wx:key="id" class="postcard-card">
+          <view class="postcard-art"><text>POST</text><view class="asset-note">图片待补</view></view>
+          <text class="memory-meta">{{item.sceneLabel}}</text><text class="memory-story">{{item.line}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty-memory"><view class="empty-mark">信</view><text class="empty-title">还没有远方的来信</text><text class="empty-copy">ta 外出时可以写一封信；下一次进入后，回信会安静地放在这里。</text></view>
+    </block>
+    <block wx:else>
+      <view wx:if="{{cardRecommendation}}" class="recommend-card" bindtap="onOpenCard">
+        <text class="recommend-kicker">今天想再看一次</text><pet-avatar pet-type="{{pet.prototype}}" size="{{144}}"></pet-avatar>
+        <text class="recommend-name">{{pet.name || '我的蛋宝宝'}}</text><text class="recommend-line">{{cardRecommendation.line}}</text><text class="recommend-open">查看收藏卡</text>
+      </view>
+      <view wx:else class="empty-memory"><view class="empty-mark">卡</view><text class="empty-title">今天的收藏卡还没准备好</text><text class="empty-copy">稍后再进入时会重新加载；已有收藏卡不会因此改变。</text></view>
+    </block>
   </scroll-view>
 </view>

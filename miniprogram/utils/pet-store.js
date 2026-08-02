@@ -297,7 +297,7 @@ const STAGE_PRESENTATION = {
   waiting: { homeText: '我正在安静地待着', actionLabel: '', myStage: '等待破壳' },
   soon: { homeText: '我们快见面了', actionLabel: '等待破壳', myStage: '临近破壳' },
   ready: { homeText: '我准备好见你了', actionLabel: '承接破壳', myStage: '待承接' },
-  hatched: { homeText: '我终于来到你身边啦', actionLabel: '和我说说话', myStage: '已破壳' },
+  hatched: { homeText: '我正在过自己的日子', actionLabel: '看看我此刻在做什么', myStage: '已破壳' },
   exception: { homeText: '需要帮助？可以联系我的守护团队', actionLabel: '', myStage: '需要帮助' }
 };
 

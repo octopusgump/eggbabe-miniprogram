@@ -17,6 +17,7 @@ const app = readJson(path.join(miniprogram, 'app.json'));
 const pages = app.pages || [];
 if (!pages.length) errors.push('app.json 没有注册页面');
 if (pages.some(page => page.includes('scene-picker') || page.includes('scene-live'))) errors.push('最新 PRD 禁止编译孵化场景选择页面');
+if (pages.includes('pages/chat/chat')) errors.push('V3.6 禁止注册独立聊天页面');
 
 const globalStyles = fs.readFileSync(path.join(miniprogram, 'app.wxss'), 'utf8');
 for (const rule of ['display: flex !important', 'align-items: center !important', 'justify-content: center !important', 'line-height: normal !important']) {
@@ -50,21 +51,29 @@ for (const page of pages) {
 const homeSource = fs.readFileSync(path.join(miniprogram, 'pages/home/home.wxml'), 'utf8');
 if (/孵化场景|scene-picker|scene-live/.test(homeSource)) errors.push('首页仍包含旧版孵化场景入口');
 
-for (const image of ['grass_with_egg.jpg', 'snow_with_egg.jpg', 'room_with_egg.jpg', 'sea_with_egg.jpg', 'desk_with_egg.jpg', 'rooftop_with_egg.jpg']) {
-  if (!fs.existsSync(path.join(miniprogram, 'assets/scenes', image))) errors.push(`生活场景缺少图片：${image}`);
-}
-
 const lifeScenes = require(path.join(miniprogram, 'utils/life-scenes'));
-const sceneEffectStyles = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxss'), 'utf8');
-const lifePoints = lifeScenes.SCENES.flatMap(scene => (lifeScenes.HOTSPOTS[scene.key] || []).map(point => ({ scene: scene.label, ...point })));
-if (lifePoints.length !== 18) errors.push(`六个生活场景应有 18 个互动点，实际为 ${lifePoints.length}`);
-for (const point of lifePoints) {
-  const x = parseFloat(point.x);
-  const y = parseFloat(point.y);
-  if (x >= 70 && y <= 30) errors.push(`${point.scene}「${point.label}」位于微信胶囊右上角危险区`);
-  if (x > 84 || y > 82) errors.push(`${point.scene}「${point.label}」过于靠近屏幕边缘：${point.x}, ${point.y}`);
-  if (point.effect && !sceneEffectStyles.includes(`.scene-effect--${point.effect}`)) errors.push(`${point.scene}「${point.label}」缺少特效样式：${point.effect}`);
+const lifeSceneTemplate = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxml'), 'utf8');
+if (lifeScenes.HOME_STATES.length !== 7) errors.push(`居家小状态应为 7 个，实际为 ${lifeScenes.HOME_STATES.length}`);
+if (lifeScenes.AWAY_STATES.length !== 10) errors.push(`旅行、打工、上学小状态应覆盖 10 个，实际为 ${lifeScenes.AWAY_STATES.length}`);
+if (lifeScenes.STORY_LINE.length !== 19) errors.push(`demo 5 小时故事线应为 19 段，实际为 ${lifeScenes.STORY_LINE.length}`);
+const majors = new Set(lifeScenes.STORY_LINE.map(item => item.major));
+for (const major of ['home', 'travel', 'work', 'school']) if (!majors.has(major)) errors.push(`故事线缺少大场景：${major}`);
+for (const state of lifeScenes.HOME_STATES) {
+  if (!state.action || !state.action.id) errors.push(`居家状态「${state.label}」缺少唯一原生动作`);
+  if (!Number.isInteger(state.screen) || state.screen < 0 || state.screen > 2) errors.push(`居家状态「${state.label}」屏幕索引无效`);
 }
+if (!lifeSceneTemplate.includes('world-panel--living') || !lifeSceneTemplate.includes('world-panel--desk') || !lifeSceneTemplate.includes('world-panel--decor')) errors.push('破壳后完整场景必须保留左生活、中书桌、右装扮三屏');
+if (!lifeSceneTemplate.includes('给远方的 ta 写一句') || !lifeSceneTemplate.includes('currentState.canTalk')) errors.push('破壳后场景必须包含外出来信和场景内条件对话');
+for (const assetDoc of [
+  'assets/scenes/lifecycle/README.md',
+  'assets/scenes/lifecycle/pre-hatch/30-character/egg/README.md',
+  'assets/scenes/lifecycle/post-hatch/10-background/left-living/README.md',
+  'assets/scenes/lifecycle/post-hatch/10-background/center-desk/README.md',
+  'assets/scenes/lifecycle/post-hatch/10-background/right-decor/README.md',
+  'assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/README.md',
+  'assets/scenes/lifecycle/post-hatch/30-character/boon-koi/README.md',
+  'assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/README.md'
+]) if (!fs.existsSync(path.join(miniprogram, assetDoc))) errors.push(`缺少分层素材目录：${assetDoc}`);
 
 if (errors.length) {
   console.error(`项目校验失败（${errors.length} 项）：`);

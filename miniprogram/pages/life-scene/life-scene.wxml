@@ -1,66 +1,147 @@
-<view class="page {{isActive ? '' : 'page--paused'}} {{enterFromHome ? 'page--expanded-entry' : ''}}">
-  <image class="scene-bg" src="{{scene.image}}" mode="aspectFill"></image><view class="scene-dim"></view><view wx:if="{{!enterFromHome}}" class="scene-enter-gradient"></view>
-  <view wx:if="{{scene && scene.key === 'grass'}}" class="grass-ambient">
-    <view class="grass-sky-dim"></view>
-    <view class="grass-shimmer grass-shimmer--one"></view>
-    <view class="grass-shimmer grass-shimmer--two"></view>
-    <view class="firefly firefly--one"></view>
-    <view class="firefly firefly--two"></view>
-    <view class="firefly firefly--three"></view>
-    <view class="firefly firefly--four"></view>
-    <view class="firefly firefly--five"></view>
-    <view class="firefly firefly--six"></view>
+<view class="page {{loading ? 'page--loading' : ''}}">
+  <view class="topbar" style="padding-top:{{statusBarHeight}}px;">
+    <view class="round-btn" aria-role="button" aria-label="返回" bindtap="onBack"><view class="back-icon"></view></view>
+    <view wx:if="{{currentState}}" class="state-pill"><text>{{currentState.majorLabel}} · {{currentState.label}} · 今日{{snapshot.mood.mood}}</text></view>
+    <text wx:if="{{isDemo}}" class="demo-scene-badge">DEMO</text>
   </view>
-  <view wx:if="{{scene && scene.key !== 'grass'}}" class="scene-ambient scene-ambient--{{scene.key}}">
-    <view class="ambient-piece ambient-piece--one"></view>
-    <view class="ambient-piece ambient-piece--two"></view>
-    <view class="ambient-piece ambient-piece--three"></view>
-    <view class="ambient-piece ambient-piece--four"></view>
-    <view class="ambient-piece ambient-piece--five"></view>
-    <view class="ambient-piece ambient-piece--six"></view>
-    <view class="ambient-piece ambient-piece--seven"></view>
-    <view class="ambient-piece ambient-piece--eight"></view>
+
+  <view wx:if="{{loading}}" class="state-layer">
+    <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
   </view>
-  <view class="topbar" style="padding-top:{{statusBarHeight}}px;"><view class="round-btn" bindtap="onBack"><view class="back-icon"></view></view><text wx:if="{{isDemo}}" class="demo-scene-badge">DEMO</text></view>
-  <view class="pet-hotspot" bindtap="onTapPet"></view>
-  <view class="hotspot" wx:for="{{hotspots}}" wx:key="label" style="left:{{item.x}};top:{{item.y}};" data-index="{{index}}" catchtap="onTapHotspot"><view class="hotspot-dot"></view><text>{{item.label}}</text></view>
-  <view wx:if="{{ripple}}" class="ripple" style="left:{{ripple.x}};top:{{ripple.y}};"></view>
-  <view wx:if="{{flowerEffect}}" class="flower-effect" style="left:{{flowerEffect.x}};top:{{flowerEffect.y}};">
-    <view class="flower-sway">
-      <view class="flower-stem"></view>
-      <view class="flower-leaf flower-leaf--left"></view>
-      <view class="flower-leaf flower-leaf--right"></view>
-      <view class="flower-bloom">
-        <view class="flower-petal flower-petal--one"></view>
-        <view class="flower-petal flower-petal--two"></view>
-        <view class="flower-petal flower-petal--three"></view>
-        <view class="flower-petal flower-petal--four"></view>
-        <view class="flower-petal flower-petal--five"></view>
-        <view class="flower-center"></view>
+  <view wx:elif="{{error}}" class="state-layer state-layer--error">
+    <text class="state-error-title">暂时没看见 ta 此刻的状态</text><text>{{error}}</text>
+    <view class="state-action" bindtap="onRetry">重新看看</view><view class="state-secondary" bindtap="onBack">返回主页</view>
+  </view>
+
+  <block wx:elif="{{currentState}}">
+    <scroll-view class="world-scroll" scroll-x enhanced show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" bindscroll="onScroll">
+      <view class="world-track">
+        <view class="world-panel world-panel--living">
+          <image wx:if="{{panelImages[0]}}" class="panel-bg" src="{{panelImages[0]}}" mode="aspectFill"></image>
+          <image wx:else class="panel-bg panel-bg--panorama panel-bg--left" src="{{panoramaFallback}}" mode="aspectFill"></image>
+          <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view><view class="bed-placeholder"><view class="bed-pillow"></view><view class="bed-blanket" style="{{playedActionKind === 'blanket' ? 'height:74%;transform:translateY(-18rpx);' : ''}}"></view></view><view class="lamp-placeholder" style="{{playedActionKind === 'lamp' ? 'box-shadow:0 -58rpx 0 22rpx #8D7D68;opacity:.58;' : ''}}"></view>
+          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 0}}" class="scene-character scene-character--living" pet-type="{{pet.prototype}}" size="{{174}}"></pet-avatar>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" bindtap="onSceneAction"></view>
+        </view>
+        <view class="world-panel world-panel--desk">
+          <image wx:if="{{panelImages[1]}}" class="panel-bg" src="{{panelImages[1]}}" mode="aspectFill"></image>
+          <image wx:else class="panel-bg panel-bg--panorama panel-bg--center" src="{{panoramaFallback}}" mode="aspectFill"></image>
+          <view class="panel-tone"></view>
+          <view wx:if="{{currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
+          <view wx:if="{{currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
+          <view wx:if="{{currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
+          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 1}}" class="scene-character scene-character--desk" pet-type="{{pet.prototype}}" size="{{186}}"></pet-avatar>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 1}}" class="action-glow action-glow--{{currentState.action.kind}}" bindtap="onSceneAction"></view>
+          <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
+        </view>
+        <view class="world-panel world-panel--decor">
+          <image wx:if="{{panelImages[2]}}" class="panel-bg" src="{{panelImages[2]}}" mode="aspectFill"></image>
+          <image wx:else class="panel-bg panel-bg--panorama panel-bg--right" src="{{panoramaFallback}}" mode="aspectFill"></image>
+          <view class="panel-tone"></view><view wx:if="{{!decorations.length}}" class="decor-placeholder"><text>你画的小家具会留在这里</text></view>
+          <view class="daily-window-hotspot" style="position:absolute;z-index:7;right:4%;top:8%;width:42%;height:42%;" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
+          <view wx:for="{{decorations}}" wx:key="id" data-index="{{index}}" catchtouchstart="onDecorTouchStart" catchtouchmove="onDecorTouchMove" catchtouchend="onDecorTouchEnd" catchtouchcancel="onDecorTouchEnd" class="user-decoration" style="position:absolute;z-index:{{item.renderZ}};left:{{item.x}}%;top:{{item.y}}%;width:130rpx;height:100rpx;margin-left:-65rpx;margin-top:-50rpx;display:flex;align-items:center;justify-content:center;padding:10rpx;box-sizing:border-box;border-radius:24rpx;background:rgba(241,245,232,.88);color:#52694A;font-size:18rpx;text-align:center;white-space:normal;">
+            <image wx:if="{{item.asset}}" class="user-decoration-image" style="width:100%;height:100%;" src="{{item.asset}}" mode="aspectFit"></image><text wx:else>{{item.label}}</text>
+          </view>
+          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 2}}" class="scene-character scene-character--window" pet-type="{{pet.prototype}}" size="{{168}}"></pet-avatar>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 2}}" class="action-glow action-glow--{{currentState.action.kind}}" bindtap="onSceneAction"></view>
+          <view class="decor-entry" bindtap="onOpenDecorStudio"><text>画一件东西</text></view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
+    <view class="scene-copy"><text class="scene-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="scene-line">{{currentState.line}}</text></view>
+    <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
+
+    <view wx:if="{{currentState.atHome && currentState.canTalk}}" class="scene-composer">
+      <text wx:if="{{talkReply}}" class="inline-reply">{{talkReply}}</text><text wx:if="{{talkError}}" class="composer-error">{{talkError}}</text>
+      <view class="composer-row"><input class="composer-input" value="{{talkDraft}}" maxlength="120" placeholder="在这里说一句…" bindinput="onTalkInput" bindconfirm="onSendTalk" confirm-type="send" /><view class="composer-send {{talkBusy ? 'composer-send--busy' : ''}}" bindtap="onSendTalk">{{talkBusy ? '…' : '寄'}}</view></view>
+    </view>
+    <view wx:elif="{{!currentState.atHome}}" class="scene-composer">
+      <text wx:if="{{letterError}}" class="composer-error">{{letterError}}</text>
+      <view wx:if="{{currentState.letterSent}}" class="letter-sent">信已经在路上了</view>
+      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" confirm-type="send" /><view class="composer-send {{letterBusy ? 'composer-send--busy' : ''}}" bindtap="onSendLetter">{{letterBusy ? '…' : '寄'}}</view></view>
+    </view>
+
+    <view class="memory-rail">
+      <view data-section="keepsakes" bindtap="onOpenMemories">小物</view><view data-section="postcards" bindtap="onOpenMemories">来信</view><view data-section="card" bindtap="onOpenMemories">卡片</view>
+    </view>
+  </block>
+
+  <daily-window-detail
+    id="dailyWindowDetail"
+    visible="{{dailyWindowVisible}}"
+    image="{{dailyWindowEnvironment.windowImage}}"
+    weather="{{dailyWindowEnvironment.weather}}"
+    season="{{dailyWindowEnvironment.season}}"
+    period="{{dailyWindowEnvironment.period}}"
+    light-phase="{{dailyWindowEnvironment.lightPhase}}"
+    weather-label="{{dailyWindowWeatherLabel}}"
+    period-label="{{dailyWindowPeriodLabel}}"
+    origin-style="{{dailyWindowOriginStyle}}"
+    bindclose="onDailyWindowClosed"
+    bindretry="onDailyWindowRetry"
+  ></daily-window-detail>
+
+  <view
+    wx:if="{{dailyWindowVisible && !magicWindowVisible}}"
+    class="magic-window-entry"
+    aria-role="button"
+    aria-label="前往东京魔法窗外"
+    catchtap="onOpenMagicWindow"
+  >
+    <view class="magic-window-entry__core"></view>
+  </view>
+
+  <view wx:if="{{magicWindowVisible}}" class="magic-window magic-window--tokyo {{magicWindowReducedMotion ? 'magic-window--reduced' : ''}}">
+    <image
+      wx:if="{{magicWindowBaseSrc}}"
+      class="magic-window-image"
+      src="{{magicWindowBaseSrc}}"
+      mode="aspectFill"
+      bindload="onMagicWindowBaseLoad"
+      binderror="onMagicWindowBaseError"
+    ></image>
+
+    <view wx:if="{{!magicWindowFailed && magicWindowCloudsSrc}}" class="magic-window-clouds">
+      <view class="magic-window-cloud-track">
+        <image class="magic-window-cloud-band" src="{{magicWindowCloudsSrc}}" mode="aspectFit"></image>
+        <image class="magic-window-cloud-band" src="{{magicWindowCloudsSrc}}" mode="aspectFit"></image>
       </view>
     </view>
-  </view>
-  <view wx:if="{{butterflyEffect}}" class="butterfly-effect" style="left:{{butterflyEffect.x}};top:{{butterflyEffect.y}};">
-    <view class="butterfly-flight">
-      <view class="butterfly">
-        <view class="butterfly-wing butterfly-wing--left"></view>
-        <view class="butterfly-wing butterfly-wing--right"></view>
-        <view class="butterfly-body"></view>
-      </view>
+
+    <view wx:if="{{!magicWindowFailed}}" class="magic-window-water-shimmer"></view>
+
+    <view wx:if="{{!magicWindowFailed && magicWindowKoiSrc}}" class="magic-window-koi-track">
+      <view class="magic-window-koi-shadow"></view>
+      <view class="magic-window-koi-ripple magic-window-koi-ripple--one"></view>
+      <view class="magic-window-koi-ripple magic-window-koi-ripple--two"></view>
+      <image
+        class="magic-window-koi {{magicKoiReacting ? 'magic-window-koi--reacting' : ''}}"
+        src="{{magicWindowKoiSrc}}"
+        mode="aspectFit"
+        aria-role="button"
+        aria-label="行走的锦鲤"
+        catchtap="onMagicKoiTap"
+      ></image>
+    </view>
+
+    <view wx:if="{{magicWindowLoading && !magicWindowFailed}}" class="magic-window-state">
+      <view class="loading-orbit"></view>
+      <text>正在推开通往东京的窗…</text>
+    </view>
+    <view wx:elif="{{magicWindowFailed}}" class="magic-window-state magic-window-state--error">
+      <text class="magic-window-state__title">东京的远景没有加载好</text>
+      <text>可以重试，也可以先回到日常窗外。</text>
+      <view class="magic-window-retry" bindtap="onMagicWindowRetry">重新看看</view>
+    </view>
+
+    <view class="magic-window-topbar" style="padding-top:{{statusBarHeight}}px;">
+      <view class="magic-back" aria-role="button" aria-label="返回日常窗外" bindtap="onCloseMagicWindow"><view class="magic-back-icon"></view></view>
+      <view class="magic-window-place"><text>东京 · 雨后</text></view>
     </view>
   </view>
-  <view wx:if="{{sceneEffect}}" class="scene-effect scene-effect--{{sceneEffect.type}}" style="left:{{sceneEffect.x}};top:{{sceneEffect.y}};">
-    <view class="effect-piece effect-piece--one"></view>
-    <view class="effect-piece effect-piece--two"></view>
-    <view class="effect-piece effect-piece--three"></view>
-    <view class="effect-piece effect-piece--four"></view>
-    <view class="effect-piece effect-piece--five"></view>
-    <view class="effect-piece effect-piece--six"></view>
-  </view>
-  <view class="scene-title"><text class="kicker">{{sceneKicker}}</text><text class="name">{{scene.label}}</text></view>
-  <view wx:if="{{bubble}}" class="bubble">{{bubble}}</view>
+
   <view wx:if="{{isExiting}}" class="scene-exit-backdrop"></view>
-  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}">
-    <image class="scene-exit-image" src="{{scene.image}}" mode="aspectFill"></image>
-  </view>
+  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}"><image class="scene-exit-image" src="{{panoramaFallback}}" mode="aspectFill"></image></view>
 </view>

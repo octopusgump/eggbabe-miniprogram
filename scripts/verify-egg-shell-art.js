@@ -1,4 +1,6 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const shellArt = require('../miniprogram/services/egg-shell-art');
 
 assert.equal(shellArt.COLORS.length >= 6 && shellArt.COLORS.length <= 8, true, '蛋壳颜色必须为 6–8 种');
@@ -98,5 +100,9 @@ const artLog = createContextLog();
 shellArt.drawEggArt(artLog.context, {}, 280, 400, withOperations);
 assert.equal(artLog.composites.includes('destination-out'), true, '橡皮擦必须只作用于装饰画布');
 assert.equal(artLog.composites.includes('destination-in'), true, '装饰必须裁切在蛋体 Alpha 内');
+
+const doodleStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/doodle/doodle.wxss'), 'utf8');
+assert.match(doodleStyles, /\.egg-canvas-stack\s*\{[^}]*width:\s*300rpx;[^}]*height:\s*300rpx;/s, '普通绘图预览必须保持母版 1:1 比例，不能横向压缩蛋宝宝面容');
+assert.match(doodleStyles, /\.page--expanded \.egg-canvas-stack\s*\{[^}]*width:\s*62vh;[^}]*max-width:\s*86vw;[^}]*height:\s*62vh;[^}]*max-height:\s*86vw;/s, '放大绘图预览同样必须保持 1:1 比例');
 
 console.log('蛋壳绘图校验通过：像素画笔、可变尺寸橡皮擦、固定像素贴纸和安全边界正常。');

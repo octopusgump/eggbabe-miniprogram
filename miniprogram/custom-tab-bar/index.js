@@ -1,6 +1,7 @@
 Component({
   data: {
     selected: 0,
+    hidden: false,
     items: [
       {
         pagePath: '/pages/home/home',
@@ -11,8 +12,8 @@ Component({
       {
         pagePath: '/pages/my/my',
         text: '我的',
-        iconPath: '/assets/tab/me.png',
-        selectedIconPath: '/assets/tab/me-active.png'
+        iconPath: '/assets/ui/3d-actions/runtime/ui_3d_profile_egg_cameo_96_v03.png',
+        selectedIconPath: '/assets/ui/3d-actions/runtime/ui_3d_profile_egg_cameo_96_v03.png'
       }
     ]
   },

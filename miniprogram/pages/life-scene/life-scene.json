@@ -1,3 +1,7 @@
 {
-  "disableSwipeBack": true
+  "disableSwipeBack": true,
+  "usingComponents": {
+    "pet-avatar": "../../components/pet-avatar/pet-avatar",
+    "daily-window-detail": "../../components/daily-window-detail/daily-window-detail"
+  }
 }

@@ -5,6 +5,15 @@
     <view class="egg-pulse" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
     <text class="headline">我还在准备破壳。</text>
     <text class="gate-message">{{gateMessage}}</text>
+    <view class="secondary-link" bindtap="onBackHome">回到主页</view>
+  </view>
+
+  <view wx:elif="{{phase === 'error'}}" class="stage">
+    <view class="egg-pulse" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
+    <text class="headline">我还在这里。</text>
+    <text class="gate-message">{{resultError}}</text>
+    <view class="retry-button" bindtap="onRetryHatch">再试一次</view>
+    <view class="secondary-link" bindtap="onBackHome">先回到主页</view>
   </view>
 
   <!-- 阶段一：孵化回顾 -->
@@ -26,6 +35,6 @@
       <view class="crack-flash"></view>
       <view class="reveal-card" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
     </view>
-    <text class="gen-text">正在生成收藏卡…</text>
+    <text class="gen-text">正在准备这一蛋一份的收藏卡…</text>
   </view>
 </view>

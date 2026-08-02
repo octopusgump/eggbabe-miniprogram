@@ -59,6 +59,27 @@ function submitIncubationAction(eggId, module, questionId, optionId, payload) {
 function recordRoomElementInteraction(elementId, result) {
   return call('recordRoomElementInteraction', { element_id: elementId, result });
 }
+function getPostHatchHome(eggId) {
+  return call('getPostHatchHome', { egg_id: eggId });
+}
+function performPostHatchAction(eggId, slotIndex, actionId) {
+  return call('performPostHatchAction', { egg_id: eggId, slot_index: slotIndex, action_id: actionId });
+}
+function sendPostHatchLetter(eggId, slotIndex, message) {
+  return call('sendPostHatchLetter', { egg_id: eggId, slot_index: slotIndex, message });
+}
+function getPostHatchMemories(eggId) {
+  return call('getPostHatchMemories', { egg_id: eggId });
+}
+function getPostHatchDecorations(eggId) {
+  return call('getPostHatchDecorations', { egg_id: eggId });
+}
+function createRoomDecoration(eggId, sketchSummary) {
+  return call('createRoomDecoration', { egg_id: eggId, sketch_summary: sketchSummary });
+}
+function moveRoomDecoration(eggId, decorationId, x, y, z) {
+  return call('moveRoomDecoration', { egg_id: eggId, decoration_id: decorationId, x, y, z });
+}
 function manageDeletion(action) { return call('manageDeletion', { action }); }
 function trackEvents(events) { return call('trackEvents', { events }); }
 function serverTime() { return call('serverTime'); }
@@ -103,6 +124,13 @@ module.exports = {
   getIncubationManual,
   submitIncubationAction,
   recordRoomElementInteraction,
+  getPostHatchHome,
+  performPostHatchAction,
+  sendPostHatchLetter,
+  getPostHatchMemories,
+  getPostHatchDecorations,
+  createRoomDecoration,
+  moveRoomDecoration,
   manageDeletion,
   trackEvents,
   serverTime,

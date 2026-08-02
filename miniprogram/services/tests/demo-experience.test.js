@@ -21,6 +21,7 @@ const runtime = require('../runtime-context');
 const demoExperience = require('../demo-experience');
 const petStore = require('../../utils/pet-store');
 const h5Bridge = require('../birth-card-h5');
+const incubationPractice = require('../incubation-practice');
 
 assert.equal(config.localDemoEnabled, true, '微信开发版必须启用本地验收模式');
 assert.equal(runtime.getMode(), 'demo', '开发版运行时必须使用 demo');
@@ -33,6 +34,25 @@ const activation = demoExperience.redeemActivationCode('DEMO-YT-001');
 assert.equal(activation.ok, true, '开发版激活码必须能绑定固定 demo 实体蛋');
 assert.equal(petStore.getPet().mode, 'demo', 'demo 实体蛋必须保存在 demo 命名空间');
 assert.equal(petStore.getStage(petStore.getPet()), 'waiting', '绑定后必须先允许测试孵化期互动');
+
+const previewDay2 = demoExperience.setPreviewStage('day2');
+assert.equal(previewDay2.ok, true, '开发验收器必须可以切到第 2 天');
+assert.equal(previewDay2.pet.demoPreviewDay, 2, '第 2 天必须写入明确的内容日覆盖值');
+assert.equal(incubationPractice.contentDayFor(previewDay2.pet, '2026-08-01', []), 2, '开发验收器必须精确覆盖内容日而非依赖历史登录记录');
+assert.equal(petStore.getStage(previewDay2.pet), 'waiting', '第 2 天仍必须属于破壳前阶段');
+
+const previewDay3 = demoExperience.setPreviewStage('day3');
+assert.equal(previewDay3.ok, true, '开发验收器必须可以切到第 3 天');
+assert.equal(previewDay3.pet.demoPreviewDay, 3, '第 3 天必须写入明确的内容日覆盖值');
+
+const previewHatched = demoExperience.setPreviewStage('hatched');
+assert.equal(previewHatched.ok, true, '开发验收器必须可以直接预览破壳后');
+assert.equal(petStore.getStage(previewHatched.pet), 'hatched', '破壳后预览必须进入真实已破壳页面分支');
+
+const previewDay1 = demoExperience.setPreviewStage('day1');
+assert.equal(previewDay1.ok, true, '破壳后必须可以返回第 1 天继续验收');
+assert.equal(previewDay1.pet.collectionCard, null, '返回破壳前必须清除 demo 收藏卡，避免持续被判定为已破壳');
+assert.equal(petStore.getStage(previewDay1.pet), 'waiting', '返回第 1 天后必须恢复破壳前页面');
 
 const advanced = demoExperience.advanceToHatchable();
 assert.equal(advanced.ok, true, '开发验收控制必须能进入待破壳阶段');

@@ -4,7 +4,7 @@
 .canvas-expand-button { position: absolute; z-index: 10; top: 20rpx; left: 20rpx; width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; border: 1rpx solid rgba(218,221,212,.9); border-radius: 18rpx; background: rgba(255,255,255,.9); box-shadow: 0 8rpx 22rpx rgba(45,55,40,.1); color: #4F5E48; font-size: 31rpx; }
 .canvas-expand-button:active { transform: scale(.94); }
 .preview-aura { position: absolute; width: 330rpx; height: 330rpx; border-radius: 50%; background: radial-gradient(circle, rgba(237,231,142,.3), rgba(237,231,142,0) 68%); }
-.egg-canvas-stack { position: relative; width: 210rpx; height: 300rpx; filter: drop-shadow(0 14rpx 16rpx rgba(51,48,35,.14)); transform-origin: center; transition: transform .2s ease; }
+.egg-canvas-stack { position: relative; width: 300rpx; height: 300rpx; filter: drop-shadow(0 14rpx 16rpx rgba(51,48,35,.14)); transform-origin: center; transition: transform .2s ease; }
 .egg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .egg-canvas--base { z-index: 1; }
 .egg-canvas--art { z-index: 2; touch-action: none; }
@@ -47,7 +47,7 @@
 .page--expanded .preview { height: 72vh; padding-top: env(safe-area-inset-top); box-sizing: border-box; border-radius: 0; box-shadow: none; }
 .page--expanded .canvas-expand-button { top: calc(18rpx + env(safe-area-inset-top)); }
 .page--expanded .preview-aura { width: 68vh; height: 68vh; }
-.page--expanded .egg-canvas-stack { width: 43.4vh; max-width: 86vw; height: 62vh; }
+.page--expanded .egg-canvas-stack { width: 62vh; max-width: 86vw; height: 62vh; max-height: 86vw; }
 .page--expanded .content { padding: 0 20rpx calc(24rpx + env(safe-area-inset-bottom)); }
 .page--expanded .tool-section { margin-top: 12rpx; padding: 14rpx 12rpx; }
 .page--expanded .tool-options { margin-top: 10rpx; padding: 12rpx 16rpx; }

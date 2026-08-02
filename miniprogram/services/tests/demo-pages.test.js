@@ -94,29 +94,30 @@ collectionCard.onLoad.call(cardContext, { native: '1', new: '1' });
 assert.equal(cardContext.data.cardView.mode, 'demo', '开发版收藏卡页面必须渲染隔离 demo 数据');
 assert.equal(cardContext.data.cardView.illustration_url.startsWith('/assets/'), true, '开发版收藏卡页面必须使用包内素材');
 
-const lifeScene = loadPage('../../pages/life-scene/life-scene');
-const lifeContext = contextFor(lifeScene);
-lifeScene.onLoad.call(lifeContext, { scene: 'grass', entry: 'demo-test' });
-assert.equal(lifeContext.data.hotspots.length, 3, '开发版破壳后必须加载真实生活场景互动点');
-let sceneReaction = '';
-lifeContext.showReaction = line => {
-  sceneReaction = line;
-};
-lifeContext.showFlowerSway = () => {};
-lifeContext.showButterflyFlight = () => {};
-lifeContext.showSceneEffect = () => {};
-lifeScene.onTapHotspot.call(lifeContext, { currentTarget: { dataset: { index: 0 } } });
-assert.equal(Boolean(sceneReaction), true, '开发版生活场景互动点必须产生内容反馈');
+(async () => {
+  const petStore = require('../../utils/pet-store');
+  const postHatch = require('../../services/post-hatch-companion');
+  const lifeScenes = require('../../utils/life-scenes');
+  const pet = petStore.getPet();
+  const snapshot = await postHatch.getSnapshot(pet);
+  assert.equal(snapshot.ok, true, '开发版破壳后必须加载隔离的 5 小时状态快照');
+  assert.equal(['home', 'travel', 'work', 'school'].includes(snapshot.currentState.major), true, '当前状态必须属于四个 PRD 大场景之一');
+  assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action.kind === 'letter', true, '每个小状态只能暴露一个原生动作或写信入口');
+  assert.equal(lifeScenes.HOME_STATES.length, 7, '开发版必须包含七个居家小状态');
 
-const chat = loadPage('../../pages/chat/chat');
-const chatContext = contextFor(chat);
-chat.onLoad.call(chatContext);
-chatContext.setData({ draft: '今天陪我待一会儿' });
-chat.onSend.call(chatContext);
-const lastMessage = chatContext.data.messages[chatContext.data.messages.length - 1];
-assert.equal(lastMessage.from, 'egg', '开发版对话必须返回蛋宝宝回应');
-assert.equal(lastMessage.mode, 'demo', '开发版对话不得伪装成 live');
-assert.equal(toasts.includes('账号服务尚未接入，请稍后再试'), false, '开发版流程不得显示正式服务器未接入提示');
+  const talk = await postHatch.sendSceneMessage(pet, {
+    mood: snapshot.mood,
+    currentState: Object.assign({}, lifeScenes.HOME_STATES.find(item => item.canTalk), { atHome: true, canTalk: true })
+  }, '今天陪我待一会儿');
+  assert.equal(talk.ok, true, '允许说话的小状态必须在场景内返回审核过的回应');
+  assert.equal(talk.safety, 'approved-fallback', '开发版场景内对话不得伪装成 live');
+  assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), false, '开发版不得注册独立聊天页');
+  assert.equal(toasts.includes('账号服务尚未接入，请稍后再试'), false, '开发版流程不得显示正式服务器未接入提示');
 
-global.setTimeout = originalSetTimeout;
-console.log('开发版授权、绑定与破壳页面链路校验通过。');
+  global.setTimeout = originalSetTimeout;
+  console.log('开发版授权、绑定与破壳后陪伴链路校验通过。');
+})().catch(error => {
+  global.setTimeout = originalSetTimeout;
+  console.error(error);
+  process.exit(1);
+});

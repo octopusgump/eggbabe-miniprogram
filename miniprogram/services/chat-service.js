@@ -16,7 +16,7 @@ function approvedFallback(mood) {
   return APPROVED_FALLBACKS[mood] || APPROVED_FALLBACKS.default;
 }
 
-function requestReply({ eggId, text, history }) {
+function requestReply({ eggId, text, history, scene }) {
   if (!config.backendEnabled || runtime.getMode() !== 'live') {
     return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED' });
   }
@@ -24,6 +24,7 @@ function requestReply({ eggId, text, history }) {
     egg_id: eggId,
     message: text,
     history: (history || []).slice(-12).map(item => ({ from: item.from, text: item.text })),
+    scene_context: scene || null,
     mode: 'live'
   };
   const timeout = new Promise(resolve => {

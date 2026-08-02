@@ -11,45 +11,76 @@
     </view>
 
     <view wx:else class="pet-view {{stage !== 'hatched' ? 'pet-view--incubating' : ''}}">
-      <view class="top-row">
+      <view class="top-row" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">
         <view>
           <text wx:if="{{stage === 'hatched'}}" class="eyebrow">{{pet.prototype}} · 已破壳</text>
           <view class="pet-name-row" bindtap="onPetNameTap">
             <text class="pet-name">{{pet.name || '还没有名字'}}</text>
           </view>
         </view>
-        <view wx:if="{{stage === 'hatched'}}" class="progress-ring"><text>{{displayProgress}}%</text></view>
+        <mood-badge wx:if="{{stage === 'hatched' && dailyStatus}}" mood="{{dailyStatus.mood}}"></mood-badge>
       </view>
 
-      <view class="egg-zone {{stage !== 'hatched' ? 'egg-zone--incubating' : 'egg-zone--hatched'}} {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : 'room-lamp-off'}}">
+      <view class="egg-zone {{stage !== 'hatched' ? 'egg-zone--incubating' : 'egg-zone--hatched'}} {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : 'room-lamp-off'}} {{timeSceneIntro ? 'time-intro--' + timeSceneIntro : ''}} {{dailyWindowVisible ? 'scene-paused' : ''}}">
         <view wx:if="{{stage !== 'hatched'}}" class="incubation-scene {{environment.className}}">
-          <image class="incubation-scene-image" src="{{environment.backgroundImage}}" mode="aspectFill"></image>
-          <view class="scene-color-layer"></view>
-          <view class="room-lamp-state"></view>
-          <view wx:if="{{!environment.backgroundImage}}" class="scene-fallback">
+          <view wx:if="{{fullSceneImageLoading && !fullSceneImageFailed && !previousFullSceneImage}}" class="incubation-scene-loading"><view class="incubation-scene-loading-glow"></view></view>
+          <image
+            wx:if="{{previousFullSceneImage}}"
+            class="incubation-full-scene-image incubation-full-scene-image--previous"
+            src="{{previousFullSceneImage}}"
+            mode="aspectFill"
+          ></image>
+          <image
+            wx:if="{{environment.fullSceneImage && !fullSceneImageFailed}}"
+            class="incubation-full-scene-image {{sceneCrossfadeActive ? 'incubation-full-scene-image--revealing' : ''}}"
+            src="{{environment.fullSceneImage}}"
+            mode="aspectFill"
+            bindload="onFullSceneImageLoad"
+            binderror="onFullSceneImageError"
+          ></image>
+          <block wx:else>
+            <image class="incubation-window-image" src="{{environment.windowImage}}" mode="aspectFill"></image>
+            <image class="incubation-scene-image" src="{{environment.backgroundImage}}" mode="aspectFill"></image>
+            <image wx:if="{{environment.roomLightingEnabled}}" class="incubation-room-lighting-image" src="{{lampOn ? environment.roomLightingImages.on : environment.roomLightingImages.off}}" mode="aspectFill"></image>
+          </block>
+          <image class="incubation-nest-image" src="{{environment.nestImage}}" mode="aspectFit"></image>
+          <view wx:if="{{fullSceneImageFailed && !environment.backgroundImage}}" class="scene-fallback">
             <view class="window-glow"></view>
             <view class="room-floor"></view>
             <view class="room-lamp"></view>
           </view>
-          <view class="window-effects">
-            <view class="window-light"></view>
-            <view class="curtain-light curtain-light--left"></view>
-            <view class="curtain-light curtain-light--right"></view>
-            <view class="season-atmosphere">
-              <view class="season-piece season-piece--one"></view>
-              <view class="season-piece season-piece--two"></view>
-              <view class="season-piece season-piece--three"></view>
+          <view wx:if="{{!dailyWindowVisible}}" class="window-effects">
+            <view class="window-visual-effects">
+              <view class="window-light"></view>
+              <view class="time-atmosphere">
+                <view class="time-beam"></view>
+                <view class="time-mote time-mote--one"></view>
+                <view class="time-mote time-mote--two"></view>
+                <view class="time-mote time-mote--three"></view>
+                <view class="time-mote time-mote--four"></view>
+                <view class="time-mote time-mote--five"></view>
+                <view class="time-mote time-mote--six"></view>
+                <view class="time-night-glint time-night-glint--one"></view>
+                <view class="time-night-glint time-night-glint--two"></view>
+                <view class="time-night-glint time-night-glint--three"></view>
+                <view class="time-sunset-glint"></view>
+              </view>
+              <view class="curtain-light curtain-light--left"></view>
+              <view class="curtain-light curtain-light--right"></view>
+              <view class="season-atmosphere">
+                <view class="season-piece season-piece--one"></view>
+                <view class="season-piece season-piece--two"></view>
+                <view class="season-piece season-piece--three"></view>
+              </view>
             </view>
-            <view wx:if="{{environment.weather === 'cloudy'}}" class="weather-clouds">
-              <view class="weather-cloud weather-cloud--one"></view><view class="weather-cloud weather-cloud--two"></view>
-            </view>
-            <view wx:if="{{environment.weather === 'rain'}}" class="weather-rain">
-              <view wx:for="{{weatherParticles}}" wx:key="*this" class="rain-drop rain-drop--{{index}}"></view>
-            </view>
-            <view wx:if="{{environment.weather === 'snow'}}" class="weather-snow">
-              <view wx:for="{{weatherParticles}}" wx:key="*this" class="snow-flake snow-flake--{{index}}">·</view>
-            </view>
-            <canvas type="2d" id="windowFogCanvas" class="window-fog-canvas" catchtouchstart="onWindowTouchStart" catchtouchmove="onWindowTouchMove" catchtouchend="onWindowTouchEnd" catchtouchcancel="onWindowTouchEnd"></canvas>
+            <canvas
+              type="2d"
+              id="windowWeatherCanvas"
+              class="window-weather-canvas"
+              aria-role="button"
+              aria-label="点击窗户，查看窗外景色"
+              catchtap="onWindowTap"
+            ></canvas>
           </view>
           <view class="room-light-breathe"></view>
           <view class="room-lamp-hotspot" aria-role="button" aria-label="{{lampOn ? '关闭台灯' : '打开台灯'}}" catchtap="onLampTap"></view>
@@ -77,12 +108,22 @@
           </view>
         </view>
 
-        <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
+        <view wx:if="{{feedback}}" class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">{{feedback}}</view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg-aura {{eggMotion}}"></view>
 
-        <image wx:if="{{stage === 'hatched' && hasScenes}}" class="life-home-scene {{eggMotion}}" src="{{sceneImage}}" mode="aspectFill" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></image>
+        <view wx:if="{{stage === 'hatched' && postHatchLoading}}" class="post-hatch-loading">
+          <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
+        </view>
+        <view wx:elif="{{stage === 'hatched' && postHatchError}}" class="post-hatch-error">
+          <text>{{postHatchError}}</text><view class="retry-link" bindtap="onRetryPostHatch">重新看看</view>
+        </view>
+        <view wx:elif="{{stage === 'hatched' && hasScenes}}" class="life-home-scene {{eggMotion}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+          <image class="life-home-scene-image" src="{{sceneImage}}" mode="aspectFill"></image>
+          <view class="life-home-shade"></view>
+          <pet-avatar wx:if="{{postHatchSnapshot.currentState.atHome}}" class="life-home-character" pet-type="{{pet.prototype}}" size="{{118}}"></pet-avatar>
+          <view wx:else class="life-home-away"><text>{{postHatchSnapshot.currentState.line}}</text></view>
+        </view>
         <pet-avatar wx:elif="{{stage === 'hatched'}}" pet-type="{{pet.prototype}}" size="{{270}}" bindtap="onRoleTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></pet-avatar>
-        <view wx:else class="egg-contact-shadow {{eggMotion}}"></view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
@@ -96,45 +137,60 @@
         </view>
       </view>
 
-      <view wx:if="{{stage === 'hatched'}}" class="state-card">
+      <view wx:if="{{stage === 'hatched' && postHatchSnapshot}}" class="state-card">
         <view class="state-dot"></view>
         <view class="state-copy">
           <text class="state-title">{{stageText}}</text>
+          <text class="state-scene-line">{{postHatchSnapshot.currentState.line}}</text>
           <text wx:if="{{expectedHatchLabel}}" class="hatch-date">{{expectedHatchLabel}}</text>
         </view>
       </view>
 
       <view wx:if="{{stage === 'hatched' && dailyStatus}}" class="status-daily">
-        <text class="status-meta">此刻 · {{dailyStatus.mood}}</text>
+        <text class="status-meta">今日心情 · {{dailyStatus.mood}}</text>
         <text class="status-line">{{dailyStatus.line}}</text>
+      </view>
+
+      <view wx:if="{{stage === 'hatched' && postHatchSnapshot}}" class="post-hatch-entries">
+        <view class="post-hatch-entry" data-section="keepsakes" bindtap="onChangeScene"><text class="entry-mark">小物</text><text>ta 带回来的东西</text></view>
+        <view class="post-hatch-entry" data-section="postcards" bindtap="onChangeScene"><text class="entry-mark">信</text><text>明信片</text></view>
+        <view class="post-hatch-entry" data-section="card" bindtap="onChangeScene"><text class="entry-mark">卡</text><text>今日收藏卡</text></view>
       </view>
 
       <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
         <view class="companion-grid">
-          <view
-            wx:for="{{companionActions}}"
-            wx:key="key"
-            class="companion-item companion-item--{{item.appearance}} {{item.key === 'learn' && !learnUnlocked ? 'companion-item--locked' : ''}}"
-            hover-class="companion-item--pressed"
-            data-key="{{item.key}}"
-            aria-role="button"
-            aria-label="{{item.ariaLabel}}"
-            bindtap="onCompanionTap"
-          >
-            <view wx:if="{{item.completed}}" class="completed-mark">
-              <text class="completed-check">✓</text>
-              <text class="completed-spark">✦</text>
-              <view class="completed-source"><image class="completed-source-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
-            </view>
-            <view wx:elif="{{item.key === 'draw'}}" class="draw-icon-button">
-              <image class="draw-action-icon" src="{{item.icon}}" mode="aspectFit"></image>
-              <text class="draw-action-spark">✦</text>
-            </view>
-            <block wx:else>
-              <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
-              <view class="companion-copy"><text class="companion-title">{{item.title}}</text><text class="companion-desc">{{item.desc}}</text></view>
+          <view class="companion-primary-dock">
+            <block wx:for="{{companionActions}}" wx:key="key">
+              <view
+                wx:if="{{item.key !== 'draw'}}"
+                class="companion-item companion-item--{{item.appearance}} companion-item--{{item.key}} {{(item.key === 'learn' && !learnUnlocked) || (item.key === 'wish' && !wishUnlocked) ? 'companion-item--locked' : ''}}"
+                hover-class="companion-item--pressed"
+                data-key="{{item.key}}"
+                aria-role="button"
+                aria-label="{{(item.key === 'learn' && !learnUnlocked) || (item.key === 'wish' && !wishUnlocked) ? item.title + '，暂未开放' : item.ariaLabel}}"
+                bindtap="onCompanionTap"
+              >
+                <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
+                <text class="companion-title">{{item.title}}</text>
+              </view>
             </block>
           </view>
+          <block wx:for="{{companionActions}}" wx:key="key">
+            <view
+              wx:if="{{item.key === 'draw'}}"
+              class="companion-item companion-item--draw"
+              hover-class="companion-item--pressed"
+              data-key="{{item.key}}"
+              aria-role="button"
+              aria-label="{{item.ariaLabel}}"
+              bindtap="onCompanionTap"
+            >
+              <view class="draw-icon-button">
+                <image class="draw-action-icon" src="{{item.icon}}" mode="aspectFit"></image>
+                <text class="draw-action-spark">✦</text>
+              </view>
+            </view>
+          </block>
         </view>
       </view>
 
@@ -142,10 +198,101 @@
 
       <view wx:if="{{stage === 'prepared' || stage === 'soon' || stage === 'ready' || stage === 'hatched'}}" class="home-actions">
         <button class="primary-button home-actions__chat" disabled="{{stage === 'prepared' || stage === 'soon'}}" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
-        <button wx:if="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">更换场景</text></button>
+        <button wx:if="{{stage === 'hatched' && hasScenes}}" class="primary-button home-actions__scene" bindtap="onChangeScene"><text class="button-label">看看回忆</text></button>
       </view>
     </view>
   </scroll-view>
+
+  <!-- DEV-ONLY：季节/时令/天气验收器，正式上线前整体删除。 -->
+  <view wx:if="{{isDemo && pet && stage !== 'hatched'}}" class="scene-tester" style="top:{{sceneTesterTopPx}}px;">
+    <view
+      class="scene-tester-button {{sceneTesterOpen ? 'scene-tester-button--open' : ''}} {{sceneTesterBusy ? 'scene-tester-button--busy' : ''}}"
+      aria-role="button"
+      aria-label="测试场景，当前{{sceneTesterLabel}}"
+      catchtap="onSceneTesterToggle"
+    >
+      <text class="scene-tester-tag">场景</text><text class="scene-tester-current">{{sceneTesterBusy ? '加载中…' : sceneTesterLabel}}</text><text class="scene-tester-chevron">⌄</text>
+    </view>
+    <text wx:if="{{sceneTesterError}}" class="scene-tester-error">{{sceneTesterError}}</text>
+    <scroll-view wx:if="{{sceneTesterOpen}}" class="scene-tester-menu" scroll-y="true">
+      <view
+        wx:for="{{sceneTesterOptions}}"
+        wx:key="key"
+        class="scene-tester-option {{sceneTesterKey === item.key ? 'scene-tester-option--active' : ''}}"
+        data-scene="{{item.key}}"
+        aria-role="button"
+        aria-label="切换到{{item.label}}"
+        catchtap="onSceneTesterSelect"
+      >
+        <view class="scene-tester-option-copy"><text class="scene-tester-season">{{item.seasonLabel}}</text><text>{{item.stateLabel}}</text></view>
+        <text wx:if="{{sceneTesterKey === item.key}}">✓</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- DEV-ONLY：用真实 image 组件预加载三层；成功前不替换当前场景。 -->
+  <view wx:if="{{scenePreloadActive}}" class="scene-preloader" aria-hidden="true">
+    <image
+      class="scene-preloader-image"
+      src="{{scenePreloadAssets.background}}"
+      mode="aspectFill"
+      data-layer="background"
+      data-token="{{scenePreloadToken}}"
+      bindload="onScenePreloadLoad"
+      binderror="onScenePreloadError"
+    ></image>
+    <image
+      class="scene-preloader-image"
+      src="{{scenePreloadAssets.nest}}"
+      mode="aspectFit"
+      data-layer="nest"
+      data-token="{{scenePreloadToken}}"
+      bindload="onScenePreloadLoad"
+      binderror="onScenePreloadError"
+    ></image>
+    <image
+      class="scene-preloader-image"
+      src="{{scenePreloadAssets.egg}}"
+      mode="aspectFit"
+      data-layer="egg"
+      data-token="{{scenePreloadToken}}"
+      bindload="onScenePreloadLoad"
+      binderror="onScenePreloadError"
+    ></image>
+  </view>
+
+  <image
+    wx:if="{{pendingTimeSceneImage}}"
+    class="time-scene-preloader"
+    src="{{pendingTimeSceneImage}}"
+    mode="aspectFill"
+    aria-hidden="true"
+    bindload="onTimeSceneImageLoad"
+    binderror="onTimeSceneImageError"
+  ></image>
+
+  <!-- DEV-ONLY：阶段验收器，正式上线前整体删除。release/trial 下 isDemo=false，不会渲染。 -->
+  <view wx:if="{{isDemo && pet}}" class="stage-tester" style="top:{{clockTopPx}}px;">
+    <view
+      class="stage-tester-button {{stageTesterOpen ? 'stage-tester-button--open' : ''}} {{stageTesterBusy ? 'stage-tester-button--busy' : ''}}"
+      aria-role="button"
+      aria-label="测试阶段，当前{{stageTesterLabel}}"
+      catchtap="onStageTesterToggle"
+    >
+      <text class="stage-tester-tag">测试</text><text>{{stageTesterBusy ? '切换中…' : stageTesterLabel}}</text><text class="stage-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{stageTesterOpen}}" class="stage-tester-menu">
+      <view
+        wx:for="{{stageTesterOptions}}"
+        wx:key="key"
+        class="stage-tester-option {{stageTesterKey === item.key ? 'stage-tester-option--active' : ''}}"
+        data-stage="{{item.key}}"
+        aria-role="button"
+        aria-label="切换到{{item.label}}"
+        catchtap="onStageTesterSelect"
+      ><text>{{item.label}}</text><text wx:if="{{stageTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
 
   <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>
   <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggArtCanvas" class="egg-render-cache egg-render-cache--art"></canvas>
@@ -168,4 +315,19 @@
       <button class="name-skip" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
     </view>
   </view>
+
+  <daily-window-detail
+    id="dailyWindowDetail"
+    visible="{{dailyWindowVisible}}"
+    image="{{dailyWindowEnvironment.windowImage}}"
+    weather="{{dailyWindowEnvironment.weather}}"
+    season="{{dailyWindowEnvironment.season}}"
+    period="{{dailyWindowEnvironment.period}}"
+    light-phase="{{dailyWindowEnvironment.lightPhase}}"
+    weather-label="{{dailyWindowWeatherLabel}}"
+    period-label="{{dailyWindowPeriodLabel}}"
+    origin-style="{{dailyWindowOriginStyle}}"
+    bindclose="onDailyWindowClosed"
+    bindretry="onDailyWindowRetry"
+  ></daily-window-detail>
 </view>

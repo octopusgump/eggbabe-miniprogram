@@ -1,0 +1,78 @@
+<view class="sample-page sample-page--{{lightingMode}}">
+  <image
+    wx:if="{{previousBackground}}"
+    class="sample-background sample-background--previous"
+    src="{{previousBackground}}"
+    mode="aspectFill"
+  ></image>
+  <image class="sample-background sample-background--current {{switchingMode ? 'sample-background--switching' : ''}}" src="{{backgroundImage}}" mode="aspectFill"></image>
+
+  <view class="sample-header">
+    <view class="sample-back" aria-role="button" aria-label="返回" bindtap="onBack">‹</view>
+    <view class="sample-title"><text>蛋宝宝旋转小样</text><text class="sample-tag">{{lightingTag}}</text></view>
+  </view>
+
+  <view class="sample-mode-switch" aria-label="切换日间或夜晚">
+    <view
+      class="sample-mode-option {{lightingMode === 'day' ? 'sample-mode-option--active' : ''}}"
+      aria-role="button"
+      data-mode="day"
+      catchtap="switchLightingMode"
+    >日间</view>
+    <view
+      class="sample-mode-option {{lightingMode === 'night' ? 'sample-mode-option--active' : ''}}"
+      aria-role="button"
+      data-mode="night"
+      catchtap="switchLightingMode"
+    >夜晚</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="sample-state">
+    <view class="sample-loading-orbit"></view>
+    <text>正在准备日间和夜晚图层…</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="sample-state sample-state--error">
+    <text>{{error}}</text>
+    <view class="sample-retry" aria-role="button" bindtap="onRetry">重新加载</view>
+    <view class="sample-home" aria-role="button" bindtap="onBack">返回主页</view>
+  </view>
+
+  <block wx:else>
+    <image class="sample-nest" src="{{nestImage}}" mode="aspectFit"></image>
+    <image
+      wx:if="{{eggShadowImage}}"
+      class="sample-shadow sample-shadow--egg"
+      src="{{eggShadowImage}}"
+      mode="aspectFit"
+    ></image>
+
+    <view class="sample-egg-stage">
+      <image
+        wx:if="{{previousImage}}"
+        class="sample-egg sample-egg--previous rotation--{{transitionDirection}}"
+        src="{{previousImage}}"
+        mode="aspectFit"
+      ></image>
+      <image
+        class="sample-egg sample-egg--current {{rotating ? 'sample-egg--rotating' : ''}} rotation--{{transitionDirection}}"
+        src="{{currentImage}}"
+        mode="aspectFit"
+      ></image>
+      <block wx:if="{{canRotate}}">
+        <view class="sample-hotspot sample-hotspot--left" aria-role="button" aria-label="向左旋转蛋宝宝" catchtap="onRotateLeft"></view>
+        <view class="sample-hotspot sample-hotspot--right" aria-role="button" aria-label="向右旋转蛋宝宝" catchtap="onRotateRight"></view>
+      </block>
+    </view>
+
+    <view class="sample-controls">
+      <text class="sample-hint">{{canRotate ? '点击蛋宝宝左侧或右侧' : '夜晚小样暂时固定右 45°'}}</text>
+      <view wx:if="{{canRotate}}" class="sample-orientations">
+        <view class="sample-dot {{currentIndex === 0 ? 'sample-dot--active' : ''}}"></view>
+        <view class="sample-dot {{currentIndex === 1 ? 'sample-dot--active' : ''}}"></view>
+        <view class="sample-dot {{currentIndex === 2 ? 'sample-dot--active' : ''}}"></view>
+      </view>
+      <text class="sample-orientation-label">{{currentLabel}}</text>
+    </view>
+  </block>
+</view>

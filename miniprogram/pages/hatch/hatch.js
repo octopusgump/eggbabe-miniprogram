@@ -23,6 +23,7 @@ Page({
     phase: 'confirm',
     pet: null,
     gateMessage: '',
+    resultError: '',
     reviewItems: [],
     particles: [
       { tx: '-140rpx', ty: '-110rpx', color: '#EDE78E' },
@@ -78,32 +79,42 @@ Page({
       wx.showToast({ title: '破壳准备还没有全部完成', icon: 'none' });
       return;
     }
-    this.setData({ phase: 'reveal' });
+    this.setData({ phase: 'reveal', resultError: '' });
     this.revealTimer = setTimeout(() => {
-      if (runtime.getMode() === 'demo') {
-        this.handleHatchResult(demoExperience.generateHatchCard());
-        return;
-      }
-      if (config.backendEnabled && runtime.getMode() === 'live') {
-        cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
-        return;
-      }
-      this.handleHatchResult({ ok: false, code: 'BACKEND_REQUIRED', message: '收藏卡需要由实体服务确认后生成' });
+      this.requestHatchCard();
     }, 1450);
   },
+
+  requestHatchCard() {
+    if (runtime.getMode() === 'demo') {
+      this.handleHatchResult(demoExperience.generateHatchCard());
+      return;
+    }
+    if (config.backendEnabled && runtime.getMode() === 'live') {
+      cloudApi.generateHatchCard().then(result => this.handleHatchResult(result));
+      return;
+    }
+    this.handleHatchResult({ ok: false, code: 'BACKEND_REQUIRED', message: '收藏卡需要由实体服务确认后生成' });
+  },
+
+  onRetryHatch() {
+    if (this.data.phase !== 'error') return;
+    this.setData({ phase: 'reveal', resultError: '' });
+    this.requestHatchCard();
+  },
+
+  onBackHome() { wx.switchTab({ url: '/pages/home/home' }); },
 
   handleHatchResult(result) {
       if (!result.ok || result.mode !== runtime.getMode()) {
         analytics.track('data_write_fail', { where: 'hatch_card', error_code: result.reason || result.code || 'GENERATE_FAILED' });
-        this.setData({ phase: 'confirm' });
-        wx.showToast({ title: result.message, icon: 'none' });
+        this.setData({ phase: 'error', resultError: result.message || '这次没有承接好，请重试' });
         return;
       }
       if (config.backendEnabled && runtime.getMode() === 'live') {
         const applied = petStore.applyCloudHatchCard(result.card);
         if (!applied.ok) {
-          this.setData({ phase: 'confirm' });
-          wx.showToast({ title: applied.message, icon: 'none' });
+          this.setData({ phase: 'error', resultError: applied.message || '收藏卡没有保存好，请重试' });
           return;
         }
       }

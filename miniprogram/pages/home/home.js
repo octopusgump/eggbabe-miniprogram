@@ -12,12 +12,79 @@ const runtime = require('../../services/runtime-context');
 const practice = require('../../services/incubation-practice');
 const touchLines = require('../../services/egg-touch-lines');
 const deviceClock = require('../../services/device-clock');
+const postHatch = require('../../services/post-hatch-companion');
+const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
+const demoExperience = require('../../services/demo-experience');
+const windowWeatherCanvas = require('../../utils/window-weather-canvas');
 
-const WEATHER_PARTICLES = Array.from({ length: 12 }, (_, index) => index);
+const SCENE_PREVIEW_STORAGE_KEY = 'eggbabe_scene_preview';
+const AUTO_SCENE_OPTION = {
+  key: 'auto',
+  seasonLabel: '自动',
+  stateLabel: '跟随实时环境',
+  label: '实时环境'
+};
+const SCENE_TESTER_OPTIONS = [AUTO_SCENE_OPTION].concat(preHatchAssets.sceneTesterOptions || []);
+const SCENE_LAYER_LABELS = {
+  background: '背景',
+  nest: '窝垫',
+  egg: '蛋体'
+};
+const WEATHER_LABELS = {
+  sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
+  storm: '雷雨', afterRain: '雨后', postSnow: '雪后', wind: '有风'
+};
+
+function emptyScenePreloadAssets() {
+  return { background: '', nest: '', egg: '' };
+}
+
+function storedScenePreviewKey() {
+  try {
+    return wx.getStorageSync(SCENE_PREVIEW_STORAGE_KEY) || 'auto';
+  } catch (error) {
+    return 'auto';
+  }
+}
+
+function storeScenePreviewKey(key) {
+  try {
+    if (key === 'auto') wx.removeStorageSync(SCENE_PREVIEW_STORAGE_KEY);
+    else wx.setStorageSync(SCENE_PREVIEW_STORAGE_KEY, key);
+  } catch (error) {}
+}
+
+function scenePreviewTarget(key) {
+  if (!key || key === 'auto') return null;
+  return (preHatchAssets.sceneTesterOptions || []).find(item => item.key === key) || null;
+}
+
+function previewEnvironment(base, target) {
+  if (!target) return base;
+  const isSunset = target.lightPhase === 'sunset';
+  return Object.assign({}, base, {
+    season: target.season,
+    weather: target.weather,
+    period: target.period,
+    lightPhase: target.lightPhase,
+    className: target.className,
+    fullSceneImage: target.background,
+    windowImage: environmentService.windowAssetPath(target.weather, target.period, isSunset),
+    nestImage: target.nest,
+    eggImage: target.egg,
+    roomLightingEnabled: false
+  });
+}
+
+function hasCustomizedShell(pet) {
+  const shell = shellArtService.normalizeShellArt(pet && pet.shell);
+  return shell.colorAlpha > 0 || shell.operations.length > 0;
+}
+
 const COMPANION_ACTIONS = [
-  { key: 'wish', title: '许愿池', desc: '今天想和我做什么', icon: '/assets/scenes/incubation/svg/interaction_wish.svg' },
-  { key: 'learn', title: '早教班', desc: '教我一件小事', icon: '/assets/scenes/incubation/svg/interaction_learn.svg' },
-  { key: 'draw', title: '画画', desc: '画下我们的记号', icon: '/assets/scenes/incubation/svg/interaction_draw.svg' }
+  { key: 'wish', title: '许愿池', desc: '今天想和我做什么', icon: preHatchAssets.interactionIcons.wish },
+  { key: 'learn', title: '早教班', desc: '教我一件小事', icon: preHatchAssets.interactionIcons.learn },
+  { key: 'draw', title: '画画', desc: '画下我们的记号', icon: preHatchAssets.interactionIcons.draw }
 ];
 const DAILY_ACTION_MODULES = {
   wish: 'wish_pool',
@@ -37,7 +104,7 @@ function companionActionsFor(records, serverDate) {
   return COMPANION_ACTIONS.map(item => {
     const module = DAILY_ACTION_MODULES[item.key];
     const completed = !!(module && completedModules.has(module));
-    const appearance = item.key === 'draw' ? 'draw' : (completed ? 'completed' : 'card');
+    const appearance = item.key === 'draw' ? 'draw' : 'card';
     return Object.assign({}, item, {
       completed,
       appearance,
@@ -54,9 +121,11 @@ Page({
     stage: 'empty',
     stageText: '',
     expectedHatchLabel: '',
-    displayProgress: 100,
     actionLabel: '',
     dailyStatus: null,
+    postHatchSnapshot: null,
+    postHatchLoading: false,
+    postHatchError: '',
     feedback: '',
     eggMotion: '',
     sceneEffect: '',
@@ -64,7 +133,7 @@ Page({
     syncPending: 0,
     sceneImage: '',
     environment: environmentService.resolve(),
-    weatherParticles: WEATHER_PARTICLES,
+    dailyWindowEnvironment: environmentService.resolve(),
     companionActions: companionActionsFor([], ''),
     wishUnlocked: true,
     learnUnlocked: false,
@@ -76,9 +145,22 @@ Page({
     savingName: false,
     homeEggBasePreview: '',
     homeEggArtPreview: '',
+    windowFogVisible: true,
+    windowWeatherCanvasFailed: false,
+    dailyWindowVisible: false,
+    dailyWindowOriginStyle: '',
+    dailyWindowWeatherLabel: '晴朗',
+    dailyWindowPeriodLabel: '日间',
+    fullSceneImageLoading: true,
+    fullSceneImageFailed: false,
+    previousFullSceneImage: '',
+    sceneCrossfadeActive: false,
+    pendingTimeSceneImage: '',
+    timeSceneIntro: '',
     lampOn: false,
     clockMode: 'analog',
-    clockTopPx: 88,
+    nameTopPx: 88,
+    clockTopPx: 132,
     clockLeftPx: 18,
     clockTimeText: '--:--',
     clockDateText: '',
@@ -86,7 +168,23 @@ Page({
     clockMinuteStyle: 'transform:rotate(0deg);',
     clockSecondStyle: 'transform:rotate(0deg);',
     sceneOpening: false,
-    sceneTransitionStyle: ''
+    sceneTransitionStyle: '',
+    isDemo: config.localDemoEnabled,
+    stageTesterOpen: false,
+    stageTesterBusy: false,
+    stageTesterKey: 'day1',
+    stageTesterLabel: '第 1 天',
+    stageTesterOptions: demoExperience.PREVIEW_STAGES,
+    sceneTesterTopPx: 88,
+    sceneTesterOpen: false,
+    sceneTesterBusy: false,
+    sceneTesterError: '',
+    sceneTesterKey: 'auto',
+    sceneTesterLabel: '实时环境',
+    sceneTesterOptions: SCENE_TESTER_OPTIONS,
+    scenePreloadActive: false,
+    scenePreloadToken: 0,
+    scenePreloadAssets: emptyScenePreloadAssets()
   },
 
   formatExpectedHatch(hatchAt) {
@@ -105,14 +203,148 @@ Page({
     }
   },
 
+  clearTimeSceneTimers() {
+    clearTimeout(this.timeSceneRefreshTimer);
+    clearTimeout(this.timeSceneIntroTimer);
+    clearTimeout(this.timeSceneCrossfadeTimer);
+    this.timeSceneRefreshTimer = null;
+    this.timeSceneIntroTimer = null;
+    this.timeSceneCrossfadeTimer = null;
+  },
+
+  triggerTimeSceneIntro(lightPhase) {
+    clearTimeout(this.timeSceneIntroTimer);
+    this.timeSceneIntroTimer = null;
+    const phase = lightPhase === 'morning' || lightPhase === 'sunset' ? lightPhase : '';
+    if (!phase || this.prefersReducedMotion() || !this.pageActive) {
+      if (this.data.timeSceneIntro) this.setData({ timeSceneIntro: '' });
+      return;
+    }
+    this.setData({ timeSceneIntro: '' }, () => {
+      if (!this.pageActive || this.data.dailyWindowVisible) return;
+      const begin = () => {
+        if (!this.pageActive || this.data.dailyWindowVisible) return;
+        this.setData({ timeSceneIntro: phase });
+        this.timeSceneIntroTimer = setTimeout(() => {
+          this.timeSceneIntroTimer = null;
+          if (this.pageActive) this.setData({ timeSceneIntro: '' });
+        }, 1250);
+      };
+      if (wx.nextTick) wx.nextTick(begin);
+      else setTimeout(begin, 0);
+    });
+  },
+
+  scheduleTimeSceneRefresh() {
+    clearTimeout(this.timeSceneRefreshTimer);
+    this.timeSceneRefreshTimer = null;
+    if (
+      !this.pageActive
+      || !this.data.pet
+      || this.data.stage === 'hatched'
+      || this.data.dailyWindowVisible
+      || this.sceneTestOverride
+    ) return;
+    const delay = environmentService.millisecondsUntilNextLightPhase();
+    this.timeSceneRefreshTimer = setTimeout(() => {
+      this.timeSceneRefreshTimer = null;
+      this.refreshTimeScene();
+    }, Math.min(delay + 1200, 2147483000));
+  },
+
+  refreshTimeScene() {
+    if (
+      !this.pageActive
+      || !this.data.pet
+      || this.data.stage === 'hatched'
+      || this.data.dailyWindowVisible
+      || this.sceneTestOverride
+    ) return;
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
+    const nextEnvironment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet.createdAt });
+    const currentEnvironment = this.data.environment || {};
+    if (nextEnvironment.className === currentEnvironment.className && nextEnvironment.fullSceneImage === currentEnvironment.fullSceneImage) {
+      this.scheduleTimeSceneRefresh();
+      return;
+    }
+    if (nextEnvironment.fullSceneImage && nextEnvironment.fullSceneImage !== currentEnvironment.fullSceneImage) {
+      this.pendingTimeEnvironment = nextEnvironment;
+      this.setData({ pendingTimeSceneImage: nextEnvironment.fullSceneImage });
+      return;
+    }
+    this.commitTimeScene(nextEnvironment, false);
+  },
+
+  commitTimeScene(environment, crossfade) {
+    if (!environment || !this.pageActive) return;
+    const currentEnvironment = this.data.environment || {};
+    const lampStateKey = `${environment.dateKey}:${environment.period}`;
+    const lampOn = this.lampOverride && this.lampOverride.key === lampStateKey
+      ? this.lampOverride.value
+      : environment.period === 'night';
+    const windowFogSceneKey = `${environment.dateKey}:${environment.fullSceneImage || environment.windowImage}`;
+    const windowFogSceneChanged = this.windowFogSceneKey !== windowFogSceneKey;
+    this.windowFogSceneKey = windowFogSceneKey;
+    clearTimeout(this.timeSceneCrossfadeTimer);
+    this.previousTimeEnvironment = crossfade ? currentEnvironment : null;
+    this.pendingTimeEnvironment = null;
+    this.setData({
+      environment,
+      previousFullSceneImage: crossfade ? String(currentEnvironment.fullSceneImage || '') : '',
+      sceneCrossfadeActive: Boolean(crossfade),
+      pendingTimeSceneImage: '',
+      fullSceneImageLoading: false,
+      fullSceneImageFailed: false,
+      windowFogVisible: windowFogSceneChanged ? true : this.data.windowFogVisible,
+      lampOn,
+      homeEggBasePreview: this.sceneLayerEggActive ? environment.eggImage : this.data.homeEggBasePreview
+    }, () => {
+      this.setupWindowWeatherCanvas();
+      this.triggerTimeSceneIntro(environment.lightPhase);
+      this.scheduleTimeSceneRefresh();
+      if (!crossfade) return;
+      this.timeSceneCrossfadeTimer = setTimeout(() => {
+        this.timeSceneCrossfadeTimer = null;
+        this.previousTimeEnvironment = null;
+        if (this.pageActive) this.setData({ previousFullSceneImage: '', sceneCrossfadeActive: false });
+      }, this.prefersReducedMotion() ? 40 : 650);
+    });
+  },
+
+  onTimeSceneImageLoad() {
+    const environment = this.pendingTimeEnvironment;
+    if (!environment || !this.pageActive || this.data.dailyWindowVisible) return;
+    this.commitTimeScene(environment, true);
+  },
+
+  onTimeSceneImageError() {
+    this.pendingTimeEnvironment = null;
+    this.setData({ pendingTimeSceneImage: '' });
+    clearTimeout(this.timeSceneRefreshTimer);
+    if (!this.pageActive || this.data.dailyWindowVisible) return;
+    this.timeSceneRefreshTimer = setTimeout(() => {
+      this.timeSceneRefreshTimer = null;
+      this.refreshTimeScene();
+    }, 60000);
+  },
+
   async onShow() {
     this.pageActive = true;
+    this.clearTimeSceneTimers();
+    this.pendingTimeEnvironment = null;
+    this.previousTimeEnvironment = null;
+    if (this.data.dailyWindowVisible) this.setData({ dailyWindowVisible: false });
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
     this.configureClockPosition();
     if (this.data.sceneOpening) this.setData({ sceneOpening: false, sceneTransitionStyle: '' });
-    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 0 });
+    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 0, hidden: false });
     const pet = petStore.getPet();
     if (!pet) {
       this.stopClock();
+      this.stopWindowWeatherAnimation();
       this.homeEggLayersReady = false;
       this.setData({
         pet: null,
@@ -121,7 +353,11 @@ Page({
         showNameSheet: false,
         syncPending: syncQueue.pendingCount(),
         homeEggBasePreview: '',
-        homeEggArtPreview: ''
+        homeEggArtPreview: '',
+        previousFullSceneImage: '',
+        sceneCrossfadeActive: false,
+        pendingTimeSceneImage: '',
+        timeSceneIntro: ''
       });
       return;
     }
@@ -131,46 +367,79 @@ Page({
     const showNameSheet = !hatched && petStore.shouldPromptNickname();
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const environment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const resolvedEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const previewKey = config.localDemoEnabled ? storedScenePreviewKey() : 'auto';
+    const previewTarget = scenePreviewTarget(previewKey);
+    const environment = previewEnvironment(resolvedEnvironment, previewTarget);
+    this.sceneTestOverride = previewTarget;
+    this.sceneLayerEggActive = !hatched && !hasCustomizedShell(pet);
     const lampStateKey = `${environment.dateKey}:${environment.period}`;
     const lampOn = this.lampOverride && this.lampOverride.key === lampStateKey
       ? this.lampOverride.value
       : environment.period === 'night';
+    const windowFogSceneKey = `${environment.dateKey}:${environment.fullSceneImage || environment.windowImage}`;
+    const windowFogSceneChanged = this.windowFogSceneKey !== windowFogSceneKey;
+    this.windowFogSceneKey = windowFogSceneKey;
     this.setData({
       pet,
       stage,
       stageText: presentation.homeText,
       expectedHatchLabel: hatched || stage === 'ready' ? '' : this.formatExpectedHatch(pet.hatchAt),
       actionLabel: presentation.actionLabel,
-      dailyStatus: hatched ? petStore.getDailyStatus() : null,
+      dailyStatus: null,
+      postHatchSnapshot: null,
+      postHatchLoading: hatched,
+      postHatchError: '',
       showNameSheet,
       nameDraft: pet.name || '',
       nameCount: Array.from(pet.name || '').length,
       nameError: '',
-      hasScenes: hatched && sceneConfig.getScenesForCharacter(pet.prototype).length > 0,
-      sceneImage: hatched ? sceneConfig.getScene('grass', pet.prototype).image : '',
+      hasScenes: hatched,
+      sceneImage: hatched ? sceneConfig.assets.POST_HATCH.panoramaFallback : '',
       environment,
+      fullSceneImageLoading: !hatched && Boolean(environment.fullSceneImage),
+      fullSceneImageFailed: false,
+      previousFullSceneImage: '',
+      sceneCrossfadeActive: false,
+      pendingTimeSceneImage: '',
+      timeSceneIntro: '',
+      windowFogVisible: !hatched && (windowFogSceneChanged ? true : this.data.windowFogVisible),
       lampOn,
+      stageTesterKey: pet.demoPreviewStage || (hatched ? 'hatched' : 'day1'),
+      stageTesterLabel: (demoExperience.PREVIEW_STAGES.find(item => item.key === (pet.demoPreviewStage || (hatched ? 'hatched' : 'day1'))) || demoExperience.PREVIEW_STAGES[0]).label,
+      sceneTesterKey: previewTarget ? previewTarget.key : 'auto',
+      sceneTesterLabel: previewTarget ? previewTarget.label : AUTO_SCENE_OPTION.label,
+      sceneTesterError: '',
+      sceneTesterBusy: false,
+      scenePreloadActive: false,
+      scenePreloadToken: this.scenePreloadRequestToken,
+      scenePreloadAssets: emptyScenePreloadAssets(),
+      homeEggBasePreview: !hatched && this.sceneLayerEggActive ? environment.eggImage : '',
+      homeEggArtPreview: '',
       companionActions: companionActionsFor([], ''),
       syncPending: syncQueue.pendingCount()
     }, () => {
       if (!hatched) {
         this.startClock();
-        this.setupWindowFog();
-        this.setupHomeEgg();
+        this.setupWindowWeatherCanvas();
+        this.triggerTimeSceneIntro(environment.lightPhase);
+        this.scheduleTimeSceneRefresh();
+        if (this.sceneLayerEggActive) {
+          this.homeEggLayersReady = false;
+          this.homeEggSetupPending = false;
+          this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
+          this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
+        } else {
+          this.setupHomeEgg();
+        }
       } else {
         this.stopClock();
+        this.stopWindowWeatherAnimation();
       }
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
     if (hatched) {
-      practice.getManualState().then(state => {
-        const rawTotal = state && state.points ? state.points.total : null;
-        const total = Number(rawTotal);
-        if (state.ok && rawTotal !== null && rawTotal !== undefined && Number.isFinite(total)) {
-          this.setData({ displayProgress: Math.max(0, Math.min(100, Math.round(total))) });
-        }
-      });
+      this.loadPostHatchSnapshot(pet);
     } else {
       practice.getManualState().then(state => {
         if (!state.ok) return;
@@ -196,10 +465,41 @@ Page({
     }
   },
 
+  loadPostHatchSnapshot(pet) {
+    const requestToken = this.postHatchRequestToken = (this.postHatchRequestToken || 0) + 1;
+    this.setData({ postHatchLoading: true, postHatchError: '' });
+    postHatch.getSnapshot(pet || this.data.pet).then(result => {
+      if (!this.pageActive || requestToken !== this.postHatchRequestToken) return;
+      if (!result.ok) {
+        this.setData({ postHatchLoading: false, postHatchError: result.message || '此刻状态没有加载好' });
+        return;
+      }
+      const current = result.currentState;
+      this.setData({
+        postHatchLoading: false,
+        postHatchError: '',
+        postHatchSnapshot: result,
+        dailyStatus: result.mood,
+        stageText: `${current.majorLabel} · ${current.label}`,
+        sceneImage: result.previewImage || sceneConfig.assets.POST_HATCH.panoramaFallback,
+        actionLabel: current.atHome ? '看看 ta 此刻在做什么' : '看看 ta 留下的空房间'
+      });
+    }).catch(() => {
+      if (this.pageActive && requestToken === this.postHatchRequestToken) {
+        this.setData({ postHatchLoading: false, postHatchError: '此刻状态没有加载好，请重试' });
+      }
+    });
+  },
+
+  onRetryPostHatch() {
+    if (!this.data.pet || this.data.postHatchLoading) return;
+    this.loadPostHatchSnapshot(this.data.pet);
+  },
+
   onReady() {
     this.configureClockPosition();
-    this.setupWindowFog();
-    this.setupHomeEgg();
+    this.setupWindowWeatherCanvas();
+    if (!this.sceneTestOverride) this.setupHomeEgg();
   },
 
   configureClockPosition() {
@@ -208,15 +508,17 @@ Page({
       const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
       const statusBarHeight = Number(windowInfo.statusBarHeight || 20);
       const safeLeft = windowInfo.safeArea ? Number(windowInfo.safeArea.left || 0) : 0;
-      const clockTopPx = menuRect && Number(menuRect.bottom)
+      const nameTopPx = menuRect && Number(menuRect.bottom)
         ? Number(menuRect.bottom) + 8
         : statusBarHeight + 42;
       this.setData({
-        clockTopPx: Math.round(clockTopPx),
-        clockLeftPx: Math.round(safeLeft + 18)
+        nameTopPx: Math.round(nameTopPx),
+        clockTopPx: Math.round(nameTopPx + 44),
+        clockLeftPx: Math.round(safeLeft + 18),
+        sceneTesterTopPx: Math.round(nameTopPx)
       });
     } catch (error) {
-      this.setData({ clockTopPx: 88, clockLeftPx: 18 });
+      this.setData({ nameTopPx: 88, clockTopPx: 132, clockLeftPx: 18, sceneTesterTopPx: 88 });
     }
   },
 
@@ -257,8 +559,182 @@ Page({
     analytics.track('room_element_interaction', { element_id: 'clock', result: clockMode });
   },
 
+  // DEV-ONLY: 正式上线前删除 stage tester 相关 data、WXML、WXSS 与事件。
+  onStageTesterToggle() {
+    if (!this.data.isDemo || this.data.stageTesterBusy) return;
+    this.setData({
+      stageTesterOpen: !this.data.stageTesterOpen,
+      sceneTesterOpen: false
+    });
+  },
+
+  // DEV-ONLY: 20 组季节/时令/天气验收器；release/trial 下不会渲染。
+  onSceneTesterToggle() {
+    if (!this.data.isDemo || this.data.sceneTesterBusy || this.data.stage === 'hatched') return;
+    this.setData({
+      sceneTesterOpen: !this.data.sceneTesterOpen,
+      stageTesterOpen: false,
+      sceneTesterError: ''
+    });
+  },
+
+  beginScenePreload(target) {
+    const token = this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
+    this.pendingSceneTarget = target;
+    this.scenePreloadLoaded = { background: false, nest: false, egg: false };
+    this.setData({
+      sceneTesterBusy: true,
+      sceneTesterOpen: false,
+      sceneTesterError: '',
+      scenePreloadActive: true,
+      scenePreloadToken: token,
+      scenePreloadAssets: {
+        background: target.background,
+        nest: target.nest,
+        egg: target.egg
+      }
+    });
+  },
+
+  onScenePreloadLoad(event) {
+    const dataset = event.currentTarget.dataset || {};
+    const layer = dataset.layer;
+    const token = Number(dataset.token);
+    if (
+      !this.pageActive
+      || !this.data.scenePreloadActive
+      || token !== this.scenePreloadRequestToken
+      || !this.pendingSceneTarget
+      || !Object.prototype.hasOwnProperty.call(SCENE_LAYER_LABELS, layer)
+    ) return;
+    this.scenePreloadLoaded[layer] = true;
+    if (!Object.keys(SCENE_LAYER_LABELS).every(key => this.scenePreloadLoaded[key])) return;
+
+    const target = this.pendingSceneTarget;
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    storeScenePreviewKey(target.key);
+    this.sceneTestOverride = target;
+    this.homeEggLayersReady = false;
+    this.homeEggSetupPending = false;
+    this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
+    this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
+    this.setData({
+      environment: previewEnvironment(this.data.environment, target),
+      sceneTesterBusy: false,
+      sceneTesterKey: target.key,
+      sceneTesterLabel: target.label,
+      scenePreloadActive: false,
+      scenePreloadAssets: emptyScenePreloadAssets(),
+      fullSceneImageLoading: true,
+      fullSceneImageFailed: false,
+      windowFogVisible: true,
+      homeEggBasePreview: target.egg,
+      homeEggArtPreview: ''
+    }, () => {
+      this.setupWindowWeatherCanvas();
+      this.triggerTimeSceneIntro(target.lightPhase);
+      wx.showToast({ title: `已切换：${target.label}`, icon: 'none' });
+    });
+  },
+
+  onScenePreloadError(event) {
+    const dataset = event.currentTarget.dataset || {};
+    const layer = dataset.layer;
+    const token = Number(dataset.token);
+    if (
+      !this.pageActive
+      || token !== this.scenePreloadRequestToken
+      || !this.pendingSceneTarget
+      || !Object.prototype.hasOwnProperty.call(SCENE_LAYER_LABELS, layer)
+    ) return;
+    const target = this.pendingSceneTarget;
+    const assetLabel = SCENE_LAYER_LABELS[layer];
+    const assetPath = this.data.scenePreloadAssets[layer];
+    console.warn('[scene-tester] asset preload failed', {
+      scene: target.key,
+      layer: assetLabel,
+      path: assetPath,
+      errMsg: event.detail && event.detail.errMsg
+    });
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    this.scenePreloadRequestToken += 1;
+    this.setData({
+      sceneTesterBusy: false,
+      sceneTesterError: `${assetLabel}没有加载好，请重试`,
+      scenePreloadActive: false,
+      scenePreloadToken: this.scenePreloadRequestToken,
+      scenePreloadAssets: emptyScenePreloadAssets()
+    });
+    wx.showToast({ title: `${assetLabel}加载失败`, icon: 'none' });
+  },
+
+  onSceneTesterSelect(event) {
+    if (!this.data.isDemo || this.data.sceneTesterBusy || this.data.stage === 'hatched') return;
+    const key = event.currentTarget.dataset.scene;
+    const target = SCENE_TESTER_OPTIONS.find(item => item.key === key);
+    if (!target) return;
+    if (key === this.data.sceneTesterKey) {
+      this.setData({ sceneTesterOpen: false, sceneTesterError: '' });
+      return;
+    }
+    if (key === 'auto') {
+      this.pendingSceneTarget = null;
+      this.scenePreloadLoaded = null;
+      this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
+      storeScenePreviewKey('auto');
+      this.sceneTestOverride = null;
+      this.setData({
+        sceneTesterBusy: true,
+        sceneTesterOpen: false,
+        sceneTesterError: '',
+        sceneTesterKey: 'auto',
+        sceneTesterLabel: AUTO_SCENE_OPTION.label,
+        scenePreloadActive: false,
+        scenePreloadToken: this.scenePreloadRequestToken,
+        scenePreloadAssets: emptyScenePreloadAssets(),
+        homeEggBasePreview: '',
+        homeEggArtPreview: ''
+      }, () => {
+        this.onShow().then(() => this.setData({ sceneTesterBusy: false }));
+      });
+      return;
+    }
+    this.beginScenePreload(target);
+  },
+
+  onStageTesterSelect(event) {
+    if (!this.data.isDemo || this.data.stageTesterBusy) return;
+    const stageKey = event.currentTarget.dataset.stage;
+    const target = demoExperience.PREVIEW_STAGES.find(item => item.key === stageKey);
+    if (!target) return;
+    if (stageKey === this.data.stageTesterKey) {
+      this.setData({ stageTesterOpen: false });
+      return;
+    }
+    this.setData({ stageTesterBusy: true, stageTesterOpen: false });
+    const result = demoExperience.setPreviewStage(stageKey);
+    if (!result.ok) {
+      this.setData({ stageTesterBusy: false });
+      wx.showToast({ title: result.message || '测试阶段切换失败', icon: 'none' });
+      return;
+    }
+    this.homeEggLayersReady = false;
+    this.setData({
+      stageTesterBusy: false,
+      stageTesterKey: stageKey,
+      stageTesterLabel: target.label,
+      homeEggBasePreview: '',
+      homeEggArtPreview: ''
+    }, () => {
+      wx.showToast({ title: `已切换到${target.label}`, icon: 'none' });
+      this.onShow();
+    });
+  },
+
   setupHomeEgg() {
-    if (!this.data.pet || this.data.stage === 'hatched') return;
+    if (!this.data.pet || this.data.stage === 'hatched' || this.sceneTestOverride || this.sceneLayerEggActive) return;
     if (this.homeEggLayersReady) {
       this.renderHomeEgg();
       return;
@@ -302,7 +778,7 @@ Page({
   },
 
   renderHomeEgg() {
-    if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched') return;
+    if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched' || this.sceneTestOverride || this.sceneLayerEggActive) return;
     const renderToken = this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
     const shell = shellArtService.normalizeShellArt(this.data.pet.shell);
     shellArtService.drawEggBase(
@@ -353,7 +829,7 @@ Page({
     wx.createSelectorQuery().in(this).select('.life-home-scene').boundingClientRect(rect => {
       if (!rect) {
         wx.navigateTo({
-          url: '/pages/life-scene/life-scene?scene=grass&entry=home-expand',
+          url: '/pages/life-scene/life-scene?entry=home-expand',
           animationType: 'none',
           animationDuration: 0
         });
@@ -373,7 +849,7 @@ Page({
       clearTimeout(this.sceneOpenTimer);
       this.sceneOpenTimer = setTimeout(() => {
         wx.navigateTo({
-          url: `/pages/life-scene/life-scene?scene=grass&entry=home-expand&${originQuery}`,
+          url: `/pages/life-scene/life-scene?entry=home-expand&${originQuery}`,
           animationType: 'none',
           animationDuration: 0,
           fail: () => this.setData({ sceneOpening: false, sceneTransitionStyle: '' })
@@ -382,7 +858,10 @@ Page({
     }).exec();
   },
 
-  onChangeScene() { wx.navigateTo({ url: '/pages/life-scenes/life-scenes' }); },
+  onChangeScene(event) {
+    const section = event && event.currentTarget && event.currentTarget.dataset.section || 'keepsakes';
+    wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${section}` });
+  },
 
   onPetNameTap() {
     if (this.data.stage === 'hatched') {
@@ -524,7 +1003,7 @@ Page({
     const key = event.currentTarget.dataset.key;
     if (!COMPANION_ACTIONS.some(item => item.key === key)) return;
     if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
-    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('再陪我一天，早教班就会打开。');
+    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('早教班还在准备中。');
     const routes = {
       wish: { route: '/pages/wish/wish', sceneEffect: 'scene--wish', eggMotion: 'egg--talk-glow' },
       learn: { route: '/pages/lesson/lesson', sceneEffect: 'scene--learn', eggMotion: 'egg--talk-knock' },
@@ -550,11 +1029,54 @@ Page({
     analytics.track('room_element_interaction', { element_id: 'lamp', result: lampOn ? 'on' : 'off' });
   },
 
-  setupWindowFog() {
-    if (this.data.stage === 'hatched' || this.windowFogInitialized) return;
-    wx.createSelectorQuery().in(this).select('#windowFogCanvas').fields({ node: true, size: true, rect: true }).exec(result => {
+  onFullSceneImageLoad() {
+    if (this.data.fullSceneImageLoading) this.setData({ fullSceneImageLoading: false });
+  },
+
+  onFullSceneImageError() {
+    if (this.data.previousFullSceneImage && this.previousTimeEnvironment) {
+      const previousEnvironment = this.previousTimeEnvironment;
+      clearTimeout(this.timeSceneCrossfadeTimer);
+      this.timeSceneCrossfadeTimer = null;
+      this.previousTimeEnvironment = null;
+      this.setData({
+        environment: previousEnvironment,
+        previousFullSceneImage: '',
+        sceneCrossfadeActive: false,
+        fullSceneImageLoading: false,
+        fullSceneImageFailed: false,
+        homeEggBasePreview: this.sceneLayerEggActive ? previousEnvironment.eggImage : this.data.homeEggBasePreview
+      }, () => {
+        this.setupWindowWeatherCanvas();
+        this.scheduleTimeSceneRefresh();
+      });
+      return;
+    }
+    this.setData({ fullSceneImageLoading: false, fullSceneImageFailed: true });
+    this.showFeedback('窗外景色暂时没加载好，先回到熟悉的小房间。');
+    analytics.track('incubation_scene_asset_error', {
+      asset: (this.data.environment && this.data.environment.fullSceneImage) || ''
+    });
+  },
+
+  createWindowWeatherParticles(width, height) {
+    return windowWeatherCanvas.createParticles(width, height);
+  },
+
+  setupWindowWeatherCanvas() {
+    this.stopWindowWeatherAnimation();
+    if (!this.pageActive || !this.data.pet || this.data.stage === 'hatched') return;
+    const setupToken = (this.windowWeatherSetupToken || 0) + 1;
+    this.windowWeatherSetupToken = setupToken;
+    wx.createSelectorQuery().in(this).select('#windowWeatherCanvas').fields({ node: true, size: true }).exec(result => {
+      if (setupToken !== this.windowWeatherSetupToken || !this.pageActive) return;
       const target = result && result[0];
-      if (!target || !target.node || !target.width || !target.height) return;
+      if (!target || !target.node || !target.width || !target.height) {
+        this.windowWeatherCanvas = null;
+        this.windowWeatherContext = null;
+        this.setData({ windowWeatherCanvasFailed: true });
+        return;
+      }
       const canvas = target.node;
       const context = canvas.getContext('2d');
       const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -562,64 +1084,307 @@ Page({
       canvas.width = target.width * pixelRatio;
       canvas.height = target.height * pixelRatio;
       context.scale(pixelRatio, pixelRatio);
-      const fog = context.createLinearGradient(0, 0, target.width, target.height);
-      fog.addColorStop(0, 'rgba(239,247,245,.2)');
-      fog.addColorStop(.45, 'rgba(250,250,239,.08)');
-      fog.addColorStop(1, 'rgba(224,239,241,.18)');
-      context.fillStyle = fog;
-      context.fillRect(0, 0, target.width, target.height);
-      this.windowFogInitialized = true;
-      this.windowFogContext = context;
-      this.windowEffectsRect = { left: target.left || 0, top: target.top || 0, width: target.width, height: target.height };
+      this.windowWeatherCanvas = canvas;
+      this.windowWeatherContext = context;
+      this.windowWeatherSize = { width: target.width, height: target.height };
+      this.windowWeatherParticles = this.createWindowWeatherParticles(target.width, target.height);
+      this.setData({ windowWeatherCanvasFailed: false });
+      this.startWindowWeatherAnimation();
     });
   },
 
-  windowTouchPoint(event) {
-    const touch = (event.touches || event.changedTouches || [])[0];
-    const rect = this.windowEffectsRect;
-    if (!touch || !rect) return null;
-    return {
-      x: Math.max(0, Math.min(rect.width, touch.clientX - rect.left)),
-      y: Math.max(0, Math.min(rect.height, touch.clientY - rect.top))
-    };
+  drawWindowFog(context, width, height, timestamp, opacity) {
+    const drift = Math.sin(timestamp / 3400) * width * .035;
+    const haze = context.createLinearGradient(drift - width * .08, 0, drift + width * 1.08, height);
+    haze.addColorStop(0, `rgba(228,238,236,${opacity * .86})`);
+    haze.addColorStop(.5, `rgba(242,246,239,${opacity})`);
+    haze.addColorStop(1, `rgba(224,236,238,${opacity * .9})`);
+    context.fillStyle = haze;
+    context.fillRect(-width * .1, 0, width * 1.2, height);
   },
 
-  eraseWindowFog(event) {
-    const context = this.windowFogContext;
-    const point = this.windowTouchPoint(event);
-    if (!context || !point) return;
+  drawWindowRain(context, width, height, timestamp, intensity) {
+    const strength = Number(intensity || .72);
+    const gust = Math.sin(timestamp / 2300) * 2.4;
+    const baseLengths = [2.1, 3.5, 5.6];
+    const lengthSteps = [.455, .7, .91];
     context.save();
-    context.globalCompositeOperation = 'destination-out';
-    context.lineWidth = 52;
     context.lineCap = 'round';
-    context.lineJoin = 'round';
-    context.beginPath();
-    const previous = this.lastWindowWipePoint || point;
-    context.moveTo(previous.x, previous.y);
-    context.lineTo(point.x, point.y);
-    context.stroke();
-    context.beginPath();
-    context.arc(point.x, point.y, 26, 0, Math.PI * 2);
-    context.fill();
+    (this.windowWeatherParticles || []).slice(0, 42).forEach((particle, index) => {
+      const depth = index % 3;
+      const velocity = 1.05 + depth * .42;
+      const y = (particle.y + timestamp * particle.speed * velocity) % (height + 44) - 30;
+      const x = (particle.x + index * 2 + gust * (1 + depth * .35)) % width;
+      const length = baseLengths[depth] + (index % 4) * lengthSteps[depth];
+      const slant = 2.4 + strength * 2.2 + gust * .18;
+      const alpha = (.1 + depth * .065 + particle.opacity * .08) * strength;
+      context.lineWidth = .48 + depth * .25;
+      context.strokeStyle = `rgba(196,219,227,${alpha})`;
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(x - slant, y + length);
+      context.stroke();
+    });
     context.restore();
-    this.lastWindowWipePoint = point;
   },
 
-  onWindowTouchStart(event) {
-    this.clearEffectTimers();
-    this.setData({ sceneEffect: 'scene--window-wipe', eggMotion: 'egg--window' });
-    this.lastWindowWipePoint = null;
-    this.eraseWindowFog(event);
+  drawWindowSnow(context, width, height, timestamp) {
+    context.save();
+    context.fillStyle = 'rgba(255,255,252,.82)';
+    (this.windowWeatherParticles || []).slice(0, 30).forEach((particle, index) => {
+      const y = (particle.y + timestamp * particle.speed * .72) % (height + 20) - 10;
+      const x = particle.x + Math.sin(timestamp / 900 + index) * particle.drift;
+      context.beginPath();
+      context.arc(x, y, particle.radius, 0, Math.PI * 2);
+      context.fill();
+    });
+    context.restore();
   },
 
-  onWindowTouchMove(event) {
-    this.eraseWindowFog(event);
+  drawWindowDroplets(context, width, height, timestamp, density) {
+    context.save();
+    context.lineCap = 'round';
+    const count = Math.max(4, Math.round(10 * density));
+    (this.windowWeatherParticles || []).slice(0, count).forEach((particle, index) => {
+      const travel = timestamp * particle.speed * .075;
+      const y = (particle.y + travel + index * 17) % (height + 36) - 18;
+      const x = (particle.x + Math.sin(timestamp / 2100 + particle.phase) * 1.2) % width;
+      const radius = 1.1 + (index % 3) * .55;
+      const alpha = .12 + particle.opacity * .16;
+      context.fillStyle = `rgba(224,238,242,${alpha})`;
+      context.beginPath();
+      context.moveTo(x, y - radius * 1.7);
+      context.bezierCurveTo(x + radius * 1.15, y - radius * .2, x + radius, y + radius, x, y + radius * 1.2);
+      context.bezierCurveTo(x - radius, y + radius, x - radius * 1.15, y - radius * .2, x, y - radius * 1.7);
+      context.fill();
+      if (index % 5 === 0) {
+        context.strokeStyle = `rgba(216,233,239,${alpha * .65})`;
+        context.lineWidth = .55;
+        context.beginPath();
+        context.moveTo(x, y + radius * 1.8);
+        context.lineTo(x - .4, y + radius * 4.4 + (index % 3) * 2);
+        context.stroke();
+      }
+    });
+    context.restore();
   },
 
-  onWindowTouchEnd() {
-    this.runSceneEffect('scene--window-cleared', 'egg--window', 1800);
-    this.lastWindowWipePoint = null;
-    this.showFeedback('这样看得更清楚啦。');
+  drawWindowSunFlecks(context, width, height, timestamp, opacity) {
+    context.save();
+    (this.windowWeatherParticles || []).slice(0, 8).forEach((particle, index) => {
+      const x = (particle.x + Math.sin(timestamp / 2600 + particle.phase) * particle.drift) % width;
+      const y = particle.y * .8 + Math.cos(timestamp / 3100 + particle.phase) * 3;
+      const radius = 5 + (index % 4) * 3;
+      const glow = context.createRadialGradient(x, y, 0, x, y, radius);
+      glow.addColorStop(0, `rgba(255,248,202,${opacity})`);
+      glow.addColorStop(1, 'rgba(255,248,202,0)');
+      context.fillStyle = glow;
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.fill();
+    });
+    context.restore();
+  },
+
+  drawWindowCloudDrift(context, width, height, timestamp) {
+    context.save();
+    const drift = (timestamp / 90) % (width * 1.8) - width * .6;
+    const cloud = context.createRadialGradient(drift, height * .28, 0, drift, height * .28, width * .62);
+    cloud.addColorStop(0, 'rgba(235,241,239,.105)');
+    cloud.addColorStop(1, 'rgba(235,241,239,0)');
+    context.fillStyle = cloud;
+    context.fillRect(0, 0, width, height);
+    context.restore();
+  },
+
+  drawWindowLeaves(context, width, height, timestamp) {
+    context.save();
+    (this.windowWeatherParticles || []).slice(0, 12).forEach((particle, index) => {
+      const y = (particle.y + timestamp * particle.speed * .28) % (height + 30) - 15;
+      const x = (particle.x + timestamp * .006 + Math.sin(timestamp / 950 + particle.phase) * particle.drift * 2) % (width + 20) - 10;
+      const size = 3.5 + (index % 4) * 1.1;
+      context.save();
+      context.translate(x, y);
+      context.rotate(Math.sin(timestamp / 760 + particle.phase) * .9);
+      context.fillStyle = index % 3 === 0 ? 'rgba(183,116,56,.54)' : 'rgba(208,153,73,.48)';
+      context.beginPath();
+      context.moveTo(-size, 0);
+      context.quadraticCurveTo(0, -size * .75, size, 0);
+      context.quadraticCurveTo(0, size * .75, -size, 0);
+      context.fill();
+      context.restore();
+    });
+    context.restore();
+  },
+
+  drawWindowLightning(context, width, height, timestamp) {
+    const cycle = timestamp % 11800;
+    if (cycle > 320) return;
+    const firstPulse = cycle < 115 ? Math.sin(Math.PI * cycle / 115) : 0;
+    const secondPulse = cycle > 185 && cycle < 300
+      ? Math.sin(Math.PI * (cycle - 185) / 115) * .52
+      : 0;
+    const flash = Math.max(firstPulse, secondPulse);
+    if (flash <= 0) return;
+    context.save();
+    const glow = context.createRadialGradient(width * .82, height * .08, 0, width * .82, height * .08, width * .95);
+    glow.addColorStop(0, `rgba(218,231,255,${flash * .095})`);
+    glow.addColorStop(.52, `rgba(205,222,249,${flash * .042})`);
+    glow.addColorStop(1, 'rgba(199,219,248,0)');
+    context.fillStyle = glow;
+    context.fillRect(0, 0, width, height);
+    context.restore();
+  },
+
+  clipWindowGlass(context, width, height) {
+    // The photographed window sill slopes down to the right. Keep this clip in
+    // normalized coordinates so the weather edge follows it on every screen.
+    context.beginPath();
+    context.moveTo(0, 0);
+    context.lineTo(width, 0);
+    context.lineTo(width, height * .98);
+    context.lineTo(0, height * .88);
+    context.closePath();
+    context.clip();
+  },
+
+  drawWindowWeatherFrame(timestamp, options) {
+    windowWeatherCanvas.drawFrame(
+      this.windowWeatherContext,
+      this.windowWeatherSize,
+      this.windowWeatherParticles,
+      this.data.environment,
+      {
+        timestamp,
+        reducedMotion: Boolean(options && options.reducedMotion),
+        fogVisible: this.data.windowFogVisible,
+        clipGlass: true
+      }
+    );
+  },
+
+  windowWeatherNeedsAnimation() {
+    return windowWeatherCanvas.needsAnimation(this.data.environment, this.data.windowFogVisible);
+  },
+
+  startWindowWeatherAnimation() {
+    this.stopWindowWeatherAnimation();
+    if (!this.windowWeatherCanvas || !this.windowWeatherContext) return;
+    const animationToken = (this.windowWeatherAnimationToken || 0) + 1;
+    this.windowWeatherAnimationToken = animationToken;
+    const reducedMotion = this.prefersReducedMotion();
+    if (reducedMotion) {
+      // Deliberately render a stable, representative weather frame. This keeps
+      // rain, snow, fog and droplets recognizable without motion or lightning.
+      const staticFrameTime = 4200;
+      this.drawWindowWeatherFrame(staticFrameTime, { reducedMotion: true });
+      this.windowWeatherLastDrawAt = staticFrameTime;
+      return;
+    }
+    const render = () => {
+      if (animationToken !== this.windowWeatherAnimationToken || !this.pageActive) return;
+      // Canvas requestAnimationFrame timestamps are relative to the page while
+      // Date.now() is absolute. Use one clock consistently so later frames are
+      // never blocked by a negative elapsed-time calculation.
+      const frameTime = Date.now();
+      if (!this.windowWeatherLastDrawAt || frameTime - this.windowWeatherLastDrawAt >= 33) {
+        this.drawWindowWeatherFrame(frameTime);
+        this.windowWeatherLastDrawAt = frameTime;
+      }
+      if (!this.windowWeatherNeedsAnimation()) return;
+      if (this.windowWeatherCanvas.requestAnimationFrame) {
+        this.windowWeatherFrameId = this.windowWeatherCanvas.requestAnimationFrame(render);
+      } else {
+        this.windowWeatherFrameTimer = setTimeout(render, 33);
+      }
+    };
+    render();
+  },
+
+  stopWindowWeatherAnimation() {
+    this.windowWeatherAnimationToken = (this.windowWeatherAnimationToken || 0) + 1;
+    if (this.windowWeatherCanvas && this.windowWeatherCanvas.cancelAnimationFrame && this.windowWeatherFrameId != null) {
+      this.windowWeatherCanvas.cancelAnimationFrame(this.windowWeatherFrameId);
+    }
+    clearTimeout(this.windowWeatherFrameTimer);
+    this.windowWeatherLastDrawAt = 0;
+    this.windowWeatherFrameId = null;
+    this.windowWeatherFrameTimer = null;
+  },
+
+  onWindowTap() {
+    if (this.data.dailyWindowVisible || this.data.stage === 'hatched') return;
+    wx.createSelectorQuery().in(this).select('.window-effects').boundingClientRect(rect => {
+      const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+      const fallback = {
+        left: Number(info.windowWidth || 375) * .58,
+        top: 0,
+        width: Number(info.windowWidth || 375) * .42,
+        height: Number(info.windowHeight || 667) * .5
+      };
+      this.openDailyWindow(rect || fallback);
+    }).exec();
+  },
+
+  openDailyWindow(rect) {
+    if (!this.pageActive || this.data.dailyWindowVisible) return;
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
+    const environment = this.sceneTestOverride
+      ? this.data.environment
+      : environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
+    const origin = rect || {};
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ hidden: true });
+    this.clearTimeSceneTimers();
+    this.pendingTimeEnvironment = null;
+    this.previousTimeEnvironment = null;
+    this.stopWindowWeatherAnimation();
+    this.setData({
+      dailyWindowVisible: true,
+      timeSceneIntro: '',
+      previousFullSceneImage: '',
+      sceneCrossfadeActive: false,
+      pendingTimeSceneImage: '',
+      windowFogVisible: false,
+      dailyWindowEnvironment: environment,
+      dailyWindowOriginStyle: [
+        `--daily-window-origin-left:${Number(origin.left || 0)}px;`,
+        `--daily-window-origin-top:${Number(origin.top || 0)}px;`,
+        `--daily-window-origin-width:${Math.max(1, Number(origin.width || 1))}px;`,
+        `--daily-window-origin-height:${Math.max(1, Number(origin.height || 1))}px;`
+      ].join(''),
+      dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
+      dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间')
+    });
+    analytics.track('room_element_interaction', { element_id: 'window', result: 'daily_detail_opened' });
+  },
+
+  onDailyWindowClosed() {
+    if (!this.data.dailyWindowVisible) return;
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ selected: 0, hidden: false });
+    this.setData({ dailyWindowVisible: false }, () => {
+      if (this.pageActive && this.data.stage !== 'hatched') {
+        this.setupWindowWeatherCanvas();
+        this.refreshTimeScene();
+      }
+    });
+    analytics.track('room_element_interaction', { element_id: 'window', result: 'daily_detail_closed' });
+  },
+
+  onDailyWindowRetry() {
+    const environment = this.data.dailyWindowEnvironment || {};
+    if (environment.windowImage) return;
+    const pet = this.data.pet;
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
+    const resolved = environmentService.resolve(serverEnvironment, { createdAt: pet && pet.createdAt });
+    this.setData({
+      dailyWindowEnvironment: resolved,
+      dailyWindowWeatherLabel: WEATHER_LABELS[resolved.weather] || '晴朗',
+      dailyWindowPeriodLabel: resolved.lightPhase === 'sunset' ? '日落' : (resolved.period === 'night' ? '夜晚' : '日间')
+    });
   },
 
   onNameInput(event) {
@@ -679,7 +1444,7 @@ Page({
 
   onPrimaryAction() {
     if (this.data.stage === 'ready') wx.navigateTo({ url: '/pages/hatch/hatch' });
-    else if (this.data.stage === 'hatched') wx.navigateTo({ url: '/pages/chat/chat' });
+    else if (this.data.stage === 'hatched') this.onRoleTap();
   },
 
   clearInteractionTimers() {
@@ -693,20 +1458,48 @@ Page({
 
   onHide() {
     this.pageActive = false;
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
     this.stopClock();
+    this.stopWindowWeatherAnimation();
+    this.clearTimeSceneTimers();
+    this.pendingTimeEnvironment = null;
+    this.previousTimeEnvironment = null;
     this.clearInteractionTimers();
     this.completedLongPress = false;
-    this.setData({ eggMotion: '', sceneEffect: '', feedback: '', tapParticles: [] });
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ hidden: false });
+    this.setData({
+      dailyWindowVisible: false,
+      eggMotion: '',
+      sceneEffect: '',
+      feedback: '',
+      tapParticles: [],
+      previousFullSceneImage: '',
+      sceneCrossfadeActive: false,
+      pendingTimeSceneImage: '',
+      timeSceneIntro: ''
+    });
   },
 
   onUnload() {
     this.pageActive = false;
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
     this.stopClock();
+    this.stopWindowWeatherAnimation();
+    this.clearTimeSceneTimers();
+    this.pendingTimeEnvironment = null;
+    this.previousTimeEnvironment = null;
     this.clearInteractionTimers();
-    this.windowFogContext = null;
-    this.windowEffectsRect = null;
-    this.lastWindowWipePoint = null;
-    this.windowFogInitialized = false;
+    this.windowFogSceneKey = '';
+    this.windowWeatherCanvas = null;
+    this.windowWeatherContext = null;
+    this.windowWeatherSize = null;
+    this.windowWeatherParticles = null;
+    this.windowWeatherSetupToken = (this.windowWeatherSetupToken || 0) + 1;
     this.homeEggBaseLayer = null;
     this.homeEggArtLayer = null;
     this.homeEggBaseImage = null;
@@ -716,5 +1509,6 @@ Page({
     this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
     this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
     this.recentTouchLines = [];
+    this.postHatchRequestToken = (this.postHatchRequestToken || 0) + 1;
   }
 });

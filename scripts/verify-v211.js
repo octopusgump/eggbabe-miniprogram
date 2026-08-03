@@ -33,7 +33,7 @@ assert.equal(homeLogic.includes('vibrateCuddleTick'), true, '长按贴贴必须�
 assert.equal(homeTemplate.includes('cuddle-track'), false, '长按贴贴不得显示任务式进度条');
 assert.equal(homeTemplate.includes('room-lamp-hotspot') && homeLogic.includes('onLampTap'), true, '台灯必须作为画面热区直接互动');
 assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾与旧物件按钮层必须移除');
-assert.equal(homeStyles.includes('.companion-grid { display: flex') && homeStyles.includes('.companion-item--draw'), true, '三个入口必须保持同排，画画保持独立绘图图标');
+assert.equal(/\.companion-grid\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;/.test(homeStyles) && homeStyles.includes('.companion-item--draw'), true, '三个入口必须保持同排，画画保持独立绘图图标');
 assert.equal(homeTemplate.includes('companion-primary-dock') && homeStyles.includes('.companion-primary-dock {') && homeStyles.includes('backdrop-filter: blur(14rpx)'), true, '许愿池与早教班必须使用同一组半透明生活操作栏');
 assert.equal(homeLogic.includes('companionActionsFor(state.records, state.serverDate)') && homeLogic.includes('今天已经回答，点击查看'), true, '许愿池与早教班必须保留当天记录并允许点击回看');
 assert.equal(homeTemplate.includes('completed-check') || homeTemplate.includes('completed-mark'), false, '首页不得用勾选或完成章汇总当天动作');

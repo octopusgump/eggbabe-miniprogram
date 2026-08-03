@@ -14,7 +14,10 @@ Page({
   },
 
   async onLoad() {
+    this.pageAlive = true;
+    const requestToken = this.loadRequestToken = (this.loadRequestToken || 0) + 1;
     const state = await practice.getState('edu_class');
+    if (!this.pageAlive || requestToken !== this.loadRequestToken) return;
     if (!state.ok) {
       this.setData({ loading: false, error: state.message || '教室还在准备中' });
       return;
@@ -71,6 +74,14 @@ Page({
   },
 
   onUnload() {
+    this.pageAlive = false;
+    this.loadRequestToken = (this.loadRequestToken || 0) + 1;
     clearTimeout(this.animationTimer);
+    this.animationTimer = null;
+  },
+
+  onHide() {
+    clearTimeout(this.animationTimer);
+    this.animationTimer = null;
   }
 });

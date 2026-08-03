@@ -41,10 +41,16 @@ assert.match(styles, /\.egg\.egg--wobble \.egg-shell-specular\s*\{[^}]*animation
 assert.match(styles, /@keyframes shell-glint-touch\s*\{[\s\S]*background-position/s, '触摸高光反馈必须在蛋体 Alpha 内移动，而不是让整个遮罩越出蛋壳');
 assert.equal(template.includes('class="companion-primary-dock"') && template.includes("item.key !== 'draw'") && template.includes("item.key === 'draw'"), true, '许愿池与早教班必须共用柔光 Dock，画画必须保持独立');
 assert.equal(template.includes('completed-check') || template.includes('completed-mark'), false, '首页入口不得出现完成勾选或完成章');
-assert.match(styles, /\.companion-section--incubating\s*\{[^}]*right:\s*34rpx;[^}]*bottom:\s*calc\(160rpx \+ env\(safe-area-inset-bottom\)\)/s, '右侧入口列必须锚定在独立画画按钮和底部安全区上方');
-assert.match(styles, /\.companion-grid\s*\{[^}]*flex-direction:\s*column;[^}]*gap:\s*20rpx;/s, '许愿池、早教班与画画必须沿右侧垂直排列');
-assert.match(styles, /\.companion-primary-dock\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*224rpx;[^}]*flex-direction:\s*column;[^}]*border-radius:\s*56rpx;[^}]*background:\s*rgba\(255,253,247,\.82\)/s, '许愿池与早教班必须使用右侧半透明竖向胶囊');
-assert.match(styles, /\.companion-item--learn::before\s*\{[^}]*left:\s*22rpx;[^}]*right:\s*22rpx;[^}]*top:\s*0;[^}]*height:\s*1rpx;/s, '两个竖向入口之间必须使用克制的横向分隔线');
+assert.match(styles, /\.companion-section--incubating\s*\{[^}]*right:\s*166rpx;[^}]*bottom:\s*calc\(24rpx \+ env\(safe-area-inset-bottom\)\)/s, '横向功能胶囊必须锚定在独立画画按钮左侧并避开底部安全区');
+assert.match(styles, /\.companion-grid\s*\{[^}]*flex-direction:\s*row;[^}]*gap:\s*20rpx;/s, '许愿池、早教班胶囊与画画必须沿底部水平排列');
+assert.match(styles, /\.companion-primary-dock\s*\{[^}]*width:\s*264rpx;[^}]*height:\s*112rpx;[^}]*flex-direction:\s*row;[^}]*border-radius:\s*56rpx;[^}]*background:\s*rgba\(255,253,247,\.82\)/s, '许愿池与早教班必须使用底部半透明横向胶囊');
+assert.match(styles, /\.companion-primary-dock \.companion-item\s*\{[^}]*width:\s*132rpx;[^}]*height:\s*112rpx;[^}]*flex:\s*0 0 132rpx;/s, '许愿池与早教班必须等宽并保持横向对齐');
+assert.equal(template.includes('class="companion-title"'), false, '许愿池与早教班不得保留常驻文字');
+assert.equal(template.includes('bindlongpress="onCompanionLongPress"') && source.includes('scheduleCompanionFirstHint') && source.includes('COMPANION_HINT_STORAGE_KEY'), true, '无文字入口必须支持首次短提示与长按再次查看');
+assert.equal(template.includes('companion-icon-hint--wish') && template.includes('companion-icon-hint--learn') && template.includes('companion-icon-hint--draw'), true, '许愿池、早教班与画画的短提示必须各自锚定在对应图标上方');
+assert.match(styles, /\.companion-icon-hint\s*\{[^}]*bottom:\s*calc\(100% \+ 10rpx\);[^}]*background:\s*rgba\(255,255,255,\.96\);[^}]*color:\s*rgba\(25,30,26,\.96\);[^}]*opacity:\s*0;[^}]*transition:\s*opacity 180ms ease-out/s, '入口名称必须在对应图标上方使用白底深色文字轻量淡入淡出');
+assert.match(source, /onCompanionTap\(event\)[\s\S]*?if \(key === 'wish' \|\| key === 'learn' \|\| key === 'draw'\) this\.showCompanionHint\(key\);[\s\S]*?const routes =/s, '点击许愿池、早教班或画画时必须先显示对应的就地名称');
+assert.match(styles, /\.companion-item--learn::before\s*\{[^}]*left:\s*0;[^}]*top:\s*22rpx;[^}]*bottom:\s*22rpx;[^}]*width:\s*1rpx;/s, '两个横向入口之间必须使用克制的竖向分隔线');
 assert.match(styles, /\.companion-item--draw\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;/s, '独立画画入口必须保留不小于 44px 的触控区域');
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none;/s, '弱动效模式必须取消入口缩放反馈');
 

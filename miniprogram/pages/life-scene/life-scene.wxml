@@ -2,7 +2,6 @@
   <view class="topbar" style="padding-top:{{statusBarHeight}}px;">
     <view class="round-btn" aria-role="button" aria-label="返回" bindtap="onBack"><view class="back-icon"></view></view>
   </view>
-  <text wx:if="{{isDemo}}" class="demo-scene-badge" style="top:{{demoBadgeTop}}px;">DEMO</text>
 
   <view wx:if="{{loading}}" class="state-layer">
     <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
@@ -18,28 +17,30 @@
         <view id="world-panel-0" class="world-panel world-panel--living">
           <image wx:if="{{panelImages[0]}}" class="panel-bg" src="{{panelImages[0]}}" mode="aspectFill"></image>
           <image wx:else class="panel-bg panel-bg--panorama panel-bg--left" src="{{panoramaFallback}}" mode="aspectFill"></image>
-          <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view><view class="bed-placeholder"><view class="bed-pillow"></view><view class="bed-blanket" style="{{playedActionKind === 'blanket' ? 'height:74%;transform:translateY(-18rpx);' : ''}}"></view></view><view class="lamp-placeholder" style="{{playedActionKind === 'lamp' ? 'box-shadow:0 -58rpx 0 22rpx #8D7D68;opacity:.58;' : ''}}"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 0}}" class="scene-character scene-character--living {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{174}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
+          <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view>
+          <view wx:if="{{currentState.atHome}}" class="scene-character scene-character--sleep {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
+            <view class="scene-character__floor-shadow" aria-hidden="true"></view>
+            <image class="scene-character__sleep-image" src="{{jadeRabbitSleepImage}}" mode="aspectFit"></image>
+          </view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
         <view id="world-panel-1" class="world-panel world-panel--desk">
           <image wx:if="{{panelImages[1]}}" class="panel-bg" src="{{panelImages[1]}}" mode="aspectFill"></image>
           <image wx:else class="panel-bg panel-bg--panorama panel-bg--center" src="{{panoramaFallback}}" mode="aspectFill"></image>
           <view class="panel-tone"></view>
+          <view class="daily-window-hotspot daily-window-hotspot--panel-1" data-window-panel="1" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
           <view wx:if="{{currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 1}}" class="scene-character scene-character--desk {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{186}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 1}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
           <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
         </view>
         <view id="world-panel-2" class="world-panel world-panel--decor">
           <image wx:if="{{panelImages[2]}}" class="panel-bg" src="{{panelImages[2]}}" mode="aspectFill"></image>
           <image wx:else class="panel-bg panel-bg--panorama panel-bg--right" src="{{panoramaFallback}}" mode="aspectFill"></image>
-          <view class="panel-tone"></view><view class="decor-placeholder"><text>这里留着一块安静的空地。</text></view>
-          <view class="daily-window-hotspot" style="position:absolute;z-index:7;right:4%;top:8%;width:42%;height:42%;" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 2}}" class="scene-character scene-character--window {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{168}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
-          <view wx:if="{{currentState.atHome && currentState.action.screen === 2}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view class="panel-tone"></view>
+          <view class="daily-window-hotspot daily-window-hotspot--panel-2" data-window-panel="2" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 2 && currentState.action.kind !== 'window'}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
       </view>
     </scroll-view>
@@ -47,17 +48,46 @@
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
     <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
 
-    <view wx:if="{{currentState.atHome && currentState.canTalk && currentScreen === currentState.screen}}" class="scene-composer">
+    <view wx:if="{{composerVisible && currentState.atHome && currentState.canTalk}}" class="scene-composer">
+      <view class="composer-close" aria-role="button" aria-label="收起对话输入" bindtap="onCloseComposer">×</view>
       <text wx:if="{{talkReply}}" class="inline-reply">{{talkReply}}</text><text wx:if="{{talkError}}" class="composer-error">{{talkError}}</text>
-      <view class="composer-row"><input class="composer-input" value="{{talkDraft}}" maxlength="120" placeholder="在这里说一句…" bindinput="onTalkInput" bindconfirm="onSendTalk" confirm-type="send" /><view class="composer-send {{talkBusy ? 'composer-send--busy' : ''}}" bindtap="onSendTalk">{{talkBusy ? '…' : '说'}}</view></view>
+      <view class="composer-row"><input class="composer-input" value="{{talkDraft}}" maxlength="120" focus="{{composerVisible}}" placeholder="在这里说一句…" bindinput="onTalkInput" bindconfirm="onSendTalk" confirm-type="send" /><view class="composer-send {{talkBusy ? 'composer-send--busy' : ''}}" bindtap="onSendTalk">{{talkBusy ? '…' : '说'}}</view></view>
     </view>
-    <view wx:elif="{{!currentState.atHome}}" class="scene-composer">
+    <view wx:elif="{{composerVisible && !currentState.atHome}}" class="scene-composer">
+      <view class="composer-close" aria-role="button" aria-label="收起写信输入" bindtap="onCloseComposer">×</view>
       <text wx:if="{{letterError}}" class="composer-error">{{letterError}}</text>
       <view wx:if="{{currentState.letterSent}}" class="letter-sent">信已经在路上了</view>
-      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" confirm-type="send" /><view class="composer-send {{letterBusy ? 'composer-send--busy' : ''}}" bindtap="onSendLetter">{{letterBusy ? '…' : '寄'}}</view></view>
+      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" focus="{{composerVisible}}" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" confirm-type="send" /><view class="composer-send {{letterBusy ? 'composer-send--busy' : ''}}" bindtap="onSendLetter">{{letterBusy ? '…' : '寄'}}</view></view>
     </view>
 
-    <view class="memory-entry" style="top:{{memoryEntryTop}}px;" aria-role="button" aria-label="看看回忆" bindtap="onOpenMemories">看看回忆</view>
+    <view wx:if="{{toolboxVisible}}" class="toolbox-mask" catchtap="onCloseToolbox" catchtouchmove="noop"></view>
+    <view wx:if="{{toolboxVisible}}" class="toolbox-sheet">
+      <text class="toolbox-title">百宝箱</text>
+      <view class="toolbox-grid">
+        <view class="toolbox-item" data-target="my" bindtap="onToolboxItemTap">
+          <image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_settings_gear_96_v02.webp" mode="aspectFit"></image>
+          <text>我的 / 设置</text>
+        </view>
+        <view class="toolbox-item" data-target="card" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_collection_card_front_96_v02.webp" mode="aspectFit"></image><text>收藏卡</text></view>
+        <view class="toolbox-item" data-target="postcards" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_postcard_two_color_front_96_v02.webp" mode="aspectFit"></image><text>明信片</text></view>
+        <view class="toolbox-item" data-target="keepsakes" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_keepsake_box_96_v01.png" mode="aspectFit"></image><text>ta 带回来的东西</text></view>
+      </view>
+    </view>
+
+    <view wx:if="{{!composerVisible && currentState.atHome}}" class="scene-dialogue-entry">
+      <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="和蛋宝宝对话" bindtap="onContextActionTap">
+        <image class="scene-action-icon-image" src="/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.png" mode="aspectFit"></image>
+      </view>
+    </view>
+
+    <view wx:if="{{!composerVisible}}" class="scene-action-dock">
+      <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox">
+        <image class="scene-action-icon-image" src="/assets/ui/3d-scene-actions/runtime/ui_3d_scene_toolbox_closed_chest_96_v01.png" mode="aspectFit"></image>
+      </view>
+      <view wx:if="{{!currentState.atHome}}" class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="给蛋宝宝写信" bindtap="onContextActionTap">
+        <view class="scene-action-icon icon-letter"><view class="icon-letter__paper"></view><view class="icon-letter__flap"></view><view class="icon-letter__seal"></view><view class="scene-icon-shine"></view></view>
+      </view>
+    </view>
   </block>
 
   <daily-window-detail

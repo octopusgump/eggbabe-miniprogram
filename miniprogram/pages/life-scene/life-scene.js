@@ -1,7 +1,6 @@
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
-const config = require('../../config/v2');
 const postHatch = require('../../services/post-hatch-companion');
 const assets = require('../../config/post-hatch-assets');
 const environmentService = require('../../services/incubation-environment');
@@ -27,20 +26,6 @@ function reducedMotionEnabled() {
   }
 }
 
-function topControlPositions(info, demoVisible) {
-  const statusBarHeight = Number(info && info.statusBarHeight || 20);
-  let menuBottom = statusBarHeight + 40;
-  try {
-    const rect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
-    if (rect && Number.isFinite(Number(rect.bottom))) menuBottom = Number(rect.bottom);
-  } catch (error) {}
-  const demoBadgeTop = menuBottom + 10;
-  return {
-    demoBadgeTop,
-    memoryEntryTop: menuBottom + (demoVisible ? 42 : 10)
-  };
-}
-
 function panelPresentation(sceneKey) {
   const sceneSet = assets.resolvePanelSceneSet(sceneKey);
   if (!sceneSet) {
@@ -58,8 +43,6 @@ function panelPresentation(sceneKey) {
 Page({
   data: {
     statusBarHeight: 20,
-    demoBadgeTop: 70,
-    memoryEntryTop: 102,
     pet: null,
     snapshot: null,
     currentState: null,
@@ -75,6 +58,8 @@ Page({
     letterDraft: '',
     letterBusy: false,
     letterError: '',
+    composerVisible: false,
+    toolboxVisible: false,
     dailyWindowVisible: false,
     magicWindowVisible: false,
     magicWindowLoading: false,
@@ -95,12 +80,12 @@ Page({
     scrollIntoView: 'world-panel-1',
     panelWidth: 375,
     panelHeight: 667,
-    isDemo: config.localDemoEnabled,
     enterFromHome: false,
     isExiting: false,
     exitTransitionStyle: '',
     panelSceneSetId: 'panorama-fallback',
     panelImages: [assets.POST_HATCH.leftLivingBackground, assets.POST_HATCH.centerDeskBackground, assets.POST_HATCH.rightDecorBackground],
+    jadeRabbitSleepImage: assets.POST_HATCH.characterPoses.sleep,
     panoramaFallback: assets.POST_HATCH.panoramaFallback
   },
 
@@ -108,7 +93,6 @@ Page({
     this.pageActive = true;
     this.hasTrackedEnter = false;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const topControls = topControlPositions(info, config.localDemoEnabled);
     const pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') {
       wx.showToast({ title: '破壳后才能进入这里', icon: 'none' });
@@ -127,8 +111,6 @@ Page({
     const panels = panelPresentation(dailyWindowEnvironment.sceneKey);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
-      demoBadgeTop: topControls.demoBadgeTop,
-      memoryEntryTop: topControls.memoryEntryTop,
       panelWidth: Number(info.windowWidth || 375),
       panelHeight: Number(info.windowHeight || 667),
       pet,
@@ -168,7 +150,9 @@ Page({
         playedActionKind: currentState.actionDone ? currentState.action.kind : '',
         letterDraft: '',
         talkDraft: '',
-        talkReply: ''
+        talkReply: '',
+        composerVisible: false,
+        toolboxVisible: false
       });
       if (!this.hasTrackedEnter) {
         analytics.track('scene_enter', { scene_id: `${currentState.major}:${currentState.key}`, entry_type: this.data.enterFromHome ? 'home_expand' : 'direct' });
@@ -192,7 +176,7 @@ Page({
   onScroll(event) {
     const left = Number(event.detail && event.detail.scrollLeft || 0);
     const screen = Math.max(0, Math.min(2, Math.round(left / this.data.panelWidth)));
-    if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen });
+    if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen, toolboxVisible: false });
   },
 
   onResize(size) {
@@ -200,12 +184,9 @@ Page({
     const panelWidth = Number(next.windowWidth || this.data.panelWidth);
     const panelHeight = Number(next.windowHeight || this.data.panelHeight);
     const screen = Number(this.data.currentScreen || 0);
-    const topControls = topControlPositions(next, this.data.isDemo);
     this.setData({
       panelWidth,
       panelHeight,
-      demoBadgeTop: topControls.demoBadgeTop,
-      memoryEntryTop: topControls.memoryEntryTop,
       scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
       scrollIntoView: `world-panel-${Math.max(0, Math.min(2, screen))}`
     });
@@ -281,7 +262,7 @@ Page({
     this.runSceneAction(this.data.currentState && this.data.currentState.action.kind === 'window');
   },
 
-  runSceneAction(openWindowAfter, feedbackOverride) {
+  runSceneAction(openWindowAfter, feedbackOverride, windowSelector) {
     const current = this.data.currentState;
     if (!current || !current.atHome || this.data.actionBusy) return;
     clearTimeout(this.feedbackTimer);
@@ -296,13 +277,57 @@ Page({
       const actionDone = true;
       this.setData({ 'currentState.actionDone': actionDone, 'currentState.actionFeedback': result.feedback || current.action.feedback, playedActionKind: current.action.kind });
       this.showFeedback(feedbackOverride || result.feedback || current.action.feedback);
-      if (openWindowAfter) this.openDailyWindow();
+      if (openWindowAfter) this.openDailyWindow(windowSelector);
     }).catch(() => {
       if (this.pageActive) {
         this.setData({ actionBusy: false });
         this.showFeedback('这次没有回应，请重试');
       }
     });
+  },
+
+  noop() {},
+
+  onContextActionTap() {
+    const current = this.data.currentState;
+    if (!current || (current.atHome && !current.canTalk)) return;
+    const screen = Math.max(0, Math.min(2, Number(current.screen || 0)));
+    this.setData({
+      composerVisible: true,
+      toolboxVisible: false,
+      currentScreen: screen,
+      scrollLeft: screen * this.data.panelWidth,
+      scrollIntoView: `world-panel-${screen}`
+    });
+    analytics.track('room_element_interaction', { element_id: current.atHome ? 'scene_talk_button' : 'scene_letter_button', result: 'opened' });
+  },
+
+  onCloseComposer() {
+    this.setData({ composerVisible: false, talkError: '', letterError: '' });
+  },
+
+  onToggleToolbox() {
+    this.setData({ toolboxVisible: !this.data.toolboxVisible, composerVisible: false });
+  },
+
+  onCloseToolbox() {
+    if (this.data.toolboxVisible) this.setData({ toolboxVisible: false });
+  },
+
+  onToolboxItemTap(event) {
+    const target = event.currentTarget.dataset.target;
+    this.setData({ toolboxVisible: false });
+    if (target === 'my') {
+      wx.switchTab({ url: '/pages/my/my' });
+      return;
+    }
+    if (target === 'card') {
+      wx.navigateTo({ url: '/pages/collection-card/collection-card' });
+      return;
+    }
+    if (target === 'postcards' || target === 'keepsakes') {
+      wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${target}` });
+    }
   },
 
   onTalkInput(event) { this.setData({ talkDraft: event.detail.value, talkError: '' }); },
@@ -336,23 +361,29 @@ Page({
     }).catch(() => this.pageActive && this.setData({ letterBusy: false, letterError: '信没有寄出去，请重试' }));
   },
 
-  onDailyWindowTap() {
+  onDailyWindowTap(event) {
     const current = this.data.currentState;
+    const tappedPanel = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.windowPanel);
+    const windowPanel = tappedPanel === 1 ? 1 : 2;
+    const windowSelector = `.daily-window-hotspot--panel-${windowPanel}`;
     if (current && current.atHome && current.action.kind === 'window' && !current.actionDone) {
-      this.runSceneAction(true);
+      this.runSceneAction(true, '', windowSelector);
       return;
     }
-    this.openDailyWindow();
+    this.openDailyWindow(windowSelector);
   },
 
-  openDailyWindow() {
+  openDailyWindow(windowSelector) {
     if (!this.pageActive || this.data.dailyWindowVisible) return;
-    wx.createSelectorQuery().in(this).select('.daily-window-hotspot').boundingClientRect(rect => {
+    const activePanel = Number(this.data.currentScreen) === 1 ? 1 : 2;
+    const selector = windowSelector || `.daily-window-hotspot--panel-${activePanel}`;
+    wx.createSelectorQuery().in(this).select(selector).boundingClientRect(rect => {
+      const centerWindow = selector.endsWith('panel-1');
       const fallback = {
-        left: this.data.panelWidth * .55,
-        top: this.data.panelHeight * .08,
-        width: this.data.panelWidth * .4,
-        height: this.data.panelHeight * .4
+        left: centerWindow ? this.data.panelWidth * .1 : 0,
+        top: 0,
+        width: this.data.panelWidth * (centerWindow ? .9 : 1),
+        height: this.data.panelHeight * .48
       };
       const origin = rect || fallback;
       const app = typeof getApp === 'function' ? getApp() : null;
@@ -457,11 +488,6 @@ Page({
 
   onMagicTouchMove() {},
 
-  onOpenMemories(event) {
-    const section = event.currentTarget.dataset.section || 'keepsakes';
-    wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${section}` });
-  },
-
   onBack() {
     if (this.data.magicWindowVisible) {
       this.onCloseMagicWindow();
@@ -471,6 +497,14 @@ Page({
       const detail = this.selectComponent && this.selectComponent('#dailyWindowDetail');
       if (detail && detail.requestClose) detail.requestClose();
       else this.onDailyWindowClosed();
+      return;
+    }
+    if (this.data.toolboxVisible) {
+      this.onCloseToolbox();
+      return;
+    }
+    if (this.data.composerVisible) {
+      this.onCloseComposer();
       return;
     }
     if (this.data.isExiting) return;
@@ -514,7 +548,7 @@ Page({
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.magicKoiTimer);
-    this.setData({ feedback: '', talkReply: '', dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false });
+    this.setData({ feedback: '', talkReply: '', composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false });
   },
   onUnload() {
     this.pageActive = false;

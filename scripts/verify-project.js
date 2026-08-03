@@ -32,7 +32,7 @@ if (!/\.btn\s*\{[^}]*height:\s*96rpx;[^}]*border-radius:\s*999rpx;/s.test(button
 
 const buttonStyleContracts = [
   ['custom-tab-bar/index.wxss', /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;/s, '底部独立导航入口必须为 112rpx 圆形'],
-  ['pages/home/home.wxss', /\.companion-primary-dock\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*224rpx;[^}]*border-radius:\s*56rpx;/s, '首页许愿池与早教班必须组成等宽双功能胶囊'],
+  ['pages/home/home.wxss', /\.companion-primary-dock\s*\{[^}]*width:\s*264rpx;[^}]*height:\s*112rpx;[^}]*flex-direction:\s*row;[^}]*border-radius:\s*56rpx;/s, '首页许愿池与早教班必须组成无常驻文字的横向等分双功能胶囊'],
   ['pages/home/home.wxss', /\.draw-icon-button\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;/s, '首页画画必须为与功能胶囊等宽的独立圆形入口'],
   ['pages/doodle/doodle.wxss', /\.figma-toolbar\s*\{[^}]*width:\s*560rpx;[^}]*height:\s*112rpx;[^}]*grid-template-columns:\s*repeat\(5,\s*112rpx\);[^}]*border-radius:\s*56rpx;/s, '绘画工具必须组成五等分胶囊'],
   ['pages/chat/chat.wxss', /\.composer__send\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;/s, '聊天发送必须为 112rpx 圆形按钮'],
@@ -75,6 +75,7 @@ if (/看看 ta 此刻在做什么|state-card|status-daily|post-hatch-entries|ta 
 const lifeScenes = require(path.join(miniprogram, 'utils/life-scenes'));
 const lifeSceneTemplate = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneLogic = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.js'), 'utf8');
+const petAvatarTemplate = fs.readFileSync(path.join(miniprogram, 'components/pet-avatar/pet-avatar.wxml'), 'utf8');
 if (lifeScenes.HOME_STATES.length !== 7) errors.push(`居家小状态应为 7 个，实际为 ${lifeScenes.HOME_STATES.length}`);
 if (lifeScenes.AWAY_STATES.length !== 10) errors.push(`旅行、打工、上学小状态应覆盖 10 个，实际为 ${lifeScenes.AWAY_STATES.length}`);
 if (lifeScenes.STORY_LINE.length !== 19) errors.push(`demo 5 小时故事线应为 19 段，实际为 ${lifeScenes.STORY_LINE.length}`);
@@ -96,7 +97,16 @@ for (const [key, expected] of Object.entries(expectedActions)) {
 }
 if (!lifeSceneTemplate.includes('world-panel--living') || !lifeSceneTemplate.includes('world-panel--desk') || !lifeSceneTemplate.includes('world-panel--decor')) errors.push('破壳后完整场景必须保留左起居、中桌面、右布置三屏');
 if (!lifeSceneTemplate.includes('给远方的 ta 写一句') || !lifeSceneTemplate.includes('currentState.canTalk')) errors.push('破壳后场景必须包含外出来信和场景内条件对话');
-if (!lifeSceneTemplate.includes('class="memory-entry"') || /memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate)) errors.push('破壳后全屏场景必须只保留一个“看看回忆”入口，且不得常驻心情或状态卡');
+if (/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate)) errors.push('破壳后全屏场景不得恢复旧回忆条、常驻心情或状态卡');
+if (/demo-scene-badge|>DEMO</.test(lifeSceneTemplate)) errors.push('破壳后正式页面不得显示 DEMO 调试标识');
+if (/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate)) errors.push('破壳后三屏不得叠加临时床铺、灯具或安静空地占位层');
+if (!fs.existsSync(path.join(miniprogram, 'assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) || !lifeSceneTemplate.includes('jadeRabbitSleepImage')) errors.push('破壳后睡觉状态必须接入透明玉兔躺卧角色层');
+if (!lifeSceneTemplate.includes('scene-character__floor-shadow')) errors.push('玉兔躺卧角色层必须包含独立的接触阴影');
+if (!lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-character scene-character--sleep') || lifeSceneTemplate.includes('<pet-avatar')) errors.push('居家左屏必须稳定显示躺卧玉兔，不得再回退到旧 pet-avatar');
+if (!petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") || /wx:else\s+class="koi"/.test(petAvatarTemplate)) errors.push('玉兔代码 YT 不得错误落入锦鲤兜底渲染');
+if (!lifeSceneTemplate.includes('class="scene-dialogue-entry"') || !lifeSceneTemplate.includes('class="scene-action-dock"') || !lifeSceneTemplate.includes('ui_3d_scene_message_envelope_96_v01.png') || !lifeSceneTemplate.includes('icon-letter') || !lifeSceneTemplate.includes('ui_3d_scene_toolbox_closed_chest_96_v01.png')) errors.push('破壳后必须使用左下对话、右下信件与百宝箱入口');
+for (const target of ['my', 'card', 'postcards', 'keepsakes']) if (!lifeSceneTemplate.includes(`data-target="${target}"`)) errors.push(`百宝箱缺少入口：${target}`);
+if (!lifeSceneLogic.includes('onContextActionTap') || !lifeSceneLogic.includes('onToolboxItemTap') || !lifeSceneTemplate.includes('composerVisible && currentState.atHome && currentState.canTalk')) errors.push('对话与写信输入必须由情境按钮打开，居家对话仍受固定说话权限约束');
 if (!lifeSceneTemplate.includes('bindtap="onCharacterTap"') || !lifeSceneLogic.includes('今日心情 · ${mood.mood}')) errors.push('今日心情必须改为点击蛋宝宝后出现');
 if (/画一件东西/.test(lifeSceneTemplate)) errors.push('破壳后运行时不得混入未确认的 AI 布置入口');
 const hasTokyoPreview = /东京|magicWindowVisible|onOpenMagicWindow/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`);

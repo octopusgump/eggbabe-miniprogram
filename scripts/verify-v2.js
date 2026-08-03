@@ -38,6 +38,7 @@ const homeStyles = read('miniprogram/pages/home/home.wxss');
 const lifeSceneTemplate = read('miniprogram/pages/life-scene/life-scene.wxml');
 const lifeSceneLogic = read('miniprogram/pages/life-scene/life-scene.js');
 const lifeSceneStyles = read('miniprogram/pages/life-scene/life-scene.wxss');
+const petAvatarTemplate = read('miniprogram/components/pet-avatar/pet-avatar.wxml');
 const dailyWindowTemplate = read('miniprogram/components/daily-window-detail/daily-window-detail.wxml');
 const dailyWindowLogic = read('miniprogram/components/daily-window-detail/daily-window-detail.js');
 const dailyWindowStyles = read('miniprogram/components/daily-window-detail/daily-window-detail.wxss');
@@ -143,6 +144,8 @@ assert.equal(customTabTemplate.includes('wx:if="{{!hidden}}"') && homeLogic.incl
 assert.equal(customTabTemplate.includes('wx:if="{{selected !== index}}"') && customTabTemplate.includes('src="{{item.selectedIconPath}}"') && customTabTemplate.includes('tab-text') === false, true, '底部导航只显示前往另一页的小圆图标，不得保留当前页标签或文字');
 assert.match(customTabStyles, /\.tab-bar\s*\{[^}]*pointer-events:\s*none;[^}]*background:\s*transparent;/s, '底部导航必须移除整块白色 Tab 背景');
 assert.match(customTabStyles, /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*rgba\(255,253,247,\.92\)/s, '我的与蛋宝宝导航必须使用统一 112rpx 白底圆形按钮');
+assert.equal(customTabTemplate.includes('class="tab-hint') && customTabTemplate.includes('bindlongpress="onLongPress"'), true, '“我的”图标必须支持点击短提示与长按再次查看');
+assert.match(customTabStyles, /\.tab-hint\s*\{[^}]*bottom:\s*calc\(100% \+ 10rpx\);[^}]*background:\s*rgba\(255,255,255,\.96\);[^}]*color:\s*rgba\(25,30,26,\.96\);/s, '“我的”提示必须使用图标上方的白底深色文字胶囊');
 assert.equal(myLogic.includes("selected: 1, hidden: true") && myTemplate.includes('fallback-url="/pages/home/home"'), true, '我的页必须隐藏右下导航按钮，并使用左上角返回入口');
 assert.equal(navBarLogic.includes('pages.length > 1') && navBarLogic.includes('this.properties.fallbackUrl') && navBarLogic.includes('wx.switchTab'), true, '左上角返回必须优先返回上一页，并在 Tab 页面栈为空时回到指定首页');
 assert.equal(dailyWindowLogic.includes('getMenuButtonBoundingClientRect') && dailyWindowLogic.includes('menuBottom + 14') && dailyWindowTemplate.includes('top:{{topbarTopPx}}px'), true, '日常窗外返回按钮必须放在微信胶囊下方的安全位置');
@@ -167,7 +170,7 @@ assert.equal(homeTemplate.includes('incubation-room-lighting-image') && homeTemp
 assert.equal(/room-lamp-state|period-night\.room-lamp-off[^}]*brightness|rgba\(8,15,25/.test(`${homeTemplate}\n${homeStyles}`), false, '房间变黑变暗不得使用 CSS 遮罩或 brightness 滤镜渲染');
 assert.equal(homeTemplate.includes('room-clock') && homeLogic.includes('onClockTap'), true, '孵化房间左上角必须保留可交互设备时钟');
 assert.equal(homeLogic.includes("require('../../services/device-clock')") && homeLogic.includes('millisecondsUntilNextSecond'), true, '设备时钟必须按手机本地时间整秒校准');
-assert.equal(/longpress|longtap|12\/24|十二小时|二十四小时/.test(`${homeTemplate}\n${homeLogic}`), false, '设备时钟不得加入长按或 12/24 小时设置');
+assert.equal(/class="room-clock"[^>]*(?:longpress|longtap)|onClock(?:Long|Press)|12\/24|十二小时|二十四小时/.test(`${homeTemplate}\n${homeLogic}`), false, '设备时钟不得加入长按或 12/24 小时设置');
 assert.equal(homeLogic.includes("key: 'draw'") && homeLogic.includes("route: '/pages/doodle/doodle'"), true, '画画必须与许愿池、早教班同列');
 assert.equal(homeLogic.includes("analytics.track('room_element_interaction'"), true, '房间小物必须只发送白名单可用性事件');
 assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾及旧物件按钮层必须完全移除');
@@ -184,7 +187,15 @@ assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
 assert.equal(lifeSceneTemplate.includes('给远方的 ta 写一句') && lifeSceneTemplate.includes('currentState.canTalk'), true, '外出时必须可写信，对话只能在允许的小状态原地出现');
 assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
-assert.equal(lifeSceneTemplate.includes('class="memory-entry"') && /memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate) === false, true, '全屏生活空间只能保留一个“看看回忆”入口');
+assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
+assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
+assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate), false, '三屏背景上不得叠加临时床铺或安静空地占位层');
+assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && lifeSceneTemplate.includes('jadeRabbitSleepImage'), true, '睡觉状态必须使用透明玉兔躺卧角色层');
+assert.equal(lifeSceneTemplate.includes('scene-character__floor-shadow'), true, '玉兔躺卧角色层必须包含独立的接触阴影');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-character scene-character--sleep') && lifeSceneTemplate.includes('<pet-avatar') === false, true, '居家左屏必须稳定显示躺卧玉兔，不得回退到旧角色组件');
+assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
+assert.equal(lifeSceneTemplate.includes('class="scene-dialogue-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('ui_3d_scene_message_envelope_96_v01.png') && lifeSceneTemplate.includes('icon-letter') && lifeSceneTemplate.includes('ui_3d_scene_toolbox_closed_chest_96_v01.png'), true, '必须使用左下对话、右下信件与百宝箱入口');
+assert.equal(['my', 'card', 'postcards', 'keepsakes'].every(target => lifeSceneTemplate.includes(`data-target="${target}"`)), true, '百宝箱必须包含我的、收藏卡、明信片与 ta 带回来的东西');
 assert.equal(homeLogic.includes('/pages/life-scene/life-scene?entry=post-hatch-landing'), true, '破壳后进入首页必须直接落到全屏生活空间');
 assert.equal(read('miniprogram/services/post-hatch-companion.js').includes('5 * 60 * 60 * 1000'), true, '破壳后当前状态必须按 5 小时时段推进');
 
@@ -259,6 +270,7 @@ assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋�
   'demo-pages.test.js',
   'device-clock.test.js',
   'incubation-environment.test.js',
+  'navigation-interactions.test.js',
   'post-hatch-companion.test.js',
   'release-gate.test.js',
   'window-weather-canvas.test.js'

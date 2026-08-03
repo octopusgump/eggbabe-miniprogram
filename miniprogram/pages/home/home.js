@@ -18,6 +18,7 @@ const demoExperience = require('../../services/demo-experience');
 const windowWeatherCanvas = require('../../utils/window-weather-canvas');
 
 const SCENE_PREVIEW_STORAGE_KEY = 'eggbabe_scene_preview';
+const COMPANION_HINT_STORAGE_KEY = 'eggbabe_companion_icon_hints_seen_v1';
 const AUTO_SCENE_OPTION = {
   key: 'auto',
   seasonLabel: '自动',
@@ -51,6 +52,20 @@ function storeScenePreviewKey(key) {
   try {
     if (key === 'auto') wx.removeStorageSync(SCENE_PREVIEW_STORAGE_KEY);
     else wx.setStorageSync(SCENE_PREVIEW_STORAGE_KEY, key);
+  } catch (error) {}
+}
+
+function hasSeenCompanionHints() {
+  try {
+    return Boolean(wx.getStorageSync(COMPANION_HINT_STORAGE_KEY));
+  } catch (error) {
+    return false;
+  }
+}
+
+function markCompanionHintsSeen() {
+  try {
+    wx.setStorageSync(COMPANION_HINT_STORAGE_KEY, true);
   } catch (error) {}
 }
 
@@ -137,6 +152,8 @@ Page({
     companionActions: companionActionsFor([], ''),
     wishUnlocked: true,
     learnUnlocked: false,
+    companionHintKey: '',
+    companionHintVisible: false,
     tapParticles: [],
     showNameSheet: false,
     nameDraft: '',
@@ -366,9 +383,9 @@ Page({
     const hatched = stage === 'hatched';
     const returningFromPostHatchScene = hatched && Boolean(this.postHatchLandingActive);
     if (returningFromPostHatchScene) this.postHatchLandingActive = false;
-    const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ selected: 0, hidden: hatched });
     const showNameSheet = !hatched && petStore.shouldPromptNickname();
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ selected: 0, hidden: hatched, elevated: showNameSheet });
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const resolvedEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
@@ -436,6 +453,7 @@ Page({
         } else {
           this.setupHomeEgg();
         }
+        this.scheduleCompanionFirstHint(stage, showNameSheet);
       } else {
         this.stopClock();
         this.stopWindowWeatherAnimation();
@@ -446,8 +464,9 @@ Page({
       if (returningFromPostHatchScene) this.loadPostHatchSnapshot(pet);
       else this.openPostHatchLanding();
     } else {
+      const manualStateToken = this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
       practice.getManualState().then(state => {
-        if (!state.ok) return;
+        if (!this.pageActive || manualStateToken !== this.manualStateRequestToken || !state.ok) return;
         const unlocked = state.unlockedModules || [];
         const touchRecord = (state.records || []).find(record => (
           record.module === 'touch' && record.server_date === state.serverDate
@@ -466,7 +485,7 @@ Page({
           learnUnlocked: unlocked.includes('edu_class'),
           companionActions: companionActionsFor(state.records, state.serverDate)
         });
-      });
+      }).catch(() => {});
     }
   },
 
@@ -900,6 +919,8 @@ Page({
       wx.navigateTo({ url: '/pages/nickname/nickname' });
       return;
     }
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ elevated: true });
     this.setData({ showNameSheet: true, nameError: '' });
   },
 
@@ -1035,9 +1056,142 @@ Page({
     clearInterval(this.cuddleVibrationTicker);
   },
 
+  cancelCompanionFirstHint() {
+    clearTimeout(this.companionFirstHintTimer);
+    this.companionFirstHintTimer = null;
+  },
+
+  clearCompanionHintTimers() {
+    clearTimeout(this.companionHintRevealTimer);
+    clearTimeout(this.companionHintTimer);
+    clearTimeout(this.companionHintClearTimer);
+    this.companionHintRevealTimer = null;
+    this.companionHintTimer = null;
+    this.companionHintClearTimer = null;
+    this.companionHintRequestToken = (this.companionHintRequestToken || 0) + 1;
+  },
+
+  scheduleCompanionFirstHint(stage, blockedBySheet) {
+    this.cancelCompanionFirstHint();
+    if (blockedBySheet || stage === 'ready' || stage === 'hatched' || hasSeenCompanionHints()) return;
+    this.companionFirstHintTimer = setTimeout(() => {
+      this.companionFirstHintTimer = null;
+      if (!this.pageActive || this.data.showNameSheet || this.data.stage === 'ready' || this.data.stage === 'hatched') return;
+      this.showCompanionHint('all', 2400, { markSeen: true, keepFirstHintTimer: true });
+    }, 420);
+  },
+
+  showCompanionHint(key, duration = 1800, options = {}) {
+    if (!options.keepFirstHintTimer) this.cancelCompanionFirstHint();
+    this.clearCompanionHintTimers();
+    const requestToken = this.companionHintRequestToken;
+    this.setData({ companionHintKey: key, companionHintVisible: false }, () => {
+      if (!this.pageActive || requestToken !== this.companionHintRequestToken) return;
+      this.companionHintRevealTimer = setTimeout(() => {
+        this.companionHintRevealTimer = null;
+        if (!this.pageActive || requestToken !== this.companionHintRequestToken) return;
+        this.setData({ companionHintVisible: true });
+        if (options.markSeen) markCompanionHintsSeen();
+        this.companionHintTimer = setTimeout(() => {
+          this.companionHintTimer = null;
+          if (!this.pageActive || requestToken !== this.companionHintRequestToken) return;
+          this.setData({ companionHintVisible: false });
+          this.companionHintClearTimer = setTimeout(() => {
+            this.companionHintClearTimer = null;
+            if (this.pageActive && requestToken === this.companionHintRequestToken && !this.data.companionHintVisible) this.setData({ companionHintKey: '' });
+          }, 180);
+        }, duration);
+      }, 20);
+    });
+  },
+
+  onCompanionTouchStart(event) {
+    const key = event.currentTarget.dataset.key;
+    this.companionGestureKey = key;
+    this.companionLongPressKey = '';
+    this.companionLongPressTapKey = '';
+  },
+
+  onCompanionTouchEnd(event) {
+    const key = event.currentTarget.dataset.key;
+    if (this.companionGestureKey === key && this.companionLongPressKey === key) {
+      this.companionLongPressTapKey = key;
+    }
+    this.companionGestureKey = '';
+  },
+
+  onCompanionTouchCancel() {
+    this.companionGestureKey = '';
+    this.companionLongPressKey = '';
+    this.companionLongPressTapKey = '';
+  },
+
+  onCompanionLongPress(event) {
+    const key = event.currentTarget.dataset.key;
+    const action = COMPANION_ACTIONS.find(item => item.key === key);
+    if (!action) return;
+    this.cancelCompanionFirstHint();
+    this.companionLongPressKey = key;
+    this.showCompanionHint(key);
+  },
+
+  clearCompanionNavigation() {
+    clearTimeout(this.companionNavigationTimer);
+    clearTimeout(this.companionNavigationWatchdog);
+    this.companionNavigationTimer = null;
+    this.companionNavigationWatchdog = null;
+    this.companionNavigationPending = false;
+    this.companionNavigationStarted = false;
+    this.companionNavigationToken = (this.companionNavigationToken || 0) + 1;
+  },
+
+  releaseCompanionNavigation(token, message) {
+    if (token !== this.companionNavigationToken) return;
+    this.clearCompanionNavigation();
+    this.clearEffectTimers();
+    if (this.pageActive) this.setData({ sceneEffect: '', eggMotion: '' });
+    if (message && this.pageActive) this.showFeedback(message);
+  },
+
+  startCompanionNavigation(destination) {
+    if (this.companionNavigationPending) return;
+    this.companionNavigationPending = true;
+    this.companionNavigationStarted = false;
+    const token = this.companionNavigationToken = (this.companionNavigationToken || 0) + 1;
+    this.runSceneEffect(destination.sceneEffect, destination.eggMotion, 520);
+    this.companionNavigationTimer = setTimeout(() => {
+      this.companionNavigationTimer = null;
+      if (!this.pageActive || token !== this.companionNavigationToken || !this.companionNavigationPending) return;
+      this.companionNavigationWatchdog = setTimeout(() => {
+        if (token !== this.companionNavigationToken || !this.companionNavigationPending) return;
+        this.releaseCompanionNavigation(token, this.companionNavigationStarted ? '' : '页面暂时没有打开，请再试一次。');
+      }, 1800);
+      wx.navigateTo({
+        url: destination.route,
+        success: () => {
+          if (token === this.companionNavigationToken) this.companionNavigationStarted = true;
+        },
+        fail: () => this.releaseCompanionNavigation(token, '页面暂时没有打开，请再试一次。'),
+        complete: () => {
+          if (token === this.companionNavigationToken && !this.companionNavigationStarted) {
+            this.releaseCompanionNavigation(token, '页面暂时没有打开，请再试一次。');
+          }
+        }
+      });
+    }, 520);
+  },
+
   onCompanionTap(event) {
     const key = event.currentTarget.dataset.key;
     if (!COMPANION_ACTIONS.some(item => item.key === key)) return;
+    if (this.companionLongPressKey === key || this.companionLongPressTapKey === key) {
+      this.companionLongPressKey = '';
+      this.companionLongPressTapKey = '';
+      return;
+    }
+    if (this.companionNavigationPending) return;
+    this.cancelCompanionFirstHint();
+    if (key === 'wish' || key === 'learn' || key === 'draw') this.showCompanionHint(key);
     if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
     if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('早教班还在准备中。');
     const routes = {
@@ -1046,11 +1200,7 @@ Page({
       draw: { route: '/pages/doodle/doodle', sceneEffect: 'scene--draw', eggMotion: 'egg--talk-color' }
     };
     const destination = routes[key];
-    if (destination) {
-      this.runSceneEffect(destination.sceneEffect, destination.eggMotion, 520, () => {
-        wx.navigateTo({ url: destination.route });
-      });
-    }
+    if (destination) this.startCompanionNavigation(destination);
   },
 
   onLampTap() {
@@ -1488,6 +1638,12 @@ Page({
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.sceneOpenTimer);
     clearTimeout(this.postHatchSlotTimer);
+    this.cancelCompanionFirstHint();
+    this.clearCompanionHintTimers();
+    this.clearCompanionNavigation();
+    this.companionLongPressKey = '';
+    this.companionLongPressTapKey = '';
+    this.companionGestureKey = '';
     this.clearEffectTimers();
     (this.particleTimers || []).forEach(clearTimeout);
     this.particleTimers = [];
@@ -1495,6 +1651,7 @@ Page({
 
   onHide() {
     this.pageActive = false;
+    this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
     this.pendingSceneTarget = null;
     this.scenePreloadLoaded = null;
     this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
@@ -1506,12 +1663,14 @@ Page({
     this.clearInteractionTimers();
     this.completedLongPress = false;
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ hidden: this.data.stage === 'hatched' });
+    if (tabBar) tabBar.setData({ hidden: this.data.stage === 'hatched', elevated: false });
     this.setData({
       dailyWindowVisible: false,
       eggMotion: '',
       sceneEffect: '',
       feedback: '',
+      companionHintKey: '',
+      companionHintVisible: false,
       tapParticles: [],
       previousFullSceneImage: '',
       sceneCrossfadeActive: false,
@@ -1522,6 +1681,7 @@ Page({
 
   onUnload() {
     this.pageActive = false;
+    this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
     this.pendingSceneTarget = null;
     this.scenePreloadLoaded = null;
     this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;

@@ -124,6 +124,9 @@
 
       <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
         <view class="companion-grid">
+          <text wx:if="{{companionHintKey === 'wish' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--wish {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">许愿池</text>
+          <text wx:if="{{companionHintKey === 'learn' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--learn {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">早教班</text>
+          <text wx:if="{{companionHintKey === 'draw' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--draw {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">画画</text>
           <view class="companion-primary-dock">
             <block wx:for="{{companionActions}}" wx:key="key">
               <view
@@ -133,10 +136,13 @@
                 data-key="{{item.key}}"
                 aria-role="button"
                 aria-label="{{(item.key === 'learn' && !learnUnlocked) || (item.key === 'wish' && !wishUnlocked) ? item.title + '，暂未开放' : item.ariaLabel}}"
+                bindtouchstart="onCompanionTouchStart"
+                bindtouchend="onCompanionTouchEnd"
+                bindtouchcancel="onCompanionTouchCancel"
+                bindlongpress="onCompanionLongPress"
                 bindtap="onCompanionTap"
               >
                 <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
-                <text class="companion-title">{{item.title}}</text>
               </view>
             </block>
           </view>
@@ -148,6 +154,10 @@
               data-key="{{item.key}}"
               aria-role="button"
               aria-label="{{item.ariaLabel}}"
+              bindtouchstart="onCompanionTouchStart"
+              bindtouchend="onCompanionTouchEnd"
+              bindtouchcancel="onCompanionTouchCancel"
+              bindlongpress="onCompanionLongPress"
               bindtap="onCompanionTap"
             >
               <view class="draw-icon-button">

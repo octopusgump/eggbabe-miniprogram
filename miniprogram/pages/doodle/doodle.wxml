@@ -25,15 +25,15 @@
     <view class="section tool-section">
       <view class="figma-toolbar">
         <view class="tool-button {{activeTool === 'brush' ? 'tool-button--selected' : ''}}" data-tool="brush" aria-role="button" aria-label="像素画笔" bindtap="onTool">
-          <view class="pixel-brush-icon"><view></view><view></view><view></view></view>
+          <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_brush_96_v02.png" mode="aspectFit"></image>
           <text>画笔</text>
         </view>
         <view class="tool-button {{activeTool === 'eraser' ? 'tool-button--selected' : ''}}" data-tool="eraser" aria-role="button" aria-label="橡皮擦" bindtap="onTool">
-          <view class="eraser-icon"></view>
+          <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_eraser_96_v02.png" mode="aspectFit"></image>
           <text>橡皮擦</text>
         </view>
         <view class="tool-button {{activeTool === 'sticker' ? 'tool-button--selected' : ''}}" data-tool="sticker" aria-role="button" aria-label="贴纸" bindtap="onTool">
-          <text class="toolbar-symbol">✦</text>
+          <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_sticker_96_v02.png" mode="aspectFit"></image>
           <text>贴纸</text>
         </view>
         <view class="tool-button {{!canUndo ? 'tool-button--disabled' : ''}}" aria-role="button" aria-label="撤销一步" bindtap="onUndo">

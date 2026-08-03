@@ -13,7 +13,10 @@ Page({
   },
 
   async onLoad() {
+    this.pageAlive = true;
+    const requestToken = this.loadRequestToken = (this.loadRequestToken || 0) + 1;
     const state = await practice.getState('wish_pool');
+    if (!this.pageAlive || requestToken !== this.loadRequestToken) return;
     if (!state.ok) {
       this.setData({ loading: false, error: state.message || '今天的愿望还没有来到这里' });
       return;
@@ -28,6 +31,11 @@ Page({
       selected: storedOption ? storedOption.id : '',
       error: ''
     });
+  },
+
+  onUnload() {
+    this.pageAlive = false;
+    this.loadRequestToken = (this.loadRequestToken || 0) + 1;
   },
 
   onSelect(event) {

@@ -20,15 +20,11 @@
 .tool-button { position: relative; width: 112rpx; height: 112rpx; min-width: 112rpx; min-height: 112rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5rpx; border: 0; border-radius: 0; color: #596155; font-size: 17rpx; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
 .tool-button + .tool-button::before { position: absolute; left: 0; top: 28rpx; bottom: 28rpx; width: 1rpx; content: ""; background: #E3E5DF; }
 .tool-button:active { transform: scale(.95); }
-.tool-button--selected { background: #E7EFD9; color: #33402E; }
+.tool-button--selected { background: #FFF0DD; color: #6A3F2D; }
 .tool-button--danger { color: #765C55; }
 .tool-button--disabled { color: #B8BAB4; opacity: .48; pointer-events: none; }
 .toolbar-symbol { height: 29rpx; font-size: 29rpx; line-height: 29rpx; }
-.pixel-brush-icon { width: 31rpx; height: 29rpx; display: flex; align-items: flex-end; gap: 2rpx; transform: rotate(-38deg); }
-.pixel-brush-icon view { width: 8rpx; height: 8rpx; background: #536447; }
-.pixel-brush-icon view:nth-child(2) { margin-bottom: 8rpx; }
-.pixel-brush-icon view:nth-child(3) { margin-bottom: 16rpx; }
-.eraser-icon { width: 25rpx; height: 17rpx; border: 3rpx solid #718067; border-radius: 4rpx; transform: rotate(-28deg); }
+.toolbar-image-icon { width: 58rpx; height: 58rpx; flex: 0 0 58rpx; }
 .tool-options { margin-top: 14rpx; padding: 18rpx; border: 1rpx solid #E4E6E0; border-radius: 18rpx; background: #FBFCF9; }
 .size-heading { display: flex; align-items: center; justify-content: flex-end; color: #596155; font-size: 19rpx; }
 .size-value { color: #65744B; font-variant-numeric: tabular-nums; }

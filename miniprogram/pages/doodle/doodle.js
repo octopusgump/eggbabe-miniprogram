@@ -32,6 +32,7 @@ Page({
   },
 
   onLoad() {
+    this.pageActive = true;
     const pet = petStore.getPet();
     this.shellArt = shellArtService.normalizeShellArt(pet && pet.shell);
     this.undoStack = [];
@@ -41,6 +42,10 @@ Page({
 
   onReady() {
     this.setupCanvases();
+  },
+
+  onShow() {
+    this.pageActive = true;
   },
 
   setupCanvases() {
@@ -280,18 +285,20 @@ Page({
 
   async onSave() {
     if (this.data.saving) return;
+    const requestToken = this.saveRequestToken = (this.saveRequestToken || 0) + 1;
     this.setData({ saving: true });
     if (runtime.getMode() === 'demo') {
       const result = petStore.applyConfirmedDoodle(shellArtService.normalizeShellArt(this.shellArt));
       const progress = result.ok ? await practice.submit('doodle') : null;
-      this.setData({ saving: false });
+      if (!this.pageActive || requestToken !== this.saveRequestToken) return;
       if (!result.ok) {
+        this.setData({ saving: false });
         wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
         return;
       }
       analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
       wx.showToast({ title: progress && !progress.alreadyDone ? '蛋壳换好啦，也离你近了一点点' : '我的蛋壳换好啦', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 700);
+      this.scheduleReturnToHome();
       return;
     }
     if (!config.backendEnabled) {
@@ -301,6 +308,7 @@ Page({
     }
     const pet = petStore.getPet();
     const response = await cloudApi.saveEggCreation(pet && pet.id, shellArtService.normalizeShellArt(this.shellArt));
+    if (!this.pageActive || requestToken !== this.saveRequestToken) return;
     if (!response.ok || response.mode !== 'live') {
       this.setData({ saving: false });
       wx.showToast({ title: response.message || '蛋壳没有保存成功，请重试', icon: 'none' });
@@ -315,10 +323,36 @@ Page({
     if (response.hatch_at) petStore.applyConfirmedHatchAt(response.hatch_at);
     analytics.track('egg_creation_saved', shellArtService.operationSummary(this.shellArt));
     wx.showToast({ title: result.added ? '我记住这个样子啦' : '我的蛋壳换好啦', icon: 'none' });
-    setTimeout(() => wx.navigateBack(), 700);
+    this.scheduleReturnToHome();
+  },
+
+  scheduleReturnToHome() {
+    clearTimeout(this.returnTimer);
+    this.returnTimer = setTimeout(() => {
+      this.returnTimer = null;
+      wx.navigateBack({
+        fail: () => this.setData({ saving: false })
+      });
+    }, 700);
+  },
+
+  clearReturnTimer() {
+    const hadReturnTimer = Boolean(this.returnTimer);
+    clearTimeout(this.returnTimer);
+    this.returnTimer = null;
+    return hadReturnTimer;
+  },
+
+  onHide() {
+    this.pageActive = false;
+    this.saveRequestToken = (this.saveRequestToken || 0) + 1;
+    if (this.clearReturnTimer() && this.data.saving) this.setData({ saving: false });
   },
 
   onUnload() {
+    this.pageActive = false;
+    this.saveRequestToken = (this.saveRequestToken || 0) + 1;
+    this.clearReturnTimer();
     this.baseLayer = null;
     this.artLayer = null;
     this.baseImage = null;

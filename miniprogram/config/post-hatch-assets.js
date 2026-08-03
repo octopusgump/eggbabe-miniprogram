@@ -53,7 +53,8 @@ module.exports = {
     centerDeskBackground: '',
     rightDecorBackground: '',
     characterPoses: {
-      sleep: '', lazy: '', stare: '', tea: '', drawing: '', gaming: '', window: ''
+      sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
+      lazy: '', stare: '', tea: '', drawing: '', gaming: '', window: ''
     },
     // 只有大理 / 北京 / 西双版纳三张正式景区素材全部完成后才开放入口。
     // 旅行大场景永远不读取这里的图片，只显示空着的家与第一人称文字。

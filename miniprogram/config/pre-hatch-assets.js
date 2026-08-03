@@ -144,10 +144,10 @@ module.exports = {
       quiet: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_quiet.svg`,
       window: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_window.svg`,
       touch: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_touch.svg`,
-      draw: `${UI_3D_ACTIONS_ROOT}/ui_3d_drawing_sketchbook_pencil_256_v01.webp`,
-      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_pool_coin_256_v01.webp`,
-      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_open_book_256_v01.webp`,
-      schedule: `${UI_3D_ACTIONS_ROOT}/ui_3d_schedule_calendar_clock_256_v01.webp`,
+      draw: `${UI_3D_ACTIONS_ROOT}/ui_3d_drawing_palette_256_v02.webp`,
+      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_fountain_256_v02.webp`,
+      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_picture_book_256_v02.webp`,
+      schedule: `${UI_3D_ACTIONS_ROOT}/ui_3d_schedule_flip_calendar_256_v02.webp`,
       talk: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_talk.svg`
     }
   }

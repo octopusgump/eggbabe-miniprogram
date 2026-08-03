@@ -23,7 +23,11 @@ sourceScenes.forEach(scene => {
 assert.equal(postHatchAssets.resolvePanelSceneSet('unknown_scene'), null, '未知 scene key 不得静默混入其他套装');
 
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
+const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
 assert.equal(lifeSceneLogic.includes('assets.resolvePanelSceneSet(sceneKey)'), true, '全屏生活空间必须按当前环境 scene key 读取三屏套装');
 assert.equal(lifeSceneLogic.includes("sceneSetId: 'panorama-fallback'"), true, '正式套装未齐时必须保留全景兜底');
+assert.equal(lifeSceneWxml.includes('daily-window-hotspot--panel-1'), true, '中屏可见窗户必须有独立点击区');
+assert.equal(lifeSceneWxml.includes('daily-window-hotspot--panel-2'), true, '右屏可见窗户必须有独立点击区');
+assert.equal(lifeSceneLogic.includes('this.openDailyWindow(windowSelector)'), true, '窗户详情必须从实际点击的窗户区域展开');
 
 console.log('破壳后三屏 20 状态同源、命名和成套启用门禁校验通过。');

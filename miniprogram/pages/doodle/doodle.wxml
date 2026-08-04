@@ -2,7 +2,11 @@
   <nav-bar wx:if="{{!expandedCanvas}}" title="画我的蛋壳"></nav-bar>
   <view class="preview">
     <view class="canvas-expand-button" aria-role="button" aria-label="{{expandedCanvas ? '缩小画布' : '放大画布'}}" bindtap="onToggleCanvasSize">
-      <text>{{expandedCanvas ? '↙' : '↗'}}</text>
+      <image
+        class="canvas-expand-icon {{expandedCanvas ? 'canvas-expand-icon--collapse' : ''}}"
+        src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_canvas_expand_96_v01.webp"
+        mode="aspectFit"
+      ></image>
     </view>
     <view class="preview-aura"></view>
     <view class="egg-canvas-stack">
@@ -105,7 +109,7 @@
       </view>
     </view>
 
-    <button wx:if="{{!expandedCanvas}}" class="primary" disabled="{{saving || !canvasReady}}" bindtap="onSave">
+    <button wx:if="{{!expandedCanvas}}" class="primary" hover-class="button-press" disabled="{{saving || !canvasReady}}" bindtap="onSave">
       <text class="button-label">{{saving ? '正在保存…' : '保存我的蛋壳'}}</text>
     </button>
   </scroll-view>

@@ -117,26 +117,24 @@ WebP 母版参数：质量 92，Alpha 质量 100。运行时 WebP：质量 90，
 2. 收藏卡：保留正面卡片与蓝色玉兔头像，将蓝色外框改为暖米白色凸起边框。
 3. 明信片：改为更简洁的复古厚纸明信片，只保留朱红邮票与圆形邮戳，不出现人物、地址线或文字。
 
-三枚图标均限制为暖米白色＋单一强调色，完全正面展示，使用内置 ImageGen 生成色键图，本地去色键后输出透明 WebP；未使用 CLI。
+图标均限制为暖米白色＋单一强调色，完全正面展示，使用内置 ImageGen 生成色键图，本地去色键后输出透明 WebP；未使用 CLI。
 
 ### 正式 WebP
 
 1024×1024 Alpha WebP：
 
-- `webp/ui_3d_toolbox_settings_gear_v03.webp`
 - `webp/ui_3d_toolbox_collection_card_front_v03.webp`
 - `webp/ui_3d_toolbox_postcard_vintage_front_v03.webp`
 
 96×96 运行时 Alpha WebP：
 
-- `runtime/ui_3d_toolbox_settings_gear_96_v03.webp`
 - `runtime/ui_3d_toolbox_collection_card_front_96_v03.webp`
 - `runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.webp`
 
-PNG 仅作为 `tmp/imagegen/ui-3d-toolbox-refinement-v03/` 内的生成与透明化中间文件，正式资源目录只新增 WebP。旧 v02 文件完整保留，未覆盖。
+PNG 仅作为 `tmp/imagegen/ui-3d-toolbox-refinement-v03/` 内的生成与透明化中间文件。未引用的 v01／v02 图标及旧设置齿轮已于 2026-08-04 清理。
 
 ### 接入
 
-- `pages/life-scene/life-scene.wxml` 中 `my`、`card`、`postcards` 已切换到 v03 运行时 WebP。
+- `pages/life-scene/life-scene.wxml` 中 `card`、`postcards` 使用 v03 运行时 WebP。
 - `keepsakes` 继续使用 `runtime/ui_3d_toolbox_keepsake_box_96_v01.png`，未修改。
-- 底部 Tab“我的”原本已引用齿轮 v02，本批次同步切换到米白齿轮 v03，确保界面颜色一致。
+- “我的／设置”统一使用 `assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png`。

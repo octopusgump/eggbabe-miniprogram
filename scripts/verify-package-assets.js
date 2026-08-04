@@ -7,6 +7,10 @@ const project = JSON.parse(fs.readFileSync(path.join(root, 'project.config.json'
 const ignores = (project.packOptions && project.packOptions.ignore) || [];
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 const errors = [];
+const CDN_ENVIRONMENT_ASSET_PREFIXES = [
+  'assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes/',
+  'assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/'
+];
 
 function normalize(value) {
   return String(value || '').replace(/^\/+/, '').replace(/\\/g, '/').replace(/\/$/, '');
@@ -76,7 +80,14 @@ walkFiles(miniprogram, absolute => {
 });
 
 runtimeAssets.forEach(asset => {
-  if (ignored(asset)) errors.push(`运行时资源被 packOptions.ignore 排除：${asset}`);
+  const externalizedEnvironmentAsset = CDN_ENVIRONMENT_ASSET_PREFIXES.some(prefix => asset.startsWith(prefix));
+  if (ignored(asset) && !externalizedEnvironmentAsset) errors.push(`运行时资源被 packOptions.ignore 排除：${asset}`);
+  if (ignored(asset) && externalizedEnvironmentAsset) {
+    const appSource = fs.readFileSync(path.join(miniprogram, 'app.js'), 'utf8');
+    if (!appSource.includes('environmentCdnBase') || !appSource.includes('environment_cdn_base')) {
+      errors.push(`环境大图已从包体排除，但未检测到 environment_cdn_base 运行时接入：${asset}`);
+    }
+  }
 });
 
 if (includedBytes > MAX_SOURCE_BYTES) {

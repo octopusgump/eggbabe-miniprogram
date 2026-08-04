@@ -26,7 +26,7 @@ assert.match(styles, /\.egg-zone--incubating \.egg\s*\{[^}]*margin-top:\s*-142rp
 assert.equal(template.includes('incubation-nest-shadow'), false, '窝垫下方不得再叠加代码阴影，地板环境光影必须来自完整背景图');
 assert.equal(template.includes('egg-contact-shadow'), false, '蛋体接触阴影必须烘焙进透明蛋体层，避免运行时代码阴影割裂');
 assert.equal(template.includes('wx:if="{{isDemo && pet}}" class="stage-tester"'), true, '开发版必须提供显式隔离的阶段验收下拉控件');
-assert.equal(template.includes('class="scene-tester"') && template.includes('onSceneTesterSelect'), true, '开发版必须提供 20 场景季节天气验收下拉控件');
+assert.equal(template.includes('class="scene-tester"') && template.includes('onSceneTesterSelect'), true, '开发版必须提供 36 场景季节天气验收下拉控件');
 assert.equal(source.includes('wx.getImageInfo'), false, '本地 WebP 场景不得再依赖 wx.getImageInfo 预检查');
 assert.equal((template.match(/class="scene-preloader-image"/g) || []).length, 3, '背景、窝垫和蛋体必须分别使用真实 image 组件预加载');
 assert.equal(template.includes('bindload="onScenePreloadLoad"') && template.includes('binderror="onScenePreloadError"'), true, '场景预加载必须同时处理成功和失败状态');
@@ -58,7 +58,7 @@ assert.match(styles, /\.companion-primary-dock \.companion-item\s*\{[^}]*width:\
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none;/s, '弱动效模式必须取消入口缩放反馈');
 
 const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets')).PRE_HATCH;
-assert.equal(preHatch.sceneTesterOptions.length, 20, '季节天气验收器必须完整覆盖 20 个选项');
+assert.equal(preHatch.sceneTesterOptions.length, 36, '季节天气验收器必须完整覆盖 36 个选项');
 preHatch.sceneTesterOptions.forEach(option => {
   assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.background)), `缺少场景背景：${option.key}`);
   assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.egg)), `缺少蛋体层：${option.key}`);

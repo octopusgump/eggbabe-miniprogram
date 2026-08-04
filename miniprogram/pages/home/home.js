@@ -76,18 +76,34 @@ function scenePreviewTarget(key) {
 
 function previewEnvironment(base, target) {
   if (!target) return base;
-  const isSunset = target.lightPhase === 'sunset';
   return Object.assign({}, base, {
     season: target.season,
     weather: target.weather,
     period: target.period,
     lightPhase: target.lightPhase,
+    sceneKey: target.key,
+    valid: true,
     className: target.className,
     fullSceneImage: target.background,
-    windowImage: environmentService.windowAssetPath(target.weather, target.period, isSunset),
+    windowImage: environmentService.windowAssetPath(target.weather, target.period),
     nestImage: target.nest,
     eggImage: target.egg,
     roomLightingEnabled: false
+  });
+}
+
+function resolveEnvironmentForPet(pet) {
+  const app = typeof getApp === 'function' ? getApp() : null;
+  const globalData = app && app.globalData || {};
+  return environmentService.resolve(null, {
+    id: pet && pet.id,
+    eggId: pet && pet.id,
+    createdAt: pet && pet.createdAt,
+    companionStartedAt: pet && pet.companionStartedAt,
+    environmentSeed: pet && pet.environmentSeed,
+    environmentVersion: pet && pet.environmentVersion,
+    isHatched: petStore.getStage(pet) === 'hatched',
+    environmentCdnBase: globalData.environmentCdnBase || ''
   });
 }
 
@@ -262,7 +278,7 @@ Page({
       || this.data.dailyWindowVisible
       || this.sceneTestOverride
     ) return;
-    const delay = environmentService.millisecondsUntilNextLightPhase();
+    const delay = environmentService.millisecondsUntilNextEnvironmentBoundary();
     this.timeSceneRefreshTimer = setTimeout(() => {
       this.timeSceneRefreshTimer = null;
       this.refreshTimeScene();
@@ -277,9 +293,7 @@ Page({
       || this.data.dailyWindowVisible
       || this.sceneTestOverride
     ) return;
-    const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const nextEnvironment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet.createdAt });
+    const nextEnvironment = resolveEnvironmentForPet(this.data.pet);
     const currentEnvironment = this.data.environment || {};
     if (nextEnvironment.className === currentEnvironment.className && nextEnvironment.fullSceneImage === currentEnvironment.fullSceneImage) {
       this.scheduleTimeSceneRefresh();
@@ -386,9 +400,7 @@ Page({
     const showNameSheet = false;
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 0, hidden: hatched || showNameSheet, elevated: false });
-    const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const resolvedEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const resolvedEnvironment = resolveEnvironmentForPet(pet);
     const previewKey = config.localDemoEnabled ? storedScenePreviewKey() : 'auto';
     const previewTarget = scenePreviewTarget(previewKey);
     const environment = previewEnvironment(resolvedEnvironment, previewTarget);
@@ -1529,11 +1541,9 @@ Page({
 
   openDailyWindow(rect) {
     if (!this.pageActive || this.data.dailyWindowVisible) return;
-    const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const environment = this.sceneTestOverride
       ? this.data.environment
-      : environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
+      : resolveEnvironmentForPet(this.data.pet);
     const origin = rect || {};
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ hidden: true });
@@ -1578,9 +1588,7 @@ Page({
     const environment = this.data.dailyWindowEnvironment || {};
     if (environment.windowImage) return;
     const pet = this.data.pet;
-    const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const resolved = environmentService.resolve(serverEnvironment, { createdAt: pet && pet.createdAt });
+    const resolved = resolveEnvironmentForPet(pet);
     this.setData({
       dailyWindowEnvironment: resolved,
       dailyWindowWeatherLabel: WEATHER_LABELS[resolved.weather] || '晴朗',

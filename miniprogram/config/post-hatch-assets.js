@@ -4,12 +4,7 @@ const preHatchAssets = require('./pre-hatch-assets').PRE_HATCH;
 // 每套房间只使用一张连续的 2823 × 1672 全景图，避免窄长设备上三张独立
 // aspectFill 切图产生裁切缺口与拼接线。
 const PANORAMA_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets';
-const READY_PANORAMA_SCENE_KEYS = Object.freeze([
-  'spring_clear_day', 'spring_clear_sunset', 'spring_clear_night', 'spring_cloudy_day', 'spring_rain_day',
-  'summer_clear_day', 'summer_clear_sunset', 'summer_clear_night', 'summer_cloudy_day', 'summer_storm_night',
-  'autumn_clear_day', 'autumn_clear_sunset', 'autumn_clear_night', 'autumn_rain_day',
-  'winter_clear_day', 'winter_clear_night', 'winter_cloudy_day', 'winter_snow_day', 'winter_snow_night', 'winter_post_snow_day'
-]);
+const READY_PANORAMA_SCENE_KEYS = Object.freeze((preHatchAssets.sceneTesterOptions || []).map(scene => scene.key));
 const readyPanoramaSceneKeys = new Set(READY_PANORAMA_SCENE_KEYS);
 // 窗玻璃、窗框、窗台和可见窗帘的热区，以完整全景母图的原始像素坐标维护。
 const PANORAMA_WINDOW_META = Object.freeze({
@@ -37,9 +32,16 @@ const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || 
   return result;
 }, {}));
 
-function resolvePanoramaScene(sceneKey) {
+function resolveCdnPath(path, cdnBase) {
+  const source = String(path || '');
+  const base = String(cdnBase || '').replace(/\/$/, '');
+  return base && source.startsWith('/assets/scenes/lifecycle/') ? `${base}${source}` : source;
+}
+
+function resolvePanoramaScene(sceneKey, cdnBase) {
   const sceneSet = PANORAMA_SCENE_SETS[String(sceneKey || '')];
-  return sceneSet && sceneSet.ready ? sceneSet : null;
+  if (!sceneSet || !sceneSet.ready) return null;
+  return Object.assign({}, sceneSet, { panorama: resolveCdnPath(sceneSet.panorama, cdnBase) });
 }
 
 module.exports = {
@@ -56,7 +58,8 @@ module.exports = {
     panoramaAssetsReady: READY_PANORAMA_SCENE_KEYS.length === Object.keys(PANORAMA_SCENE_SETS).length,
     readyPanoramaSceneKeys: READY_PANORAMA_SCENE_KEYS,
     panoramaSceneSets: PANORAMA_SCENE_SETS,
-    panoramaFallback: `${PANORAMA_SCENE_ROOT}/spring_clear_day_post_hatch_panorama_v01.webp`,
+    // 仅供尚未加载环境状态的初始占位，不得作为错误天气的静默降级。
+    panoramaFallback: '',
     panoramaFallbackMeta: PANORAMA_WINDOW_META,
     characterPoses: {
       sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',

@@ -8,7 +8,7 @@ const postHatchAssets = require('../../config/post-hatch-assets');
 const sourceScenes = preHatch.sceneTesterOptions || [];
 const panoramaSets = postHatchAssets.POST_HATCH.panoramaSceneSets || {};
 
-assert.equal(sourceScenes.length, 20, '全景场景必须严格跟随破壳前当前启用的 20 个状态');
+assert.equal(sourceScenes.length, 36, '全景场景必须严格跟随破壳前启用的 36 个季节/天气/时段状态');
 assert.deepEqual(Object.keys(panoramaSets), sourceScenes.map(scene => scene.key), '全景 scene key 必须与破壳前配置同源且顺序一致');
 
 sourceScenes.forEach(scene => {
@@ -25,14 +25,15 @@ assert.equal(postHatchAssets.resolvePanoramaScene('unknown_scene'), null, '未�
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
 const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxss'), 'utf8');
-assert.equal(lifeSceneLogic.includes('assets.resolvePanoramaScene(sceneKey)'), true, '全屏生活空间必须按当前环境 scene key 读取单张全景图');
+assert.equal(lifeSceneLogic.includes('assets.resolvePanoramaScene(sceneKey, cdnBase)'), true, '全屏生活空间必须按当前环境 scene key 读取单张全景图，并支持备案 CDN');
+assert.equal(/assets\.POST_HATCH\.panoramaFallback(?!Meta)/.test(lifeSceneLogic), false, '破壳后背景加载失败不得静默替换为其他天气场景');
 assert.equal(/resolvePanelSceneSet|panelImages|usingPanoramaFallback|scrollIntoView/.test(lifeSceneLogic), false, '生活空间不得保留三张切图或双重滚动定位逻辑');
 assert.deepEqual(postHatchAssets.POST_HATCH.panoramaFallbackMeta, {
   width: 2823,
   height: 1672,
   windowRegions: [{ id: 'main-window', x: 1050, y: 0, width: 1570, height: 800 }]
 }, '全景图必须声明实际尺寸和原图窗口区域');
-assert.equal((lifeSceneWxml.match(/class="world-panorama-bg"/g) || []).length, 1, '运行场景必须只渲染一个连续全景节点');
+assert.equal((lifeSceneWxml.match(/world-panorama-bg/g) || []).length, 3, '场景切换仅允许保留一张淡出的旧全景与一张当前全景');
 assert.equal(lifeSceneWxml.includes('src="{{panoramaImage}}"'), true, '运行场景和退场过渡必须使用当前全景图');
 assert.equal(/panelImages|class="panel-bg"|scroll-into-view/.test(lifeSceneWxml), false, 'WXML 不得保留三张切图节点或双重滚动定位');
 assert.equal(lifeSceneLogic.includes('windowGeometry.mapPanoramaRegions'), true, '全景窗口必须用原图坐标映射到设备屏幕');

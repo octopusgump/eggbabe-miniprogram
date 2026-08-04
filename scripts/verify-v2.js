@@ -69,9 +69,9 @@ assert.match(windowWeatherCanvas, /if \(!reducedMotion && \(weather === 'storm' 
 assert.equal(homeLogic.includes("require('../../utils/window-weather-canvas')") && dailyWindowLogic.includes("require('../../utils/window-weather-canvas')"), true, '首页窗玻璃与日常窗外详情必须共用同一套 Canvas 天气逻辑');
 assert.equal(
   homeTemplate.includes('class="time-atmosphere"')
-    && ['morning', 'midday', 'afternoon', 'sunset', 'night'].every(phase => homeStyles.includes(`.light-${phase}`)),
+    && ['midday', 'sunset', 'night'].every(phase => homeStyles.includes(`.light-${phase}`)),
   true,
-  '房间必须按上海太阳时间提供早晨、正午、午后、日落与夜间五档独立弱动效'
+  '房间必须支持本机日间、日落、夜晚三档环境表现'
 );
 assert.equal(
   ['cloudy', 'rain', 'storm', 'fog', 'snow'].every(weather => homeStyles.includes(`.weather-${weather} .time-beam`))
@@ -80,12 +80,12 @@ assert.equal(
   '阴、雨、雷雨、雾与雪必须覆盖晴天时段光束和浮尘，避免天气语义冲突'
 );
 assert.equal(
-  homeLogic.includes('millisecondsUntilNextLightPhase()')
+  homeLogic.includes('millisecondsUntilNextEnvironmentBoundary()')
     && homeLogic.includes('scheduleTimeSceneRefresh()')
     && homeTemplate.includes('bindload="onTimeSceneImageLoad"')
     && homeTemplate.includes('incubation-full-scene-image--revealing'),
   true,
-  '时段边界必须自动刷新，并在新底图预载完成后淡化切换'
+  '本机时段边界必须自动刷新，并在新底图预载完成后淡化切换'
 );
 assert.equal(
   homeLogic.includes('clearTimeSceneTimers()')
@@ -96,15 +96,15 @@ assert.equal(
   true,
   '日常窗外打开或离页时必须暂停并清理房间时段动效，减少动态效果模式不得持续播放'
 );
-assert.equal(homeLogic.includes("windowImage: environmentService.windowAssetPath(target.weather, target.period, isSunset)"), true, '季节天气验收状态必须同步替换日常窗外图片，不得沿用切换前窗景');
+assert.equal(homeLogic.includes('windowImage: environmentService.windowAssetPath(target.weather, target.period)'), true, '季节天气验收状态必须同步替换日常窗外图片，不得沿用切换前窗景');
 assert.equal(homeTemplate.includes('<daily-window-detail') && lifeSceneTemplate.includes('<daily-window-detail'), true, '破壳前后房间必须共用日常窗外详情组件');
 assert.equal(
   homeTemplate.includes('light-phase="{{dailyWindowEnvironment.lightPhase}}"')
     && lifeSceneTemplate.includes('light-phase="{{dailyWindowEnvironment.lightPhase}}"')
     && dailyWindowLogic.includes("lightPhase: { type: String, value: 'midday' }")
-    && ['morning', 'midday', 'afternoon', 'sunset', 'night'].every(phase => dailyWindowStyles.includes(`daily-window--time-${phase}`)),
+    && ['midday', 'sunset', 'night'].every(phase => dailyWindowStyles.includes(`daily-window--time-${phase}`)),
   true,
-  '全屏日常窗外必须复用真实五时段状态，不得只区分日间与夜间'
+  '全屏日常窗外必须复用本机日间、日落、夜晚状态'
 );
 assert.equal(
   dailyWindowTemplate.includes('daily-window__time-atmosphere')
@@ -177,7 +177,7 @@ assert.equal(homeLogic.includes("analytics.track('room_element_interaction'"), t
 assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾及旧物件按钮层必须完全移除');
 assert.equal(fs.existsSync(path.join(root, 'miniprogram/services/room-sound.js')), false, '咖啡机声音服务必须移除');
 const incubationEnvironment = read('miniprogram/services/incubation-environment.js');
-assert.equal(incubationEnvironment.includes('shanghaiSolarTimes') && incubationEnvironment.includes('seasonFromIncubationDay'), true, '昼夜与四季必须按上海太阳时间和孵化天数计算');
+assert.equal(incubationEnvironment.includes("require('./environment-state')") && incubationEnvironment.includes('environmentCdnBase'), true, '环境必须由本机时段与稳定种子计算，并支持备案 CDN');
 assert.equal(/tapEggCurrency|currencyAccount|requestDewForTap/.test(homeLogic), false, '轻触蛋体不得请求虚拟资源');
 assert.equal(homeTemplate.includes('egg_on_nest.webp') || homeLogic.includes('shellArtService.drawEggBase'), true, '必须保留真实蛋体渲染');
 
@@ -273,6 +273,7 @@ assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋�
   'demo-network-isolation.test.js',
   'demo-pages.test.js',
   'device-clock.test.js',
+  'environment-state.test.js',
   'incubation-environment.test.js',
   'navigation-interactions.test.js',
   'post-hatch-companion.test.js',

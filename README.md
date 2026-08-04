@@ -8,7 +8,7 @@
 
 微信授权进入 → 输入激活码 → 绑定唯一蛋宝宝 → 按日开放修炼内容 → 被动与主动修炼值达到 100% → 完成昵称、出生礼物和孵化回顾 → 生成一蛋一份的收藏卡 → 在三屏生活空间查看此刻状态、完成对应动作，并仅在允许的小场景原地说话。
 
-孵化期使用统一的小房间场景，不提供场景选择或切换；前端支持四季底图、上海天气粒子、昼夜光线和五类默认小物反馈，正式环境数据由 CTO 侧下发。登录、绑定、改名、对话、破壳和收藏卡均已建立 live 服务适配，后端未确认时不展示业务成功。
+孵化期使用统一的小房间场景，不提供场景选择或切换；前端按陪伴日计算破壳前四季循环、按固定上海月份计算破壳后四季，并按本机真实时间切换日间 / 日落 / 夜晚。天气不读取 API、定位或本机天气，而是以蛋宝宝 ID、环境种子、日期和时段稳定计算；正式大图由备案 CDN 提供。登录、绑定、改名、对话、破壳和收藏卡均已建立 live 服务适配，后端未确认时不展示业务成功。
 
 ## 目录
 
@@ -55,6 +55,8 @@ node scripts/verify-v211.js
 node scripts/verify-egg-shell-art.js
 node scripts/verify-home-egg-layout.js
 node scripts/verify-incubation-practice-v35.js
+node scripts/verify-environment-assets.js
+node scripts/print-environment-cdn-manifest.js > environment-cdn-manifest.json
 ```
 
 校验会检查页面四件套、普通版页面与接口白名单、V3.5 孵化前修炼值与解锁、固定房间小物、真实蛋体、第一人称文案、破壳门槛、单蛋收藏卡、V3.6 破壳后 5 小时陪伴状态和 H5 确定性渲染。

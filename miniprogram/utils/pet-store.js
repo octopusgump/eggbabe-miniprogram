@@ -10,6 +10,7 @@ const syncQueue = require('../services/sync-queue');
 const storage = require('../services/storage-migration');
 const chatSafety = require('../services/chat-safety');
 const shellArtService = require('../services/egg-shell-art');
+const environmentState = require('../services/environment-state');
 
 let greetingShownThisSession = false;
 
@@ -90,6 +91,16 @@ function normalizeLifecycle(value, hasCard) {
     : 'RESTING';
 }
 
+function normalizeEnvironmentFields(pet) {
+  const source = pet || {};
+  return Object.assign({}, source, {
+    // 旧本地存储无需迁移任务：首次读取即获得确定性默认值，下一次保存时回写。
+    companionStartedAt: source.companionStartedAt || source.createdAt || '',
+    environmentSeed: source.environmentSeed || source.id || '',
+    environmentVersion: source.environmentVersion || environmentState.ENVIRONMENT_VERSION
+  });
+}
+
 function getPet() {
   const mode = runtime.getMode();
   const user = getUser();
@@ -97,15 +108,15 @@ function getPet() {
   if (!user || !pet || pet.mode !== mode || !pet.ownerId || pet.ownerId !== user.id) return null;
   pet.shell = shellArtService.normalizeShellArt(pet.shell);
   pet.lifecycleStage = normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard);
-  return pet;
+  return normalizeEnvironmentFields(pet);
 }
 
 function savePet(pet) {
   const mode = runtime.getMode();
-  const normalized = Object.assign({}, pet, {
+  const normalized = normalizeEnvironmentFields(Object.assign({}, pet, {
     mode,
     lifecycleStage: normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard)
-  });
+  }));
   delete normalized.progress;
   delete normalized.progressEarned;
   delete normalized.tasks;
@@ -142,6 +153,9 @@ function importCloudPet(record, mode) {
     style: source.style || '',
     name: source.display_name || source.name || '',
     createdAt: source.created_at || source.createdAt || '',
+    companionStartedAt: source.companion_started_at || source.companionStartedAt || source.created_at || source.createdAt || '',
+    environmentSeed: source.environment_seed || source.environmentSeed || id,
+    environmentVersion: source.environment_version || source.environmentVersion || environmentState.ENVIRONMENT_VERSION,
     hatchAt: source.hatch_at || source.hatchAt || '',
     originalHatchAt: source.original_hatch_at || source.originalHatchAt || source.hatch_at || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycle_stage || source.lifecycleStage || source.stage, source.collection_card || source.collectionCard),
@@ -169,6 +183,9 @@ function importDemoPet(record) {
     style: source.style || '',
     name: source.name || '',
     createdAt: source.createdAt || '',
+    companionStartedAt: source.companionStartedAt || source.createdAt || '',
+    environmentSeed: source.environmentSeed || source.id,
+    environmentVersion: source.environmentVersion || environmentState.ENVIRONMENT_VERSION,
     hatchAt: source.hatchAt || '',
     originalHatchAt: source.originalHatchAt || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycleStage, source.collectionCard),

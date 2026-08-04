@@ -10,7 +10,7 @@ App({
   globalData: {
     version: config.version,
     backendReady: false,
-    incubationEnvironment: null,
+    environmentCdnBase: '',
     windowMetrics: null
   },
 
@@ -40,7 +40,8 @@ App({
             if (sessionId) runtime.setSessionId(sessionId);
             if (result.serverTs) timeService.acceptServerTime(result.serverTs);
             this.globalData.backendReady = true;
-            this.globalData.incubationEnvironment = result.incubationEnvironment || result.incubation_environment || null;
+            // 仅接收备案 CDN 根路径；不接收、也不使用服务端天气结果。
+            this.globalData.environmentCdnBase = String(result.environment_cdn_base || result.environmentCdnBase || '').replace(/\/$/, '');
             petStore.saveUser({
               id: result.user.id || result.user._id,
               publicId: result.user.public_id || result.user.publicId || '',

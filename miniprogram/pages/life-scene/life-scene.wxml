@@ -14,6 +14,7 @@
   <block wx:elif="{{currentState}}">
     <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" bindscroll="onScroll">
       <view class="world-track">
+        <image wx:if="{{previousPanoramaImage}}" class="world-panorama-bg world-panorama-bg--previous" src="{{previousPanoramaImage}}" mode="aspectFill"></image>
         <image class="world-panorama-bg" src="{{panoramaImage}}" mode="aspectFill" bindload="onSceneBackgroundLoad" binderror="onSceneBackgroundError"></image>
         <view id="world-panel-0" class="world-panel world-panel--living">
           <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view>

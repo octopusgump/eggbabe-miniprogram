@@ -58,6 +58,9 @@ function redeemActivationCode(code) {
     style: '',
     name: '',
     createdAt,
+    companionStartedAt: createdAt,
+    environmentSeed: DEMO_EGG_ID,
+    environmentVersion: 'environment-v1',
     hatchAt: new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString(),
     demoTimelineVersion: DEMO_TIMELINE_VERSION,
     lifecycleStage: 'RESTING',
@@ -90,6 +93,7 @@ function normalizeDemoTimeline(pet) {
   if (Number(pet.demoTimelineVersion) >= DEMO_TIMELINE_VERSION) return pet;
   const createdAt = demoCreatedAt(1);
   pet.createdAt = createdAt;
+  pet.companionStartedAt = createdAt;
   pet.hatchAt = new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString();
   pet.originalHatchAt = pet.hatchAt;
   pet.lifecycleStage = 'RESTING';
@@ -136,6 +140,7 @@ function setPreviewStage(stageKey) {
     pet.collectionCard = null;
     pet.lifecycleStage = 'RESTING';
     pet.createdAt = createdAt;
+    pet.companionStartedAt = createdAt;
     pet.hatchAt = new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString();
     pet.originalHatchAt = pet.hatchAt;
     pet.demoPreviewDay = target.day;

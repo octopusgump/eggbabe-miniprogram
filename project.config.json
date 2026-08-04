@@ -35,6 +35,14 @@
   "packOptions": {
     "ignore": [
       {
+        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets",
+        "type": "folder"
+      },
+      {
         "value": "assets/scenes/archived",
         "type": "folder"
       },

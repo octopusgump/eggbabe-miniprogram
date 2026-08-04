@@ -20,13 +20,25 @@ function reducedMotionEnabled() {
   }
 }
 
-function panoramaPresentation(sceneKey, panelWidth, panelHeight) {
-  const sceneSet = assets.resolvePanoramaScene(sceneKey);
+function environmentForPet(pet) {
+  const app = typeof getApp === 'function' ? getApp() : null;
+  const globalData = app && app.globalData || {};
+  return environmentService.resolve(null, {
+    id: pet && pet.id, eggId: pet && pet.id, createdAt: pet && pet.createdAt,
+    companionStartedAt: pet && pet.companionStartedAt, environmentSeed: pet && pet.environmentSeed,
+    environmentVersion: pet && pet.environmentVersion, isHatched: true,
+    environmentCdnBase: globalData.environmentCdnBase || ''
+  });
+}
+
+function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase) {
+  const sceneSet = assets.resolvePanoramaScene(sceneKey, cdnBase);
   const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
   const imageMeta = sceneSet && sceneSet.windowMeta || fallbackMeta;
   return {
-    sceneSetId: sceneSet ? sceneSet.id : 'panorama-fallback',
-    panoramaImage: sceneSet ? sceneSet.panorama : assets.POST_HATCH.panoramaFallback,
+    valid: Boolean(sceneSet),
+    sceneSetId: sceneSet ? sceneSet.id : '',
+    panoramaImage: sceneSet ? sceneSet.panorama : '',
     windowHotspots: windowGeometry.mapPanoramaRegions({
       imageWidth: imageMeta.width,
       imageHeight: imageMeta.height,
@@ -118,8 +130,10 @@ Page({
     enterFromHome: false,
     isExiting: false,
     exitTransitionStyle: '',
-    panelSceneSetId: 'panorama-fallback',
-    panoramaImage: assets.POST_HATCH.panoramaFallback,
+    panelSceneSetId: '',
+    panoramaImage: '',
+    previousPanoramaImage: '',
+    sceneCrossfadeActive: false,
     windowHotspots: [[], [], []],
     showSceneCharacter: false,
     sceneCharacterImage: '',
@@ -142,12 +156,11 @@ Page({
     };
     this.homeOrigin = Object.values(origin).every(Number.isFinite) && origin.width > 0 && origin.height > 0 ? origin : null;
     this.enteredAt = timeService.now();
-    const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const dailyWindowEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
+    const dailyWindowEnvironment = environmentForPet(pet);
     const panelWidth = Number(info.windowWidth || 375);
     const panelHeight = Number(info.windowHeight || 667);
-    const panorama = panoramaPresentation(dailyWindowEnvironment.sceneKey, panelWidth, panelHeight);
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const panorama = panoramaPresentation(dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
       panelWidth,
@@ -162,6 +175,7 @@ Page({
       dailyWindowPeriodLabel: dailyWindowEnvironment.lightPhase === 'sunset' ? '日落' : (dailyWindowEnvironment.period === 'night' ? '夜晚' : '日间'),
       reducedMotion: reducedMotionEnabled()
     });
+    this.scheduleEnvironmentRefresh();
     this.loadSnapshot();
   },
 
@@ -220,27 +234,47 @@ Page({
   clearSlotTimer() { clearTimeout(this.slotTimer); this.slotTimer = null; },
   onRetry() { if (!this.data.loading) this.loadSnapshot(); },
 
+  clearEnvironmentTimer() { clearTimeout(this.environmentTimer); this.environmentTimer = null; },
+  scheduleEnvironmentRefresh() {
+    this.clearEnvironmentTimer();
+    if (!this.pageActive || this.data.dailyWindowVisible || this.data.magicWindowVisible) return;
+    const delay = environmentService.millisecondsUntilNextEnvironmentBoundary();
+    this.environmentTimer = setTimeout(() => this.refreshEnvironment(), Math.min(delay + 1200, 2147483000));
+  },
+  refreshEnvironment() {
+    if (!this.pageActive || !this.data.pet || this.data.dailyWindowVisible || this.data.magicWindowVisible) return;
+    const environment = environmentForPet(this.data.pet);
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
+    const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
+    this.setData({
+      dailyWindowEnvironment: environment,
+      dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
+      dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间'),
+      panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage,
+      previousPanoramaImage: changed ? this.data.panoramaImage : '', windowHotspots: panorama.windowHotspots,
+      sceneCrossfadeActive: changed, sceneBackgroundError: !panorama.valid
+    }, () => {
+      if (changed) {
+        clearTimeout(this.environmentCrossfadeTimer);
+        this.environmentCrossfadeTimer = setTimeout(() => this.pageActive && this.setData({ previousPanoramaImage: '', sceneCrossfadeActive: false }), this.data.reducedMotion ? 20 : 520);
+      }
+      this.scheduleEnvironmentRefresh();
+    });
+  },
+
   onSceneBackgroundLoad() {
     if (this.pageActive && this.data.sceneBackgroundError) this.setData({ sceneBackgroundError: false });
   },
 
   onSceneBackgroundError() {
     if (!this.pageActive) return;
-    if (this.data.panoramaImage !== assets.POST_HATCH.panoramaFallback) {
-      const fallback = panoramaPresentation('', this.data.panelWidth, this.data.panelHeight);
-      this.setData({
-        panelSceneSetId: fallback.sceneSetId,
-        panoramaImage: fallback.panoramaImage,
-        windowHotspots: fallback.windowHotspots,
-        sceneBackgroundError: true
-      });
-      return;
-    }
     this.setData({ sceneBackgroundError: true });
   },
 
   onRetrySceneBackground() {
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight);
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
       sceneBackgroundError: false,
       panelSceneSetId: panorama.sceneSetId,
@@ -261,7 +295,8 @@ Page({
     const panelWidth = Number(next.windowWidth || this.data.panelWidth);
     const panelHeight = Number(next.windowHeight || this.data.panelHeight);
     const screen = Number(this.data.currentScreen || 0);
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight);
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
       panelWidth,
       panelHeight,
@@ -504,9 +539,7 @@ Page({
         height: this.data.panelHeight * .48
       };
       const origin = rect || fallback;
-      const app = typeof getApp === 'function' ? getApp() : null;
-      const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-      const environment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
+      const environment = environmentForPet(this.data.pet);
       this.setData({
         dailyWindowVisible: true,
         dailyWindowEnvironment: environment,
@@ -530,10 +563,9 @@ Page({
   },
 
   onDailyWindowRetry() {
+    const environment = environmentForPet(this.data.pet);
     const app = typeof getApp === 'function' ? getApp() : null;
-    const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
-    const environment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
-    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight);
+    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
       dailyWindowEnvironment: environment,
       panelSceneSetId: panorama.sceneSetId,
@@ -656,6 +688,7 @@ Page({
       this.returningFromChild = false;
       this.loadSnapshot();
     }
+    this.scheduleEnvironmentRefresh();
   },
   onHide() {
     this.pageActive = false;
@@ -663,6 +696,7 @@ Page({
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;
     this.returningFromChild = true;
+    this.clearEnvironmentTimer();
     this.clearTransientState();
   },
   clearTransientState() {
@@ -670,6 +704,7 @@ Page({
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.magicKoiTimer);
+    clearTimeout(this.environmentCrossfadeTimer);
     this.setData({ feedback: '', talkReply: '', composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false });
   },
   onUnload() {
@@ -680,6 +715,7 @@ Page({
     this.loadToken = (this.loadToken || 0) + 1;
     clearTimeout(this.backTimer);
     clearTimeout(this.exitTimer);
+    this.clearEnvironmentTimer();
     this.clearTransientState();
     analytics.track('scene_exit', { scene_id: this.data.currentState ? `${this.data.currentState.major}:${this.data.currentState.key}` : '', dwell_time: Math.max(0, timeService.now() - (this.enteredAt || timeService.now())) });
   }

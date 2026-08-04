@@ -12,6 +12,7 @@
 .world-scroll{width:100vw;height:100vh;white-space:nowrap}
 .world-track{position:relative;width:300vw;height:100vh;display:flex;background:linear-gradient(160deg,#F7EEDC,#D9C7A8)}
 .world-panorama-bg{position:absolute;z-index:0;left:0;top:0;width:300vw;height:100vh;display:block}
+.world-panorama-bg--previous{z-index:1;pointer-events:none;animation:environment-crossfade-out .52s ease-out both}
 .world-panel{position:relative;z-index:1;width:100vw;height:100vh;flex:0 0 100vw;overflow:hidden;background:transparent}
 .panel-tone{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(62,44,28,.18))}
 .daily-window-hotspot{position:absolute;z-index:7;box-sizing:border-box}
@@ -123,8 +124,10 @@ to{opacity:1;transform:translate(-50%,0)}
 @keyframes scene-collapse-to-card{from{left:0;top:0;width:100vw;height:100vh;border-radius:0}
 to{left:var(--scene-origin-left,0);top:var(--scene-origin-top,0);width:var(--scene-origin-width,100vw);height:var(--scene-origin-height,100vh);border-radius:42rpx}
 }
+@keyframes environment-crossfade-out{from{opacity:1}to{opacity:0}}
 @media (prefers-reduced-motion:reduce){.scene-character,.action-glow,.loading-orbit,.magic-window__clouds,.magic-window__water-shimmer,.magic-window__koi-track,.magic-window__loader{animation:none}
 .scene-action-button{transition:none}.scene-action-button--pressed{transform:none}
 .scene-exit-overlay{animation-duration:20ms}
+.world-panorama-bg--previous{animation-duration:20ms}
 }
 .page--reduced .scene-character,.page--reduced .action-glow,.page--reduced .loading-orbit,.page--reduced .magic-window__clouds,.page--reduced .magic-window__water-shimmer,.page--reduced .magic-window__koi-track,.page--reduced .magic-window__loader{animation:none}

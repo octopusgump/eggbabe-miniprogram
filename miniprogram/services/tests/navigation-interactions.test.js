@@ -140,7 +140,7 @@ try {
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'learn' } } });
   runTimers();
   assert.deepEqual(routes.splice(0), [], '未解锁入口不得导航');
-  assert.equal(homeContext.lastFeedback, '早教班还在准备中。', '未解锁入口必须保留既有中性反馈');
+  assert.equal(homeContext.lastFeedback, '蛋宝宝还没到早教的年龄，明天来试试吧。', '未解锁入口必须保留既定的年龄语义反馈');
 
   homeContext.data.learnUnlocked = true;
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
@@ -159,7 +159,6 @@ try {
   const tab = loadComponent('../../custom-tab-bar/index');
   const tabContext = componentContext(tab, { selected: 0, hidden: false, elevated: false });
   tabContext.tabAttached = true;
-  tabContext.tabPageActive = true;
   tabContext.showTabHint = () => {};
   tabContext.cancelProfileFirstHint = () => {};
 
@@ -182,7 +181,6 @@ try {
   assert.deepEqual(routes.splice(0), [], '自定义 Tab 页面隐藏后不得执行残留切换');
 
   switchMode = 'fail';
-  tabContext.tabPageActive = true;
   tabContext.tabAttached = true;
   tab.methods.onSwitch.call(tabContext, { currentTarget: { dataset: { index: 1 } } });
   runTimers();

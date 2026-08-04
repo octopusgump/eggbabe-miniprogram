@@ -6,7 +6,7 @@
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">添加我的蛋宝宝</text>
       <text class="empty-desc">输入随实体蛋提供的激活码，把这枚蛋宝宝带回家。</text>
-      <button class="primary-button" bindtap="onAddDevice"><text class="button-label">添加蛋宝宝</text></button>
+      <button class="primary-button" hover-class="button-press" bindtap="onAddDevice"><text class="button-label">添加蛋宝宝</text></button>
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
 
@@ -130,7 +130,6 @@
           <view class="companion-primary-dock">
             <block wx:for="{{companionActions}}" wx:key="key">
               <view
-                wx:if="{{item.key !== 'draw'}}"
                 class="companion-item companion-item--{{item.appearance}} companion-item--{{item.key}} {{(item.key === 'learn' && !learnUnlocked) || (item.key === 'wish' && !wishUnlocked) ? 'companion-item--locked' : ''}}"
                 hover-class="companion-item--pressed"
                 data-key="{{item.key}}"
@@ -142,49 +141,23 @@
                 bindlongpress="onCompanionLongPress"
                 bindtap="onCompanionTap"
               >
-                <view class="companion-icon-wrap"><image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image></view>
+                <view class="companion-icon-wrap">
+                  <image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image>
+                  <text wx:if="{{item.key === 'draw'}}" class="draw-action-spark">✦</text>
+                </view>
               </view>
             </block>
           </view>
-          <block wx:for="{{companionActions}}" wx:key="key">
-            <view
-              wx:if="{{item.key === 'draw'}}"
-              class="companion-item companion-item--draw"
-              hover-class="companion-item--pressed"
-              data-key="{{item.key}}"
-              aria-role="button"
-              aria-label="{{item.ariaLabel}}"
-              bindtouchstart="onCompanionTouchStart"
-              bindtouchend="onCompanionTouchEnd"
-              bindtouchcancel="onCompanionTouchCancel"
-              bindlongpress="onCompanionLongPress"
-              bindtap="onCompanionTap"
-            >
-              <view class="draw-icon-button">
-                <image class="draw-action-icon" src="{{item.icon}}" mode="aspectFit"></image>
-                <text class="draw-action-spark">✦</text>
-              </view>
-            </view>
-          </block>
         </view>
       </view>
 
       <view wx:if="{{syncPending > 0}}" class="sync-note">{{syncPending}} 项记录正在等待网络同步</view>
 
       <view wx:if="{{stage === 'prepared' || stage === 'soon' || stage === 'ready'}}" class="home-actions">
-        <button class="primary-button home-actions__chat" disabled="{{stage === 'prepared' || stage === 'soon'}}" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
+        <button class="primary-button home-actions__chat" hover-class="button-press" disabled="{{stage === 'prepared' || stage === 'soon'}}" bindtap="onPrimaryAction"><text class="button-label">{{actionLabel}}</text></button>
       </view>
     </view>
   </scroll-view>
-
-  <view wx:if="{{pet && stage === 'hatched'}}" class="post-hatch-landing">
-    <image class="post-hatch-landing__image" src="{{sceneImage}}" mode="aspectFill"></image>
-    <view class="post-hatch-landing__shade"></view>
-    <view wx:if="{{postHatchLoading}}" class="post-hatch-landing__state"><view class="loading-orbit"></view></view>
-    <view wx:elif="{{postHatchError}}" class="post-hatch-landing__state"><text>{{postHatchError}}</text><view class="retry-link" bindtap="onRetryPostHatch">重新看看</view></view>
-    <pet-avatar wx:elif="{{postHatchSnapshot && postHatchSnapshot.currentState.atHome}}" class="post-hatch-landing__character" pet-type="{{pet.prototype}}" size="{{186}}" bindtap="openPostHatchLanding"></pet-avatar>
-    <view class="post-hatch-landing__memory" aria-role="button" aria-label="看看回忆" bindtap="onChangeScene">看看回忆</view>
-  </view>
 
   <!-- DEV-ONLY：季节/时令/天气验收器，正式上线前整体删除。 -->
   <view wx:if="{{isDemo && pet && stage !== 'hatched'}}" class="scene-tester" style="top:{{sceneTesterTopPx}}px;">
@@ -287,15 +260,19 @@
   <view wx:if="{{showNameSheet}}" class="name-mask" catchtouchmove="noop">
     <view class="name-sheet">
       <view class="name-handle"></view>
-      <text class="name-sheet-title">我还没有名字</text>
-      <text class="name-sheet-copy">给我起一个昵称吧，也可以以后再决定。</text>
-      <view class="name-input-wrap">
-        <input class="name-input" value="{{nameDraft}}" maxlength="10" placeholder="最多 10 个字" bindinput="onNameInput" focus />
-        <text class="name-count">{{nameCount}}/10</text>
+      <view class="name-sheet-content">
+        <text class="name-sheet-title">我还没有名字</text>
+        <text class="name-sheet-copy">给我起一个昵称吧，也可以以后再决定。</text>
+        <view class="name-input-wrap">
+          <input class="name-input" value="{{nameDraft}}" maxlength="10" placeholder="最多 10 个字" bindinput="onNameInput" />
+          <text class="name-count">{{nameCount}}/10</text>
+        </view>
+        <text wx:if="{{nameError}}" class="name-error">{{nameError}}</text>
+        <view class="name-actions">
+          <button class="name-save" hover-class="button-press" disabled="{{savingName}}" bindtap="onSaveName"><text class="button-label">{{savingName ? '正在保存…' : '记住这个名字'}}</text></button>
+          <button class="name-skip" hover-class="button-press" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
+        </view>
       </view>
-      <text wx:if="{{nameError}}" class="name-error">{{nameError}}</text>
-      <button class="name-save" disabled="{{savingName}}" bindtap="onSaveName"><text class="button-label">{{savingName ? '正在保存…' : '记住这个名字'}}</text></button>
-      <button class="name-skip" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
     </view>
   </view>
 

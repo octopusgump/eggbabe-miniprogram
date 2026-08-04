@@ -30,7 +30,7 @@
 
       <text wx:if="{{error}}" class="error">{{error}}</text>
       <view class="spacer"></view>
-      <button wx:if="{{!storedOption}}" class="primary" disabled="{{!selected || submitting}}" bindtap="onSubmit">
+      <button wx:if="{{!storedOption}}" class="primary" hover-class="button-press" disabled="{{!selected || submitting}}" bindtap="onSubmit">
         <text class="button-label">{{submitting ? '正在告诉我…' : '把愿望告诉我'}}</text>
       </button>
     </block>

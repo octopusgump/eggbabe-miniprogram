@@ -66,6 +66,16 @@ button > text {
   line-height: 1;
 }
 
+/* 所有原生文字按钮采用同一套轻按反馈；组件按钮在自身作用域复用相同参数。 */
+button {
+  transition: transform 0.16s ease-out, opacity 0.16s ease-out;
+}
+
+.button-press {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
 .button-label {
   display: block;
   line-height: 1;
@@ -88,4 +98,9 @@ button > text {
 .pressable--pressed {
   opacity: 0.72;
   transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  .button-press { transform: none; }
 }

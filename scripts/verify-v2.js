@@ -127,23 +127,24 @@ assert.equal(
 assert.equal(windowWeatherCanvas.includes("weather === 'postSnow' && period === 'night'") && windowWeatherCanvas.includes('drawIceGlints'), true, '雪后夜间必须补充冰晶微光，避免全屏窗外静止');
 assert.equal(
   lifeSceneTemplate.includes('<daily-window-detail')
-    && lifeSceneTemplate.includes('magic-enabled="{{true}}"')
+    && lifeSceneTemplate.includes('magic-enabled="{{magicWindowEnabled}}"')
     && lifeSceneTemplate.includes('bindmagic="onOpenMagicWindow"')
     && dailyWindowTemplate.includes('daily-window__magic-entry')
     && dailyWindowLogic.includes("this.triggerEvent('magic')")
-    && lifeSceneLogic.includes('TOKYO_MAGIC_WINDOW_PREVIEW')
-    && lifeSceneLogic.includes('magic_window_tokyo_koi_walk_standard_v02.webp')
+    && lifeSceneLogic.includes('magicWindowPresentation()')
+    && lifeSceneLogic.includes('TOKYO_MAGIC_WINDOW_PREVIEW') === false
     && /destinations:\s*\{[^}]*tokyo/.test(postHatchAssets) === false,
   true,
-  '正式三景区素材未齐时，东京只能通过独立预览入口接入且不得混入正式目的地配置'
+  '正式三景区素材未齐时，魔法窗入口必须由正式配置关闭且不得混入东京预览'
 );
 assert.equal(dailyWindowTemplate.includes('正在靠近窗外') && dailyWindowTemplate.includes('窗外还没有准备好') && dailyWindowTemplate.includes('窗外景色没有加载好') && dailyWindowTemplate.includes('onRetry'), true, '日常窗外详情必须覆盖加载、空状态、失败与重试');
 assert.equal(dailyWindowLogic.includes('reducedMotionEnabled') && dailyWindowLogic.includes('drawFrame(4200, true)') && dailyWindowLogic.includes('cleanup()'), true, '日常窗外详情必须支持弱动效与离页清理');
 assert.equal(dailyWindowStyles.includes('@keyframes daily-window-fade-in') && dailyWindowStyles.includes('@keyframes daily-window-fade-out') && /fade-in\{from\{opacity:0\}to\{opacity:1\}\}/.test(dailyWindowStyles), true, '日常窗外详情必须使用稳定的全屏淡入淡出，不做几何位移');
-assert.equal(customTabTemplate.includes('wx:if="{{!hidden}}"') && homeLogic.includes("tabBar.setData({ hidden: true })") && homeLogic.includes("hidden: false"), true, '日常窗外详情完全展开时必须隐藏底部 Tab，返回后恢复');
+assert.equal(homeTemplate.includes('class="name-actions"') && homeTemplate.includes('class="name-save"') && homeTemplate.includes('class="name-skip"') && homeTemplate.includes('bindinput="onNameInput" focus') === false && homeStyles.includes('align-items: flex-end') && homeStyles.includes('animation: name-sheet-rise') && homeStyles.includes('.name-actions { display: flex') && homeLogic.includes('Number(state.contentDay) === 1'), true, '首次命名必须只在第 1 天以可见房间的底部抽屉出现，且保存与暂不命名并排显示');
+assert.equal(customTabTemplate.includes('wx:if="{{!hidden}}"') && homeLogic.includes("tabBar.setData({ hidden: true })") && homeLogic.includes('hidden: this.data.showNameSheet') && homeLogic.includes('hidden: hatched || showNameSheet'), true, '日常窗外详情完全展开时必须隐藏底部 Tab；命名页与破壳后也不得露出入口');
 assert.equal(customTabTemplate.includes('wx:if="{{selected !== index}}"') && customTabTemplate.includes('src="{{item.selectedIconPath}}"') && customTabTemplate.includes('tab-text') === false, true, '底部导航只显示前往另一页的小圆图标，不得保留当前页标签或文字');
 assert.match(customTabStyles, /\.tab-bar\s*\{[^}]*pointer-events:\s*none;[^}]*background:\s*transparent;/s, '底部导航必须移除整块白色 Tab 背景');
-assert.match(customTabStyles, /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*rgba\(255,253,247,\.92\)/s, '我的与蛋宝宝导航必须使用统一 112rpx 白底圆形按钮');
+assert.match(customTabStyles, /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*#FFF;/s, '“我的”必须作为独立的圆形底部入口');
 assert.equal(customTabTemplate.includes('class="tab-hint') && customTabTemplate.includes('bindlongpress="onLongPress"'), true, '“我的”图标必须支持点击短提示与长按再次查看');
 assert.match(customTabStyles, /\.tab-hint\s*\{[^}]*bottom:\s*calc\(100% \+ 10rpx\);[^}]*background:\s*rgba\(255,255,255,\.96\);[^}]*color:\s*rgba\(25,30,26,\.96\);/s, '“我的”提示必须使用图标上方的白底深色文字胶囊');
 assert.equal(myLogic.includes("selected: 1, hidden: true") && myTemplate.includes('fallback-url="/pages/home/home"'), true, '我的页必须隐藏右下导航按钮，并使用左上角返回入口');
@@ -190,13 +191,16 @@ assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
 assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate), false, '三屏背景上不得叠加临时床铺或安静空地占位层');
-assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && lifeSceneTemplate.includes('jadeRabbitSleepImage'), true, '睡觉状态必须使用透明玉兔躺卧角色层');
+assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && lifeSceneTemplate.includes('sceneCharacterImage'), true, '已验收睡觉状态必须使用透明角色层');
 assert.equal(lifeSceneTemplate.includes('scene-character__floor-shadow'), true, '玉兔躺卧角色层必须包含独立的接触阴影');
-assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-character scene-character--sleep') && lifeSceneTemplate.includes('<pet-avatar') === false, true, '居家左屏必须稳定显示躺卧玉兔，不得回退到旧角色组件');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{showSceneCharacter}}" class="scene-character scene-character--sleep') && lifeSceneTemplate.includes('<pet-avatar') === false && lifeSceneLogic.includes("currentState.key === 'sleep'"), true, '角色层必须按原型和已验收状态显示，不得对所有居家状态回退到玉兔');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
 assert.equal(lifeSceneTemplate.includes('class="scene-dialogue-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('ui_3d_scene_message_envelope_96_v01.png') && lifeSceneTemplate.includes('icon-letter') && lifeSceneTemplate.includes('ui_3d_scene_toolbox_closed_chest_96_v01.png'), true, '必须使用左下对话、右下信件与百宝箱入口');
 assert.equal(['my', 'card', 'postcards', 'keepsakes'].every(target => lifeSceneTemplate.includes(`data-target="${target}"`)), true, '百宝箱必须包含我的、收藏卡、明信片与 ta 带回来的东西');
+assert.equal(lifeSceneTemplate.includes('ui_3d_tabbar_interaction_gear_flat_96_v04.png') && lifeSceneTemplate.includes('ui_3d_toolbox_settings_gear_96_v03.webp') === false, true, '破壳后百宝箱的我的/设置必须复用破壳前的设置图标');
 assert.equal(homeLogic.includes('/pages/life-scene/life-scene?entry=post-hatch-landing'), true, '破壳后进入首页必须直接落到全屏生活空间');
+assert.equal(/post-hatch-landing__memory|看看回忆/.test(homeTemplate), false, '首页不得保留空的破壳后落地层或重复的回忆入口');
+assert.equal(homeLogic.includes('wx.redirectTo') && homeLogic.includes('生活空间没有打开，请重试'), true, '生活空间常规跳转失败时必须替换跳转，不能回退为空房间');
 assert.equal(read('miniprogram/services/post-hatch-companion.js').includes('5 * 60 * 60 * 1000'), true, '破壳后当前状态必须按 5 小时时段推进');
 
 const album = read('miniprogram/pages/album/album.wxml');

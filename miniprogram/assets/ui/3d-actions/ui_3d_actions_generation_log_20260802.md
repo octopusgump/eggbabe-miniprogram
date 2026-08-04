@@ -196,3 +196,88 @@ WebP 参数：质量 92，Alpha 质量 100。
 - 8/8 WebP 母版均为 1024×1024 并保留 Alpha。
 - 主功能运行时资源为 256×256；画板工具与 Tab 运行时 PNG 为 96×96。
 - 整批透明联系表：`01_MiniProgram_MVP/tmp/imagegen/ui-3d-actions-redesign-v02/previews/ui_3d_redesign_full_contact_sheet_v02.png`（1760×1000 PNG）。
+
+---
+
+## TabBar 扁平交互齿轮（当前“我的”Tab 正式版本）
+
+日期：2026-08-03
+
+### 设计与生成
+
+- 用户确认后，将“我的”Tab 改为正面八齿交互齿轮。
+- 轮廓参考用户截图，颜色与材质参考项目现有 3D 齿轮；主体使用项目钴蓝 `#015BC9`，中央为暖米白薄圆环与透明镂空。
+- 中央圆环采用低浮雕结构，降低厚度、深孔和高光，使整体更扁平并保持 48–96px 可辨识度。
+- 使用 Codex 内置 ImageGen 生成纯绿色键图，本地去色键、透明重排和 PNG 压缩；未使用 CLI。
+
+### 正式文件
+
+- `runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png` — 96×96 RGBA PNG，9,927 bytes。
+
+1024×1024 透明候选母版保留在：
+
+- `01_MiniProgram_MVP/tmp/imagegen/ui-3d-tabbar-interaction-gear-v04/candidates/ui_3d_tabbar_interaction_gear_flat_v04.png`
+
+### 接入
+
+- `app.json` 中“我的”Tab 的 `iconPath` 与 `selectedIconPath` 已切换到 v04 压缩 PNG。
+- `custom-tab-bar/index.js` 中对应普通态与选中态已同步切换。
+- 百宝箱内“我的 / 设置”仍使用米白齿轮 v03，不随 TabBar 图标改变。
+- 所有历史版本保留，未覆盖或删除。
+
+---
+
+## 许愿池与早教班极简重制（许愿池 v03 历史版本／早教班当前版本）
+
+日期：2026-08-03
+
+### 重制目标
+
+- 优先解决首页小尺寸入口需要思考后才能识别的问题。
+- 每枚图标压缩为一个主体和一个核心识别特征，移除装饰性细节。
+
+### 最终造型
+
+1. 许愿池：暖米白宽水盆、短底座、钴蓝水面和单股中央水流；移除铜钱、花瓣盆沿、雕花底座和多层喷泉结构。
+2. 早教班：朱红封面的暖米白打开式儿童绘本，跨页只保留一个大型蜂蜜黄太阳；移除月亮与其他页面元素。
+
+### 正式文件
+
+1024×1024 Alpha WebP：
+
+- `webp/ui_3d_wishing_fountain_simple_v03.webp`
+- `webp/ui_3d_early_learning_picture_book_simple_v03.webp`
+
+256×256 运行时 Alpha WebP：
+
+- `runtime/ui_3d_wishing_fountain_simple_256_v03.webp`
+- `runtime/ui_3d_early_learning_picture_book_simple_256_v03.webp`
+
+### 接入
+
+- `config/pre-hatch-assets.js` 中 `wish` 与 `learn` 已切换到上述 v03 运行时 WebP。
+- 旧 v02 正式文件完整保留，没有覆盖或删除。
+- 使用 Codex 内置 ImageGen 生成纯绿色键图，本地去色键并输出 WebP；PNG 仅作为 `tmp/imagegen/ui-3d-actions-simplified-v03/` 内的处理文件。
+
+---
+
+## 双层许愿池重制（当前正式版本）
+
+日期：2026-08-04
+
+### 设计
+
+- 根据用户提供的传统双层喷泉截图，重新确立“大下盆＋中央立柱＋小上盆”的明确喷泉轮廓。
+- 保留项目钴蓝与暖米白两色，加入两股粗短水流，确保缩小后仍能一眼识别为喷泉。
+- 移除雕花、石纹、铜钱、细水帘和喷溅颗粒，继续保持圆润、温暖的微缩 3D 风格。
+
+### 正式文件
+
+- `webp/ui_3d_wishing_fountain_two_tier_simple_v04.webp` — 1024×1024 Alpha WebP。
+- `runtime/ui_3d_wishing_fountain_two_tier_simple_256_v04.webp` — 256×256 Alpha WebP。
+
+### 接入
+
+- `config/pre-hatch-assets.js` 中 `wish` 已切换到 v04 运行时 WebP。
+- 早教班继续使用 `ui_3d_early_learning_picture_book_simple_256_v03.webp`。
+- 许愿池 v02、v03 文件均完整保留，没有覆盖或删除。

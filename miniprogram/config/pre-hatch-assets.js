@@ -40,9 +40,10 @@ const SCENE_TESTER_OPTIONS = [
   lightPhase,
   className: `season-${season} weather-${weather} period-${period} light-${lightPhase}${lightPhase === 'sunset' ? ' window-sunset' : ''}`,
   background: `${FULL_SCENE_ROOT}/${key === 'spring_clear_night' ? 'spring_clear_night_moonlight' : key}.webp`,
-  egg: `${EGG_SCENE_ROOT}/${key}_egg_right45.webp`,
-  nest: `${NEST_SCENE_ROOT}/${key}_nest_pad.webp`,
-  // 当前 40 张为同尺寸可替换占位层；网页端正式素材通过同名覆盖即可，无需再改代码。
+  // 当前占位层经哈希确认仅有日间、夜间各一份内容。统一引用可避免把相同字节重复打进包；
+  // 正式差异化素材交付后再恢复按 scene key 的原子映射。
+  egg: `${EGG_SCENE_ROOT}/spring_clear_${period === 'night' ? 'night' : 'day'}_egg_right45.webp`,
+  nest: `${NEST_SCENE_ROOT}/spring_clear_${period === 'night' ? 'night' : 'day'}_nest_pad.webp`,
   placeholder: true
 }));
 
@@ -145,8 +146,8 @@ module.exports = {
       window: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_window.svg`,
       touch: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_touch.svg`,
       draw: `${UI_3D_ACTIONS_ROOT}/ui_3d_drawing_palette_256_v02.webp`,
-      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_fountain_256_v02.webp`,
-      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_picture_book_256_v02.webp`,
+      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_fountain_two_tier_simple_256_v04.webp`,
+      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_picture_book_simple_256_v03.webp`,
       schedule: `${UI_3D_ACTIONS_ROOT}/ui_3d_schedule_flip_calendar_256_v02.webp`,
       talk: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_talk.svg`
     }

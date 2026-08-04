@@ -22,8 +22,8 @@
       </view>
     </view>
     <view class="actions">
-      <button class="save-image-button" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">{{savingImage ? '正在保存…' : '保存图片'}}</text></button>
-      <button class="share-button" open-type="share"><text class="button-label">分享给好友</text></button>
+      <button class="save-image-button" hover-class="button-press" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">{{savingImage ? '正在保存…' : '保存图片'}}</text></button>
+      <button class="share-button" hover-class="button-press" open-type="share"><text class="button-label">分享给好友</text></button>
     </view>
     <canvas canvas-id="cardPosterCanvas" class="card-poster-canvas"></canvas>
   </scroll-view>

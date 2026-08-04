@@ -31,7 +31,7 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/home/home", "text": "蛋宝宝", "iconPath": "assets/tab/egg.png", "selectedIconPath": "assets/tab/egg-active.png" },
-      { "pagePath": "pages/my/my", "text": "我的", "iconPath": "assets/ui/3d-actions/runtime/ui_3d_profile_wood_plaque_96_v05.png", "selectedIconPath": "assets/ui/3d-actions/runtime/ui_3d_profile_wood_plaque_96_v05.png" }
+      { "pagePath": "pages/my/my", "text": "我的", "iconPath": "assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png", "selectedIconPath": "assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png" }
     ]
   },
   "window": {

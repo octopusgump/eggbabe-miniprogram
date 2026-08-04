@@ -357,8 +357,9 @@ Page({
     this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
     this.configureClockPosition();
     if (this.data.sceneOpening) this.setData({ sceneOpening: false, sceneTransitionStyle: '' });
-    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 0, hidden: false });
-    const pet = petStore.getPet();
+    if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 0, hidden: true, elevated: false });
+    let pet = petStore.getPet();
+    if (runtime.getMode() === 'demo') pet = demoExperience.normalizeDemoTimeline(pet);
     if (!pet) {
       this.stopClock();
       this.stopWindowWeatherAnimation();
@@ -381,11 +382,10 @@ Page({
     const stage = petStore.getStage(pet);
     const presentation = petStore.getStagePresentation(stage);
     const hatched = stage === 'hatched';
-    const returningFromPostHatchScene = hatched && Boolean(this.postHatchLandingActive);
-    if (returningFromPostHatchScene) this.postHatchLandingActive = false;
-    const showNameSheet = !hatched && petStore.shouldPromptNickname();
+    // 首次命名只在第 1 天的手册状态加载后弹出，先让用户看到房间场景。
+    const showNameSheet = false;
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ selected: 0, hidden: hatched, elevated: showNameSheet });
+    if (tabBar) tabBar.setData({ selected: 0, hidden: hatched || showNameSheet, elevated: false });
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const resolvedEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
@@ -461,8 +461,7 @@ Page({
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
     if (hatched) {
-      if (returningFromPostHatchScene) this.loadPostHatchSnapshot(pet);
-      else this.openPostHatchLanding();
+      this.openPostHatchLanding();
     } else {
       const manualStateToken = this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
       practice.getManualState().then(state => {
@@ -475,12 +474,21 @@ Page({
         const currentPet = state.pet || this.data.pet;
         const currentStage = petStore.getStage(currentPet);
         const currentPresentation = petStore.getStagePresentation(currentStage);
+        const showNameSheet = currentStage !== 'hatched'
+          && Number(state.contentDay) === 1
+          && petStore.shouldPromptNickname();
+        const currentTabBar = this.getTabBar && this.getTabBar();
+        if (currentTabBar) currentTabBar.setData({ selected: 0, hidden: currentStage === 'hatched' || showNameSheet, elevated: false });
         this.setData({
           pet: currentPet,
           stage: currentStage,
           stageText: currentPresentation.homeText,
           actionLabel: currentPresentation.actionLabel,
           expectedHatchLabel: currentStage === 'ready' ? '' : this.formatExpectedHatch(state.hatchAt || (state.pet && state.pet.hatchAt)),
+          showNameSheet,
+          nameDraft: currentPet.name || '',
+          nameCount: Array.from(currentPet.name || '').length,
+          nameError: '',
           wishUnlocked: unlocked.includes('wish_pool'),
           learnUnlocked: unlocked.includes('edu_class'),
           companionActions: companionActionsFor(state.records, state.serverDate)
@@ -528,7 +536,14 @@ Page({
       fail: () => {
         this.postHatchLandingOpening = false;
         this.postHatchLandingActive = false;
-        if (this.pageActive) this.loadPostHatchSnapshot(this.data.pet);
+        wx.redirectTo({
+          url: '/pages/life-scene/life-scene?entry=post-hatch-landing',
+          animationType: 'none',
+          animationDuration: 0,
+          fail: () => {
+            if (this.pageActive) wx.showToast({ title: '生活空间没有打开，请重试', icon: 'none' });
+          }
+        });
       }
     });
   },
@@ -920,7 +935,7 @@ Page({
       return;
     }
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ elevated: true });
+    if (tabBar) tabBar.setData({ hidden: true, elevated: false });
     this.setData({ showNameSheet: true, nameError: '' });
   },
 
@@ -1193,7 +1208,7 @@ Page({
     this.cancelCompanionFirstHint();
     if (key === 'wish' || key === 'learn' || key === 'draw') this.showCompanionHint(key);
     if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
-    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('早教班还在准备中。');
+    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('蛋宝宝还没到早教的年龄，明天来试试吧。');
     const routes = {
       wish: { route: '/pages/wish/wish', sceneEffect: 'scene--wish', eggMotion: 'egg--talk-glow' },
       learn: { route: '/pages/lesson/lesson', sceneEffect: 'scene--learn', eggMotion: 'egg--talk-knock' },
@@ -1549,7 +1564,7 @@ Page({
   onDailyWindowClosed() {
     if (!this.data.dailyWindowVisible) return;
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ selected: 0, hidden: false });
+    if (tabBar) tabBar.setData({ selected: 0, hidden: this.data.showNameSheet, elevated: false });
     this.setData({ dailyWindowVisible: false }, () => {
       if (this.pageActive && this.data.stage !== 'hatched') {
         this.setupWindowWeatherCanvas();
@@ -1663,7 +1678,7 @@ Page({
     this.clearInteractionTimers();
     this.completedLongPress = false;
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ hidden: this.data.stage === 'hatched', elevated: false });
+    if (tabBar) tabBar.setData({ hidden: true, elevated: false });
     this.setData({
       dailyWindowVisible: false,
       eggMotion: '',

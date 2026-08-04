@@ -31,8 +31,8 @@ Component({
       {
         pagePath: '/pages/my/my',
         text: '我的',
-        iconPath: '/assets/ui/3d-actions/runtime/ui_3d_profile_wood_plaque_96_v05.png',
-        selectedIconPath: '/assets/ui/3d-actions/runtime/ui_3d_profile_wood_plaque_96_v05.png'
+        iconPath: '/assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png',
+        selectedIconPath: '/assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png'
       }
     ]
   },
@@ -40,24 +40,21 @@ Component({
   lifetimes: {
     attached() {
       this.tabAttached = true;
-      if (this.tabPageActive) this.scheduleProfileFirstHint();
+      this.scheduleProfileFirstHint();
     },
 
     detached() {
       this.tabAttached = false;
-      this.tabPageActive = false;
       this.clearHintTimers();
     }
   },
 
   pageLifetimes: {
     show() {
-      this.tabPageActive = true;
       this.scheduleProfileFirstHint();
     },
 
     hide() {
-      this.tabPageActive = false;
       this.clearHintTimers();
     }
   },
@@ -97,10 +94,10 @@ Component({
     scheduleProfileFirstHint() {
       clearTimeout(this.profileFirstHintTimer);
       this.profileFirstHintTimer = null;
-      if (!this.tabAttached || !this.tabPageActive || this.data.hidden || this.data.selected === 1 || hasSeenProfileHint()) return;
+      if (!this.tabAttached || this.data.hidden || this.data.selected === 1 || hasSeenProfileHint()) return;
       this.profileFirstHintTimer = setTimeout(() => {
         this.profileFirstHintTimer = null;
-        if (!this.tabAttached || !this.tabPageActive || this.data.hidden || this.data.selected === 1) return;
+        if (!this.tabAttached || this.data.hidden || this.data.selected === 1) return;
         this.showTabHint(1, 2400, { markSeen: true, keepFirstHintTimer: true });
       }, 420);
     },
@@ -125,19 +122,19 @@ Component({
       this.clearTabHintTransitionTimers();
       const requestToken = this.tabHintRequestToken;
       this.setData({ tabHintIndex: index, tabHintVisible: false }, () => {
-        if (!this.tabAttached || !this.tabPageActive || this.data.hidden || this.data.selected === 1 || requestToken !== this.tabHintRequestToken) return;
+        if (!this.tabAttached || this.data.hidden || this.data.selected === 1 || requestToken !== this.tabHintRequestToken) return;
         this.tabHintRevealTimer = setTimeout(() => {
           this.tabHintRevealTimer = null;
-          if (!this.tabAttached || !this.tabPageActive || this.data.hidden || this.data.selected === 1 || requestToken !== this.tabHintRequestToken) return;
+          if (!this.tabAttached || this.data.hidden || this.data.selected === 1 || requestToken !== this.tabHintRequestToken) return;
           this.setData({ tabHintVisible: true });
           if (options.markSeen) markProfileHintSeen();
           this.tabHintTimer = setTimeout(() => {
             this.tabHintTimer = null;
-            if (!this.tabAttached || !this.tabPageActive || requestToken !== this.tabHintRequestToken) return;
+            if (!this.tabAttached || requestToken !== this.tabHintRequestToken) return;
             this.setData({ tabHintVisible: false });
             this.tabHintClearTimer = setTimeout(() => {
               this.tabHintClearTimer = null;
-              if (this.tabAttached && this.tabPageActive && requestToken === this.tabHintRequestToken && !this.data.tabHintVisible) this.setData({ tabHintIndex: -1 });
+              if (this.tabAttached && requestToken === this.tabHintRequestToken && !this.data.tabHintVisible) this.setData({ tabHintIndex: -1 });
             }, 180);
           }, duration);
         }, 20);
@@ -193,7 +190,10 @@ Component({
       const token = this.tabSwitchToken = (this.tabSwitchToken || 0) + 1;
       this.pendingSwitchTimer = setTimeout(() => {
         this.pendingSwitchTimer = null;
-        if (!this.tabAttached || !this.tabPageActive || this.data.hidden || token !== this.tabSwitchToken || !this.tabSwitchPending) return;
+        if (!this.tabAttached || this.data.hidden || token !== this.tabSwitchToken || !this.tabSwitchPending) {
+          if (token === this.tabSwitchToken && this.tabSwitchPending) this.releaseSwitch(token);
+          return;
+        }
         this.pendingSwitchWatchdog = setTimeout(() => {
           if (token !== this.tabSwitchToken || !this.tabSwitchPending) return;
           this.releaseSwitch(token, this.tabSwitchStarted ? '' : '页面暂时没有打开，请再试一次。');

@@ -70,7 +70,11 @@ welcome.onAuthorize.call(welcomeContext);
 assert.equal(routes.pop(), '/pages/home/home', '开发版授权后必须进入首页');
 
 const addDevice = loadPage('../../pages/add-device/add-device');
-const addContext = contextFor(addDevice, { code: 'DEMO-YT-001', canSubmit: true });
+const addContext = contextFor(addDevice);
+addDevice.onCodeInput.call(addContext, { detail: { value: 'egg-d1' } });
+assert.equal(addContext.data.code, 'EGGD1', '激活码输入必须过滤符号并自动转为大写');
+assert.equal(addContext.data.codeCells.length, 5, '激活码输入必须始终渲染五个格子');
+assert.equal(addContext.data.canSubmit, true, '仅完整输入五位激活码后才可提交');
 addDevice.onValidate.call(addContext);
 assert.equal(addContext.data.success.prototype, '玉兔', '开发版绑定页必须显示固定 demo 原型');
 assert.equal(routes.pop(), '/pages/home/home', '开发版绑定成功后必须返回首页');

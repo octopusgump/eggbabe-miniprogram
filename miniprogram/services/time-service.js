@@ -28,6 +28,18 @@ function now() {
 
 function isAuthoritative() { return authoritative; }
 
+function acceptServerTime(timestamp) {
+  const parsed = typeof timestamp === 'number' ? timestamp : Date.parse(timestamp || '');
+  if (!Number.isFinite(parsed) || parsed <= 0) return { ok: false, code: 'INVALID_SERVER_TIME' };
+  const receivedAt = Date.now();
+  offset = parsed - receivedAt;
+  serverBase = parsed;
+  monotonicBase = monotonicNow();
+  authoritative = true;
+  try { storage.set(OFFSET_KEY, offset); } catch (error) {}
+  return { ok: true, now: now(), offset, authoritative: true };
+}
+
 function requireAuthoritative() {
   if (authoritative) return { ok: true, now: now(), authoritative: true, mode: runtime.getMode() };
   return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步北京时间，请稍后再试', mode: runtime.getMode() };
@@ -62,4 +74,4 @@ function sync() {
 
 loadOffset();
 
-module.exports = { now, beijingDateKey, formatBeijingDate, sync, isAuthoritative, requireAuthoritative };
+module.exports = { now, beijingDateKey, formatBeijingDate, sync, isAuthoritative, requireAuthoritative, acceptServerTime };

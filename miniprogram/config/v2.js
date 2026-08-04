@@ -9,6 +9,7 @@ module.exports = {
   defaultMode: policy.mode,
   backendEnabled: false,
   apiBase: '',
+  requestTimeoutMs: 15000,
   timezone: 'Asia/Shanghai',
   // 上线 H5 后填写已加入微信小程序“业务域名”的 HTTPS 地址。
   birthCardH5Url: '',

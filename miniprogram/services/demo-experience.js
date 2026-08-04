@@ -2,14 +2,19 @@ const config = require('../config/v2');
 const runtime = require('./runtime-context');
 const petStore = require('../utils/pet-store');
 
-const DEMO_CODE = 'DEMO-YT-001';
+const DEMO_CODE = 'EGGD1';
 const DEMO_USER_ID = 'demo-user-v228';
 const DEMO_EGG_ID = 'demo-egg-v228';
 const DAY_MS = 86400000;
+const DEMO_TIMELINE_VERSION = 2;
 const PREVIEW_STAGES = Object.freeze([
   { key: 'day1', label: '第 1 天', day: 1 },
   { key: 'day2', label: '第 2 天', day: 2 },
   { key: 'day3', label: '第 3 天', day: 3 },
+  { key: 'day4', label: '第 4 天', day: 4 },
+  { key: 'day5', label: '第 5 天', day: 5 },
+  { key: 'day6', label: '第 6 天', day: 6 },
+  { key: 'day7', label: '第 7 天', day: 7 },
   { key: 'hatched', label: '破壳后', day: 0 }
 ]);
 
@@ -43,7 +48,8 @@ function redeemActivationCode(code) {
   const user = petStore.getUser();
   if (!user) return { ok: false, code: 'DEMO_USER_REQUIRED', message: '请先完成开发版授权' };
   const existing = petStore.getPet();
-  if (existing) return { ok: true, mode: 'demo', pet: existing };
+  if (existing) return { ok: true, mode: 'demo', pet: normalizeDemoTimeline(existing) };
+  const createdAt = demoCreatedAt(1);
   const imported = petStore.importDemoPet({
     id: DEMO_EGG_ID,
     ownerId: user.id,
@@ -51,8 +57,9 @@ function redeemActivationCode(code) {
     prototype: '玉兔',
     style: '',
     name: '',
-    createdAt: '2026-07-24T10:05:00+08:00',
-    hatchAt: '2026-07-31T10:05:00+08:00',
+    createdAt,
+    hatchAt: new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString(),
+    demoTimelineVersion: DEMO_TIMELINE_VERSION,
     lifecycleStage: 'RESTING',
     shell: {},
     messages: []
@@ -76,6 +83,23 @@ function demoCreatedAt(day) {
   return new Date(today - Math.max(0, Number(day || 1) - 1) * DAY_MS).toISOString();
 }
 
+// 兼容已保存在开发者工具中的旧演示蛋：旧版使用了固定的历史创建日期，
+// 会在今天被误判为已经满足破壳条件。仅重置未破壳的 demo 时间线，不清除昵称和互动记录。
+function normalizeDemoTimeline(pet) {
+  if (!pet || pet.mode !== 'demo' || pet.collectionCard || pet.lifecycleStage === 'HATCHED') return pet;
+  if (Number(pet.demoTimelineVersion) >= DEMO_TIMELINE_VERSION) return pet;
+  const createdAt = demoCreatedAt(1);
+  pet.createdAt = createdAt;
+  pet.hatchAt = new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString();
+  pet.originalHatchAt = pet.hatchAt;
+  pet.lifecycleStage = 'RESTING';
+  pet.demoPreviewDay = 1;
+  pet.demoPreviewStage = 'day1';
+  pet.demoPreviewInteractionPoints = 0;
+  pet.demoTimelineVersion = DEMO_TIMELINE_VERSION;
+  return petStore.savePet(pet) || pet;
+}
+
 function demoHatchCard(pet) {
   return {
     card_id: 'demo-card-v228',
@@ -96,7 +120,7 @@ function demoHatchCard(pet) {
 // DEV-ONLY: 首页阶段验收器使用。正式发布前可整体删除此函数与对应 UI。
 function setPreviewStage(stageKey) {
   if (!allowed()) return reject();
-  const pet = petStore.getPet();
+  const pet = normalizeDemoTimeline(petStore.getPet());
   if (!pet) return { ok: false, code: 'DEMO_PET_REQUIRED', message: '请先绑定开发验收蛋宝宝' };
   const target = PREVIEW_STAGES.find(item => item.key === stageKey);
   if (!target) return { ok: false, code: 'DEMO_STAGE_INVALID', message: '测试阶段无效' };
@@ -106,6 +130,7 @@ function setPreviewStage(stageKey) {
     pet.lifecycleStage = 'HATCHED';
     pet.collectionCard = demoHatchCard(pet);
     pet.demoPreviewDay = 0;
+    pet.demoPreviewInteractionPoints = 0;
   } else {
     const createdAt = demoCreatedAt(target.day);
     pet.collectionCard = null;
@@ -114,8 +139,11 @@ function setPreviewStage(stageKey) {
     pet.hatchAt = new Date(Date.parse(createdAt) + 7 * DAY_MS).toISOString();
     pet.originalHatchAt = pet.hatchAt;
     pet.demoPreviewDay = target.day;
+    // 第 7 天测试夹具同时模拟累计达标的互动量；第 1～6 天始终不会提前进入待破壳。
+    pet.demoPreviewInteractionPoints = target.day === 7 ? 50 : 0;
   }
   pet.demoPreviewStage = target.key;
+  pet.demoTimelineVersion = DEMO_TIMELINE_VERSION;
   const saved = petStore.savePet(pet);
   return saved
     ? { ok: true, mode: 'demo', pet: saved, stage: target }
@@ -134,6 +162,7 @@ function generateHatchCard() {
 module.exports = {
   DEMO_CODE,
   PREVIEW_STAGES,
+  normalizeDemoTimeline,
   bootstrap,
   redeemActivationCode,
   advanceToHatchable,

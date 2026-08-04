@@ -142,6 +142,7 @@ function normalizeLiveSnapshot(result) {
     return { ok: false, code: result && result.code || 'POST_HATCH_INVALID', message: result && result.message || '此刻状态没有加载好，请重试' };
   }
   const source = result.current_state;
+  if (result.serverTs) timeService.acceptServerTime(result.serverTs);
   const definition = lifeScenes.resolveDefinition(source.major_scene_id, source.small_scene_id);
   const slotStart = Date.parse(source.slot_start);
   const slotEnd = Date.parse(source.slot_end);
@@ -174,7 +175,10 @@ function normalizeLiveSnapshot(result) {
 function getSnapshot(pet) {
   if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.getPostHatchHome(pet.id).then(normalizeLiveSnapshot);
+    const request = cloudApi.getPostHatchHome(pet.id);
+    const normalized = request.then(normalizeLiveSnapshot);
+    if (request.abort) normalized.abort = () => request.abort();
+    return normalized;
   }
   if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '破壳后内容服务尚未接入' });
   return Promise.resolve(localSnapshot(pet));
@@ -183,7 +187,8 @@ function performAction(pet, snapshot) {
   const current = snapshot && snapshot.currentState;
   if (!pet || !current || !current.atHome) return Promise.resolve({ ok: false, code: 'ACTION_NOT_AVAILABLE', message: '此刻没有这个动作' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.performPostHatchAction(pet.id, current.slotIndex, current.action.id);
+    const requestId = `post-hatch-action-${pet.id}-${current.slotIndex}-${current.action.id}`;
+    return cloudApi.performPostHatchAction(pet.id, current.slotIndex, current.action.id, requestId);
   }
   const state = readState();
   const slotKey = String(current.slotIndex);
@@ -206,7 +211,10 @@ function sendLetter(pet, snapshot, text) {
   if (Array.from(value).length > 120) return Promise.resolve({ ok: false, code: 'LETTER_TOO_LONG', message: '这封信最多写 120 个字' });
   const assessment = chatSafety.assessInput(value);
   if (!assessment.allowed || assessment.crisis) return Promise.resolve({ ok: false, code: 'LETTER_UNSAFE', message: assessment.message || '换个说法试试' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) return cloudApi.sendPostHatchLetter(pet.id, current.slotIndex, value);
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
+    const requestId = `post-hatch-letter-${pet.id}-${current.slotIndex}`;
+    return cloudApi.sendPostHatchLetter(pet.id, current.slotIndex, value, requestId);
+  }
   const state = readState();
   const slotKey = String(current.slotIndex);
   if (state.actions[slotKey]) return Promise.resolve({ ok: true, alreadyDone: true, feedback: state.actions[slotKey].feedback });

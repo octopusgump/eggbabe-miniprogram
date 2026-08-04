@@ -27,12 +27,6 @@ App({
     // develop 使用隔离 demo；trial / release 固定 live。
     // demo 没有用户界面开关，也不会进入正式存储与接口。
     runtime.setMode(config.defaultMode);
-    timeService.sync().then(result => {
-      if (!result.ok || typeof getCurrentPages === 'undefined') return;
-      const pages = getCurrentPages();
-      const current = pages[pages.length - 1];
-      if (current && current.onShow) current.onShow();
-    });
     analytics.track('app_open', { enter_scene: 'direct' });
     syncQueue.flush();
     wx.login({
@@ -42,8 +36,11 @@ App({
         if (code && config.backendEnabled && runtime.getMode() === 'live') {
           cloudApi.bootstrap(code).then(result => {
             if (!result.ok || result.mode !== 'live' || !result.user) return;
+            const sessionId = result.session_id || result.sessionId;
+            if (sessionId) runtime.setSessionId(sessionId);
+            if (result.serverTs) timeService.acceptServerTime(result.serverTs);
             this.globalData.backendReady = true;
-            this.globalData.incubationEnvironment = result.incubationEnvironment || null;
+            this.globalData.incubationEnvironment = result.incubationEnvironment || result.incubation_environment || null;
             petStore.saveUser({
               id: result.user.id || result.user._id,
               publicId: result.user.public_id || result.user.publicId || '',
@@ -58,6 +55,12 @@ App({
               collectionCard: result.hatchCard || null,
               messages: result.messages || []
             }), 'live');
+            timeService.sync().then(timeResult => {
+              if (!timeResult.ok || typeof getCurrentPages === 'undefined') return;
+              const pages = getCurrentPages();
+              const current = pages[pages.length - 1];
+              if (current && current.onShow) current.onShow();
+            });
           });
         }
       },

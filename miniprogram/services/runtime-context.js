@@ -37,10 +37,16 @@ function getSessionId() {
   return sessionId;
 }
 
+function setSessionId(value) {
+  const sessionId = String(value || '').trim();
+  if (!sessionId) return { ok: false, code: 'SESSION_ID_REQUIRED' };
+  return write(scopedKey(SESSION_KEY), sessionId);
+}
+
 function scopedKey(key, mode) {
   const requested = mode || activeMode;
   const safeMode = requested === 'demo' && config.localDemoEnabled ? 'demo' : 'live';
   return `eggbabe_${safeMode}_${key}_v2`;
 }
 
-module.exports = { getMode, setMode, getSessionId, scopedKey };
+module.exports = { getMode, setMode, getSessionId, setSessionId, scopedKey };

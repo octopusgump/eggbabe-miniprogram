@@ -4,17 +4,11 @@ const timeService = require('../../services/time-service');
 const postHatch = require('../../services/post-hatch-companion');
 const assets = require('../../config/post-hatch-assets');
 const environmentService = require('../../services/incubation-environment');
+const windowGeometry = require('../../utils/scene-window-geometry');
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
   storm: '雷雨', afterRain: '雨后', postSnow: '雪后', wind: '有风'
-};
-
-// 东京仅用于当前动效体验，不进入正式三景区素材门禁。
-const TOKYO_MAGIC_WINDOW_PREVIEW = {
-  base: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_base_v01.webp',
-  clouds: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_clouds_v03.webp',
-  koi: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/tokyo-v01/magic_window_tokyo_koi_walk_standard_v02.webp'
 };
 
 function reducedMotionEnabled() {
@@ -26,19 +20,57 @@ function reducedMotionEnabled() {
   }
 }
 
-function panelPresentation(sceneKey) {
-  const sceneSet = assets.resolvePanelSceneSet(sceneKey);
-  if (!sceneSet) {
-    return {
-      sceneSetId: 'panorama-fallback',
-      panelImages: [assets.POST_HATCH.leftLivingBackground, assets.POST_HATCH.centerDeskBackground, assets.POST_HATCH.rightDecorBackground]
-    };
-  }
+function panoramaPresentation(sceneKey, panelWidth, panelHeight) {
+  const sceneSet = assets.resolvePanoramaScene(sceneKey);
+  const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
+  const imageMeta = sceneSet && sceneSet.windowMeta || fallbackMeta;
   return {
-    sceneSetId: sceneSet.id,
-    panelImages: [sceneSet.leftLiving, sceneSet.centerDesk, sceneSet.rightDecor]
+    sceneSetId: sceneSet ? sceneSet.id : 'panorama-fallback',
+    panoramaImage: sceneSet ? sceneSet.panorama : assets.POST_HATCH.panoramaFallback,
+    windowHotspots: windowGeometry.mapPanoramaRegions({
+      imageWidth: imageMeta.width,
+      imageHeight: imageMeta.height,
+      panelWidth,
+      panelHeight,
+      regions: imageMeta.windowRegions
+    })
   };
 }
+
+function characterPresentation(pet, currentState) {
+  const prototype = String(pet && pet.prototype || '');
+  const isJadeRabbit = prototype === '玉兔' || prototype === 'YT';
+  const isAcceptedSleepState = currentState && currentState.atHome && currentState.key === 'sleep' && Number(currentState.action && currentState.action.screen) === 0;
+  const image = isJadeRabbit && isAcceptedSleepState ? assets.POST_HATCH.characterPoses.sleep : '';
+  return { visible: Boolean(image), image };
+}
+
+function magicWindowPresentation() {
+  const config = assets.POST_HATCH.magicWindow || {};
+  const destinations = config.destinations || {};
+  const entry = Object.entries(destinations).find(([, value]) => value && typeof value === 'object' && value.base);
+  if (!config.enabled || !entry) return { enabled: false, key: '', label: '', base: '', clouds: '', koi: '' };
+  const [key, value] = entry;
+  return {
+    enabled: true,
+    key,
+    label: String(value.label || key),
+    base: String(value.base || ''),
+    clouds: String(value.clouds || ''),
+    koi: String(value.koi || '')
+  };
+}
+
+function firstTouch(event, collectionName) {
+  const collection = event && event[collectionName];
+  const touch = collection && collection[0];
+  if (!touch) return null;
+  const x = Number(touch.clientX);
+  const y = Number(touch.clientY);
+  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+}
+
+const MAGIC_WINDOW = magicWindowPresentation();
 
 Page({
   data: {
@@ -65,9 +97,13 @@ Page({
     magicWindowLoading: false,
     magicWindowFailed: false,
     magicKoiReacting: false,
-    magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base,
-    magicWindowClouds: TOKYO_MAGIC_WINDOW_PREVIEW.clouds,
-    magicWindowKoi: TOKYO_MAGIC_WINDOW_PREVIEW.koi,
+    magicWindowEnabled: MAGIC_WINDOW.enabled,
+    magicWindowKey: MAGIC_WINDOW.key,
+    magicWindowLabel: MAGIC_WINDOW.label,
+    magicWindowBase: MAGIC_WINDOW.base,
+    magicWindowSourceBase: MAGIC_WINDOW.base,
+    magicWindowClouds: MAGIC_WINDOW.clouds,
+    magicWindowKoi: MAGIC_WINDOW.koi,
     dailyWindowOriginStyle: '',
     dailyWindowEnvironment: environmentService.resolve(),
     dailyWindowWeatherLabel: '晴朗',
@@ -77,16 +113,17 @@ Page({
     screens: [0, 1, 2],
     currentScreen: 1,
     scrollLeft: 0,
-    scrollIntoView: 'world-panel-1',
     panelWidth: 375,
     panelHeight: 667,
     enterFromHome: false,
     isExiting: false,
     exitTransitionStyle: '',
     panelSceneSetId: 'panorama-fallback',
-    panelImages: [assets.POST_HATCH.leftLivingBackground, assets.POST_HATCH.centerDeskBackground, assets.POST_HATCH.rightDecorBackground],
-    jadeRabbitSleepImage: assets.POST_HATCH.characterPoses.sleep,
-    panoramaFallback: assets.POST_HATCH.panoramaFallback
+    panoramaImage: assets.POST_HATCH.panoramaFallback,
+    windowHotspots: [[], [], []],
+    showSceneCharacter: false,
+    sceneCharacterImage: '',
+    sceneBackgroundError: false
   },
 
   onLoad(query) {
@@ -108,14 +145,17 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const dailyWindowEnvironment = environmentService.resolve(serverEnvironment, { createdAt: pet.createdAt });
-    const panels = panelPresentation(dailyWindowEnvironment.sceneKey);
+    const panelWidth = Number(info.windowWidth || 375);
+    const panelHeight = Number(info.windowHeight || 667);
+    const panorama = panoramaPresentation(dailyWindowEnvironment.sceneKey, panelWidth, panelHeight);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
-      panelWidth: Number(info.windowWidth || 375),
-      panelHeight: Number(info.windowHeight || 667),
+      panelWidth,
+      panelHeight,
       pet,
-      panelSceneSetId: panels.sceneSetId,
-      panelImages: panels.panelImages,
+      panelSceneSetId: panorama.sceneSetId,
+      panoramaImage: panorama.panoramaImage,
+      windowHotspots: panorama.windowHotspots,
       enterFromHome: query.entry === 'home-expand' || query.entry === 'post-hatch-landing',
       dailyWindowEnvironment,
       dailyWindowWeatherLabel: WEATHER_LABELS[dailyWindowEnvironment.weather] || '晴朗',
@@ -127,25 +167,31 @@ Page({
 
   loadSnapshot() {
     if (!this.data.pet) return;
+    if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     const token = this.loadToken = (this.loadToken || 0) + 1;
     this.clearSlotTimer();
     this.setData({ loading: true, error: '', talkError: '', letterError: '', actionBusy: false, talkBusy: false, letterBusy: false });
-    postHatch.getSnapshot(this.data.pet).then(result => {
+    const request = postHatch.getSnapshot(this.data.pet);
+    this.snapshotRequest = request;
+    request.then(result => {
       if (!this.pageActive || token !== this.loadToken) return;
+      if (this.snapshotRequest === request) this.snapshotRequest = null;
       if (!result.ok) {
         this.setData({ loading: false, error: result.message || '此刻状态没有加载好' });
         return;
       }
       const currentState = result.currentState;
       const screen = Math.max(0, Math.min(2, Number(currentState.screen || 0)));
+      const character = characterPresentation(this.data.pet, currentState);
       this.setData({
         loading: false,
         error: '',
         snapshot: result,
         currentState,
+        showSceneCharacter: character.visible,
+        sceneCharacterImage: character.image,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
-        scrollIntoView: `world-panel-${screen}`,
         feedback: currentState.actionDone ? currentState.actionFeedback : '',
         playedActionKind: currentState.actionDone ? currentState.action.kind : '',
         letterDraft: '',
@@ -160,6 +206,7 @@ Page({
       }
       this.scheduleSlotRefresh(currentState.slotEnd);
     }).catch(() => {
+      if (this.snapshotRequest === request) this.snapshotRequest = null;
       if (this.pageActive && token === this.loadToken) this.setData({ loading: false, error: '此刻状态没有加载好，请重试' });
     });
   },
@@ -173,8 +220,38 @@ Page({
   clearSlotTimer() { clearTimeout(this.slotTimer); this.slotTimer = null; },
   onRetry() { if (!this.data.loading) this.loadSnapshot(); },
 
+  onSceneBackgroundLoad() {
+    if (this.pageActive && this.data.sceneBackgroundError) this.setData({ sceneBackgroundError: false });
+  },
+
+  onSceneBackgroundError() {
+    if (!this.pageActive) return;
+    if (this.data.panoramaImage !== assets.POST_HATCH.panoramaFallback) {
+      const fallback = panoramaPresentation('', this.data.panelWidth, this.data.panelHeight);
+      this.setData({
+        panelSceneSetId: fallback.sceneSetId,
+        panoramaImage: fallback.panoramaImage,
+        windowHotspots: fallback.windowHotspots,
+        sceneBackgroundError: true
+      });
+      return;
+    }
+    this.setData({ sceneBackgroundError: true });
+  },
+
+  onRetrySceneBackground() {
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight);
+    this.setData({
+      sceneBackgroundError: false,
+      panelSceneSetId: panorama.sceneSetId,
+      panoramaImage: panorama.panoramaImage,
+      windowHotspots: panorama.windowHotspots
+    });
+  },
+
   onScroll(event) {
     const left = Number(event.detail && event.detail.scrollLeft || 0);
+    if (this.windowGesture && Math.abs(left - this.windowGesture.startScrollLeft) > 3) this.windowGesture.moved = true;
     const screen = Math.max(0, Math.min(2, Math.round(left / this.data.panelWidth)));
     if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen, toolboxVisible: false });
   },
@@ -184,11 +261,14 @@ Page({
     const panelWidth = Number(next.windowWidth || this.data.panelWidth);
     const panelHeight = Number(next.windowHeight || this.data.panelHeight);
     const screen = Number(this.data.currentScreen || 0);
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight);
     this.setData({
       panelWidth,
       panelHeight,
-      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
-      scrollIntoView: `world-panel-${Math.max(0, Math.min(2, screen))}`
+      panelSceneSetId: panorama.sceneSetId,
+      panoramaImage: panorama.panoramaImage,
+      windowHotspots: panorama.windowHotspots,
+      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth
     });
   },
 
@@ -258,9 +338,7 @@ Page({
     analytics.track('companion_interaction', { interaction_type: 'mood_peek', result: 'shown' });
   },
 
-  onSceneAction() {
-    this.runSceneAction(this.data.currentState && this.data.currentState.action.kind === 'window');
-  },
+  onSceneAction() { this.runSceneAction(false); },
 
   runSceneAction(openWindowAfter, feedbackOverride, windowSelector) {
     const current = this.data.currentState;
@@ -296,8 +374,7 @@ Page({
       composerVisible: true,
       toolboxVisible: false,
       currentScreen: screen,
-      scrollLeft: screen * this.data.panelWidth,
-      scrollIntoView: `world-panel-${screen}`
+      scrollLeft: screen * this.data.panelWidth
     });
     analytics.track('room_element_interaction', { element_id: current.atHome ? 'scene_talk_button' : 'scene_letter_button', result: 'opened' });
   },
@@ -361,28 +438,69 @@ Page({
     }).catch(() => this.pageActive && this.setData({ letterBusy: false, letterError: '信没有寄出去，请重试' }));
   },
 
+  onDailyWindowTouchStart(event) {
+    const point = firstTouch(event, 'touches');
+    if (!point || !event.currentTarget) return;
+    this.windowGesture = {
+      x: point.x,
+      y: point.y,
+      startedAt: Date.now(),
+      moved: false,
+      startScrollLeft: Number(this.data.scrollLeft || this.data.currentScreen * this.data.panelWidth),
+      panel: Number(event.currentTarget.dataset.windowPanel),
+      hotspot: String(event.currentTarget.dataset.windowHotspot || '')
+    };
+  },
+
+  onDailyWindowTouchMove(event) {
+    const gesture = this.windowGesture;
+    const point = firstTouch(event, 'touches');
+    if (!gesture || !point) return;
+    const threshold = windowGeometry.windowGestureThreshold(this.data.panelWidth);
+    if (Math.abs(point.x - gesture.x) > threshold || Math.abs(point.y - gesture.y) > threshold) gesture.moved = true;
+  },
+
+  onDailyWindowTouchEnd(event) {
+    const gesture = this.windowGesture;
+    this.windowGesture = null;
+    if (!gesture) return;
+    const point = firstTouch(event, 'changedTouches') || { x: gesture.x, y: gesture.y };
+    const activate = windowGeometry.shouldActivateWindowGesture({
+      startX: gesture.x,
+      startY: gesture.y,
+      endX: point.x,
+      endY: point.y,
+      elapsedMs: Date.now() - gesture.startedAt,
+      moved: gesture.moved,
+      panelWidth: this.data.panelWidth
+    });
+    if (!activate) return;
+    this.onDailyWindowTap({ currentTarget: { dataset: { windowPanel: gesture.panel, windowHotspot: gesture.hotspot } } });
+  },
+
+  onDailyWindowTouchCancel() { this.windowGesture = null; },
+
   onDailyWindowTap(event) {
     const current = this.data.currentState;
     const tappedPanel = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.windowPanel);
-    const windowPanel = tappedPanel === 1 ? 1 : 2;
-    const windowSelector = `.daily-window-hotspot--panel-${windowPanel}`;
-    if (current && current.atHome && current.action.kind === 'window' && !current.actionDone) {
-      this.runSceneAction(true, '', windowSelector);
-      return;
-    }
+    const windowPanel = Math.max(0, Math.min(2, Number.isFinite(tappedPanel) ? tappedPanel : this.data.currentScreen));
+    const hotspotId = String(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.windowHotspot || '');
+    const windowSelector = hotspotId ? `.daily-window-hotspot--${hotspotId}` : `.daily-window-hotspot--panel-${windowPanel}`;
     this.openDailyWindow(windowSelector);
+    if (current && current.atHome && current.action.kind === 'window' && !current.actionDone) {
+      this.runSceneAction(false);
+    }
   },
 
   openDailyWindow(windowSelector) {
     if (!this.pageActive || this.data.dailyWindowVisible) return;
-    const activePanel = Number(this.data.currentScreen) === 1 ? 1 : 2;
+    const activePanel = Math.max(0, Math.min(2, Number(this.data.currentScreen || 0)));
     const selector = windowSelector || `.daily-window-hotspot--panel-${activePanel}`;
     wx.createSelectorQuery().in(this).select(selector).boundingClientRect(rect => {
-      const centerWindow = selector.endsWith('panel-1');
       const fallback = {
-        left: centerWindow ? this.data.panelWidth * .1 : 0,
+        left: 0,
         top: 0,
-        width: this.data.panelWidth * (centerWindow ? .9 : 1),
+        width: this.data.panelWidth,
         height: this.data.panelHeight * .48
       };
       const origin = rect || fallback;
@@ -415,18 +533,19 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const serverEnvironment = app && app.globalData ? app.globalData.incubationEnvironment : null;
     const environment = environmentService.resolve(serverEnvironment, { createdAt: this.data.pet && this.data.pet.createdAt });
-    const panels = panelPresentation(environment.sceneKey);
+    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight);
     this.setData({
       dailyWindowEnvironment: environment,
-      panelSceneSetId: panels.sceneSetId,
-      panelImages: panels.panelImages,
+      panelSceneSetId: panorama.sceneSetId,
+      panoramaImage: panorama.panoramaImage,
+      windowHotspots: panorama.windowHotspots,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间')
     });
   },
 
   onOpenMagicWindow() {
-    if (!this.pageActive || this.data.magicWindowVisible) return;
+    if (!this.pageActive || !this.data.magicWindowEnabled || !this.data.magicWindowSourceBase || this.data.magicWindowVisible) return;
     clearTimeout(this.magicKoiTimer);
     this.setData({
       dailyWindowVisible: false,
@@ -434,9 +553,9 @@ Page({
       magicWindowLoading: true,
       magicWindowFailed: false,
       magicKoiReacting: false,
-      magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base
+      magicWindowBase: this.data.magicWindowSourceBase
     });
-    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_preview', result: 'opened' });
+    analytics.track('room_element_interaction', { element_id: `magic_window_${this.data.magicWindowKey}`, result: 'opened' });
   },
 
   onMagicWindowBaseLoad() {
@@ -453,7 +572,7 @@ Page({
     if (!this.data.magicWindowVisible || this.data.magicWindowLoading) return;
     this.setData({ magicWindowBase: '', magicWindowLoading: true, magicWindowFailed: false }, () => {
       wx.nextTick(() => {
-        if (this.data.magicWindowVisible) this.setData({ magicWindowBase: TOKYO_MAGIC_WINDOW_PREVIEW.base });
+        if (this.data.magicWindowVisible) this.setData({ magicWindowBase: this.data.magicWindowSourceBase });
       });
     });
   },
@@ -470,7 +589,7 @@ Page({
         }, 1050);
       });
     });
-    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_koi', result: 'reacted' });
+    analytics.track('room_element_interaction', { element_id: `magic_window_${this.data.magicWindowKey}_subject`, result: 'reacted' });
   },
 
   onCloseMagicWindow() {
@@ -483,7 +602,7 @@ Page({
       magicKoiReacting: false,
       dailyWindowVisible: true
     });
-    analytics.track('room_element_interaction', { element_id: 'magic_window_tokyo_preview', result: 'closed' });
+    analytics.track('room_element_interaction', { element_id: `magic_window_${this.data.magicWindowKey}`, result: 'closed' });
   },
 
   onMagicTouchMove() {},
@@ -540,6 +659,9 @@ Page({
   },
   onHide() {
     this.pageActive = false;
+    this.windowGesture = null;
+    if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
+    this.snapshotRequest = null;
     this.returningFromChild = true;
     this.clearTransientState();
   },
@@ -552,6 +674,9 @@ Page({
   },
   onUnload() {
     this.pageActive = false;
+    this.windowGesture = null;
+    if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
+    this.snapshotRequest = null;
     this.loadToken = (this.loadToken || 0) + 1;
     clearTimeout(this.backTimer);
     clearTimeout(this.exitTimer);

@@ -1,18 +1,27 @@
 const preHatchAssets = require('./pre-hatch-assets').PRE_HATCH;
 
 // 破壳后所有正式运行时图片路径集中在这里。
-// 空字符串代表正式素材尚未交付；页面只展示结构兜底，不把参考图或草稿当成品。
-// 完整素材目录与替换规格见 assets/scenes/lifecycle/README.md。
-const PANEL_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background';
-
-// 只有左右两屏都通过验收后，才把对应状态 key 加入此数组。
-// 中屏直接复用同状态的破壳前正式场景，禁止单独重画造成机位漂移。
-const READY_PANEL_SCENE_KEYS = Object.freeze([]);
-const readyPanelSceneKeys = new Set(READY_PANEL_SCENE_KEYS);
-const PANEL_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || []).reduce((result, scene) => {
-  const ready = readyPanelSceneKeys.has(scene.key);
-  const expectedLeft = `${PANEL_SCENE_ROOT}/left-living/scene-sets/${scene.key}_left_living.webp`;
-  const expectedRight = `${PANEL_SCENE_ROOT}/right-decor/scene-sets/${scene.key}_right_decor.webp`;
+// 每套房间只使用一张连续的 2823 × 1672 全景图，避免窄长设备上三张独立
+// aspectFill 切图产生裁切缺口与拼接线。
+const PANORAMA_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets';
+const READY_PANORAMA_SCENE_KEYS = Object.freeze([
+  'spring_clear_day', 'spring_clear_sunset', 'spring_clear_night', 'spring_cloudy_day', 'spring_rain_day',
+  'summer_clear_day', 'summer_clear_sunset', 'summer_clear_night', 'summer_cloudy_day', 'summer_storm_night',
+  'autumn_clear_day', 'autumn_clear_sunset', 'autumn_clear_night', 'autumn_rain_day',
+  'winter_clear_day', 'winter_clear_night', 'winter_cloudy_day', 'winter_snow_day', 'winter_snow_night', 'winter_post_snow_day'
+]);
+const readyPanoramaSceneKeys = new Set(READY_PANORAMA_SCENE_KEYS);
+// 窗玻璃、窗框、窗台和可见窗帘的热区，以完整全景母图的原始像素坐标维护。
+const PANORAMA_WINDOW_META = Object.freeze({
+  width: 2823,
+  height: 1672,
+  windowRegions: Object.freeze([
+    Object.freeze({ id: 'main-window', x: 1050, y: 0, width: 1570, height: 800 })
+  ])
+});
+const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || []).reduce((result, scene) => {
+  const expectedPanorama = `${PANORAMA_SCENE_ROOT}/${scene.key}_post_hatch_panorama_v01.webp`;
+  const ready = readyPanoramaSceneKeys.has(scene.key);
   result[scene.key] = Object.freeze({
     id: scene.key,
     label: scene.label,
@@ -21,22 +30,21 @@ const PANEL_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || [])
     period: scene.period,
     lightPhase: scene.lightPhase,
     ready,
-    leftLiving: ready ? expectedLeft : '',
-    centerDesk: ready ? scene.background : '',
-    rightDecor: ready ? expectedRight : '',
-    expected: Object.freeze({ leftLiving: expectedLeft, centerDesk: scene.background, rightDecor: expectedRight })
+    panorama: ready ? expectedPanorama : '',
+    windowMeta: ready ? PANORAMA_WINDOW_META : null,
+    expected: Object.freeze({ panorama: expectedPanorama })
   });
   return result;
 }, {}));
 
-function resolvePanelSceneSet(sceneKey) {
-  const sceneSet = PANEL_SCENE_SETS[String(sceneKey || '')];
+function resolvePanoramaScene(sceneKey) {
+  const sceneSet = PANORAMA_SCENE_SETS[String(sceneKey || '')];
   return sceneSet && sceneSet.ready ? sceneSet : null;
 }
 
 module.exports = {
   expectedPaths: {
-    panelSceneSets: `${PANEL_SCENE_ROOT}/{left-living|right-decor}/scene-sets/{scene_key}_{panel}.webp`,
+    panoramaSceneSets: `${PANORAMA_SCENE_ROOT}/{scene_key}_post_hatch_panorama_v01.webp`,
     jadeRabbit: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/',
     boonKoi: '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/',
     magicWindow: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/',
@@ -45,13 +53,11 @@ module.exports = {
     moodFaces: '/assets/scenes/lifecycle/post-hatch/50-overlays/mood-faces/'
   },
   POST_HATCH: {
-    panelAssetsReady: READY_PANEL_SCENE_KEYS.length === Object.keys(PANEL_SCENE_SETS).length,
-    readyPanelSceneKeys: READY_PANEL_SCENE_KEYS,
-    panelSceneSets: PANEL_SCENE_SETS,
-    panoramaFallback: '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.webp',
-    leftLivingBackground: '',
-    centerDeskBackground: '',
-    rightDecorBackground: '',
+    panoramaAssetsReady: READY_PANORAMA_SCENE_KEYS.length === Object.keys(PANORAMA_SCENE_SETS).length,
+    readyPanoramaSceneKeys: READY_PANORAMA_SCENE_KEYS,
+    panoramaSceneSets: PANORAMA_SCENE_SETS,
+    panoramaFallback: `${PANORAMA_SCENE_ROOT}/spring_clear_day_post_hatch_panorama_v01.webp`,
+    panoramaFallbackMeta: PANORAMA_WINDOW_META,
     characterPoses: {
       sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
       lazy: '', stare: '', tea: '', drawing: '', gaming: '', window: ''
@@ -77,5 +83,5 @@ module.exports = {
     postcards: {},
     moodFaces: {}
   },
-  resolvePanelSceneSet
+  resolvePanoramaScene
 };

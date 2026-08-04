@@ -34,8 +34,8 @@
 | 19 | `pre-hatch/20-room-objects/interactive-props/coffee_machine.webp` | 破壳前 / 互动小物 | 1254×1254 / 43274 | RGBA，四角透明 | 正式·新增 |
 | 20 | `pre-hatch/20-room-objects/interactive-props/drawing_paper_set.webp` | 破壳前 / 互动小物 | 1254×1254 / 47810 | RGBA，四角透明 | 正式·新增 |
 | 21 | `pre-hatch/20-room-objects/interactive-props/scarf.webp` | 破壳前 / 互动小物 | 1254×1254 / 76220 | RGBA，四角透明 | 正式·新增 |
-| 22 | `post-hatch/10-background/left-living/scene-sets/{scene_key}_left_living.webp`（20 张） | 破壳后 / 左屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
-| 23 | `post-hatch/10-background/right-decor/scene-sets/{scene_key}_right_decor.webp`（20 张） | 破壳后 / 右屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
+| 22 | `post-hatch/10-background/panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.webp`（20 张） | 破壳后 / 连续房间全景 | 2823×1672 | 不透明 WebP | 正式·单图覆盖三屏 |
+| 23 | 左／中／右独立背景切图 | 破壳后 / 已停用 | — | — | 不再生成或接入运行时 |
 | 24 | `post-hatch/30-character/jade-rabbit/sleep.webp` | 玉兔 / 角色 | 1254×1254 / 82112 | RGBA，四角透明 | 正式·新增 |
 | 25 | `post-hatch/30-character/jade-rabbit/lazy.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 26 | `post-hatch/30-character/jade-rabbit/stare.webp` | 玉兔 / 角色 | 1254×1254 / 93122 | RGBA，四角透明 | 正式·复用基准 |

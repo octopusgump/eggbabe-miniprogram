@@ -12,23 +12,21 @@
   </view>
 
   <block wx:elif="{{currentState}}">
-    <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" scroll-into-view="{{scrollIntoView}}" bindscroll="onScroll">
+    <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" bindscroll="onScroll">
       <view class="world-track">
+        <image class="world-panorama-bg" src="{{panoramaImage}}" mode="aspectFill" bindload="onSceneBackgroundLoad" binderror="onSceneBackgroundError"></image>
         <view id="world-panel-0" class="world-panel world-panel--living">
-          <image wx:if="{{panelImages[0]}}" class="panel-bg" src="{{panelImages[0]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--left" src="{{panoramaFallback}}" mode="aspectFill"></image>
           <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view>
-          <view wx:if="{{currentState.atHome}}" class="scene-character scene-character--sleep {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
+          <view wx:for="{{windowHotspots[0]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-0 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
+          <view wx:if="{{showSceneCharacter}}" class="scene-character scene-character--sleep {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
             <view class="scene-character__floor-shadow" aria-hidden="true"></view>
-            <image class="scene-character__sleep-image" src="{{jadeRabbitSleepImage}}" mode="aspectFit"></image>
+            <image class="scene-character__sleep-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
           </view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
         <view id="world-panel-1" class="world-panel world-panel--desk">
-          <image wx:if="{{panelImages[1]}}" class="panel-bg" src="{{panelImages[1]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--center" src="{{panoramaFallback}}" mode="aspectFill"></image>
           <view class="panel-tone"></view>
-          <view class="daily-window-hotspot daily-window-hotspot--panel-1" data-window-panel="1" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
+          <view wx:for="{{windowHotspots[1]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-1 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
           <view wx:if="{{currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
@@ -36,14 +34,14 @@
           <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
         </view>
         <view id="world-panel-2" class="world-panel world-panel--decor">
-          <image wx:if="{{panelImages[2]}}" class="panel-bg" src="{{panelImages[2]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--right" src="{{panoramaFallback}}" mode="aspectFill"></image>
           <view class="panel-tone"></view>
-          <view class="daily-window-hotspot daily-window-hotspot--panel-2" data-window-panel="2" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
+          <view wx:for="{{windowHotspots[2]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-2 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 2 && currentState.action.kind !== 'window'}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
       </view>
     </scroll-view>
+
+    <view wx:if="{{sceneBackgroundError}}" class="scene-background-error" bindtap="onRetrySceneBackground">房间背景没有加载好 · 轻触重试</view>
 
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
     <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
@@ -65,11 +63,11 @@
       <text class="toolbox-title">百宝箱</text>
       <view class="toolbox-grid">
         <view class="toolbox-item" data-target="my" bindtap="onToolboxItemTap">
-          <image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_settings_gear_96_v02.webp" mode="aspectFit"></image>
+          <image class="toolbox-item-icon" src="/assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png" mode="aspectFit"></image>
           <text>我的 / 设置</text>
         </view>
-        <view class="toolbox-item" data-target="card" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_collection_card_front_96_v02.webp" mode="aspectFit"></image><text>收藏卡</text></view>
-        <view class="toolbox-item" data-target="postcards" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_postcard_two_color_front_96_v02.webp" mode="aspectFit"></image><text>明信片</text></view>
+        <view class="toolbox-item" data-target="card" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_collection_card_front_96_v03.webp" mode="aspectFit"></image><text>收藏卡</text></view>
+        <view class="toolbox-item" data-target="postcards" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.webp" mode="aspectFit"></image><text>明信片</text></view>
         <view class="toolbox-item" data-target="keepsakes" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_keepsake_box_96_v01.png" mode="aspectFit"></image><text>ta 带回来的东西</text></view>
       </view>
     </view>
@@ -101,7 +99,7 @@
     weather-label="{{dailyWindowWeatherLabel}}"
     period-label="{{dailyWindowPeriodLabel}}"
     origin-style="{{dailyWindowOriginStyle}}"
-    magic-enabled="{{true}}"
+    magic-enabled="{{magicWindowEnabled}}"
     bindclose="onDailyWindowClosed"
     bindretry="onDailyWindowRetry"
     bindmagic="onOpenMagicWindow"
@@ -141,19 +139,19 @@
 
     <view wx:if="{{magicWindowLoading && !magicWindowFailed}}" class="magic-window__state">
       <view class="magic-window__loader"></view>
-      <text>正在推开东京的窗…</text>
+      <text>正在推开{{magicWindowLabel}}的窗…</text>
     </view>
     <view wx:elif="{{magicWindowFailed}}" class="magic-window__state magic-window__state--error">
-      <text class="magic-window__state-title">东京窗景没有加载好</text>
+      <text class="magic-window__state-title">{{magicWindowLabel}}窗景没有加载好</text>
       <view class="magic-window__retry" aria-role="button" bindtap="onMagicWindowRetry">重新看看</view>
     </view>
 
     <view class="magic-window__topbar" style="padding-top:{{statusBarHeight}}px;">
       <view class="magic-window__back" aria-role="button" aria-label="返回上海窗外" bindtap="onCloseMagicWindow"><view class="magic-window__back-icon"></view></view>
-      <view class="magic-window__meta"><text>东京 · 雨后</text></view>
+      <view class="magic-window__meta"><text>{{magicWindowLabel}}</text></view>
     </view>
   </view>
 
   <view wx:if="{{isExiting}}" class="scene-exit-backdrop"></view>
-  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}"><image class="scene-exit-image" src="{{panoramaFallback}}" mode="aspectFill"></image></view>
+  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}"><image class="scene-exit-image" src="{{panoramaImage}}" mode="aspectFill"></image></view>
 </view>

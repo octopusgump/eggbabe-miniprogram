@@ -190,18 +190,26 @@ try {
   switchMode = 'success';
 
   const doodle = loadPage('../../pages/doodle/doodle');
-  const doodleContext = pageContext(doodle, { saving: true });
+  const doodleContext = pageContext(doodle, { saving: false, saveStatus: 'unsaved' });
   doodleContext.pageActive = true;
-  doodle.scheduleReturnToHome.call(doodleContext);
+  doodleContext.editRevision = 1;
+  doodleContext.savedRevision = 0;
+  let autoSaveCalls = 0;
+  doodleContext.persistCurrent = () => { autoSaveCalls += 1; };
+  doodle.scheduleAutoSave.call(doodleContext);
   doodle.onHide.call(doodleContext);
   runTimers();
-  assert.deepEqual(routes.splice(0), [], '画画页隐藏后不得执行残留 navigateBack');
-  assert.equal(doodleContext.data.saving, false, '画画页隐藏后必须释放保存状态');
+  assert.equal(autoSaveCalls, 0, '画画页隐藏后不得执行残留自动保存定时器');
 
-  doodle.scheduleReturnToHome.call(doodleContext);
+  doodle.onShow.call(doodleContext);
+  runTimers();
+  assert.equal(autoSaveCalls, 1, '未保存作品回到前台后必须恢复自动保存');
+
+  doodleContext.pageActive = true;
+  doodle.scheduleAutoSave.call(doodleContext);
   doodle.onUnload.call(doodleContext);
   runTimers();
-  assert.deepEqual(routes.splice(0), [], '画画页卸载后不得执行残留 navigateBack');
+  assert.equal(autoSaveCalls, 1, '画画页卸载后不得执行残留自动保存');
 
   console.log('交互导航状态机校验通过。');
 } finally {

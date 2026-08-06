@@ -1,15 +1,55 @@
-<view class="page {{expandedCanvas ? 'page--expanded' : ''}}">
-  <nav-bar wx:if="{{!expandedCanvas}}" title="画我的蛋壳"></nav-bar>
-  <view class="preview">
-    <view class="canvas-expand-button" aria-role="button" aria-label="{{expandedCanvas ? '缩小画布' : '放大画布'}}" bindtap="onToggleCanvasSize">
-      <image
-        class="canvas-expand-icon {{expandedCanvas ? 'canvas-expand-icon--collapse' : ''}}"
-        src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_canvas_expand_96_v01.webp"
-        mode="aspectFit"
-      ></image>
+<view class="page">
+  <view class="doodle-nav">
+    <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
+    <view class="doodle-nav-row">
+      <view class="doodle-nav-leading">
+        <view class="doodle-back" aria-role="button" aria-label="返回并保存" bindtap="onBack">
+          <view class="doodle-chevron"></view>
+        </view>
+        <text
+          class="save-status save-status--{{saveStatus}}"
+          aria-role="button"
+          aria-label="{{saveStatusText}}"
+          bindtap="onRetrySave"
+        >{{saveStatusText}}</text>
+      </view>
+      <text class="doodle-title">画我的蛋壳</text>
+      <view class="doodle-nav-safe"></view>
     </view>
+  </view>
+
+  <view class="preview">
+    <view class="canvas-action-rail">
+      <view
+        class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="撤销一步"
+        bindtap="onUndo"
+      >
+        <image
+          class="canvas-action-image"
+          src="{{canUndo ? '/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_undo_96_v02.webp' : '/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_undo_disabled_96_v01.webp'}}"
+          mode="aspectFit"
+        ></image>
+        <text class="canvas-action-label">撤销</text>
+      </view>
+      <view
+        class="canvas-action-button canvas-action-button--clear {{!canClear ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="清空画面"
+        bindtap="onClear"
+      >
+        <image
+          class="canvas-action-image"
+          src="{{canClear ? '/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_clear_96_v01.webp' : '/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_clear_disabled_96_v01.webp'}}"
+          mode="aspectFit"
+        ></image>
+        <text class="canvas-action-label">清空</text>
+      </view>
+    </view>
+
     <view class="preview-aura"></view>
-    <view class="egg-canvas-stack">
+    <view class="egg-canvas-stack" style="transform:scale({{canvasScale}});">
       <canvas type="2d" id="eggBaseCanvas" class="egg-canvas egg-canvas--base"></canvas>
       <canvas
         type="2d"
@@ -28,8 +68,11 @@
   <scroll-view class="content" scroll-y>
     <view class="section tool-section">
       <view class="figma-toolbar">
-        <view class="tool-button {{activeTool === 'brush' ? 'tool-button--selected' : ''}}" data-tool="brush" aria-role="button" aria-label="像素画笔" bindtap="onTool">
-          <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_brush_96_v02.png" mode="aspectFit"></image>
+        <view class="tool-button {{activeTool === 'brush' ? 'tool-button--selected' : ''}}" data-tool="brush" aria-role="button" aria-label="画笔" bindtap="onTool">
+          <view class="toolbar-icon-wrap">
+            <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_brush_96_v02.png" mode="aspectFit"></image>
+            <view class="brush-current-color" style="background:{{selectedBrushColor}};"></view>
+          </view>
           <text>画笔</text>
         </view>
         <view class="tool-button {{activeTool === 'eraser' ? 'tool-button--selected' : ''}}" data-tool="eraser" aria-role="button" aria-label="橡皮擦" bindtap="onTool">
@@ -40,22 +83,55 @@
           <image class="toolbar-image-icon" src="/assets/ui/3d-toolbar/runtime/ui_3d_toolbar_sticker_96_v02.png" mode="aspectFit"></image>
           <text>贴纸</text>
         </view>
-        <view class="tool-button {{!canUndo ? 'tool-button--disabled' : ''}}" aria-role="button" aria-label="撤销一步" bindtap="onUndo">
-          <text class="toolbar-symbol">↶</text>
-          <text>撤销</text>
+      </view>
+
+      <view wx:if="{{activeTool === 'brush'}}" class="tool-options brush-options">
+        <view class="brush-color-row">
+          <view
+            wx:for="{{brushColors}}"
+            wx:key="token"
+            class="brush-color-option {{selectedBrushColor === item.value ? 'brush-color-option--selected' : ''}}"
+            data-token="{{item.token}}"
+            aria-role="button"
+            aria-label="{{item.name}}"
+            bindtap="onBrushColor"
+          >
+            <view class="brush-color-swatch" style="background:{{item.value}};"></view>
+          </view>
         </view>
-        <view class="tool-button tool-button--danger {{!canClear ? 'tool-button--disabled' : ''}}" aria-role="button" aria-label="清空画面" bindtap="onClear">
-          <text class="toolbar-symbol">⌫</text>
-          <text>清空</text>
+
+        <view class="brush-size-row">
+          <view
+            id="brushSizeTrack"
+            class="brush-size-track"
+            bindtouchstart="onBrushSizeScrub"
+            catchtouchmove="onBrushSizeScrub"
+          >
+            <view
+              wx:for="{{brushSizes}}"
+              wx:key="pixels"
+              class="brush-size-option {{brushSizeIndex === index + 1 ? 'brush-size-option--selected' : ''}}"
+              data-index="{{index}}"
+              aria-role="button"
+              aria-label="{{item.label}}"
+              bindtap="onBrushSize"
+            >
+              <view class="brush-size-dot" style="width:{{item.previewRpx}}rpx;height:{{item.previewRpx}}rpx;background:{{selectedBrushColor}};"></view>
+            </view>
+          </view>
+          <text class="brush-size-value">{{toolSizeLabel}}</text>
         </view>
       </view>
 
-      <view wx:if="{{activeTool === 'brush' || activeTool === 'eraser'}}" class="tool-options">
+      <view wx:elif="{{activeTool === 'eraser'}}" class="tool-options">
         <view class="size-heading">
           <text class="size-value">{{toolSizeLabel}}</text>
         </view>
         <view class="size-control">
-          <view class="size-preview {{activeTool === 'eraser' ? 'size-preview--round' : ''}}" style="--preview-size:{{toolPreviewSize}}rpx;"></view>
+          <view
+            class="size-preview {{activeTool === 'eraser' ? 'size-preview--round' : ''}}"
+            style="--preview-size:{{toolPreviewSize}}rpx;--tool-color:{{activeTool === 'brush' ? selectedBrushColor : '#536447'}};"
+          ></view>
           <slider
             class="size-slider"
             min="{{toolSizeMin}}"
@@ -90,27 +166,5 @@
         </view>
       </view>
     </view>
-
-    <view wx:if="{{!expandedCanvas}}" class="section">
-      <text class="label">蛋壳颜色</text>
-      <view class="color-grid">
-        <view
-          wx:for="{{colors}}"
-          wx:key="token"
-          class="color-item"
-          data-token="{{item.token}}"
-          aria-role="button"
-          aria-label="{{item.name}}"
-          bindtap="onColor"
-        >
-          <view class="swatch {{selectedColor === item.value ? 'swatch--selected' : ''}}" style="background:{{item.value}};"></view>
-          <text>{{item.name}}</text>
-        </view>
-      </view>
-    </view>
-
-    <button wx:if="{{!expandedCanvas}}" class="primary" hover-class="button-press" disabled="{{saving || !canvasReady}}" bindtap="onSave">
-      <text class="button-label">{{saving ? '正在保存…' : '保存我的蛋壳'}}</text>
-    </button>
   </scroll-view>
 </view>

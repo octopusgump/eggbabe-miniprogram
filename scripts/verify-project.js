@@ -34,7 +34,7 @@ const buttonStyleContracts = [
   ['custom-tab-bar/index.wxss', /\.tab-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;[^}]*background:\s*#FFF;/s, '底部“我的”入口必须为独立的圆形按钮'],
   ['pages/home/home.wxss', /\.companion-primary-dock\s*\{[^}]*width:\s*368rpx;[^}]*height:\s*112rpx;[^}]*flex-direction:\s*row;[^}]*padding:\s*0 15rpx;[^}]*box-sizing:\s*border-box;[^}]*border-radius:\s*56rpx;[^}]*background:\s*#FFF;/s, '首页许愿池、早教班与画画必须组成带左右留白的三等分统一胶囊'],
   ['pages/home/home.wxss', /\.companion-primary-dock \.companion-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*flex:\s*0 0 112rpx;/s, '首页统一胶囊内的三个入口必须保持相同的有效触控尺寸'],
-  ['pages/doodle/doodle.wxss', /\.figma-toolbar\s*\{[^}]*width:\s*560rpx;[^}]*height:\s*112rpx;[^}]*grid-template-columns:\s*repeat\(5,\s*112rpx\);[^}]*border-radius:\s*56rpx;/s, '绘画工具必须组成五等分胶囊'],
+  ['pages/doodle/doodle.wxss', /\.figma-toolbar\s*\{[^}]*width:\s*336rpx;[^}]*height:\s*112rpx;[^}]*grid-template-columns:\s*repeat\(3,\s*112rpx\);[^}]*border-radius:\s*56rpx;/s, '底部创作工具必须只保留画笔、橡皮擦与贴纸三等分胶囊'],
   ['pages/chat/chat.wxss', /\.composer__send\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;[^}]*border-radius:\s*50%;/s, '聊天发送必须为 112rpx 圆形按钮'],
   ['pages/life-scene/life-scene.wxss', /\.composer-send\s*\{[^}]*width:112rpx;[^}]*height:112rpx;[^}]*border-radius:50%;/s, '生活场景发送必须为 112rpx 圆形按钮'],
   ['components/daily-window-detail/daily-window-detail.wxss', /\.daily-window__back\s*\{[^}]*width:112rpx;[^}]*height:112rpx;[^}]*border-radius:50%;/s, '窗景返回必须为 112rpx 圆形按钮']

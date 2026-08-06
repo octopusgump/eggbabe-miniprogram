@@ -40,7 +40,11 @@ assert.equal(homeTemplate.includes('completed-check') || homeTemplate.includes('
 assert.equal(!/<view\s+wx:if="\{\{item\.key/.test(homeTemplate) && homeTemplate.includes("item.key === 'draw'") && homeTemplate.includes('draw-action-spark'), true, '画画入口必须与其他底部功能共用同一白色胶囊底');
 assert.equal(doodleTemplate.indexOf('class="preview"') < doodleTemplate.indexOf('class="content"'), true, '绘图蛋体必须位于滚动区域外并固定在页面顶端');
 assert.equal(doodleTemplate.includes('figma-toolbar') && doodleTemplate.includes('bindchanging="onToolSizeChange"'), true, '绘图页必须提供紧凑工具栏和连续尺寸调节');
-assert.equal(doodleTemplate.includes('canvas-expand-button') && doodleLogic.includes('onToggleCanvasSize') && doodleStyles.includes('height: 62vh'), true, '蛋体必须支持占屏 60% 以上的专注画布');
+assert.equal(!doodleTemplate.includes('canvas-expand-button') && doodleLogic.includes('beginPinch') && doodleLogic.includes('MAX_CANVAS_SCALE = 1.6') && doodleStyles.includes('width: 89vw'), true, '蛋体必须默认占屏约 50%，并支持双指缩放绘画');
+assert.equal(doodleTemplate.includes('canvas-action-rail') && doodleStyles.includes('gap: 24rpx') && doodleTemplate.indexOf('canvas-action-rail') < doodleTemplate.indexOf('figma-toolbar'), true, '撤销与清空必须以统一圆形按钮纵向固定在画布右侧');
+assert.equal(doodleTemplate.includes('save-status--{{saveStatus}}') && doodleLogic.includes('AUTO_SAVE_DELAY = 700') && doodleLogic.includes("saveStatusText: '已保存'"), true, '返回旁必须展示真实的自动保存状态');
+assert.equal(doodleTemplate.includes('brush-color-row') && doodleTemplate.includes('brush-size-track') && doodleLogic.includes('selectedBrushColor') && !doodleTemplate.includes('蛋壳颜色'), true, '页面必须使用无遮挡的五色画笔与五档可视笔宽轨，不得再提供整颗蛋换底色');
+assert.equal(!doodleTemplate.includes('bindtap="onSave"') && !doodleTemplate.includes('保存我的蛋壳'), true, '自动保存启用后不得保留重复的底部手动保存按钮');
 assert.equal(/亲手画一点|像 Figma|history-count|tool-hint|保存后，首页窝里/.test(`${doodleTemplate}\n${doodleStyles}`), false, '绘图工具盘不得保留解释性冗余文字');
 assert.equal(doodleLogic.includes('ERASER_MIN_PX') && doodleLogic.includes('ERASER_MAX_PX') && doodleLogic.includes('eraserWidthForPixels'), true, '橡皮擦必须支持连续像素尺寸');
 assert.equal(['onTool', 'onUndo', 'onClear', 'onPattern'].every(handler => doodleLogic.includes(`${handler}(`)), true, '绘图页必须提供画笔、橡皮擦、贴纸、逐步撤销与可撤销清空');

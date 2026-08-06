@@ -1,0 +1,50 @@
+{
+  "task_id": "59ec57cd-a9b2-4335-881d-4a88d9b2b6eb",
+  "type": "multiview_to_model",
+  "status": "success",
+  "input": {
+    "pbr": true,
+    "files": [
+      {
+        "object": {
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260805/31705214-aff8-4346-99f0-32ae01eec158/file.jpg",
+          "bucket": "cn-openapi"
+        }
+      },
+      {
+        "object": {
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260805/1ac83324-39c8-4a20-8e7f-8129feabcf04/file.jpg",
+          "bucket": "cn-openapi"
+        }
+      },
+      {
+        "object": {
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260805/a3bbefb3-058e-4b46-aba4-c9a541775fc9/file.jpg",
+          "bucket": "cn-openapi"
+        }
+      },
+      {
+        "object": {
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260805/f04a547a-de7b-4879-b848-d4395b50a9ab/file.jpg",
+          "bucket": "cn-openapi"
+        }
+      }
+    ],
+    "texture": true,
+    "export_uv": true,
+    "face_limit": 15000,
+    "model_version": "P1-20260311"
+  },
+  "output_fields": [
+    "model_url",
+    "rendered_image_url"
+  ],
+  "credits_consumed": 50,
+  "created_at": "2026-08-05T12:55:19.545572Z",
+  "completed_at": "2026-08-05T12:56:27.695245Z",
+  "files": [
+    "model.glb",
+    "rendered_image.webp",
+    "preview.png"
+  ]
+}

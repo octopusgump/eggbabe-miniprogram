@@ -1,0 +1,4 @@
+<view wx:if="{{renderVisible}}" class="pano-static-character {{modelVisible ? 'pano-static-character--visible' : ''}}" style="width:{{width}}px;height:{{height}}px;">
+  <view class="pano-static-character__contact-shadow" aria-hidden="true"></view>
+  <canvas id="pano-static-character-canvas" type="webgl" class="pano-static-character__canvas" style="width:{{width}}px;height:{{height}}px;" disable-scroll="{{false}}"></canvas>
+</view>

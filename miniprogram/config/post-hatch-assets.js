@@ -4,6 +4,7 @@ const preHatchAssets = require('./pre-hatch-assets').PRE_HATCH;
 // 每套房间只使用一张连续的 2823 × 1672 全景图，避免窄长设备上三张独立
 // aspectFill 切图产生裁切缺口与拼接线。
 const PANORAMA_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets';
+const SCENE_ACTION_ROOT = '/assets/ui/3d-scene-actions/runtime';
 const READY_PANORAMA_SCENE_KEYS = Object.freeze((preHatchAssets.sceneTesterOptions || []).map(scene => scene.key));
 const readyPanoramaSceneKeys = new Set(READY_PANORAMA_SCENE_KEYS);
 // 窗玻璃、窗框、窗台和可见窗帘的热区，以完整全景母图的原始像素坐标维护。
@@ -63,7 +64,23 @@ module.exports = {
     panoramaFallbackMeta: PANORAMA_WINDOW_META,
     characterPoses: {
       sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
-      lazy: '', stare: '', tea: '', drawing: '', gaming: '', window: ''
+      lazy: '',
+      // 首张 2D 验收样张：只有日落版本通过审核才显示；日间、夜晚绝不复用，避免光影语义错误。
+      stare: Object.freeze({
+        day: '',
+        sunset: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare_sunset_v01.webp',
+        night: ''
+      }),
+      tea: '', drawing: '', gaming: '', window: ''
+    },
+    sceneActions: {
+      envelope: `${SCENE_ACTION_ROOT}/ui_3d_scene_message_envelope_96_v01.webp`,
+      toolbox: `${SCENE_ACTION_ROOT}/ui_3d_scene_toolbox_closed_chest_96_v01.webp`,
+      findHome: {
+        egg: `${SCENE_ACTION_ROOT}/ui_3d_scene_find_home_egg_96_v01.webp`,
+        jadeRabbit: `${SCENE_ACTION_ROOT}/ui_3d_scene_find_home_jade_rabbit_96_v01.webp`,
+        boonKoi: `${SCENE_ACTION_ROOT}/ui_3d_scene_find_home_boon_koi_96_v01.webp`
+      }
     },
     // 只有大理 / 北京 / 西双版纳三张正式景区素材全部完成后才开放入口。
     // 旅行大场景永远不读取这里的图片，只显示空着的家与第一人称文字。

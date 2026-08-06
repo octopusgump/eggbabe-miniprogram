@@ -1,17 +1,44 @@
 <view class="page {{loading ? 'page--loading' : ''}} {{reducedMotion ? 'page--reduced' : ''}}">
-  <view class="topbar" style="padding-top:{{statusBarHeight}}px;">
-    <view class="round-btn" aria-role="button" aria-label="返回" bindtap="onBack"><view class="back-icon"></view></view>
+  <view wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="scene-tester scene-tester--post-hatch" style="top:{{sceneTesterTopPx}}px;">
+    <view class="scene-tester-button {{sceneTesterOpen ? 'scene-tester-button--open' : ''}} {{sceneTesterBusy ? 'scene-tester-button--busy' : ''}}" aria-role="button" aria-label="测试场景，当前{{sceneTesterLabel}}" bindtap="onSceneTesterToggle">
+      <text class="scene-tester-tag">场景</text><text class="scene-tester-current">{{sceneTesterBusy ? '切换中…' : sceneTesterLabel}}</text><text class="scene-tester-chevron">⌄</text>
+    </view>
+    <scroll-view wx:if="{{sceneTesterOpen}}" class="scene-tester-menu" scroll-y="true">
+      <view wx:for="{{sceneTesterOptions}}" wx:key="key" class="scene-tester-option {{sceneTesterKey === item.key ? 'scene-tester-option--active' : ''}}" data-scene="{{item.key}}" aria-role="button" bindtap="onSceneTesterSelect">
+        <view class="scene-tester-option-copy"><text class="scene-tester-season">{{item.seasonLabel || '自动'}}</text><text>{{item.label}}</text></view>
+        <text wx:if="{{sceneTesterKey === item.key}}">✓</text>
+      </view>
+    </scroll-view>
   </view>
 
-  <view wx:if="{{loading}}" class="state-layer">
+  <!-- DEV-ONLY：与破壳前首页共享阶段验收器；release/trial 下 isDemo=false，不会渲染。 -->
+  <view wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester" style="top:{{stageTesterTopPx}}px;">
+    <view class="stage-tester-button {{stageTesterOpen ? 'stage-tester-button--open' : ''}} {{stageTesterBusy ? 'stage-tester-button--busy' : ''}}" aria-role="button" aria-label="测试阶段，当前{{stageTesterLabel}}" catchtap="onStageTesterToggle">
+      <text class="stage-tester-tag">测试</text><text>{{stageTesterBusy ? '切换中…' : stageTesterLabel}}</text><text class="stage-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{stageTesterOpen}}" class="stage-tester-menu">
+      <view wx:for="{{stageTesterOptions}}" wx:key="key" class="stage-tester-option {{stageTesterKey === item.key ? 'stage-tester-option--active' : ''}}" data-stage="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" catchtap="onStageTesterSelect"><text>{{item.label}}</text><text wx:if="{{stageTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="companion-state-tester" style="top:{{companionStateTesterTopPx}}px;">
+    <view class="companion-state-tester-button {{companionStateTesterOpen ? 'companion-state-tester-button--open' : ''}}" aria-role="button" aria-label="测试陪伴状态，当前{{companionStateTesterLabel}}" bindtap="onCompanionStateTesterToggle">
+      <text class="companion-state-tester-tag">状态</text><text class="companion-state-tester-current">{{companionStateTesterLabel}}</text><text class="companion-state-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{companionStateTesterOpen}}" class="companion-state-tester-menu">
+      <view wx:for="{{companionStateTesterOptions}}" wx:key="key" class="companion-state-tester-option {{companionStateTesterKey === item.key ? 'companion-state-tester-option--active' : ''}}" data-companion-state="{{item.key}}" aria-role="button" bindtap="onCompanionStateTesterSelect"><text>{{item.label}}</text><text wx:if="{{companionStateTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
+  <view wx:if="{{!sceneEntered && !error}}" class="state-layer">
     <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
   </view>
-  <view wx:elif="{{error}}" class="state-layer state-layer--error">
+  <view wx:if="{{!loading && error}}" class="state-layer state-layer--error">
     <text class="state-error-title">暂时没看见 ta 此刻的状态</text><text>{{error}}</text>
     <view class="state-action" bindtap="onRetry">重新看看</view><view class="state-secondary" bindtap="onBack">返回主页</view>
   </view>
 
-  <block wx:elif="{{currentState}}">
+  <block wx:if="{{currentState && !error}}">
+    <view class="scene-stage {{sceneEntered ? 'scene-stage--entered' : ''}}">
     <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" bindscroll="onScroll">
       <view class="world-track">
         <image wx:if="{{previousPanoramaImage}}" class="world-panorama-bg world-panorama-bg--previous" src="{{previousPanoramaImage}}" mode="aspectFill"></image>
@@ -19,25 +46,35 @@
         <view id="world-panel-0" class="world-panel world-panel--living">
           <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view>
           <view wx:for="{{windowHotspots[0]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-0 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
-          <view wx:if="{{showSceneCharacter}}" class="scene-character scene-character--sleep {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
+          <view wx:if="{{showSceneCharacter && sceneCharacterScreen === 0}}" class="scene-character scene-character--{{sceneCharacterPose}} {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
             <view class="scene-character__floor-shadow" aria-hidden="true"></view>
-            <image class="scene-character__sleep-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
+            <image class="scene-character__pose-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
           </view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 0}}" class="home-locator-focus home-locator-focus--0" aria-hidden="true"></view>
+          <view wx:if="{{homeTalkNudgeVisible && currentState.atHome && currentState.canTalk && currentState.action.screen === 0}}" class="scene-talk-nudge scene-talk-nudge--0" aria-role="button" aria-label="和蛋宝宝说话" bindtap="onOpenTalkComposer"><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view></view>
         </view>
         <view id="world-panel-1" class="world-panel world-panel--desk">
           <view class="panel-tone"></view>
           <view wx:for="{{windowHotspots[1]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-1 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
+          <view wx:if="{{showSceneCharacter && sceneCharacterScreen === 1}}" class="scene-character scene-character--{{sceneCharacterPose}} {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
+            <view class="scene-character__floor-shadow" aria-hidden="true"></view>
+            <image class="scene-character__pose-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
+          </view>
           <view wx:if="{{currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
           <view wx:if="{{currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 1}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 1}}" class="home-locator-focus home-locator-focus--1" aria-hidden="true"></view>
+          <view wx:if="{{homeTalkNudgeVisible && currentState.atHome && currentState.canTalk && currentState.action.screen === 1}}" class="scene-talk-nudge scene-talk-nudge--1" aria-role="button" aria-label="和蛋宝宝说话" bindtap="onOpenTalkComposer"><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view></view>
           <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
         </view>
         <view id="world-panel-2" class="world-panel world-panel--decor">
           <view class="panel-tone"></view>
           <view wx:for="{{windowHotspots[2]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-2 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
           <view wx:if="{{currentState.atHome && currentState.action.screen === 2 && currentState.action.kind !== 'window'}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 2}}" class="home-locator-focus home-locator-focus--2" aria-hidden="true"></view>
+          <view wx:if="{{homeTalkNudgeVisible && currentState.atHome && currentState.canTalk && currentState.action.screen === 2}}" class="scene-talk-nudge scene-talk-nudge--2" aria-role="button" aria-label="和蛋宝宝说话" bindtap="onOpenTalkComposer"><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view></view>
         </view>
       </view>
     </scroll-view>
@@ -45,6 +82,7 @@
     <view wx:if="{{sceneBackgroundError}}" class="scene-background-error" bindtap="onRetrySceneBackground">房间背景没有加载好 · 轻触重试</view>
 
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
+    <view wx:if="{{statusBubble}}" class="scene-status-bubble {{statusBubbleVisible ? 'scene-status-bubble--visible' : ''}}">{{statusBubble}}</view>
     <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
 
     <view wx:if="{{composerVisible && currentState.atHome && currentState.canTalk}}" class="scene-composer">
@@ -52,11 +90,11 @@
       <text wx:if="{{talkReply}}" class="inline-reply">{{talkReply}}</text><text wx:if="{{talkError}}" class="composer-error">{{talkError}}</text>
       <view class="composer-row"><input class="composer-input" value="{{talkDraft}}" maxlength="120" focus="{{composerVisible}}" placeholder="在这里说一句…" bindinput="onTalkInput" bindconfirm="onSendTalk" confirm-type="send" /><view class="composer-send {{talkBusy ? 'composer-send--busy' : ''}}" bindtap="onSendTalk">{{talkBusy ? '…' : '说'}}</view></view>
     </view>
-    <view wx:elif="{{composerVisible && !currentState.atHome}}" class="scene-composer">
+    <view wx:elif="{{composerVisible && !currentState.atHome}}" class="scene-composer scene-composer--letter {{letterKeyboardHeight > 0 ? 'scene-composer--keyboard' : ''}}" style="top:{{letterComposerTopPx}}px;">
       <view class="composer-close" aria-role="button" aria-label="收起写信输入" bindtap="onCloseComposer">×</view>
       <text wx:if="{{letterError}}" class="composer-error">{{letterError}}</text>
       <view wx:if="{{currentState.letterSent}}" class="letter-sent">信已经在路上了</view>
-      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" focus="{{composerVisible}}" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" confirm-type="send" /><view class="composer-send {{letterBusy ? 'composer-send--busy' : ''}}" bindtap="onSendLetter">{{letterBusy ? '…' : '寄'}}</view></view>
+      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" focus="{{composerVisible}}" adjust-position="{{false}}" hold-keyboard="{{true}}" cursor-spacing="24" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" bindkeyboardheightchange="onLetterKeyboardHeightChange" confirm-type="send" /><view class="composer-send composer-send--paper-plane {{letterBusy ? 'composer-send--busy' : ''}}" aria-role="button" aria-label="{{letterBusy ? '正在寄出' : '寄出这封信'}}" bindtap="onSendLetter"><view wx:if="{{letterBusy}}" class="composer-send-spinner"></view><view wx:else class="composer-paper-plane"><view class="composer-paper-plane__fold"></view></view></view></view>
     </view>
 
     <view wx:if="{{toolboxVisible}}" class="toolbox-mask" catchtap="onCloseToolbox" catchtouchmove="noop"></view>
@@ -73,19 +111,19 @@
       </view>
     </view>
 
-    <view wx:if="{{!composerVisible && currentState.atHome}}" class="scene-dialogue-entry">
-      <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="和蛋宝宝对话" bindtap="onContextActionTap">
-        <image class="scene-action-icon-image" src="/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.png" mode="aspectFit"></image>
+    <view wx:if="{{!composerVisible}}" class="scene-context-entry">
+      <view class="scene-action-button {{contextActionShowTalkBadge ? 'scene-action-button--talkable' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextActionLabel}}" bindtap="onContextActionTap">
+        <image class="scene-action-icon-image" src="{{contextActionIcon}}" mode="aspectFit"></image>
+        <view wx:if="{{contextActionShowTalkBadge}}" class="scene-action-talk-badge" aria-hidden="true"><view class="scene-action-talk-badge__dot"></view><view class="scene-action-talk-badge__dot"></view><view class="scene-action-talk-badge__dot"></view></view>
+        <view wx:if="{{contextActionHasNewMessage}}" class="scene-action-unread-dot" aria-hidden="true"></view>
       </view>
     </view>
 
     <view wx:if="{{!composerVisible}}" class="scene-action-dock">
       <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox">
-        <image class="scene-action-icon-image" src="/assets/ui/3d-scene-actions/runtime/ui_3d_scene_toolbox_closed_chest_96_v01.png" mode="aspectFit"></image>
+        <image class="scene-action-icon-image" src="{{toolboxIcon}}" mode="aspectFit"></image>
       </view>
-      <view wx:if="{{!currentState.atHome}}" class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="给蛋宝宝写信" bindtap="onContextActionTap">
-        <view class="scene-action-icon icon-letter"><view class="icon-letter__paper"></view><view class="icon-letter__flap"></view><view class="icon-letter__seal"></view><view class="scene-icon-shine"></view></view>
-      </view>
+    </view>
     </view>
   </block>
 

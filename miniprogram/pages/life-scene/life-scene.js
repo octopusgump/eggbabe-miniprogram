@@ -3,13 +3,43 @@ const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
 const postHatch = require('../../services/post-hatch-companion');
 const assets = require('../../config/post-hatch-assets');
+const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
+const config = require('../../config/v2');
+const demoExperience = require('../../services/demo-experience');
 const environmentService = require('../../services/incubation-environment');
 const windowGeometry = require('../../utils/scene-window-geometry');
+const lifeScenes = require('../../utils/life-scenes');
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
   storm: '雷雨', afterRain: '雨后', postSnow: '雪后', wind: '有风'
 };
+
+const AUTO_SCENE_OPTION = Object.freeze({
+  key: 'auto',
+  label: '实时环境'
+});
+const SCENE_TESTER_OPTIONS = Object.freeze([AUTO_SCENE_OPTION].concat(preHatchAssets.sceneTesterOptions || []));
+const AUTO_COMPANION_STATE_OPTION = Object.freeze({ key: 'auto', label: '跟随时间' });
+const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
+  AUTO_COMPANION_STATE_OPTION,
+  Object.freeze({ key: 'home-talk', label: '在家 · 可对话', major: 'home', stateKey: 'stare' }),
+  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话', major: 'home', stateKey: 'sleep' }),
+  Object.freeze({ key: 'away-letter', label: '不在家 · 写信', major: 'travel', stateKey: 'dali' })
+]);
+
+const STATUS_BUBBLE_POOL = Object.freeze({
+  sleep: Object.freeze(['我把自己卷成小饭团啦。', '枕头批准我再眯一会儿。', '我在梦里追一朵慢吞吞的云。']),
+  lazy: Object.freeze(['被子太会抱人，我还没赢。', '我刚醒一点点，又困回去了。', '早晨先放口袋里，晚点再打开。']),
+  stare: Object.freeze(['我在和光斑一起走神。', '桌上的光跑得比我快。', '我发呆得很认真，真的。']),
+  tea: Object.freeze(['热气在跳舞，我先看一会儿。', '这口有点烫，嘴巴先请假。', '杯子暖暖的，我也慢下来。']),
+  drawing: Object.freeze(['它本来是云，现在像小鱼。', '我画的圆，自己偷偷跑偏啦。', '这张纸好像比我更有主意。']),
+  gaming: Object.freeze(['这一关很紧张，耳朵静音。', '小角色又跳歪了，我忍住笑。', '我快赢啦，先认真三小秒。']),
+  window: Object.freeze(['云走得好慢，我也慢一点。', '我在数窗外亮晶晶的东西。', '风把树叶的小秘密吹过来啦。']),
+  travel: Object.freeze(['我把风装进帽子里啦。', '路边的云，今天特别会走。', '我在远处拐一个小小的弯。']),
+  work: Object.freeze(['我在认真忙，袖口都精神了。', '今天的小事排队来找我。', '我先把这一点点做好。']),
+  school: Object.freeze(['我在上课，问题比铅笔多。', '今天的字好多，我慢慢认识它们。', '我把新知识塞进小脑袋啦。'])
+});
 
 function reducedMotionEnabled() {
   try {
@@ -31,6 +61,54 @@ function environmentForPet(pet) {
   });
 }
 
+function scenePreviewTarget(key) {
+  if (!key || key === 'auto') return null;
+  return (preHatchAssets.sceneTesterOptions || []).find(item => item.key === key) || null;
+}
+
+function companionStatePreviewTarget(key) {
+  if (!key || key === 'auto') return null;
+  return COMPANION_STATE_TEST_OPTIONS.find(item => item.key === key) || null;
+}
+
+function previewCompanionSnapshot(snapshot, target) {
+  if (!snapshot || !snapshot.ok || !target) return snapshot;
+  const definition = lifeScenes.resolveDefinition(target.major, target.stateKey);
+  if (!definition) return snapshot;
+  const current = snapshot.currentState || {};
+  return Object.assign({}, snapshot, {
+    currentState: Object.assign({}, definition, {
+      slotIndex: current.slotIndex,
+      slotStart: current.slotStart,
+      slotEnd: current.slotEnd,
+      actionDone: false,
+      actionFeedback: '',
+      letterSent: false,
+      isPreview: true
+    })
+  });
+}
+
+function previewEnvironment(base, target) {
+  if (!target) return base;
+  return Object.assign({}, base, {
+    season: target.season,
+    weather: target.weather,
+    period: target.period,
+    lightPhase: target.lightPhase,
+    sceneKey: target.key,
+    valid: true,
+    className: target.className,
+    windowImage: environmentService.windowAssetPath(target.weather, target.period)
+  });
+}
+
+function stageTesterPresentation(pet) {
+  const key = String(pet && pet.demoPreviewStage || 'hatched');
+  const stage = demoExperience.PREVIEW_STAGES.find(item => item.key === key) || demoExperience.PREVIEW_STAGES[demoExperience.PREVIEW_STAGES.length - 1];
+  return { key: stage.key, label: stage.label };
+}
+
 function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase) {
   const sceneSet = assets.resolvePanoramaScene(sceneKey, cdnBase);
   const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
@@ -49,12 +127,52 @@ function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase) {
   };
 }
 
-function characterPresentation(pet, currentState) {
+function characterPosePath(key, environment) {
+  const pose = assets.POST_HATCH.characterPoses && assets.POST_HATCH.characterPoses[String(key || '')];
+  if (typeof pose === 'string') return pose;
+  const lightPhase = String(environment && environment.lightPhase || '');
+  return pose && lightPhase ? String(pose[lightPhase] || '') : '';
+}
+
+function characterPresentation(pet, currentState, environment) {
   const prototype = String(pet && pet.prototype || '');
   const isJadeRabbit = prototype === '玉兔' || prototype === 'YT';
-  const isAcceptedSleepState = currentState && currentState.atHome && currentState.key === 'sleep' && Number(currentState.action && currentState.action.screen) === 0;
-  const image = isJadeRabbit && isAcceptedSleepState ? assets.POST_HATCH.characterPoses.sleep : '';
-  return { visible: Boolean(image), image };
+  const isAtHome = Boolean(currentState && currentState.atHome);
+  const pose = String(currentState && currentState.key || '');
+  const image = isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';
+  return {
+    visible: Boolean(image),
+    image,
+    pose: image ? pose : '',
+    screen: image ? Math.max(0, Math.min(2, Number(currentState && currentState.action && currentState.action.screen || 0))) : -1
+  };
+}
+
+function homeFinderIcon(pet) {
+  const sceneActions = assets.POST_HATCH.sceneActions || {};
+  const findHome = sceneActions.findHome || {};
+  const prototype = String(pet && pet.prototype || '');
+  if (prototype === '玉兔' || prototype === 'YT') return findHome.jadeRabbit || findHome.egg || '';
+  if (prototype === '锦鲤' || prototype === 'KOI') return findHome.boonKoi || findHome.egg || '';
+  return findHome.egg || '';
+}
+
+function contextActionPresentation(pet, currentState, hasNewMessage) {
+  const sceneActions = assets.POST_HATCH.sceneActions || {};
+  const atHome = Boolean(currentState && currentState.atHome);
+  return {
+    icon: atHome ? homeFinderIcon(pet) : sceneActions.envelope || '',
+    label: atHome ? '找到蛋宝宝' : '给蛋宝宝写信',
+    hasNewMessage: Boolean(hasNewMessage),
+    showTalkBadge: Boolean(atHome && currentState && currentState.canTalk && !hasNewMessage)
+  };
+}
+
+function statusBubbleFor(currentState, previousText) {
+  const pool = STATUS_BUBBLE_POOL[currentState && currentState.key] || STATUS_BUBBLE_POOL[currentState && currentState.major] || [];
+  const candidates = pool.filter(text => text !== previousText);
+  const options = candidates.length ? candidates : pool;
+  return options[Math.floor(Math.random() * options.length)] || '';
 }
 
 function magicWindowPresentation() {
@@ -102,6 +220,8 @@ Page({
     letterDraft: '',
     letterBusy: false,
     letterError: '',
+    letterKeyboardHeight: 0,
+    letterComposerTopPx: 220,
     composerVisible: false,
     toolboxVisible: false,
     dailyWindowVisible: false,
@@ -122,6 +242,15 @@ Page({
     dailyWindowPeriodLabel: '日间',
     reducedMotion: false,
     characterWarming: false,
+    statusBubble: '',
+    statusBubbleVisible: false,
+    contextActionIcon: '',
+    contextActionLabel: '',
+    contextActionHasNewMessage: false,
+    contextActionShowTalkBadge: false,
+    toolboxIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolbox || '',
+    homeFocusVisible: false,
+    homeTalkNudgeVisible: false,
     screens: [0, 1, 2],
     currentScreen: 1,
     scrollLeft: 0,
@@ -137,19 +266,46 @@ Page({
     windowHotspots: [[], [], []],
     showSceneCharacter: false,
     sceneCharacterImage: '',
-    sceneBackgroundError: false
+    sceneCharacterPose: '',
+    sceneCharacterScreen: -1,
+    sceneBackgroundError: false,
+    sceneBackgroundReady: false,
+    sceneEntered: false,
+    isDemo: config.localDemoEnabled,
+    sceneTesterOpen: false,
+    sceneTesterBusy: false,
+    sceneTesterTopPx: 88,
+    sceneTesterKey: 'auto',
+    sceneTesterLabel: AUTO_SCENE_OPTION.label,
+    sceneTesterOptions: SCENE_TESTER_OPTIONS,
+    companionStateTesterOpen: false,
+    companionStateTesterTopPx: 176,
+    companionStateTesterKey: 'auto',
+    companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label,
+    companionStateTesterOptions: COMPANION_STATE_TEST_OPTIONS,
+    stageTesterOpen: false,
+    stageTesterBusy: false,
+    stageTesterTopPx: 132,
+    stageTesterKey: 'hatched',
+    stageTesterLabel: '破壳后',
+    stageTesterOptions: demoExperience.PREVIEW_STAGES
   },
 
   onLoad(query) {
     this.pageActive = true;
     this.hasTrackedEnter = false;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
+    const testerTopPx = menuRect && Number(menuRect.bottom)
+      ? Number(menuRect.bottom) + 8
+      : Number(info.statusBarHeight || 20) + 42;
     const pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') {
       wx.showToast({ title: '破壳后才能进入这里', icon: 'none' });
       this.backTimer = setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 600);
       return;
     }
+    const stageTester = stageTesterPresentation(pet);
     const origin = {
       left: Number(query.origin_left), top: Number(query.origin_top),
       width: Number(query.origin_width), height: Number(query.origin_height)
@@ -165,6 +321,9 @@ Page({
       statusBarHeight: info.statusBarHeight || 20,
       panelWidth,
       panelHeight,
+      // 首屏先定位到中屏，异步状态回来时不再从左屏横向滑过来。
+      currentScreen: 1,
+      scrollLeft: panelWidth,
       pet,
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
@@ -173,7 +332,12 @@ Page({
       dailyWindowEnvironment,
       dailyWindowWeatherLabel: WEATHER_LABELS[dailyWindowEnvironment.weather] || '晴朗',
       dailyWindowPeriodLabel: dailyWindowEnvironment.lightPhase === 'sunset' ? '日落' : (dailyWindowEnvironment.period === 'night' ? '夜晚' : '日间'),
-      reducedMotion: reducedMotionEnabled()
+      reducedMotion: reducedMotionEnabled(),
+      sceneTesterTopPx: Math.round(testerTopPx),
+      stageTesterTopPx: Math.round(testerTopPx + 44),
+      companionStateTesterTopPx: Math.round(testerTopPx + 88),
+      stageTesterKey: stageTester.key,
+      stageTesterLabel: stageTester.label
     });
     this.scheduleEnvironmentRefresh();
     this.loadSnapshot();
@@ -194,16 +358,30 @@ Page({
         this.setData({ loading: false, error: result.message || '此刻状态没有加载好' });
         return;
       }
-      const currentState = result.currentState;
+      const snapshot = previewCompanionSnapshot(result, this.companionStateTestOverride);
+      const currentState = snapshot.currentState;
       const screen = Math.max(0, Math.min(2, Number(currentState.screen || 0)));
-      const character = characterPresentation(this.data.pet, currentState);
+      const character = characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment);
+      const contextAction = contextActionPresentation(this.data.pet, currentState, snapshot.newMessage);
+      const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
+      const shouldShowStatusBubble = slotKey !== this.lastStatusSlotKey;
+      const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
+      const restoreToolbox = !!this.restoreToolboxAfterSnapshot;
+      this.restoreToolboxAfterSnapshot = false;
+      this.clearHomeFocusTimers();
       this.setData({
         loading: false,
         error: '',
-        snapshot: result,
+        snapshot,
         currentState,
         showSceneCharacter: character.visible,
         sceneCharacterImage: character.image,
+        sceneCharacterPose: character.pose,
+        sceneCharacterScreen: character.screen,
+        contextActionIcon: contextAction.icon,
+        contextActionLabel: contextAction.label,
+        contextActionHasNewMessage: contextAction.hasNewMessage,
+        contextActionShowTalkBadge: contextAction.showTalkBadge,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
         feedback: currentState.actionDone ? currentState.actionFeedback : '',
@@ -212,13 +390,20 @@ Page({
         talkDraft: '',
         talkReply: '',
         composerVisible: false,
-        toolboxVisible: false
+        toolboxVisible: restoreToolbox,
+        homeFocusVisible: false,
+        homeTalkNudgeVisible: false
+      }, () => {
+        if (shouldShowStatusBubble) {
+          this.lastStatusSlotKey = slotKey;
+          this.showStatusBubble(nextStatusBubble);
+        }
       });
       if (!this.hasTrackedEnter) {
         analytics.track('scene_enter', { scene_id: `${currentState.major}:${currentState.key}`, entry_type: this.data.enterFromHome ? 'home_expand' : 'direct' });
         this.hasTrackedEnter = true;
       }
-      this.scheduleSlotRefresh(currentState.slotEnd);
+      if (!this.companionStateTestOverride) this.scheduleSlotRefresh(currentState.slotEnd);
     }).catch(() => {
       if (this.snapshotRequest === request) this.snapshotRequest = null;
       if (this.pageActive && token === this.loadToken) this.setData({ loading: false, error: '此刻状态没有加载好，请重试' });
@@ -235,6 +420,9 @@ Page({
   onRetry() { if (!this.data.loading) this.loadSnapshot(); },
 
   clearEnvironmentTimer() { clearTimeout(this.environmentTimer); this.environmentTimer = null; },
+  displayedEnvironment() {
+    return previewEnvironment(environmentForPet(this.data.pet), this.sceneTestOverride);
+  },
   scheduleEnvironmentRefresh() {
     this.clearEnvironmentTimer();
     if (!this.pageActive || this.data.dailyWindowVisible || this.data.magicWindowVisible) return;
@@ -243,17 +431,22 @@ Page({
   },
   refreshEnvironment() {
     if (!this.pageActive || !this.data.pet || this.data.dailyWindowVisible || this.data.magicWindowVisible) return;
-    const environment = environmentForPet(this.data.pet);
+    const environment = this.displayedEnvironment();
     const app = typeof getApp === 'function' ? getApp() : null;
     const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
+    const character = characterPresentation(this.data.pet, this.data.currentState, environment);
     this.setData({
       dailyWindowEnvironment: environment,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间'),
       panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage,
       previousPanoramaImage: changed ? this.data.panoramaImage : '', windowHotspots: panorama.windowHotspots,
-      sceneCrossfadeActive: changed, sceneBackgroundError: !panorama.valid
+      sceneCrossfadeActive: changed, sceneBackgroundError: !panorama.valid,
+      showSceneCharacter: character.visible,
+      sceneCharacterImage: character.image,
+      sceneCharacterPose: character.pose,
+      sceneCharacterScreen: character.screen
     }, () => {
       if (changed) {
         clearTimeout(this.environmentCrossfadeTimer);
@@ -264,12 +457,23 @@ Page({
   },
 
   onSceneBackgroundLoad() {
-    if (this.pageActive && this.data.sceneBackgroundError) this.setData({ sceneBackgroundError: false });
+    if (!this.pageActive) return;
+    if (!this.data.sceneBackgroundReady || this.data.sceneBackgroundError) {
+      this.setData({ sceneBackgroundReady: true, sceneBackgroundError: false }, () => this.revealInitialScene());
+    }
   },
 
   onSceneBackgroundError() {
     if (!this.pageActive) return;
-    this.setData({ sceneBackgroundError: true });
+    this.setData({ sceneBackgroundReady: true, sceneBackgroundError: true }, () => this.revealInitialScene());
+  },
+
+  revealInitialScene() {
+    if (!this.pageActive || this.data.sceneEntered || !this.data.currentState || !this.data.sceneBackgroundReady) return;
+    clearTimeout(this.sceneEnterTimer);
+    this.sceneEnterTimer = setTimeout(() => {
+      if (this.pageActive && this.data.currentState && this.data.sceneBackgroundReady) this.setData({ sceneEntered: true });
+    }, this.data.reducedMotion ? 0 : 24);
   },
 
   onRetrySceneBackground() {
@@ -280,6 +484,106 @@ Page({
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
       windowHotspots: panorama.windowHotspots
+    });
+  },
+
+  // DEV-ONLY：与破壳前首页使用同一套 36 个环境 key；release/trial 下不渲染。
+  onSceneTesterToggle() {
+    if (!this.data.isDemo || this.data.sceneTesterBusy) return;
+    this.setData({ sceneTesterOpen: !this.data.sceneTesterOpen, stageTesterOpen: false, companionStateTesterOpen: false });
+  },
+
+  onSceneTesterSelect(event) {
+    if (!this.data.isDemo || this.data.sceneTesterBusy) return;
+    const key = event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.scene;
+    const target = key === 'auto' ? null : scenePreviewTarget(key);
+    if (key !== 'auto' && !target) return;
+    if (key === this.data.sceneTesterKey) {
+      this.setData({ sceneTesterOpen: false });
+      return;
+    }
+    this.sceneTestOverride = target;
+    this.setData({
+      sceneTesterBusy: true,
+      sceneTesterOpen: false,
+      sceneTesterKey: key,
+      sceneTesterLabel: target ? target.label : AUTO_SCENE_OPTION.label
+    }, () => {
+      this.refreshEnvironment();
+      this.setData({ sceneTesterBusy: false });
+      wx.showToast({ title: target ? `已切换：${target.label}` : '已恢复实时环境', icon: 'none' });
+    });
+  },
+
+  // DEV-ONLY：与首页共享 Day 1–Day 7 / 破壳后阶段验收器。
+  onStageTesterToggle() {
+    if (!this.data.isDemo || this.data.stageTesterBusy) return;
+    this.setData({ stageTesterOpen: !this.data.stageTesterOpen, sceneTesterOpen: false, companionStateTesterOpen: false });
+  },
+
+  onStageTesterSelect(event) {
+    if (!this.data.isDemo || this.data.stageTesterBusy) return;
+    const stageKey = event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.stage;
+    const target = demoExperience.PREVIEW_STAGES.find(item => item.key === stageKey);
+    if (!target) return;
+    if (stageKey === this.data.stageTesterKey) {
+      this.setData({ stageTesterOpen: false });
+      return;
+    }
+    this.setData({ stageTesterBusy: true, stageTesterOpen: false, sceneTesterOpen: false, companionStateTesterOpen: false });
+    const result = demoExperience.setPreviewStage(stageKey);
+    if (!result.ok) {
+      this.setData({ stageTesterBusy: false });
+      wx.showToast({ title: result.message || '测试阶段切换失败', icon: 'none' });
+      return;
+    }
+    if (stageKey !== 'hatched') {
+      wx.showToast({ title: `已切换到${target.label}`, icon: 'none' });
+      setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 220);
+      return;
+    }
+    this.setData({
+      pet: result.pet,
+      stageTesterBusy: false,
+      stageTesterKey: target.key,
+      stageTesterLabel: target.label,
+      companionStateTesterKey: 'auto',
+      companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label
+    }, () => {
+      this.companionStateTestOverride = null;
+      this.refreshEnvironment();
+      this.loadSnapshot();
+      wx.showToast({ title: `已切换到${target.label}`, icon: 'none' });
+    });
+  },
+
+  // DEV-ONLY：只覆盖当前页的陪伴状态，用于验证入口与转场；不写入陪伴记录。
+  onCompanionStateTesterToggle() {
+    if (!this.data.isDemo) return;
+    this.setData({
+      companionStateTesterOpen: !this.data.companionStateTesterOpen,
+      stageTesterOpen: false,
+      sceneTesterOpen: false
+    });
+  },
+
+  onCompanionStateTesterSelect(event) {
+    if (!this.data.isDemo) return;
+    const key = event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.companionState;
+    const target = companionStatePreviewTarget(key);
+    if (key !== 'auto' && !target) return;
+    if (key === this.data.companionStateTesterKey) {
+      this.setData({ companionStateTesterOpen: false });
+      return;
+    }
+    this.companionStateTestOverride = target;
+    this.setData({
+      companionStateTesterOpen: false,
+      companionStateTesterKey: key,
+      companionStateTesterLabel: target ? target.label : AUTO_COMPANION_STATE_OPTION.label
+    }, () => {
+      this.loadSnapshot();
+      wx.showToast({ title: target ? `已切换：${target.label}` : '已跟随真实时间', icon: 'none' });
     });
   },
 
@@ -303,7 +607,8 @@ Page({
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
       windowHotspots: panorama.windowHotspots,
-      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth
+      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
+      letterComposerTopPx: this.resolveLetterComposerTop(this.data.letterKeyboardHeight, panelHeight, panelWidth)
     });
   },
 
@@ -356,6 +661,24 @@ Page({
     }, 2600);
   },
 
+  showStatusBubble(text) {
+    clearTimeout(this.statusBubbleTimer);
+    clearTimeout(this.statusBubbleClearTimer);
+    if (!text) {
+      this.setData({ statusBubble: '', statusBubbleVisible: false });
+      return;
+    }
+    this.lastStatusBubble = text;
+    this.setData({ statusBubble: text, statusBubbleVisible: true });
+    this.statusBubbleTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ statusBubbleVisible: false });
+      this.statusBubbleClearTimer = setTimeout(() => {
+        if (this.pageActive) this.setData({ statusBubble: '' });
+      }, this.data.reducedMotion ? 20 : 220);
+    }, 2600);
+  },
+
   onCharacterTap() {
     if (this.cuddleCompleted) {
       this.cuddleCompleted = false;
@@ -375,9 +698,22 @@ Page({
 
   onSceneAction() { this.runSceneAction(false); },
 
+  isCompanionStatePreview() { return Boolean(this.companionStateTestOverride); },
+
   runSceneAction(openWindowAfter, feedbackOverride, windowSelector) {
     const current = this.data.currentState;
     if (!current || !current.atHome || this.data.actionBusy) return;
+    if (this.isCompanionStatePreview()) {
+      const feedback = feedbackOverride || current.action.feedback;
+      this.setData({
+        'currentState.actionDone': true,
+        'currentState.actionFeedback': feedback,
+        playedActionKind: current.action.kind
+      });
+      this.showFeedback(feedback);
+      if (openWindowAfter) this.openDailyWindow(windowSelector);
+      return;
+    }
     clearTimeout(this.feedbackTimer);
     this.setData({ actionBusy: true });
     postHatch.performAction(this.data.pet, this.data.snapshot).then(result => {
@@ -403,19 +739,112 @@ Page({
 
   onContextActionTap() {
     const current = this.data.currentState;
-    if (!current || (current.atHome && !current.canTalk)) return;
+    if (!current) return;
+    const newMessage = this.data.snapshot && this.data.snapshot.newMessage;
+    if (newMessage) {
+      if (current.atHome) {
+        this.focusHomeCharacter(current);
+        this.showFeedback(newMessage.line || '我给你留了一句话。');
+        this.markNewMessageRead(newMessage);
+      } else {
+        this.returningFromChild = true;
+        wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=postcards&postcard_id=${encodeURIComponent(newMessage.id)}` });
+      }
+      analytics.track('room_element_interaction', { element_id: 'scene_new_message_button', result: 'opened' });
+      return;
+    }
+    if (current.atHome) {
+      this.focusHomeCharacter(current);
+      return;
+    }
     const screen = Math.max(0, Math.min(2, Number(current.screen || 0)));
     this.setData({
       composerVisible: true,
       toolboxVisible: false,
       currentScreen: screen,
-      scrollLeft: screen * this.data.panelWidth
+      scrollLeft: screen * this.data.panelWidth,
+      letterKeyboardHeight: 0,
+      letterComposerTopPx: this.resolveLetterComposerTop(0)
     });
-    analytics.track('room_element_interaction', { element_id: current.atHome ? 'scene_talk_button' : 'scene_letter_button', result: 'opened' });
+    analytics.track('room_element_interaction', { element_id: 'scene_letter_button', result: 'opened' });
+  },
+
+  markNewMessageRead(message) {
+    postHatch.markPostcardRead(this.data.pet, message && message.id).then(result => {
+      if (!this.pageActive || !result || !result.ok) return;
+      const contextAction = contextActionPresentation(this.data.pet, this.data.currentState, null);
+      this.setData({
+        'snapshot.newMessage': null,
+        contextActionHasNewMessage: false,
+        contextActionShowTalkBadge: contextAction.showTalkBadge
+      });
+    }).catch(() => {});
+  },
+
+  focusHomeCharacter(current) {
+    const screen = Math.max(0, Math.min(2, Number(current.screen || 0)));
+    this.clearHomeFocusTimers();
+    this.setData({
+      composerVisible: false,
+      toolboxVisible: false,
+      currentScreen: screen,
+      scrollLeft: screen * this.data.panelWidth,
+      homeFocusVisible: true,
+      homeTalkNudgeVisible: !!current.canTalk
+    });
+    this.homeFocusTimer = setTimeout(() => {
+      if (this.pageActive) this.setData({ homeFocusVisible: false });
+    }, this.data.reducedMotion ? 20 : 1120);
+    if (current.canTalk) {
+      this.homeTalkNudgeTimer = setTimeout(() => {
+        if (this.pageActive) this.setData({ homeTalkNudgeVisible: false });
+      }, this.data.reducedMotion ? 2400 : 4200);
+    }
+    analytics.track('room_element_interaction', { element_id: 'scene_find_home_button', result: 'focused' });
+  },
+
+  onOpenTalkComposer() {
+    const current = this.data.currentState;
+    if (!current || !current.atHome || !current.canTalk) return;
+    this.clearHomeFocusTimers();
+    this.setData({
+      composerVisible: true,
+      toolboxVisible: false,
+      homeFocusVisible: false,
+      homeTalkNudgeVisible: false
+    });
+    analytics.track('room_element_interaction', { element_id: 'scene_talk_button', result: 'opened' });
   },
 
   onCloseComposer() {
-    this.setData({ composerVisible: false, talkError: '', letterError: '' });
+    this.setData({ composerVisible: false, talkError: '', letterError: '', letterKeyboardHeight: 0 });
+  },
+
+  resolveLetterComposerTop(keyboardHeight, panelHeight, panelWidth) {
+    const height = Number(panelHeight || this.data.panelHeight || 667);
+    const width = Number(panelWidth || this.data.panelWidth || 375);
+    const keyboard = Math.max(0, Number(keyboardHeight || 0));
+    const safeTop = Math.max(20, Number(this.data.statusBarHeight || 20)) + 52;
+    const desiredTop = Math.round(height * 0.29);
+    // 按包含错误文案的 240rpx 高度估算，键盘上方保留 18px 可点击间隔。
+    const estimatedComposerHeight = Math.max(120, Math.round(240 * width / 750));
+    const keyboardSafeTop = height - keyboard - estimatedComposerHeight - 18;
+    return Math.max(safeTop, Math.min(desiredTop, keyboardSafeTop));
+  },
+
+  onLetterKeyboardHeightChange(event) {
+    const height = Math.max(0, Number(event.detail && event.detail.height || 0));
+    this.setData({
+      letterKeyboardHeight: height,
+      letterComposerTopPx: this.resolveLetterComposerTop(height)
+    });
+  },
+
+  clearHomeFocusTimers() {
+    clearTimeout(this.homeFocusTimer);
+    clearTimeout(this.homeTalkNudgeTimer);
+    this.homeFocusTimer = null;
+    this.homeTalkNudgeTimer = null;
   },
 
   onToggleToolbox() {
@@ -434,11 +863,25 @@ Page({
       return;
     }
     if (target === 'card') {
-      wx.navigateTo({ url: '/pages/collection-card/collection-card' });
+      this.restoreToolboxOnReturn = true;
+      wx.navigateTo({
+        url: '/pages/collection-card/collection-card',
+        fail: () => {
+          this.restoreToolboxOnReturn = false;
+          if (this.pageActive) this.setData({ toolboxVisible: true });
+        }
+      });
       return;
     }
     if (target === 'postcards' || target === 'keepsakes') {
-      wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${target}` });
+      this.restoreToolboxOnReturn = true;
+      wx.navigateTo({
+        url: `/pages/life-scenes/life-scenes?section=${target}`,
+        fail: () => {
+          this.restoreToolboxOnReturn = false;
+          if (this.pageActive) this.setData({ toolboxVisible: true });
+        }
+      });
     }
   },
 
@@ -446,6 +889,14 @@ Page({
   onSendTalk() {
     if (this.data.talkBusy) return;
     const messageLength = Array.from(this.data.talkDraft || '').length;
+    if (this.isCompanionStatePreview()) {
+      if (!messageLength) {
+        this.setData({ talkError: '先说一句话吧' });
+        return;
+      }
+      this.setData({ talkDraft: '', talkError: '', talkReply: '我在呢。这是测试回复，不会写进陪伴记录。' });
+      return;
+    }
     this.setData({ talkBusy: true, talkError: '', talkReply: '' });
     postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, this.data.talkDraft).then(result => {
       if (!this.pageActive) return;
@@ -461,6 +912,22 @@ Page({
   onLetterInput(event) { this.setData({ letterDraft: event.detail.value, letterError: '' }); },
   onSendLetter() {
     if (this.data.letterBusy) return;
+    if (this.isCompanionStatePreview()) {
+      if (!String(this.data.letterDraft || '').trim()) {
+        this.setData({ letterError: '写一句话再寄出吧' });
+        return;
+      }
+      const feedback = this.data.currentState && this.data.currentState.action && this.data.currentState.action.feedback || '信已经寄出，家里又安静下来。';
+      this.setData({
+        letterDraft: '',
+        letterError: '',
+        'currentState.actionDone': true,
+        'currentState.letterSent': true,
+        'currentState.actionFeedback': feedback
+      });
+      this.showFeedback(`${feedback}（测试预览）`);
+      return;
+    }
     this.setData({ letterBusy: true, letterError: '' });
     postHatch.sendLetter(this.data.pet, this.data.snapshot, this.data.letterDraft).then(result => {
       if (!this.pageActive) return;
@@ -539,7 +1006,7 @@ Page({
         height: this.data.panelHeight * .48
       };
       const origin = rect || fallback;
-      const environment = environmentForPet(this.data.pet);
+      const environment = this.displayedEnvironment();
       this.setData({
         dailyWindowVisible: true,
         dailyWindowEnvironment: environment,
@@ -563,7 +1030,7 @@ Page({
   },
 
   onDailyWindowRetry() {
-    const environment = environmentForPet(this.data.pet);
+    const environment = this.displayedEnvironment();
     const app = typeof getApp === 'function' ? getApp() : null;
     const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
@@ -686,6 +1153,8 @@ Page({
     if (this.data.dailyWindowVisible || this.data.magicWindowVisible) this.setData({ dailyWindowVisible: false, magicWindowVisible: false });
     if (this.returningFromChild) {
       this.returningFromChild = false;
+      this.restoreToolboxAfterSnapshot = !!this.restoreToolboxOnReturn;
+      this.restoreToolboxOnReturn = false;
       this.loadSnapshot();
     }
     this.scheduleEnvironmentRefresh();
@@ -702,10 +1171,14 @@ Page({
   clearTransientState() {
     this.clearSlotTimer();
     this.clearCuddleTimers();
+    this.clearHomeFocusTimers();
     clearTimeout(this.feedbackTimer);
+    clearTimeout(this.statusBubbleTimer);
+    clearTimeout(this.statusBubbleClearTimer);
     clearTimeout(this.magicKoiTimer);
     clearTimeout(this.environmentCrossfadeTimer);
-    this.setData({ feedback: '', talkReply: '', composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false });
+    clearTimeout(this.sceneEnterTimer);
+    this.setData({ feedback: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false });
   },
   onUnload() {
     this.pageActive = false;

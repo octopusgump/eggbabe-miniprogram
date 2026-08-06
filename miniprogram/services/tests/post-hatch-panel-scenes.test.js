@@ -21,12 +21,52 @@ sourceScenes.forEach(scene => {
 });
 
 assert.equal(postHatchAssets.resolvePanoramaScene('unknown_scene'), null, '未知 scene key 不得静默混入其他套装');
+assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.sunset.endsWith('/jade-rabbit/stare_sunset_v01.webp'), true, '玉兔发呆日落样张必须使用明确的透明 WebP 文件');
+assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.day, '', '日落样张不得静默复用为日间角色图');
+assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.night, '', '日落样张不得静默复用为夜晚角色图');
 
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
 const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxss'), 'utf8');
 assert.equal(lifeSceneLogic.includes('assets.resolvePanoramaScene(sceneKey, cdnBase)'), true, '全屏生活空间必须按当前环境 scene key 读取单张全景图，并支持备案 CDN');
 assert.equal(/assets\.POST_HATCH\.panoramaFallback(?!Meta)/.test(lifeSceneLogic), false, '破壳后背景加载失败不得静默替换为其他天气场景');
+assert.equal(lifeSceneLogic.includes("isDemo: config.localDemoEnabled"), true, '破壳后环境测试器只能在开发验收模式启用');
+assert.equal(lifeSceneLogic.includes('onSceneTesterSelect(event)'), true, '破壳后必须支持选择同一套环境测试场景');
+assert.equal(lifeSceneLogic.includes('onStageTesterSelect(event)'), true, '破壳后必须支持 Day 1–Day 7 与破壳后阶段测试');
+assert.equal(lifeSceneLogic.includes('onCompanionStateTesterSelect(event)'), true, '破壳后开发模式必须支持陪伴状态切换测试');
+assert.equal(lifeSceneLogic.includes("key: 'home-talk'"), true, '陪伴状态测试必须覆盖在家且可对话');
+assert.equal(lifeSceneLogic.includes("key: 'home-busy'"), true, '陪伴状态测试必须覆盖在家不便对话');
+assert.equal(lifeSceneLogic.includes("key: 'away-letter'"), true, '陪伴状态测试必须覆盖不在家写信');
+assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
+assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后右上角环境测试入口必须等全景图就绪后显示');
+assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester"'), true, '破壳后必须恢复开发版阶段切换入口，并等待全景图就绪后显示');
+assert.equal(lifeSceneWxml.includes('catchtap="onStageTesterToggle"') && lifeSceneWxml.includes('catchtap="onStageTesterSelect"'), true, '破壳后阶段切换入口必须支持展开并选择 Day 1–Day 7 / 破壳后');
+assert.equal(lifeSceneWxml.includes('class="companion-state-tester"'), true, '破壳后必须显示开发模式陪伴状态测试入口');
+assert.equal(/pano-static-character|sceneCharacter3d|Three\.js/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, '3D MVP 关闭后，生活空间不得保留 WebGL 角色依赖或调试入口');
+assert.equal(lifeSceneLogic.includes('function characterPosePath(key, environment)'), true, '角色图必须按状态与环境时段取图');
+assert.equal(lifeSceneLogic.includes('characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment)'), true, '首次加载角色图必须读取当前环境时段');
+assert.equal(lifeSceneLogic.includes('const character = characterPresentation(this.data.pet, this.data.currentState, environment);'), true, '切换环境测试场景时必须重新判定角色图');
+assert.equal(lifeSceneWxml.includes('showSceneCharacter && sceneCharacterScreen === 1'), true, '中屏发呆角色图必须只渲染到中屏');
+assert.equal(lifeSceneStyles.includes('.scene-character--stare'), true, '发呆角色图必须具有独立摆位样式');
+assert.equal(lifeSceneLogic.includes('sceneTesterTopPx: Math.round(testerTopPx)'), true, '破壳后环境测试器应与破壳前一样位于第一行');
+assert.equal(lifeSceneLogic.includes('stageTesterTopPx: Math.round(testerTopPx + 44)'), true, '破壳后阶段切换入口必须位于场景与状态验收器之间');
+assert.equal(lifeSceneLogic.includes('restoreToolboxOnReturn = true') && lifeSceneLogic.includes('toolboxVisible: restoreToolbox'), true, '从百宝箱子页返回生活场景时必须恢复百宝箱，不得只落在空桌面');
+assert.equal(lifeSceneWxml.includes('wx:if="{{!sceneEntered && !error}}" class="state-layer"'), true, '首帧必须保持加载层直到全景与目标面板均可淡入');
+assert.equal(lifeSceneLogic.includes('sceneBackgroundReady: true, sceneBackgroundError: false'), true, '全景图加载成功后才能安排首帧淡入');
+assert.equal(lifeSceneLogic.includes('currentScreen: 1') && lifeSceneLogic.includes('scrollLeft: panelWidth'), true, '首帧必须先定位到中屏，避免异步状态回读时从左屏横向滑入');
+assert.equal(lifeSceneLogic.includes('revealInitialScene()') && lifeSceneWxml.includes("scene-stage {{sceneEntered ? 'scene-stage--entered' : ''}}"), true, '进入生活空间必须使用受资源就绪门槛控制的淡入层');
+assert.equal(lifeSceneStyles.includes('.scene-stage{position:absolute;inset:0;opacity:0;') && lifeSceneStyles.includes('.scene-stage--entered{opacity:1;'), true, '场景入场必须是渐入，而非横向页面滑动');
+assert.equal(lifeSceneWxml.includes('scene-action-talk-badge'), true, '可对话时的找到 ta 按钮必须展示对话标记');
+assert.equal(lifeSceneWxml.includes('scene-action-unread-dot'), true, '新明信片必须在场景入口展示红点提示');
+assert.equal(lifeSceneWxml.includes('contextActionShowTalkBadge') && lifeSceneWxml.includes('contextActionHasNewMessage'), true, '红点与可对话徽标必须由互斥状态控制');
+assert.equal(lifeSceneStyles.includes('.scene-action-button--talkable'), true, '可对话状态必须与不便对话状态有明确的按钮视觉差异');
+assert.equal(lifeSceneStyles.includes('background:#F1EC9A'), true, '可对话徽标必须使用晨露黄，表达互动而非成长状态');
+assert.equal(lifeSceneStyles.includes('background:#26362B'), true, '可对话徽标图形必须使用深墨绿');
+assert.equal(lifeSceneStyles.includes('top:30rpx;right:16rpx') && lifeSceneStyles.includes('background:#D9463C'), true, '新消息红点必须靠近角色头像头部侧边，并使用功能提示红');
+assert.equal(lifeSceneWxml.includes('composer-send--paper-plane'), true, '写信发送按钮必须使用与场景操作一致的 3D 纸飞机视觉');
+assert.equal(lifeSceneWxml.includes('adjust-position="{{false}}"') && lifeSceneWxml.includes('bindkeyboardheightchange="onLetterKeyboardHeightChange"'), true, '写信栏必须自主响应键盘高度，避免系统与页面双重上推');
+assert.equal(lifeSceneLogic.includes('resolveLetterComposerTop(keyboardHeight, panelHeight, panelWidth)'), true, '写信栏必须根据屏幕与键盘可用高度计算安全位置');
+assert.equal(lifeSceneStyles.includes('.scene-composer--letter{position:fixed;bottom:auto;'), true, '写信栏必须脱离底部停靠并放到屏幕上中部');
 assert.equal(/resolvePanelSceneSet|panelImages|usingPanoramaFallback|scrollIntoView/.test(lifeSceneLogic), false, '生活空间不得保留三张切图或双重滚动定位逻辑');
 assert.deepEqual(postHatchAssets.POST_HATCH.panoramaFallbackMeta, {
   width: 2823,

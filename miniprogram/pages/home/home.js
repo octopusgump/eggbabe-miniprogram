@@ -19,6 +19,7 @@ const windowWeatherCanvas = require('../../utils/window-weather-canvas');
 
 const SCENE_PREVIEW_STORAGE_KEY = 'eggbabe_scene_preview';
 const COMPANION_HINT_STORAGE_KEY = 'eggbabe_companion_icon_hints_seen_v1';
+const HOME_STAGE_TRANSITION_MS = 320;
 const AUTO_SCENE_OPTION = {
   key: 'auto',
   seasonLabel: '自动',
@@ -160,6 +161,8 @@ Page({
     feedback: '',
     eggMotion: '',
     sceneEffect: '',
+    homeStagePhase: 'hidden',
+    doodleEditorVisible: false,
     hasScenes: false,
     syncPending: 0,
     sceneImage: '',
@@ -229,11 +232,40 @@ Page({
 
   prefersReducedMotion() {
     try {
-      const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+      const system = wx.getSystemSetting
+        ? wx.getSystemSetting()
+        : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
       return !!(system.reducedMotion || system.enableReduceMotion);
     } catch (error) {
       return false;
     }
+  },
+
+  clearHomeStageTransition() {
+    clearTimeout(this.homeStageTransitionTimer);
+    this.homeStageTransitionTimer = null;
+    this.homeStageTransitionToken = (this.homeStageTransitionToken || 0) + 1;
+  },
+
+  beginHomeStageEnter() {
+    this.clearHomeStageTransition();
+    if (!this.pageActive || !this.data.pet || this.data.stage === 'hatched') return;
+    const token = this.homeStageTransitionToken;
+    const duration = this.prefersReducedMotion() ? 20 : HOME_STAGE_TRANSITION_MS;
+    this.setData({ homeStagePhase: 'hidden' }, () => {
+      const enter = () => {
+        if (!this.pageActive || token !== this.homeStageTransitionToken) return;
+        this.setData({ homeStagePhase: 'entering' });
+        this.homeStageTransitionTimer = setTimeout(() => {
+          this.homeStageTransitionTimer = null;
+          if (this.pageActive && token === this.homeStageTransitionToken) {
+            this.setData({ homeStagePhase: 'visible' });
+          }
+        }, duration + 40);
+      };
+      if (wx.nextTick) wx.nextTick(enter);
+      else setTimeout(enter, 0);
+    });
   },
 
   clearTimeSceneTimers() {
@@ -362,6 +394,16 @@ Page({
 
   async onShow() {
     this.pageActive = true;
+    if (this.data.doodleEditorVisible) {
+      const activeTabBar = this.getTabBar && this.getTabBar();
+      if (activeTabBar) activeTabBar.setData({ selected: 0, hidden: true, elevated: false });
+      return;
+    }
+    this.clearHomeStageTransition();
+    // 从破壳后生活空间回到 tab 页时，上一次的跳转页已经关闭。
+    // 不复位会让 openPostHatchLanding 误以为页面仍在打开，并停在空白首页。
+    this.postHatchLandingActive = false;
+    this.postHatchLandingOpening = false;
     this.clearTimeSceneTimers();
     this.pendingTimeEnvironment = null;
     this.previousTimeEnvironment = null;
@@ -389,7 +431,8 @@ Page({
         previousFullSceneImage: '',
         sceneCrossfadeActive: false,
         pendingTimeSceneImage: '',
-        timeSceneIntro: ''
+        timeSceneIntro: '',
+        homeStagePhase: 'hidden'
       });
       return;
     }
@@ -404,6 +447,10 @@ Page({
     const previewKey = config.localDemoEnabled ? storedScenePreviewKey() : 'auto';
     const previewTarget = scenePreviewTarget(previewKey);
     const environment = previewEnvironment(resolvedEnvironment, previewTarget);
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const panorama = hatched
+      ? sceneConfig.assets.resolvePanoramaScene(environment.sceneKey, app && app.globalData && app.globalData.environmentCdnBase)
+      : null;
     this.sceneTestOverride = previewTarget;
     this.sceneLayerEggActive = !hatched && !hasCustomizedShell(pet);
     const lampStateKey = `${environment.dateKey}:${environment.period}`;
@@ -428,7 +475,7 @@ Page({
       nameCount: Array.from(pet.name || '').length,
       nameError: '',
       hasScenes: hatched,
-      sceneImage: hatched ? sceneConfig.assets.POST_HATCH.panoramaFallback : '',
+      sceneImage: panorama ? panorama.panorama : '',
       environment,
       fullSceneImageLoading: !hatched && Boolean(environment.fullSceneImage),
       fullSceneImageFailed: false,
@@ -449,10 +496,12 @@ Page({
       scenePreloadAssets: emptyScenePreloadAssets(),
       homeEggBasePreview: !hatched && this.sceneLayerEggActive ? environment.eggImage : '',
       homeEggArtPreview: '',
+      homeStagePhase: 'hidden',
       companionActions: companionActionsFor([], ''),
       syncPending: syncQueue.pendingCount()
     }, () => {
       if (!hatched) {
+        this.beginHomeStageEnter();
         this.startClock();
         this.setupWindowWeatherCanvas();
         this.triggerTimeSceneIntro(environment.lightPhase);
@@ -469,12 +518,15 @@ Page({
       } else {
         this.stopClock();
         this.stopWindowWeatherAnimation();
+        const openLanding = () => {
+          if (this.pageActive && this.data.stage === 'hatched') this.openPostHatchLanding();
+        };
+        if (wx.nextTick) wx.nextTick(openLanding);
+        else setTimeout(openLanding, 0);
       }
     });
     analytics.track(hatched ? 'role_home_view' : 'hatch_home_view');
-    if (hatched) {
-      this.openPostHatchLanding();
-    } else {
+    if (!hatched) {
       const manualStateToken = this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
       practice.getManualState().then(state => {
         if (!this.pageActive || manualStateToken !== this.manualStateRequestToken || !state.ok) return;
@@ -560,11 +612,6 @@ Page({
     });
   },
 
-  onRetryPostHatch() {
-    if (!this.data.pet || this.data.postHatchLoading) return;
-    this.loadPostHatchSnapshot(this.data.pet);
-  },
-
   schedulePostHatchRefresh(slotEnd) {
     clearTimeout(this.postHatchSlotTimer);
     const delay = Number(slotEnd) - timeService.now();
@@ -577,7 +624,7 @@ Page({
   onReady() {
     this.configureClockPosition();
     this.setupWindowWeatherCanvas();
-    if (!this.sceneTestOverride) this.setupHomeEgg();
+    this.setupHomeEgg();
   },
 
   configureClockPosition() {
@@ -712,6 +759,7 @@ Page({
     }, () => {
       this.setupWindowWeatherCanvas();
       this.triggerTimeSceneIntro(target.lightPhase);
+      this.setupHomeEgg();
       wx.showToast({ title: `已切换：${target.label}`, icon: 'none' });
     });
   },
@@ -812,7 +860,7 @@ Page({
   },
 
   setupHomeEgg() {
-    if (!this.data.pet || this.data.stage === 'hatched' || this.sceneTestOverride || this.sceneLayerEggActive) return;
+    if (!this.data.pet || this.data.stage === 'hatched' || this.sceneLayerEggActive) return;
     if (this.homeEggLayersReady) {
       this.renderHomeEgg();
       return;
@@ -856,7 +904,7 @@ Page({
   },
 
   renderHomeEgg() {
-    if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched' || this.sceneTestOverride || this.sceneLayerEggActive) return;
+    if (!this.homeEggLayersReady || !this.data.pet || this.data.stage === 'hatched' || this.sceneLayerEggActive) return;
     const renderToken = this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
     const shell = shellArtService.normalizeShellArt(this.data.pet.shell);
     shellArtService.drawEggBase(
@@ -904,41 +952,14 @@ Page({
       return;
     }
     if (this.data.sceneOpening || !this.data.hasScenes) return;
-    wx.createSelectorQuery().in(this).select('.life-home-scene').boundingClientRect(rect => {
-      if (!rect) {
-        wx.navigateTo({
-          url: '/pages/life-scene/life-scene?entry=home-expand',
-          animationType: 'none',
-          animationDuration: 0
-        });
-        return;
-      }
-      const duration = this.prefersReducedMotion() ? 20 : 560;
-      this.setData({
-        sceneOpening: true,
-        sceneTransitionStyle: `left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;--scene-expand-duration:${duration}ms;`
-      });
-      const originQuery = [
-        `origin_left=${encodeURIComponent(rect.left.toFixed(2))}`,
-        `origin_top=${encodeURIComponent(rect.top.toFixed(2))}`,
-        `origin_width=${encodeURIComponent(rect.width.toFixed(2))}`,
-        `origin_height=${encodeURIComponent(rect.height.toFixed(2))}`
-      ].join('&');
-      clearTimeout(this.sceneOpenTimer);
-      this.sceneOpenTimer = setTimeout(() => {
-        wx.navigateTo({
-          url: `/pages/life-scene/life-scene?entry=home-expand&${originQuery}`,
-          animationType: 'none',
-          animationDuration: 0,
-          fail: () => this.setData({ sceneOpening: false, sceneTransitionStyle: '' })
-        });
-      }, Math.max(0, duration - 20));
-    }).exec();
-  },
-
-  onChangeScene(event) {
-    const section = event && event.currentTarget && event.currentTarget.dataset.section || 'keepsakes';
-    wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=${section}` });
+    // 页面本身负责渐入；这里关闭放大／横向过渡，避免和三屏房间的初始定位叠加。
+    this.setData({ sceneOpening: true, sceneTransitionStyle: '' });
+    wx.navigateTo({
+      url: '/pages/life-scene/life-scene?entry=home-fade',
+      animationType: 'none',
+      animationDuration: 0,
+      fail: () => this.setData({ sceneOpening: false, sceneTransitionStyle: '' })
+    });
   },
 
   onPetNameTap() {
@@ -1177,6 +1198,7 @@ Page({
     this.clearCompanionNavigation();
     this.clearEffectTimers();
     if (this.pageActive) this.setData({ sceneEffect: '', eggMotion: '' });
+    if (this.pageActive && this.data.stage !== 'hatched') this.beginHomeStageEnter();
     if (message && this.pageActive) this.showFeedback(message);
   },
 
@@ -1185,7 +1207,10 @@ Page({
     this.companionNavigationPending = true;
     this.companionNavigationStarted = false;
     const token = this.companionNavigationToken = (this.companionNavigationToken || 0) + 1;
-    this.runSceneEffect(destination.sceneEffect, destination.eggMotion, 520);
+    const transitionDuration = this.prefersReducedMotion() ? 20 : HOME_STAGE_TRANSITION_MS;
+    this.clearHomeStageTransition();
+    this.setData({ homeStagePhase: 'exiting' });
+    this.runSceneEffect(destination.sceneEffect, destination.eggMotion, transitionDuration);
     this.companionNavigationTimer = setTimeout(() => {
       this.companionNavigationTimer = null;
       if (!this.pageActive || token !== this.companionNavigationToken || !this.companionNavigationPending) return;
@@ -1193,7 +1218,7 @@ Page({
         if (token !== this.companionNavigationToken || !this.companionNavigationPending) return;
         this.releaseCompanionNavigation(token, this.companionNavigationStarted ? '' : '页面暂时没有打开，请再试一次。');
       }, 1800);
-      wx.navigateTo({
+      const navigationOptions = {
         url: destination.route,
         success: () => {
           if (token === this.companionNavigationToken) this.companionNavigationStarted = true;
@@ -1204,8 +1229,69 @@ Page({
             this.releaseCompanionNavigation(token, '页面暂时没有打开，请再试一次。');
           }
         }
+      };
+      wx.navigateTo(navigationOptions);
+    }, transitionDuration);
+  },
+
+  suspendHomeForDoodle() {
+    this.stopClock();
+    this.stopWindowWeatherAnimation();
+    this.clearTimeSceneTimers();
+    this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
+    this.scenePreloadRequestToken = (this.scenePreloadRequestToken || 0) + 1;
+    this.windowWeatherSetupToken = (this.windowWeatherSetupToken || 0) + 1;
+    this.homeEggSetupToken = (this.homeEggSetupToken || 0) + 1;
+    this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
+    this.pendingSceneTarget = null;
+    this.scenePreloadLoaded = null;
+    this.pendingTimeEnvironment = null;
+    this.previousTimeEnvironment = null;
+    this.windowWeatherCanvas = null;
+    this.windowWeatherContext = null;
+    this.windowWeatherSize = null;
+    this.windowWeatherParticles = null;
+    this.homeEggBaseLayer = null;
+    this.homeEggArtLayer = null;
+    this.homeEggBaseImage = null;
+    this.homeEggMaskImage = null;
+    this.homeEggLayersReady = false;
+    this.homeEggSetupPending = false;
+  },
+
+  openDoodleEditor() {
+    if (this.doodleEditorPending || this.data.doodleEditorVisible) return;
+    this.doodleEditorPending = true;
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.setData({ selected: 0, hidden: true, elevated: false });
+    const transitionDuration = this.prefersReducedMotion() ? 20 : HOME_STAGE_TRANSITION_MS;
+    this.clearHomeStageTransition();
+    this.setData({ homeStagePhase: 'exiting' });
+    this.runSceneEffect('scene--draw', 'egg--talk-color', transitionDuration);
+    clearTimeout(this.doodleOpenTimer);
+    this.doodleOpenTimer = setTimeout(() => {
+      this.doodleOpenTimer = null;
+      if (!this.pageActive || !this.doodleEditorPending) return;
+      this.doodleEditorPending = false;
+      this.clearEffectTimers();
+      this.suspendHomeForDoodle();
+      this.setData({
+        doodleEditorVisible: true,
+        sceneEffect: '',
+        eggMotion: ''
       });
-    }, 520);
+    }, transitionDuration);
+  },
+
+  onDoodleEditorClose() {
+    this.doodleEditorPending = false;
+    clearTimeout(this.doodleOpenTimer);
+    this.doodleOpenTimer = null;
+    this.setData({
+      doodleEditorVisible: false,
+      homeStagePhase: 'hidden',
+      homeEggArtPreview: ''
+    }, () => this.onShow());
   },
 
   onCompanionTap(event) {
@@ -1221,10 +1307,13 @@ Page({
     if (key === 'wish' || key === 'learn' || key === 'draw') this.showCompanionHint(key);
     if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
     if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('蛋宝宝还没到早教的年龄，明天来试试吧。');
+    if (key === 'draw') {
+      this.openDoodleEditor();
+      return;
+    }
     const routes = {
       wish: { route: '/pages/wish/wish', sceneEffect: 'scene--wish', eggMotion: 'egg--talk-glow' },
-      learn: { route: '/pages/lesson/lesson', sceneEffect: 'scene--learn', eggMotion: 'egg--talk-knock' },
-      draw: { route: '/pages/doodle/doodle', sceneEffect: 'scene--draw', eggMotion: 'egg--talk-color' }
+      learn: { route: '/pages/lesson/lesson', sceneEffect: 'scene--learn', eggMotion: 'egg--talk-knock' }
     };
     const destination = routes[key];
     if (destination) this.startCompanionNavigation(destination);
@@ -1304,161 +1393,6 @@ Page({
       this.setData({ windowWeatherCanvasFailed: false });
       this.startWindowWeatherAnimation();
     });
-  },
-
-  drawWindowFog(context, width, height, timestamp, opacity) {
-    const drift = Math.sin(timestamp / 3400) * width * .035;
-    const haze = context.createLinearGradient(drift - width * .08, 0, drift + width * 1.08, height);
-    haze.addColorStop(0, `rgba(228,238,236,${opacity * .86})`);
-    haze.addColorStop(.5, `rgba(242,246,239,${opacity})`);
-    haze.addColorStop(1, `rgba(224,236,238,${opacity * .9})`);
-    context.fillStyle = haze;
-    context.fillRect(-width * .1, 0, width * 1.2, height);
-  },
-
-  drawWindowRain(context, width, height, timestamp, intensity) {
-    const strength = Number(intensity || .72);
-    const gust = Math.sin(timestamp / 2300) * 2.4;
-    const baseLengths = [2.1, 3.5, 5.6];
-    const lengthSteps = [.455, .7, .91];
-    context.save();
-    context.lineCap = 'round';
-    (this.windowWeatherParticles || []).slice(0, 42).forEach((particle, index) => {
-      const depth = index % 3;
-      const velocity = 1.05 + depth * .42;
-      const y = (particle.y + timestamp * particle.speed * velocity) % (height + 44) - 30;
-      const x = (particle.x + index * 2 + gust * (1 + depth * .35)) % width;
-      const length = baseLengths[depth] + (index % 4) * lengthSteps[depth];
-      const slant = 2.4 + strength * 2.2 + gust * .18;
-      const alpha = (.1 + depth * .065 + particle.opacity * .08) * strength;
-      context.lineWidth = .48 + depth * .25;
-      context.strokeStyle = `rgba(196,219,227,${alpha})`;
-      context.beginPath();
-      context.moveTo(x, y);
-      context.lineTo(x - slant, y + length);
-      context.stroke();
-    });
-    context.restore();
-  },
-
-  drawWindowSnow(context, width, height, timestamp) {
-    context.save();
-    context.fillStyle = 'rgba(255,255,252,.82)';
-    (this.windowWeatherParticles || []).slice(0, 30).forEach((particle, index) => {
-      const y = (particle.y + timestamp * particle.speed * .72) % (height + 20) - 10;
-      const x = particle.x + Math.sin(timestamp / 900 + index) * particle.drift;
-      context.beginPath();
-      context.arc(x, y, particle.radius, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.restore();
-  },
-
-  drawWindowDroplets(context, width, height, timestamp, density) {
-    context.save();
-    context.lineCap = 'round';
-    const count = Math.max(4, Math.round(10 * density));
-    (this.windowWeatherParticles || []).slice(0, count).forEach((particle, index) => {
-      const travel = timestamp * particle.speed * .075;
-      const y = (particle.y + travel + index * 17) % (height + 36) - 18;
-      const x = (particle.x + Math.sin(timestamp / 2100 + particle.phase) * 1.2) % width;
-      const radius = 1.1 + (index % 3) * .55;
-      const alpha = .12 + particle.opacity * .16;
-      context.fillStyle = `rgba(224,238,242,${alpha})`;
-      context.beginPath();
-      context.moveTo(x, y - radius * 1.7);
-      context.bezierCurveTo(x + radius * 1.15, y - radius * .2, x + radius, y + radius, x, y + radius * 1.2);
-      context.bezierCurveTo(x - radius, y + radius, x - radius * 1.15, y - radius * .2, x, y - radius * 1.7);
-      context.fill();
-      if (index % 5 === 0) {
-        context.strokeStyle = `rgba(216,233,239,${alpha * .65})`;
-        context.lineWidth = .55;
-        context.beginPath();
-        context.moveTo(x, y + radius * 1.8);
-        context.lineTo(x - .4, y + radius * 4.4 + (index % 3) * 2);
-        context.stroke();
-      }
-    });
-    context.restore();
-  },
-
-  drawWindowSunFlecks(context, width, height, timestamp, opacity) {
-    context.save();
-    (this.windowWeatherParticles || []).slice(0, 8).forEach((particle, index) => {
-      const x = (particle.x + Math.sin(timestamp / 2600 + particle.phase) * particle.drift) % width;
-      const y = particle.y * .8 + Math.cos(timestamp / 3100 + particle.phase) * 3;
-      const radius = 5 + (index % 4) * 3;
-      const glow = context.createRadialGradient(x, y, 0, x, y, radius);
-      glow.addColorStop(0, `rgba(255,248,202,${opacity})`);
-      glow.addColorStop(1, 'rgba(255,248,202,0)');
-      context.fillStyle = glow;
-      context.beginPath();
-      context.arc(x, y, radius, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.restore();
-  },
-
-  drawWindowCloudDrift(context, width, height, timestamp) {
-    context.save();
-    const drift = (timestamp / 90) % (width * 1.8) - width * .6;
-    const cloud = context.createRadialGradient(drift, height * .28, 0, drift, height * .28, width * .62);
-    cloud.addColorStop(0, 'rgba(235,241,239,.105)');
-    cloud.addColorStop(1, 'rgba(235,241,239,0)');
-    context.fillStyle = cloud;
-    context.fillRect(0, 0, width, height);
-    context.restore();
-  },
-
-  drawWindowLeaves(context, width, height, timestamp) {
-    context.save();
-    (this.windowWeatherParticles || []).slice(0, 12).forEach((particle, index) => {
-      const y = (particle.y + timestamp * particle.speed * .28) % (height + 30) - 15;
-      const x = (particle.x + timestamp * .006 + Math.sin(timestamp / 950 + particle.phase) * particle.drift * 2) % (width + 20) - 10;
-      const size = 3.5 + (index % 4) * 1.1;
-      context.save();
-      context.translate(x, y);
-      context.rotate(Math.sin(timestamp / 760 + particle.phase) * .9);
-      context.fillStyle = index % 3 === 0 ? 'rgba(183,116,56,.54)' : 'rgba(208,153,73,.48)';
-      context.beginPath();
-      context.moveTo(-size, 0);
-      context.quadraticCurveTo(0, -size * .75, size, 0);
-      context.quadraticCurveTo(0, size * .75, -size, 0);
-      context.fill();
-      context.restore();
-    });
-    context.restore();
-  },
-
-  drawWindowLightning(context, width, height, timestamp) {
-    const cycle = timestamp % 11800;
-    if (cycle > 320) return;
-    const firstPulse = cycle < 115 ? Math.sin(Math.PI * cycle / 115) : 0;
-    const secondPulse = cycle > 185 && cycle < 300
-      ? Math.sin(Math.PI * (cycle - 185) / 115) * .52
-      : 0;
-    const flash = Math.max(firstPulse, secondPulse);
-    if (flash <= 0) return;
-    context.save();
-    const glow = context.createRadialGradient(width * .82, height * .08, 0, width * .82, height * .08, width * .95);
-    glow.addColorStop(0, `rgba(218,231,255,${flash * .095})`);
-    glow.addColorStop(.52, `rgba(205,222,249,${flash * .042})`);
-    glow.addColorStop(1, 'rgba(199,219,248,0)');
-    context.fillStyle = glow;
-    context.fillRect(0, 0, width, height);
-    context.restore();
-  },
-
-  clipWindowGlass(context, width, height) {
-    // The photographed window sill slopes down to the right. Keep this clip in
-    // normalized coordinates so the weather edge follows it on every screen.
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(width, 0);
-    context.lineTo(width, height * .98);
-    context.lineTo(0, height * .88);
-    context.closePath();
-    context.clip();
   },
 
   drawWindowWeatherFrame(timestamp, options) {
@@ -1657,6 +1591,10 @@ Page({
   },
 
   clearInteractionTimers() {
+    this.clearHomeStageTransition();
+    clearTimeout(this.doodleOpenTimer);
+    this.doodleOpenTimer = null;
+    this.doodleEditorPending = false;
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
     clearTimeout(this.sceneOpenTimer);
@@ -1698,7 +1636,8 @@ Page({
       previousFullSceneImage: '',
       sceneCrossfadeActive: false,
       pendingTimeSceneImage: '',
-      timeSceneIntro: ''
+      timeSceneIntro: '',
+      homeStagePhase: 'hidden'
     });
   },
 

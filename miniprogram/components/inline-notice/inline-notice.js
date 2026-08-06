@@ -1,0 +1,7 @@
+Component({
+  properties: {
+    text: { type: String, value: '' },
+    tone: { type: String, value: 'info' },
+    visible: { type: Boolean, value: false }
+  }
+});

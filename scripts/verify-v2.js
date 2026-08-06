@@ -53,7 +53,7 @@ assert.equal(/露珠|余额|孵化进度|conic-gradient|商店|背包/.test(home
 assert.equal(homeTemplate.includes('id="windowWeatherCanvas"') && homeTemplate.includes('catchtap="onWindowTap"'), true, '窗户必须使用 Canvas 天气层并保留直接点击互动');
 assert.equal(homeLogic.includes("result: 'daily_detail_opened'") && homeLogic.includes('dailyWindowVisible: true') && homeLogic.includes('windowFogVisible: false'), true, '点击窗户必须进入日常窗外详情，同时完整露出窗景');
 assert.equal(homeTemplate.includes('wx:if="{{!dailyWindowVisible}}" class="window-effects"') && homeLogic.includes("this.setData({ dailyWindowVisible: false }, () => {") && homeLogic.includes('this.setupWindowWeatherCanvas();'), true, '进入日常窗外详情时必须卸载首页窗玻璃遮罩，返回后重新创建首页天气 Canvas');
-assert.equal(homeLogic.includes('drawWindowFog') && homeLogic.includes('drawWindowRain') && homeLogic.includes('drawWindowSnow'), true, '雾、雨、雪必须全部由窗户 Canvas 绘制');
+assert.equal(windowWeatherCanvas.includes('function drawFog') && windowWeatherCanvas.includes('function drawRain') && windowWeatherCanvas.includes('function drawSnow'), true, '雾、雨、雪必须由共用窗户 Canvas 模块绘制');
 assert.equal(/incubation-weather-overlay|window-fog-overlay|weather-overlays\//.test(`${homeTemplate}\n${homeLogic}\n${read('miniprogram/config/pre-hatch-assets.js')}`), false, '窗户天气不得再引用透明 overlay 图片');
 ['w_f_fog.webp', 'w_r_rain.webp', 'w_s_snow.webp'].forEach(file => {
   assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/shared/40-interaction-fx/weather-overlays', file)), false, `${file} 已由 Canvas 替代，不得残留`);
@@ -172,7 +172,7 @@ assert.equal(/room-lamp-state|period-night\.room-lamp-off[^}]*brightness|rgba\(8
 assert.equal(homeTemplate.includes('room-clock') && homeLogic.includes('onClockTap'), true, '孵化房间左上角必须保留可交互设备时钟');
 assert.equal(homeLogic.includes("require('../../services/device-clock')") && homeLogic.includes('millisecondsUntilNextSecond'), true, '设备时钟必须按手机本地时间整秒校准');
 assert.equal(/class="room-clock"[^>]*(?:longpress|longtap)|onClock(?:Long|Press)|12\/24|十二小时|二十四小时/.test(`${homeTemplate}\n${homeLogic}`), false, '设备时钟不得加入长按或 12/24 小时设置');
-assert.equal(homeLogic.includes("key: 'draw'") && homeLogic.includes("route: '/pages/doodle/doodle'"), true, '画画必须与许愿池、早教班同列');
+assert.equal(homeLogic.includes("key: 'draw'") && homeLogic.includes('openDoodleEditor()') && !homeLogic.includes("route: '/pages/doodle/doodle'"), true, '画画必须与许愿池、早教班同列，并在首页内嵌打开');
 assert.equal(homeLogic.includes("analytics.track('room_element_interaction'"), true, '房间小物必须只发送白名单可用性事件');
 assert.equal(/coffee|scarf|room-element-layer|roomSound/.test(`${homeTemplate}\n${homeLogic}\n${homeStyles}`), false, '咖啡机、围巾及旧物件按钮层必须完全移除');
 assert.equal(fs.existsSync(path.join(root, 'miniprogram/services/room-sound.js')), false, '咖啡机声音服务必须移除');
@@ -191,11 +191,11 @@ assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
 assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate), false, '三屏背景上不得叠加临时床铺或安静空地占位层');
-assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && lifeSceneTemplate.includes('sceneCharacterImage'), true, '已验收睡觉状态必须使用透明角色层');
+assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare_sunset_v01.webp')) && lifeSceneTemplate.includes('sceneCharacterImage'), true, '已验收角色状态必须使用透明角色层');
 assert.equal(lifeSceneTemplate.includes('scene-character__floor-shadow'), true, '玉兔躺卧角色层必须包含独立的接触阴影');
-assert.equal(lifeSceneTemplate.includes('wx:if="{{showSceneCharacter}}" class="scene-character scene-character--sleep') && lifeSceneTemplate.includes('<pet-avatar') === false && lifeSceneLogic.includes("currentState.key === 'sleep'"), true, '角色层必须按原型和已验收状态显示，不得对所有居家状态回退到玉兔');
+assert.equal(lifeSceneTemplate.includes('scene-character--{{sceneCharacterPose}}') && lifeSceneTemplate.includes('<pet-avatar') === false && lifeSceneLogic.includes('function characterPosePath(key, environment)') && lifeSceneLogic.includes("const image = isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';"), true, '角色层必须按玉兔原型、已验收状态与光线时段显示，不得对所有居家状态回退到玉兔');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
-assert.equal(lifeSceneTemplate.includes('class="scene-dialogue-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('ui_3d_scene_message_envelope_96_v01.png') && lifeSceneTemplate.includes('icon-letter') && lifeSceneTemplate.includes('ui_3d_scene_toolbox_closed_chest_96_v01.png'), true, '必须使用左下对话、右下信件与百宝箱入口');
+assert.equal(lifeSceneTemplate.includes('class="scene-context-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('toolboxIcon') && lifeSceneTemplate.includes('scene-talk-nudge') && lifeSceneLogic.includes('scene_find_home_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '必须使用左下找 ta / 写信入口、右下百宝箱与场景内对话触点');
 assert.equal(['my', 'card', 'postcards', 'keepsakes'].every(target => lifeSceneTemplate.includes(`data-target="${target}"`)), true, '百宝箱必须包含我的、收藏卡、明信片与 ta 带回来的东西');
 assert.equal(lifeSceneTemplate.includes('ui_3d_tabbar_interaction_gear_flat_96_v04.png') && lifeSceneTemplate.includes('ui_3d_toolbox_settings_gear_96_v03.webp') === false, true, '破壳后百宝箱的我的/设置必须复用破壳前的设置图标');
 assert.equal(homeLogic.includes('/pages/life-scene/life-scene?entry=post-hatch-landing'), true, '破壳后进入首页必须直接落到全屏生活空间');

@@ -14,6 +14,10 @@ const BRUSH_SIZES = [2, 5, 8, 12, 18].map(pixels => ({
 const ERASER_MIN_PX = 4;
 const ERASER_MAX_PX = 30;
 const ERASER_DEFAULT_PX = 15;
+const ERASER_SIZES = [6, 10, 15, 22, 30].map(pixels => ({
+  label: `${pixels} px`,
+  pixels
+}));
 const ERASER_REFERENCE_PX = 150;
 const ERASER_MIN_WIDTH = 0.008;
 const ERASER_MAX_WIDTH = 0.3;
@@ -35,7 +39,12 @@ const BRUSH_COLORS = [
   { token: 'apricot-orange', name: '杏子橙', value: '#D98652' },
   { token: 'lake-blue', name: '湖水蓝', value: '#5F8FA8' },
   { token: 'berry-pink', name: '莓果粉', value: '#C97682' },
-  { token: 'grape-purple', name: '葡萄紫', value: '#8573A3' }
+  { token: 'grape-purple', name: '葡萄紫', value: '#8573A3' },
+  { token: 'mist-sage', name: '雾松绿', value: '#AFC29A' },
+  { token: 'butter-yellow', name: '奶油黄', value: '#E6CE73' },
+  { token: 'sky-blue', name: '晴空蓝', value: '#9EC7D8' },
+  { token: 'wine-red', name: '葡萄酒红', value: '#7B3E52' },
+  { token: 'lavender', name: '浅藤紫', value: '#B9ABD2' },
 ];
 const DEFAULT_BRUSH_COLOR = BRUSH_COLORS[0].value;
 
@@ -410,6 +419,7 @@ module.exports = {
   ERASER_MIN_PX,
   ERASER_MAX_PX,
   ERASER_DEFAULT_PX,
+  ERASER_SIZES,
   ERASER_MAX_WIDTH,
   DEFAULT_BRUSH_WIDTH,
   DEFAULT_ERASER_WIDTH,

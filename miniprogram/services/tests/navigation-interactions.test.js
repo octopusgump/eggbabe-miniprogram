@@ -21,6 +21,7 @@ global.setInterval = () => 0;
 global.clearInterval = () => {};
 
 const routes = [];
+const navigateOptions = [];
 const toasts = [];
 let navigateMode = 'success';
 let switchMode = 'success';
@@ -31,6 +32,7 @@ global.wx = {
   removeStorageSync() {},
   navigateTo(options) {
     routes.push(options.url);
+    navigateOptions.push(options);
     if (navigateMode === 'success') {
       if (options.success) options.success();
       if (options.complete) options.complete();
@@ -112,9 +114,35 @@ try {
   homeContext.pageActive = true;
   homeContext.showCompanionHint = () => {};
   homeContext.cancelCompanionFirstHint = () => {};
+  homeContext.clearCuddleTimers = () => {};
+  homeContext.clearCompanionHintTimers = () => {};
   homeContext.runSceneEffect = (sceneEffect, eggMotion) => homeContext.setData({ sceneEffect, eggMotion });
   homeContext.clearEffectTimers = () => {};
   homeContext.showFeedback = message => { homeContext.lastFeedback = message; };
+  let homeSuspensions = 0;
+  homeContext.suspendHomeForDoodle = () => { homeSuspensions += 1; };
+
+  const customizedHomeContext = pageContext(home, { pet: { shell: { operations: [{ type: 'sticker' }] } }, stage: 'waiting' });
+  customizedHomeContext.sceneTestOverride = { key: 'summer-clear-day' };
+  customizedHomeContext.sceneLayerEggActive = false;
+  customizedHomeContext.homeEggLayersReady = true;
+  let customizedEggRenders = 0;
+  customizedHomeContext.renderHomeEgg = () => { customizedEggRenders += 1; };
+  home.setupHomeEgg.call(customizedHomeContext);
+  assert.equal(customizedEggRenders, 1, '已保存的自定义蛋壳在测试场景中也必须重新合成到桌面蛋体');
+
+  const closingDoodleContext = pageContext(home, {
+    doodleEditorVisible: true,
+    homeStagePhase: 'visible',
+    homeEggArtPreview: 'wxfile://tmp/stale-art.png'
+  });
+  let homeResumeCalls = 0;
+  closingDoodleContext.onShow = () => { homeResumeCalls += 1; };
+  home.onDoodleEditorClose.call(closingDoodleContext);
+  assert.equal(closingDoodleContext.data.doodleEditorVisible, false, '关闭画画编辑器后必须恢复首页');
+  assert.equal(closingDoodleContext.data.homeStagePhase, 'hidden', '首页重建前必须保持隐藏，避免退出动画从可见帧重新播放');
+  assert.equal(closingDoodleContext.data.homeEggArtPreview, '', '清空作品返回首页前必须先清除旧蛋壳预览缓存');
+  assert.equal(homeResumeCalls, 1, '清理旧预览后必须继续恢复首页资源');
 
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'wish' } } });
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
@@ -136,6 +164,14 @@ try {
   assert.deepEqual(routes.splice(0), ['/pages/lesson/lesson'], '长按后的下一次新短点必须可正常导航');
 
   home.clearCompanionNavigation.call(homeContext);
+  home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
+  runTimers();
+  assert.deepEqual(routes.splice(0), [], '画画入口不得再调用原生页面路由');
+  assert.equal(homeContext.data.doodleEditorVisible, true, '画画入口必须在首页内嵌打开编辑器');
+  assert.equal(homeSuspensions, 1, '画画编辑器挂载前必须暂停首页后台资源');
+  homeContext.setData({ doodleEditorVisible: false });
+
+  home.clearCompanionNavigation.call(homeContext);
   homeContext.data.learnUnlocked = false;
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'learn' } } });
   runTimers();
@@ -144,9 +180,10 @@ try {
 
   homeContext.data.learnUnlocked = true;
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
-  home.clearCompanionNavigation.call(homeContext);
+  home.clearInteractionTimers.call(homeContext);
   runTimers();
-  assert.deepEqual(routes.splice(0), [], '首页离页清理后不得执行残留导航');
+  assert.deepEqual(routes.splice(0), [], '首页离页清理后不得执行残留画画操作');
+  assert.equal(homeContext.data.doodleEditorVisible, false, '首页离页清理后不得延迟挂载画画编辑器');
 
   navigateMode = 'fail';
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'wish' } } });

@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "styleIsolation": "isolated",
+  "usingComponents": {
+    "inline-notice": "../inline-notice/inline-notice"
+  }
+}

@@ -1,7 +1,11 @@
 <view class="page">
   <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
-  <scroll-view class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
+  <view wx:if="{{pet && stage === 'hatched'}}" class="post-hatch-redirect" aria-hidden="true">
+    <image wx:if="{{sceneImage}}" class="post-hatch-redirect-image" src="{{sceneImage}}" mode="aspectFill"></image>
+  </view>
+
+  <scroll-view wx:if="{{!doodleEditorVisible}}" class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
       <text class="empty-title">添加我的蛋宝宝</text>
@@ -10,7 +14,7 @@
       <text class="empty-note">当前版本每个账号只能绑定 1 只</text>
     </view>
 
-    <view wx:elif="{{stage !== 'hatched'}}" class="pet-view pet-view--incubating">
+    <view wx:elif="{{stage !== 'hatched'}}" class="pet-view pet-view--incubating home-stage home-stage--{{homeStagePhase}}">
       <view class="top-row" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">
         <view>
           <view class="pet-name-row" bindtap="onPetNameTap">
@@ -112,8 +116,18 @@
         <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
-          <view class="egg-shell-depth"></view>
-          <view class="egg-shell-specular"></view>
+          <image
+            class="egg-shell-depth"
+            src="/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_depth_overlay_512_v01.webp"
+            mode="scaleToFill"
+            aria-hidden="true"
+          ></image>
+          <image
+            class="egg-shell-specular"
+            src="/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_specular_overlay_512_v01.webp"
+            mode="scaleToFill"
+            aria-hidden="true"
+          ></image>
         </view>
         <view wx:for="{{tapParticles}}" wx:key="id" class="tap-particles" style="left:{{item.x}}px;top:{{item.y}}px;">
           <view class="tap-particle tap-particle--one">✦</view>
@@ -160,7 +174,7 @@
   </scroll-view>
 
   <!-- DEV-ONLY：季节/时令/天气验收器，正式上线前整体删除。 -->
-  <view wx:if="{{isDemo && pet && stage !== 'hatched'}}" class="scene-tester" style="top:{{sceneTesterTopPx}}px;">
+  <view wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== 'hatched'}}" class="scene-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{sceneTesterTopPx}}px;">
     <view
       class="scene-tester-button {{sceneTesterOpen ? 'scene-tester-button--open' : ''}} {{sceneTesterBusy ? 'scene-tester-button--busy' : ''}}"
       aria-role="button"
@@ -187,7 +201,7 @@
   </view>
 
   <!-- DEV-ONLY：用真实 image 组件预加载三层；成功前不替换当前场景。 -->
-  <view wx:if="{{scenePreloadActive}}" class="scene-preloader" aria-hidden="true">
+  <view wx:if="{{!doodleEditorVisible && scenePreloadActive}}" class="scene-preloader" aria-hidden="true">
     <image
       class="scene-preloader-image"
       src="{{scenePreloadAssets.background}}"
@@ -218,7 +232,7 @@
   </view>
 
   <image
-    wx:if="{{pendingTimeSceneImage}}"
+    wx:if="{{!doodleEditorVisible && pendingTimeSceneImage}}"
     class="time-scene-preloader"
     src="{{pendingTimeSceneImage}}"
     mode="aspectFill"
@@ -228,7 +242,7 @@
   ></image>
 
   <!-- DEV-ONLY：阶段验收器，正式上线前整体删除。release/trial 下 isDemo=false，不会渲染。 -->
-  <view wx:if="{{isDemo && pet}}" class="stage-tester" style="top:{{clockTopPx}}px;">
+  <view wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== 'hatched'}}" class="stage-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{clockTopPx}}px;">
     <view
       class="stage-tester-button {{stageTesterOpen ? 'stage-tester-button--open' : ''}} {{stageTesterBusy ? 'stage-tester-button--busy' : ''}}"
       aria-role="button"
@@ -250,8 +264,8 @@
     </view>
   </view>
 
-  <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>
-  <canvas wx:if="{{pet && stage !== 'hatched'}}" type="2d" id="homeEggArtCanvas" class="egg-render-cache egg-render-cache--art"></canvas>
+  <canvas wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>
+  <canvas wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" type="2d" id="homeEggArtCanvas" class="egg-render-cache egg-render-cache--art"></canvas>
 
   <view wx:if="{{sceneOpening}}" class="scene-expand-overlay" style="{{sceneTransitionStyle}}">
     <image class="scene-expand-image" src="{{sceneImage}}" mode="aspectFill"></image>
@@ -290,4 +304,10 @@
     bindclose="onDailyWindowClosed"
     bindretry="onDailyWindowRetry"
   ></daily-window-detail>
+
+  <doodle-editor
+    wx:if="{{doodleEditorVisible}}"
+    embedded="{{true}}"
+    bindclose="onDoodleEditorClose"
+  ></doodle-editor>
 </view>

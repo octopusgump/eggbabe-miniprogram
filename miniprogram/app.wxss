@@ -25,6 +25,8 @@
      --green-on-tint   #54632C  绿色提示文字
      --yellow-surface  #FAFAEF  黄色提示底色
      --yellow-on-tint  #6E6B35  黄色提示文字
+     --pink-surface    #FFF6F5  回忆 / 羁绊底色
+     --pink-on-tint    #80625D  回忆 / 羁绊文字
 
    字体：中文统一使用 'PingFang SC'（iOS）/'Microsoft YaHei'（兜底），
    最高字重 600 —— PingFang SC 没有真正的粗体，切勿设置 700。

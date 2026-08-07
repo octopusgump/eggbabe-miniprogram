@@ -81,10 +81,6 @@ Page({
       if (this.pageActive && token === this.loadToken) this.setData({ loading: false, error: '回忆没有加载好，请重试' });
     });
   },
-  onSelectSection(event) {
-    const section = event.currentTarget.dataset.section;
-    if (SECTIONS.includes(section)) this.setData({ section });
-  },
   applyMemories() {
     const source = this.loadedMemories || { keepsakes: [], postcards: [], cardRecommendation: null };
     const memories = this.data.isDemo && !this.useSourceMemoriesForDetail

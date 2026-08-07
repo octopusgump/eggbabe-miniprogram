@@ -4,8 +4,11 @@
   <scroll-view wx:if="{{selectedKeepsake}}" class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="keepsake-detail">
       <view class="keepsake-detail__art"><image class="keepsake-detail__image" src="{{selectedKeepsake.asset}}" mode="aspectFit"></image></view>
-      <text wx:if="{{selectedKeepsake.sourceScene}}" class="detail-meta">{{selectedKeepsake.sourceScene}}</text>
-      <text class="detail-story">{{selectedKeepsake.story}}</text>
+      <text wx:if="{{selectedKeepsake.sourceScene}}" class="keepsake-detail__meta">来自：{{selectedKeepsake.sourceScene}}</text>
+      <view class="keepsake-memory">
+        <text class="keepsake-memory__eyebrow">我还记得</text>
+        <text class="keepsake-memory__story">{{selectedKeepsake.story}}</text>
+      </view>
     </view>
   </scroll-view>
 
@@ -38,18 +41,13 @@
   </view>
 
   <block wx:else>
-    <view class="section-tabs">
-      <view class="section-tab {{section === 'keepsakes' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="keepsakes" bindtap="onSelectSection">ta 带回来的东西</view>
-      <view class="section-tab {{section === 'postcards' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="postcards" bindtap="onSelectSection">明信片</view>
-      <view class="section-tab {{section === 'card' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="card" bindtap="onSelectSection">今日收藏卡</view>
-    </view>
     <scroll-view class="content {{isDemo ? 'content--demo' : ''}}" scroll-y enhanced show-scrollbar="{{false}}">
       <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在翻看回忆…</text></view>
       <view wx:elif="{{error}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
       <block wx:elif="{{section === 'keepsakes'}}">
         <view wx:if="{{keepsakes.length}}" class="keepsake-grid">
-          <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-grid-item" hover-class="memory-item--pressed" aria-role="button" aria-label="查看{{item.name}}" data-id="{{item.id}}" bindtap="onOpenKeepsake">
-            <view class="keepsake-grid-art"><image class="keepsake-grid-image" src="{{item.asset}}" mode="aspectFit"></image></view>
+          <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-grid-item" hover-class="keepsake-grid-item--pressed" hover-start-time="0" hover-stay-time="400" aria-role="button" aria-label="查看{{item.name}}" data-id="{{item.id}}" bindtap="onOpenKeepsake">
+            <view class="keepsake-grid-art"><image class="keepsake-grid-image" src="{{item.asset}}" mode="aspectFit"></image><view class="memory-card-glare" aria-hidden="true"></view></view>
             <text class="keepsake-grid-name">{{item.name}}</text>
           </view>
         </view>
@@ -57,11 +55,14 @@
       </block>
       <block wx:elif="{{section === 'postcards'}}">
         <view wx:if="{{postcards.length}}" class="postcard-list">
-          <view wx:for="{{postcards}}" wx:key="id" class="postcard-list-item" hover-class="memory-item--pressed" aria-role="button" aria-label="查看{{item.sceneLabel}}明信片" data-id="{{item.id}}" bindtap="onOpenPostcard">
-            <image wx:if="{{item.asset}}" class="postcard-list-cover" src="{{item.asset}}" mode="aspectFill"></image>
-            <view wx:else class="postcard-list-cover postcard-paper" aria-hidden="true">
-              <view class="postcard-paper__stamp"></view>
-              <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+          <view wx:for="{{postcards}}" wx:key="id" class="postcard-list-item" hover-class="postcard-list-item--pressed" hover-start-time="0" hover-stay-time="420" aria-role="button" aria-label="查看{{item.sceneLabel}}明信片" data-id="{{item.id}}" bindtap="onOpenPostcard">
+            <view class="postcard-list-cover-frame">
+              <image wx:if="{{item.asset}}" class="postcard-list-cover" src="{{item.asset}}" mode="aspectFill"></image>
+              <view wx:else class="postcard-list-cover postcard-paper" aria-hidden="true">
+                <view class="postcard-paper__stamp"></view>
+                <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+              </view>
+              <view class="memory-card-glare" aria-hidden="true"></view>
             </view>
             <text class="postcard-list-title">{{item.sceneLabel || '远方的明信片'}}</text>
             <text wx:if="{{item.displayDate}}" class="postcard-list-date">{{item.displayDate}}</text>

@@ -29,6 +29,7 @@ assert.equal(partial.keepsakes.length, 3, '第二个预览状态必须展示三�
 assert.equal(partial.postcards.length, 2, '第二个预览状态必须展示两张明信片');
 assert.equal(partial.cardRecommendation.card.card_id, 'memory-preview-card', '有内容状态必须展示当前蛋宝宝真实收藏卡');
 assert.equal(complete.keepsakes.length, 10, '第三个预览状态必须覆盖当前配置中十件带正式图片的纪念物');
+assert.equal(complete.keepsakes[0].sourceScene, '在家 · 赖床', '居家来历文字必须使用自然的“在家”表达，不显示机械分类“家”');
 assert.equal(complete.postcards.length, 1, '第三个预览状态必须只显示一个东京旅程入口');
 assert.equal(complete.postcards[0].journeyId, 'tokyo-preview-2026-08-07', '东京旅程入口必须绑定稳定 journey_id');
 assert.equal(complete.postcards[0].postcards.length, 12, '东京旅程必须包含当前十二张待验收图片');
@@ -48,9 +49,18 @@ const appConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../app.
 
 assert.equal(template.includes('wx:if="{{isDemo && !loading}}" class="memory-preview-switch"'), true, '预览切换按钮必须严格受开发版开关保护');
 assert.equal(template.includes('bindtap="onCycleMemoryPreview"'), true, '预览按钮必须支持三个状态循环');
+assert.equal(template.includes('class="section-tabs"') || template.includes('bindtap="onSelectSection"'), false, '百宝箱各回忆入口必须直接展示对应内容，不得在顶部重复显示栏目切换');
+assert.equal(logic.includes('onSelectSection(event)'), false, '回忆列表不得保留已移除的顶部栏目切换处理器');
 assert.equal(template.includes('class="keepsake-grid"') && template.includes('bindtap="onOpenKeepsake"'), true, '纪念物必须使用三列缩略图列表并支持进入单件详情');
 assert.equal(template.includes('wx:if="{{selectedKeepsake}}"') && template.includes('class="keepsake-detail"'), true, '纪念物详情必须独立展示大图与故事');
+assert.equal(template.includes('class="keepsake-memory"') && template.includes('我还记得'), true, '纪念物故事必须以第一人称回忆区承载，不直接散落在页面上');
+assert.equal(styles.includes('.keepsake-detail__art{height:560rpx') && styles.includes('.keepsake-memory{') && styles.includes('background:#FFF6F5') && styles.includes('color:#80625D'), true, '纪念物详情必须收紧主图，并使用 Design System 回忆 tint');
+assert.equal(template.includes('来自：{{selectedKeepsake.sourceScene}}') && styles.includes('.keepsake-detail__meta{display:block;margin-top:24rpx;padding:0 40rpx') && styles.includes('font-weight:600'), true, '纪念物来历文字必须补全“来自”语义、增加字重，并与回忆区内容左对齐');
 assert.equal(template.includes('class="postcard-list"') && template.includes('bindtap="onOpenPostcard"'), true, '明信片必须使用封面列表并支持进入正文详情');
+assert.equal(template.includes('hover-class="keepsake-grid-item--pressed"') && (template.match(/class="memory-card-glare"/g) || []).length >= 2, true, '纪念物与明信片小卡片必须共用按压波光层');
+assert.equal(styles.includes('@keyframes memory-card-glare-sweep') && styles.includes('animation:memory-card-glare-sweep .4s ease-out both') && styles.includes('.keepsake-grid-item--pressed{transform:translateY(-4rpx) scale(.99)}'), true, '纪念物小卡片点击时必须使用 400ms 波光和 180ms 轻抬反馈');
+assert.equal(styles.includes('prefers-reduced-motion:reduce') && styles.includes('.keepsake-grid-item--pressed{transform:none}') && styles.includes('.postcard-list-item--pressed .memory-card-glare{opacity:.18;transform:none}'), true, '波光与卡片位移需有减少动态效果的静态退化');
+assert.equal(template.includes('bindtouchmove="onPostcardGlareMove"') || logic.includes('onPostcardGlareMove'), false, '小卡片波光不得用高频触摸事件干扰列表滚动');
 assert.equal(template.includes('wx:elif="{{selectedPostcard}}"') && template.includes('class="postcard-detail"'), true, '明信片详情必须独立展示封面与正文');
 assert.equal(template.includes('class="postcard-journey-swiper"') && template.includes('bindchange="onPostcardSlideChange"'), true, '同一次旅程的多张明信片必须在详情内左右滑动');
 assert.equal(template.includes('class="postcard-journey-image"') && template.includes('mode="aspectFit"'), true, '横版旅途图片必须完整显示，不得用 aspectFill 裁切主体');

@@ -168,7 +168,8 @@ function keepsakeFixtures() {
     const item = scene && scene.keepsake;
     if (!item || !item.id || !item.asset || seen.has(item.id)) return result;
     seen.add(item.id);
-    result.push(Object.assign({}, item, { sourceScene: `${scene.majorLabel} · ${scene.label}` }));
+    const majorLabel = scene.major === 'home' ? '在家' : scene.majorLabel;
+    result.push(Object.assign({}, item, { sourceScene: `${majorLabel} · ${scene.label}` }));
     return result;
   }, []);
 }

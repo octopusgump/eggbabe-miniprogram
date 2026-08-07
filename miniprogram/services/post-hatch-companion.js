@@ -74,13 +74,29 @@ function normalizeKeepsake(item) {
     asset: String(source.asset || source.asset_url || lifeScenes.assets.POST_HATCH.keepsakes[id] || '')
   });
 }
+function normalizePostcard(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const readAt = source.readAt || source.read_at || '';
+  const explicitlyUnread = source.unread === true || source.isUnread === true || source.is_unread === true || source.is_read === false || source.read === false;
+  return Object.assign({}, source, {
+    id: String(source.id || source.postcard_id || ''),
+    sceneLabel: String(source.sceneLabel || source.scene_label || ''),
+    line: String(source.line || source.story || ''),
+    asset: String(source.asset || source.asset_url || ''),
+    readAt,
+    unread: !readAt && explicitlyUnread
+  });
+}
 function normalizeMemories(memories) {
   const source = memories && typeof memories === 'object' ? memories : {};
   return {
     keepsakes: (Array.isArray(source.keepsakes) ? source.keepsakes : []).map(normalizeKeepsake),
-    postcards: Array.isArray(source.postcards) ? source.postcards : [],
+    postcards: (Array.isArray(source.postcards) ? source.postcards : []).map(normalizePostcard),
     cardRecommendation: source.cardRecommendation || source.card_recommendation || null
   };
+}
+function firstUnreadPostcard(postcards) {
+  return (Array.isArray(postcards) ? postcards : []).find(item => item && item.unread) || null;
 }
 function deliverReplies(state) {
   let changed = false;
@@ -94,7 +110,8 @@ function deliverReplies(state) {
       sentAt: letter.sentAt,
       deliveredAt: businessNow(),
       line: `我收到你的信了。${letter.sceneLabel}的风很远，你写的字却像在我旁边。`,
-      asset: ''
+      asset: '',
+      unread: true
     });
     changed = true;
   });
@@ -124,6 +141,7 @@ function localSnapshot(pet) {
     if (!saved.ok) return saved;
   }
   const actionRecord = state.actions[String(meta.slotIndex)] || null;
+  const memories = normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) });
   return {
     ok: true,
     mode: runtime.getMode(),
@@ -134,7 +152,8 @@ function localSnapshot(pet) {
       letterSent: !!(actionRecord && actionRecord.kind === 'letter')
     }),
     previewImage: scene.previewImage,
-    memories: normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) })
+    memories,
+    newMessage: firstUnreadPostcard(memories.postcards)
   };
 }
 function normalizeLiveSnapshot(result) {
@@ -163,13 +182,15 @@ function normalizeLiveSnapshot(result) {
   if (!Number.isInteger(state.slotIndex)) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
+  const memories = normalizeMemories(result.memories);
   return {
     ok: true,
     mode: 'live',
     mood: result.mood,
     currentState: state,
     previewImage: state.previewImage,
-    memories: normalizeMemories(result.memories)
+    memories,
+    newMessage: firstUnreadPostcard(memories.postcards)
   };
 }
 function getSnapshot(pet) {
@@ -262,4 +283,20 @@ function getMemories(pet) {
   })));
 }
 
-module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, normalizeLiveSnapshot };
+function markPostcardRead(pet, postcardId) {
+  if (!pet || !postcardId) return Promise.resolve({ ok: false, code: 'POSTCARD_REQUIRED', message: '没有找到这封明信片' });
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
+    return Promise.resolve({ ok: false, code: 'POSTCARD_READ_SYNC_REQUIRED', message: '明信片状态正在同步，请稍后重试' });
+  }
+  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '回忆服务尚未接入' });
+  const state = readState();
+  const postcard = state.postcards.find(item => String(item && item.id || '') === String(postcardId));
+  if (!postcard) return Promise.resolve({ ok: false, code: 'POSTCARD_NOT_FOUND', message: '没有找到这封明信片' });
+  if (!postcard.unread && postcard.readAt) return Promise.resolve({ ok: true, alreadyRead: true });
+  postcard.unread = false;
+  postcard.readAt = businessNow();
+  const saved = writeState(state);
+  return Promise.resolve(saved.ok ? { ok: true, alreadyRead: false } : saved);
+}
+
+module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };

@@ -46,7 +46,7 @@ assert.equal(Array.from(storage.keys()).some(key => key.includes('eggbabe_demo_'
 
 const homeTemplate = fs.readFileSync(path.join(__dirname, '../../pages/home/home.wxml'), 'utf8');
 const homeSource = fs.readFileSync(path.join(__dirname, '../../pages/home/home.js'), 'utf8');
-assert.equal(homeTemplate.includes('wx:if="{{isDemo && pet}}" class="stage-tester"'), true, '测试阶段控件必须由开发版开关保护');
+assert.equal(homeTemplate.includes('wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== \'hatched\'}}" class="stage-tester '), true, '测试阶段控件必须由开发版开关保护，不得出现在画画或破壳后跳转层');
 assert.equal(homeSource.includes('isDemo: config.localDemoEnabled'), true, '测试阶段控件不得使用可被普通用户修改的本地开关');
 
 console.log('正式版后端门禁校验通过。');

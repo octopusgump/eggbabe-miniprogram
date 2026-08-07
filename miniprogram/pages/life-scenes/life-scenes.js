@@ -1,13 +1,41 @@
 const petStore = require('../../utils/pet-store');
 const postHatch = require('../../services/post-hatch-companion');
+const config = require('../../config/v2');
+const memoryDemoPreview = require('../../utils/memory-demo-preview');
 
 const SECTIONS = ['keepsakes', 'postcards', 'card'];
 
+function memoryDateLabel(value) {
+  const date = new Date(value || 0);
+  if (!value || !Number.isFinite(date.getTime())) return '';
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
 Page({
-  data: { pet: null, loading: true, error: '', section: 'keepsakes', keepsakes: [], postcards: [], cardRecommendation: null },
+  data: {
+    pet: null,
+    loading: true,
+    error: '',
+    section: 'keepsakes',
+    keepsakes: [],
+    postcards: [],
+    cardRecommendation: null,
+    cardPreview: null,
+    selectedKeepsake: null,
+    selectedPostcard: null,
+    detailTitle: '',
+    isDemo: config.localDemoEnabled,
+    demoPreviewIndex: 0
+  },
   onLoad(query) {
-    const section = SECTIONS.includes(query.section) ? query.section : 'keepsakes';
-    this.setData({ section });
+    const params = query || {};
+    this.requestedKeepsakeId = String(params.keepsake_id || '');
+    this.postcardIdToRead = String(params.postcard_id || '');
+    this.useSourceMemoriesForDetail = !!this.postcardIdToRead && params.preview === undefined;
+    const requestedSection = this.requestedKeepsakeId ? 'keepsakes' : (this.postcardIdToRead ? 'postcards' : params.section);
+    const section = SECTIONS.includes(requestedSection) ? requestedSection : 'keepsakes';
+    const previewIndex = Math.max(0, Math.min(2, Number(params.preview) || 0));
+    this.setData({ section, demoPreviewIndex: previewIndex });
   },
   onShow() {
     this.pageActive = true;
@@ -25,7 +53,12 @@ Page({
         this.setData({ loading: false, error: result.message || '回忆没有加载好，请重试' });
         return;
       }
-      this.setData({ loading: false, error: '', keepsakes: result.keepsakes || [], postcards: result.postcards || [], cardRecommendation: result.cardRecommendation || null });
+      this.loadedMemories = {
+        keepsakes: result.keepsakes || [],
+        postcards: result.postcards || [],
+        cardRecommendation: result.cardRecommendation || null
+      };
+      this.applyMemories();
     }).catch(() => {
       if (this.pageActive && token === this.loadToken) this.setData({ loading: false, error: '回忆没有加载好，请重试' });
     });
@@ -33,6 +66,63 @@ Page({
   onSelectSection(event) {
     const section = event.currentTarget.dataset.section;
     if (SECTIONS.includes(section)) this.setData({ section });
+  },
+  applyMemories() {
+    const source = this.loadedMemories || { keepsakes: [], postcards: [], cardRecommendation: null };
+    const memories = this.data.isDemo && !this.useSourceMemoriesForDetail
+      ? memoryDemoPreview.build(this.data.demoPreviewIndex, this.data.pet, source)
+      : source;
+    const keepsakes = memories.keepsakes || [];
+    const postcards = (memories.postcards || []).map(item => Object.assign({}, item, {
+      displayDate: memoryDateLabel(item.deliveredAt || item.sentAt || item.appearedAt)
+    }));
+    const recommendation = memories.cardRecommendation || null;
+    const card = recommendation && recommendation.card || null;
+    const selectedKeepsake = keepsakes.find(item => String(item && item.id || '') === this.requestedKeepsakeId) || null;
+    const selectedPostcard = postcards.find(item => String(item && item.id || '') === this.postcardIdToRead) || null;
+    this.setData({
+      loading: false,
+      error: '',
+      keepsakes,
+      postcards,
+      cardRecommendation: recommendation,
+      cardPreview: card ? {
+        illustration: card.illustration_url || card.illustrationUrl || '',
+        name: card.display_name || card.displayName || this.data.pet.name || '我的蛋宝宝',
+        style: card.style || ''
+      } : null,
+      selectedKeepsake,
+      selectedPostcard,
+      detailTitle: selectedKeepsake ? selectedKeepsake.name : (selectedPostcard ? selectedPostcard.sceneLabel || '明信片' : '')
+    }, () => this.markTargetPostcardRead());
+  },
+  markTargetPostcardRead() {
+    const postcardId = this.postcardIdToRead;
+    if (!postcardId || !this.data.pet || !this.pageActive) return;
+    const target = (this.loadedMemories && this.loadedMemories.postcards || []).find(item => String(item && item.id || '') === postcardId);
+    if (!target) return;
+    postHatch.markPostcardRead(this.data.pet, postcardId).then(result => {
+      if (!result || !result.ok) return;
+      this.postcardIdToRead = '';
+      target.unread = false;
+      target.readAt = Date.now();
+    }).catch(() => {});
+  },
+  onCycleMemoryPreview() {
+    if (!this.data.isDemo || this.data.loading) return;
+    this.setData({ demoPreviewIndex: (this.data.demoPreviewIndex + 1) % 3 }, () => this.applyMemories());
+  },
+  onOpenKeepsake(event) {
+    const id = String(event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.id || '');
+    if (!id) return;
+    const preview = this.data.isDemo ? `&preview=${this.data.demoPreviewIndex}` : '';
+    wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=keepsakes&keepsake_id=${encodeURIComponent(id)}${preview}` });
+  },
+  onOpenPostcard(event) {
+    const id = String(event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.id || '');
+    if (!id) return;
+    const preview = this.data.isDemo ? `&preview=${this.data.demoPreviewIndex}` : '';
+    wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=postcards&postcard_id=${encodeURIComponent(id)}${preview}` });
   },
   onRetry() { if (!this.data.loading) this.onShow(); },
   onOpenCard() {
@@ -43,5 +133,6 @@ Page({
     this.pageActive = false;
     this.loadToken = (this.loadToken || 0) + 1;
     clearTimeout(this.backTimer);
+    this.loadedMemories = null;
   }
 });

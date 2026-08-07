@@ -50,7 +50,12 @@ const pet = {
   const repeatedLetter = await postHatch.sendLetter(pet, away, '重复寄出');
   assert.equal(letter.ok, true, '外出时必须可寄信');
   assert.equal(repeatedLetter.alreadyDone, true, '同一时段重复寄信必须幂等');
-  assert.equal((await postHatch.getSnapshot(pet)).memories.postcards.length, 1, '寄信后的下一次进入必须收到一次反馈');
+  const delivered = await postHatch.getSnapshot(pet);
+  assert.equal(delivered.memories.postcards.length, 1, '寄信后的下一次进入必须收到一次反馈');
+  assert.equal(delivered.newMessage && delivered.newMessage.unread, true, '新到回信必须在未查看前展示新消息状态');
+  const readPostcard = await postHatch.markPostcardRead(pet, delivered.newMessage.id);
+  assert.equal(readPostcard.ok, true, '用户查看回信后必须能写入已读状态');
+  assert.equal((await postHatch.getSnapshot(pet)).newMessage, null, '用户查看回信后必须移除新消息状态');
 
   Date.now = () => baseNow + SLOT_MS;
   const returned = await postHatch.getSnapshot(pet);

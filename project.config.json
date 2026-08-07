@@ -51,7 +51,15 @@
         "type": "folder"
       },
       {
-        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/_candidates",
+        "value": "assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/30-character/boon-koi/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/20-room-objects/candidates",
         "type": "folder"
       },
       {
@@ -64,10 +72,6 @@
       },
       {
         "value": "assets/scenes/lifecycle/pre-hatch/90-reference-composites",
-        "type": "folder"
-      },
-      {
-        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/full-scene-candidates",
         "type": "folder"
       },
       {
@@ -111,14 +115,6 @@
         "type": "folder"
       },
       {
-        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_v1.webp",
-        "type": "file"
-      },
-      {
-        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_v2.webp",
-        "type": "file"
-      },
-      {
         "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_left_living_with_jade_rabbit_reference.webp",
         "type": "file"
       },
@@ -128,10 +124,6 @@
       },
       {
         "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_base_chroma_reference.png",
-        "type": "file"
-      },
-      {
-        "value": "assets/ui/UI_overview.png",
         "type": "file"
       },
       {

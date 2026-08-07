@@ -1,37 +1,80 @@
 <view class="page">
-  <nav-bar title="留在这里的回忆"></nav-bar>
-  <view class="section-tabs">
-    <view class="section-tab {{section === 'keepsakes' ? 'section-tab--active' : ''}}" data-section="keepsakes" bindtap="onSelectSection">ta 带回来的东西</view>
-    <view class="section-tab {{section === 'postcards' ? 'section-tab--active' : ''}}" data-section="postcards" bindtap="onSelectSection">明信片</view>
-    <view class="section-tab {{section === 'card' ? 'section-tab--active' : ''}}" data-section="card" bindtap="onSelectSection">今日收藏卡</view>
-  </view>
-  <scroll-view class="content" scroll-y>
-    <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在翻看回忆…</text></view>
-    <view wx:elif="{{error}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
-    <block wx:elif="{{section === 'keepsakes'}}">
-      <view wx:if="{{keepsakes.length}}" class="memory-list">
-        <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-card">
-          <view wx:if="{{item.asset}}" class="keepsake-art"><image class="keepsake-image" src="{{item.asset}}" mode="aspectFit"></image></view>
-          <view class="keepsake-copy"><text class="memory-title">{{item.name}}</text><text class="memory-meta">{{item.sourceScene}}</text><text class="memory-story">{{item.story}}</text></view>
-        </view>
-      </view>
-      <view wx:else class="empty-memory"><view class="empty-mark">小物</view><text class="empty-title">这里暂时安安静静的</text><text class="empty-copy">当你在场景里自然地回应 ta，一些东西会慢慢留在桌边。</text></view>
-    </block>
-    <block wx:elif="{{section === 'postcards'}}">
-      <view wx:if="{{postcards.length}}" class="postcard-list">
-        <view wx:for="{{postcards}}" wx:key="id" class="postcard-card">
-          <image wx:if="{{item.asset}}" class="postcard-art" src="{{item.asset}}" mode="aspectFill"></image>
-          <text class="memory-meta">{{item.sceneLabel}}</text><text class="memory-story">{{item.line}}</text>
-        </view>
-      </view>
-      <view wx:else class="empty-memory"><view class="empty-mark">信</view><text class="empty-title">还没有远方的来信</text><text class="empty-copy">ta 外出时可以写一封信；下一次进入后，回信会安静地放在这里。</text></view>
-    </block>
-    <block wx:else>
-      <view wx:if="{{cardRecommendation}}" class="recommend-card" bindtap="onOpenCard">
-        <text class="recommend-kicker">今天想再看一次</text><pet-avatar pet-type="{{pet.prototype}}" size="{{144}}"></pet-avatar>
-        <text class="recommend-name">{{pet.name || '我的蛋宝宝'}}</text><text class="recommend-line">{{cardRecommendation.line}}</text><text class="recommend-open">查看收藏卡</text>
-      </view>
-      <view wx:else class="empty-memory"><view class="empty-mark">卡</view><text class="empty-title">收藏卡留在这里</text><text class="empty-copy">完成破壳承接后，这枚实体蛋唯一的收藏卡会保存在账号里。</text></view>
-    </block>
+  <nav-bar title="{{detailTitle || '留在这里的回忆'}}"></nav-bar>
+
+  <scroll-view wx:if="{{selectedKeepsake}}" class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="keepsake-detail">
+      <view class="keepsake-detail__art"><image class="keepsake-detail__image" src="{{selectedKeepsake.asset}}" mode="aspectFit"></image></view>
+      <text wx:if="{{selectedKeepsake.sourceScene}}" class="detail-meta">{{selectedKeepsake.sourceScene}}</text>
+      <text class="detail-story">{{selectedKeepsake.story}}</text>
+    </view>
   </scroll-view>
+
+  <scroll-view wx:elif="{{selectedPostcard}}" class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="postcard-detail">
+      <image wx:if="{{selectedPostcard.asset}}" class="postcard-detail__art" src="{{selectedPostcard.asset}}" mode="aspectFill"></image>
+      <view wx:else class="postcard-detail__art postcard-paper" aria-hidden="true">
+        <view class="postcard-paper__stamp"></view>
+        <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+      </view>
+      <text wx:if="{{selectedPostcard.displayDate}}" class="detail-meta">{{selectedPostcard.displayDate}}</text>
+      <text class="detail-story detail-story--postcard">{{selectedPostcard.line}}</text>
+    </view>
+  </scroll-view>
+
+  <block wx:else>
+    <view class="section-tabs">
+      <view class="section-tab {{section === 'keepsakes' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="keepsakes" bindtap="onSelectSection">ta 带回来的东西</view>
+      <view class="section-tab {{section === 'postcards' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="postcards" bindtap="onSelectSection">明信片</view>
+      <view class="section-tab {{section === 'card' ? 'section-tab--active' : ''}}" hover-class="section-tab--pressed" aria-role="button" data-section="card" bindtap="onSelectSection">今日收藏卡</view>
+    </view>
+    <scroll-view class="content {{isDemo ? 'content--demo' : ''}}" scroll-y enhanced show-scrollbar="{{false}}">
+      <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在翻看回忆…</text></view>
+      <view wx:elif="{{error}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
+      <block wx:elif="{{section === 'keepsakes'}}">
+        <view wx:if="{{keepsakes.length}}" class="keepsake-grid">
+          <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-grid-item" hover-class="memory-item--pressed" aria-role="button" aria-label="查看{{item.name}}" data-id="{{item.id}}" bindtap="onOpenKeepsake">
+            <view class="keepsake-grid-art"><image class="keepsake-grid-image" src="{{item.asset}}" mode="aspectFit"></image></view>
+            <text class="keepsake-grid-name">{{item.name}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty-memory"><view class="empty-mark">小物</view><text class="empty-title">这里暂时安安静静的</text><text class="empty-copy">当你在场景里自然地回应 ta，一些东西会慢慢留在桌边。</text></view>
+      </block>
+      <block wx:elif="{{section === 'postcards'}}">
+        <view wx:if="{{postcards.length}}" class="postcard-list">
+          <view wx:for="{{postcards}}" wx:key="id" class="postcard-list-item" hover-class="memory-item--pressed" aria-role="button" aria-label="查看{{item.sceneLabel}}明信片" data-id="{{item.id}}" bindtap="onOpenPostcard">
+            <image wx:if="{{item.asset}}" class="postcard-list-cover" src="{{item.asset}}" mode="aspectFill"></image>
+            <view wx:else class="postcard-list-cover postcard-paper" aria-hidden="true">
+              <view class="postcard-paper__stamp"></view>
+              <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+            </view>
+            <text class="postcard-list-title">{{item.sceneLabel || '远方的明信片'}}</text>
+            <text wx:if="{{item.displayDate}}" class="postcard-list-date">{{item.displayDate}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty-memory"><view class="empty-mark">信</view><text class="empty-title">还没有远方的来信</text><text class="empty-copy">ta 外出时可以写一封信；下一次进入后，回信会安静地放在这里。</text></view>
+      </block>
+      <block wx:else>
+        <view wx:if="{{cardRecommendation}}" class="recommend-card" hover-class="recommend-card--pressed" aria-role="button" bindtap="onOpenCard">
+          <text class="recommend-kicker">今天想再看一次</text>
+          <view class="collection-card-preview">
+            <view class="collection-card-preview__header"><text class="collection-card-preview__name">{{cardPreview.name}}</text><text class="collection-card-preview__brand">eggbabe</text></view>
+            <view class="collection-card-preview__art">
+              <image wx:if="{{cardPreview.illustration}}" class="collection-card-preview__image" src="{{cardPreview.illustration}}" mode="aspectFit"></image>
+              <pet-avatar wx:else pet-type="{{pet.prototype}}" size="{{160}}"></pet-avatar>
+            </view>
+            <text wx:if="{{cardPreview.style}}" class="collection-card-preview__style">{{cardPreview.style}}</text>
+          </view>
+          <text class="recommend-line">{{cardRecommendation.line}}</text><text class="recommend-open">查看收藏卡</text>
+        </view>
+        <view wx:else class="empty-memory"><view class="empty-mark">卡</view><text class="empty-title">收藏卡留在这里</text><text class="empty-copy">完成破壳承接后，这枚实体蛋唯一的收藏卡会保存在账号里。</text></view>
+      </block>
+    </scroll-view>
+    <view wx:if="{{isDemo && !loading}}" class="memory-preview-switch" hover-class="memory-preview-switch--pressed" aria-role="button" aria-label="切换回忆页面预览" bindtap="onCycleMemoryPreview">
+      <view class="memory-preview-switch__dots" aria-hidden="true">
+        <view class="memory-preview-switch__dot {{demoPreviewIndex >= 1 ? 'memory-preview-switch__dot--active' : ''}}"></view>
+        <view class="memory-preview-switch__dot {{demoPreviewIndex >= 2 ? 'memory-preview-switch__dot--active' : ''}}"></view>
+        <view class="memory-preview-switch__dot {{demoPreviewIndex >= 2 ? 'memory-preview-switch__dot--active' : ''}}"></view>
+      </view>
+    </view>
+  </block>
 </view>

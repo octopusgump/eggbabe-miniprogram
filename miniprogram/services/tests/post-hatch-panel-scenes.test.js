@@ -32,10 +32,14 @@ Object.values(actionScenes).forEach(scene => {
   assert.equal(scene.bakedCharacter && scene.bakedProps, true, `${scene.stateKey} 动作图必须声明角色与道具已烘焙`);
   assert.deepEqual(scene.windowMeta, postHatchAssets.POST_HATCH.panoramaFallbackMeta, `${scene.stateKey} 必须复用三屏窗户热区坐标`);
 });
+const lightsOffPanorama = actionScenes.sleep && actionScenes.sleep.panoramaAfterAction && actionScenes.sleep.panoramaAfterAction.night;
+assert.equal(fs.existsSync(path.resolve(__dirname, '../..', `.${lightsOffPanorama}`)), true, '关灯闭眼的夜间睡觉动作图必须存在');
 const jadeRabbit = { prototype: '玉兔' };
-const sleepState = { atHome: true, key: 'sleep' };
+const sleepState = { atHome: true, key: 'sleep', action: { id: 'lamp_off' } };
 const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
 assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '晴朗日间睡觉必须读取对应 CDN 动作全景');
+const lightsOffAction = postHatchAssets.resolveActionPanorama(jadeRabbit, Object.assign({}, sleepState, { actionDone: true }), { weather: 'sunny', period: 'night' });
+assert.equal(lightsOffAction && lightsOffAction.panorama.endsWith('/home_bedroom_nap_lights_off_night_v01.webp') && lightsOffAction.variant === 'lights-off', true, '夜间关灯后必须切换为闭眼关灯动作全景');
 assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'rain', period: 'day' }), null, '雨天不得静默使用晴天烘焙动作图');
 assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'sunset' }), null, '日落不得静默复用日间或夜间动作图');
 assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { weather: 'sunny', period: 'day' }), null, '玉兔专属动作图不得用于其他角色');
@@ -65,7 +69,8 @@ assert.equal(lifeSceneLogic.includes("key: 'home-busy'"), true, '陪伴状态测
   assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须覆盖 ${key} 动作全景`);
 });
 assert.equal(lifeSceneLogic.includes("key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing'"), true, '可对话快捷项必须验证画画动作全景');
-assert.equal(lifeSceneLogic.includes("key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep'"), true, '不便对话快捷项必须验证睡觉动作全景');
+assert.equal(lifeSceneLogic.includes("key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep', actionDone: true"), true, '不便对话快捷项必须验证闭眼关灯睡觉全景');
+assert.equal(lifeSceneLogic.includes('}, () => this.refreshEnvironment());'), true, '完成居家动作后必须重新解析动作全景');
 assert.equal(lifeSceneLogic.includes("key: 'away-letter'"), true, '陪伴状态测试必须覆盖不在家写信');
 assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后右上角环境测试入口必须等全景图就绪后显示');

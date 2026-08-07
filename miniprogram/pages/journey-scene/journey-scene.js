@@ -1,5 +1,19 @@
 const JOURNEY_PAYLOAD_WAIT_MS = 800;
 
+function decodedQueryValue(value) {
+  const source = String(value || '');
+  try {
+    return decodeURIComponent(source);
+  } catch (error) {
+    return source;
+  }
+}
+
+function requestedSlideIndex(value) {
+  const index = Number(value);
+  return Number.isInteger(index) && index >= 0 ? index : 0;
+}
+
 function reducedMotionEnabled() {
   try {
     const system = wx.getSystemSetting
@@ -13,15 +27,31 @@ function reducedMotionEnabled() {
 
 function normalizeJourney(payload) {
   const journey = payload && typeof payload === 'object' ? payload : {};
-  const slides = Array.isArray(journey.slides)
-    ? journey.slides.filter(item => item && item.asset).map(item => Object.assign({}, item))
-    : [];
+  const sourceSlides = Array.isArray(journey.slides) ? journey.slides : [];
+  const slideIds = new Set();
+  let invalidSlides = false;
+  const slides = sourceSlides.map(item => {
+    const slide = item && typeof item === 'object' ? item : {};
+    const normalized = Object.assign({}, slide, {
+      id: String(slide.id || ''),
+      sceneLabel: String(slide.sceneLabel || ''),
+      actionLabel: String(slide.actionLabel || ''),
+      line: String(slide.line || ''),
+      asset: String(slide.asset || '')
+    });
+    if (!normalized.id || !normalized.sceneLabel || !normalized.actionLabel || !normalized.line || !normalized.asset || slideIds.has(normalized.id)) {
+      invalidSlides = true;
+    }
+    slideIds.add(normalized.id);
+    return normalized;
+  });
   return {
     id: String(journey.id || ''),
     journeyId: String(journey.journeyId || ''),
     destinationId: String(journey.destinationId || ''),
     title: String(journey.title || '旅途回放'),
-    slides
+    slides,
+    invalidSlides
   };
 }
 
@@ -39,8 +69,9 @@ Page({
   onLoad(query) {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     this.failedSlideIndexes = new Set();
-    this.requestedIndex = Math.max(0, Number(query && query.index) || 0);
+    this.requestedIndex = requestedSlideIndex(query && query.index);
     this.requestedJourneyId = String(query && query.journey_id || '');
+    this.decodedRequestedJourneyId = decodedQueryValue(this.requestedJourneyId);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
       reducedMotion: reducedMotionEnabled()
@@ -56,7 +87,8 @@ Page({
   },
   applyJourney(payload) {
     const journey = normalizeJourney(payload);
-    if (this.requestedJourneyId && journey.journeyId !== this.requestedJourneyId && journey.id !== this.requestedJourneyId) {
+    const requestedJourneyIds = Array.from(new Set([this.requestedJourneyId, this.decodedRequestedJourneyId].filter(Boolean)));
+    if (requestedJourneyIds.length && !requestedJourneyIds.some(id => journey.journeyId === id || journey.id === id)) {
       this.clearJourneyDeadline();
       this.setData({ loading: false, ready: false, error: '这次旅程的数据没有对上' });
       return;
@@ -64,6 +96,11 @@ Page({
     if (!journey.slides.length) {
       this.clearJourneyDeadline();
       this.setData({ loading: false, ready: false, error: '这次旅程暂时无法回放' });
+      return;
+    }
+    if (journey.invalidSlides) {
+      this.clearJourneyDeadline();
+      this.setData({ loading: false, ready: false, error: '这次旅程的数据不完整' });
       return;
     }
     const current = Math.min(this.requestedIndex || 0, journey.slides.length - 1);
@@ -103,7 +140,9 @@ Page({
   onUnload() {
     this.clearJourneyDeadline();
     this.failedSlideIndexes = null;
+    this.requestedJourneyId = '';
+    this.decodedRequestedJourneyId = '';
   }
 });
 
-module.exports = { normalizeJourney, JOURNEY_PAYLOAD_WAIT_MS };
+module.exports = { decodedQueryValue, requestedSlideIndex, normalizeJourney, JOURNEY_PAYLOAD_WAIT_MS };

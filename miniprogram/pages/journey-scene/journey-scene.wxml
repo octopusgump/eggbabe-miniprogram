@@ -1,5 +1,5 @@
 <view class="page {{reducedMotion ? 'page--reduced' : ''}}">
-  <swiper wx:if="{{ready}}" class="journey-stage" current="{{current}}" circular="{{false}}" bindchange="onSlideChange">
+  <swiper wx:if="{{ready}}" class="journey-stage" current="{{current}}" circular="{{false}}" duration="{{reducedMotion ? 0 : 300}}" bindchange="onSlideChange">
     <swiper-item wx:for="{{slides}}" wx:key="id">
       <view class="journey-scene">
         <image class="journey-scene__backdrop" src="{{item.asset}}" mode="aspectFill" aria-hidden="true"></image>

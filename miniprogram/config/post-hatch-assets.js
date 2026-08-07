@@ -36,7 +36,11 @@ const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || 
 }, {}));
 
 const ACTION_PANORAMA_FILES = Object.freeze({
-  sleep: Object.freeze({ day: 'home_bedroom_nap_day_v01.webp', night: 'home_bedroom_nap_night_v01.webp' }),
+  sleep: Object.freeze({
+    day: 'home_bedroom_nap_day_v01.webp',
+    night: 'home_bedroom_nap_night_v01.webp',
+    nightAfterLampOff: 'home_bedroom_nap_lights_off_night_v01.webp'
+  }),
   reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
   gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
   window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
@@ -55,6 +59,9 @@ const ACTION_PANORAMA_SCENES = Object.freeze(Object.keys(ACTION_PANORAMA_FILES).
       day: `${ACTION_PANORAMA_ROOT}/${periods.day}`,
       night: `${ACTION_PANORAMA_ROOT}/${periods.night}`
     }),
+    panoramaAfterAction: periods.nightAfterLampOff
+      ? Object.freeze({ night: `${ACTION_PANORAMA_ROOT}/${periods.nightAfterLampOff}` })
+      : null,
     windowMeta: PANORAMA_WINDOW_META,
     bakedCharacter: true,
     bakedProps: true
@@ -85,11 +92,15 @@ function resolveActionPanorama(pet, currentState, environment, cdnBase) {
   const scene = ACTION_PANORAMA_SCENES[stateKey];
   const weather = String(environment && environment.weather || '');
   const period = String(environment && environment.period || '');
-  const source = scene && scene.weather === weather ? scene.panoramaByPeriod[period] : '';
+  const lampTurnedOff = stateKey === 'sleep' && currentState.actionDone && currentState.action && currentState.action.id === 'lamp_off';
+  const source = scene && scene.weather === weather
+    ? (lampTurnedOff && scene.panoramaAfterAction && scene.panoramaAfterAction[period]) || scene.panoramaByPeriod[period]
+    : '';
   if (!source) return null;
   return Object.assign({}, scene, {
     id: `jade-rabbit-home-bedroom-${stateKey}-${period}`,
     period,
+    variant: lampTurnedOff && scene.panoramaAfterAction && scene.panoramaAfterAction[period] ? 'lights-off' : 'default',
     panorama: resolveCdnPath(source, cdnBase)
   });
 }

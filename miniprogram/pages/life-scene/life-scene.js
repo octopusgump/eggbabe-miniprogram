@@ -25,7 +25,7 @@ const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   AUTO_COMPANION_STATE_OPTION,
   // 快捷项必须落到已有动作全景的状态，避免验收器选择后看不见对应画面。
   Object.freeze({ key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing' }),
-  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep' }),
+  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep', actionDone: true }),
   Object.freeze({ key: 'home-reading', label: '在家 · 看书', major: 'home', stateKey: 'reading' }),
   Object.freeze({ key: 'home-music', label: '在家 · 听音乐', major: 'home', stateKey: 'music' }),
   Object.freeze({ key: 'home-window', label: '在家 · 看窗外', major: 'home', stateKey: 'window' }),
@@ -88,8 +88,8 @@ function previewCompanionSnapshot(snapshot, target) {
       slotIndex: current.slotIndex,
       slotStart: current.slotStart,
       slotEnd: current.slotEnd,
-      actionDone: false,
-      actionFeedback: '',
+      actionDone: Boolean(target.actionDone),
+      actionFeedback: target.actionDone ? definition.action.feedback : '',
       letterSent: false,
       isPreview: true
     })
@@ -849,7 +849,7 @@ Page({
         'currentState.actionDone': true,
         'currentState.actionFeedback': feedback,
         playedActionKind: current.action.kind
-      });
+      }, () => this.refreshEnvironment());
       this.showFeedback(feedback);
       if (openWindowAfter) this.openDailyWindow(windowSelector);
       return;
@@ -864,7 +864,7 @@ Page({
         return;
       }
       const actionDone = true;
-      this.setData({ 'currentState.actionDone': actionDone, 'currentState.actionFeedback': result.feedback || current.action.feedback, playedActionKind: current.action.kind });
+      this.setData({ 'currentState.actionDone': actionDone, 'currentState.actionFeedback': result.feedback || current.action.feedback, playedActionKind: current.action.kind }, () => this.refreshEnvironment());
       this.showFeedback(feedbackOverride || result.feedback || current.action.feedback);
       if (openWindowAfter) this.openDailyWindow(windowSelector);
     }).catch(() => {

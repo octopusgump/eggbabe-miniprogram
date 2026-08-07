@@ -1,10 +1,6 @@
 <view class="page">
   <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
-  <view wx:if="{{pet && stage === 'hatched'}}" class="post-hatch-redirect" aria-hidden="true">
-    <image wx:if="{{sceneImage}}" class="post-hatch-redirect-image" src="{{sceneImage}}" mode="aspectFill"></image>
-  </view>
-
   <scroll-view wx:if="{{!doodleEditorVisible}}" class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
     <view wx:if="{{!pet}}" class="empty-state">
       <view class="empty-orbit"><view class="empty-egg"></view></view>
@@ -239,6 +235,18 @@
     aria-hidden="true"
     bindload="onTimeSceneImageLoad"
     binderror="onTimeSceneImageError"
+  ></image>
+
+  <!-- 破壳后只预热完整 Pano；不再把中屏切片作为可见跳转画面。 -->
+  <image
+    wx:if="{{!doodleEditorVisible && postHatchPanoPreload}}"
+    class="post-hatch-pano-preloader"
+    src="{{postHatchPanoPreload}}"
+    mode="aspectFill"
+    data-token="{{postHatchPanoPreloadToken}}"
+    aria-hidden="true"
+    bindload="onPostHatchPanoPreloadLoad"
+    binderror="onPostHatchPanoPreloadError"
   ></image>
 
   <!-- DEV-ONLY：阶段验收器，正式上线前整体删除。release/trial 下 isDemo=false，不会渲染。 -->

@@ -35,12 +35,14 @@
 .loading-orbit{width:52rpx;height:52rpx;border:5rpx solid #D8DFC5;border-top-color:#6F8449;border-radius:50%;animation:loading-spin .8s linear infinite}
 .state-action{min-width:180rpx;height:96rpx;display:flex;align-items:center;justify-content:center;padding:0 28rpx;border-radius:999rpx;background:#3F5A47;color:#FFF}
 .state-secondary{padding:14rpx 24rpx;color:#6D766D}
-.scene-stage{position:absolute;inset:0;opacity:0;transition:opacity .34s ease;pointer-events:none}
+.scene-stage{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;pointer-events:none}
 .scene-stage--entered{opacity:1;pointer-events:auto}
 .world-scroll{width:100vw;height:100vh;white-space:nowrap}
 .world-track{position:relative;width:300vw;height:100vh;display:flex;background:linear-gradient(160deg,#F7EEDC,#D9C7A8)}
 .world-panorama-bg{position:absolute;z-index:0;left:0;top:0;width:300vw;height:100vh;display:block}
-.world-panorama-bg--previous{z-index:1;pointer-events:none;animation:environment-crossfade-out .52s ease-out both}
+.world-panorama-bg--previous{z-index:1;pointer-events:none}
+.world-panorama-bg--previous-fading{animation:environment-crossfade-out .52s ease-out both}
+.world-panorama-preload{position:absolute;z-index:0;left:0;top:0;width:300vw;height:100vh;opacity:0;pointer-events:none}
 .world-panel{position:relative;z-index:1;width:100vw;height:100vh;flex:0 0 100vw;overflow:hidden;background:transparent}
 .panel-tone{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(62,44,28,.18))}
 .daily-window-hotspot{position:absolute;z-index:7;box-sizing:border-box}
@@ -60,6 +62,8 @@
 .action-glow--cup{right:15%;bottom:31%}
 .action-glow--paper{left:54%;bottom:19%}
 .action-glow--screen{left:28%;bottom:28%}
+.action-glow--book{left:50%;bottom:29%}
+.action-glow--music{left:52%;bottom:27%}
 .action-glow--window{right:18%;top:24%}
 .away-note{position:absolute;z-index:6;left:10%;right:10%;top:34%;padding:30rpx;border-radius:30rpx;background:rgba(255,253,247,.9);box-shadow:0 18rpx 50rpx rgba(45,37,27,.12);white-space:normal}
 .away-kicker,.away-line{display:block}
@@ -71,6 +75,8 @@
 .scene-status-bubble{position:absolute;z-index:22;left:50%;top:calc(154rpx + env(safe-area-inset-top));max-width:500rpx;padding:16rpx 24rpx;border-radius:26rpx 26rpx 26rpx 8rpx;background:rgba(255,253,247,.84);box-shadow:0 10rpx 28rpx rgba(42,49,37,.14);color:#3D4930;font-size:23rpx;line-height:1.45;opacity:0;transform:translate(-50%,8rpx);transition:opacity .22s ease,transform .22s ease;pointer-events:none}
 .scene-status-bubble--visible{opacity:1;transform:translate(-50%,0)}
 .feedback-bubble{position:absolute;z-index:22;left:50%;top:24%;max-width:520rpx;padding:20rpx 28rpx;border-radius:28rpx 28rpx 28rpx 8rpx;background:rgba(255,255,255,.80);box-shadow:0 12rpx 36rpx rgba(0,41,0,.12);color:#3D4930;font-size:24rpx;line-height:1.5;white-space:pre-line;transform:translateX(-50%);animation:bubble-in .22s ease-out;pointer-events:none}
+.scene-bubble--demo-safe{left:24rpx;right:300rpx;max-width:none;transform:translateY(8rpx)}
+.scene-status-bubble--visible.scene-bubble--demo-safe{transform:translateY(0)}
 .scene-background-error{position:absolute;z-index:24;left:50%;top:calc(168rpx + env(safe-area-inset-top));padding:14rpx 22rpx;border-radius:999rpx;background:rgba(255,253,247,.92);box-shadow:0 8rpx 24rpx rgba(45,37,27,.14);color:#6F5745;font-size:20rpx;transform:translateX(-50%)}
 .scene-composer{position:absolute;z-index:27;left:28rpx;right:28rpx;bottom:calc(24rpx + env(safe-area-inset-bottom));padding:46rpx 14rpx 14rpx;border-radius:34rpx;background:rgba(255,255,255,.94);box-shadow:0 12rpx 42rpx rgba(36,45,37,.18);backdrop-filter:blur(14rpx)}
 .scene-composer--letter{position:fixed;bottom:auto;transition:top .2s ease}

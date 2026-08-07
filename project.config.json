@@ -51,6 +51,10 @@
         "type": "folder"
       },
       {
+        "value": "assets/scenes/lifecycle/post-hatch/60-action-scenes",
+        "type": "folder"
+      },
+      {
         "value": "assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/candidates",
         "type": "folder"
       },

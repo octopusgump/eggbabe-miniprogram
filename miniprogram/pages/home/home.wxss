@@ -1,6 +1,4 @@
 .page { position: relative; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: linear-gradient(160deg, #F7EEDC, #D9C7A8); }
-.post-hatch-redirect { position: fixed; z-index: 2; inset: 0; overflow: hidden; background: linear-gradient(160deg, #F7EEDC, #D9C7A8); }
-.post-hatch-redirect-image { position: absolute; left: -100vw; top: 0; display: block; width: 300vw; height: 100vh; }
 .content { flex: 1; padding: 30rpx 40rpx calc(148rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
 .content--incubating { height: 100vh; padding: 0; overflow: hidden; }
 .empty-state { min-height: 1040rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -147,6 +145,7 @@
 .scene-preloader { position: fixed; left: -4000px; top: 0; width: 8px; height: 8px; overflow: hidden; pointer-events: none; opacity: 0; }
 .scene-preloader-image { display: block; width: 8px; height: 8px; }
 .time-scene-preloader { position: fixed; left: -4000px; top: 0; width: 8px; height: 8px; pointer-events: none; opacity: 0; }
+.post-hatch-pano-preloader { position: fixed; left: -4000px; top: 0; width: 8px; height: 8px; pointer-events: none; opacity: 0; }
 
 .egg-aura { position: absolute; z-index: 5; left: 50%; bottom: 52rpx; width: 350rpx; height: 350rpx; margin-left: -175rpx; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,243,180,.3), rgba(237,231,142,0) 68%); animation: aura 4.4s ease-in-out infinite; }
 .egg { position: absolute; z-index: 7; left: 50%; bottom: 91rpx; width: 500rpx; height: 500rpx; margin-left: -250rpx; transform-origin: 50% 85%; animation: egg-breathe 4.2s ease-in-out infinite; }

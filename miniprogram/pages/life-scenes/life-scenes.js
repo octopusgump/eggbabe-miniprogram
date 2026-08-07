@@ -11,6 +11,22 @@ function memoryDateLabel(value) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
+function normalizePostcard(item) {
+  const postcard = Object.assign({}, item, {
+    displayDate: memoryDateLabel(item && (item.deliveredAt || item.sentAt || item.appearedAt))
+  });
+  const journeySlides = Array.isArray(item && item.postcards)
+    ? item.postcards.map(slide => Object.assign({}, slide, {
+      displayDate: memoryDateLabel(slide.deliveredAt || item.deliveredAt || item.sentAt || item.appearedAt)
+    }))
+    : [];
+  if (journeySlides.length) {
+    postcard.postcards = journeySlides;
+    postcard.asset = postcard.asset || journeySlides[0].asset || '';
+  }
+  return postcard;
+}
+
 Page({
   data: {
     pet: null,
@@ -23,6 +39,8 @@ Page({
     cardPreview: null,
     selectedKeepsake: null,
     selectedPostcard: null,
+    selectedPostcardSlides: [],
+    selectedPostcardIndex: 0,
     detailTitle: '',
     isDemo: config.localDemoEnabled,
     demoPreviewIndex: 0
@@ -73,13 +91,18 @@ Page({
       ? memoryDemoPreview.build(this.data.demoPreviewIndex, this.data.pet, source)
       : source;
     const keepsakes = memories.keepsakes || [];
-    const postcards = (memories.postcards || []).map(item => Object.assign({}, item, {
-      displayDate: memoryDateLabel(item.deliveredAt || item.sentAt || item.appearedAt)
-    }));
+    const postcards = (memories.postcards || []).map(normalizePostcard);
     const recommendation = memories.cardRecommendation || null;
     const card = recommendation && recommendation.card || null;
     const selectedKeepsake = keepsakes.find(item => String(item && item.id || '') === this.requestedKeepsakeId) || null;
     const selectedPostcard = postcards.find(item => String(item && item.id || '') === this.postcardIdToRead) || null;
+    const selectedPostcardSlides = selectedPostcard && Array.isArray(selectedPostcard.postcards)
+      ? selectedPostcard.postcards
+      : [];
+    const restoredPostcardIndex = Math.min(
+      Math.max(0, Number(this.returnPostcardIndex) || 0),
+      Math.max(0, selectedPostcardSlides.length - 1)
+    );
     this.setData({
       loading: false,
       error: '',
@@ -93,6 +116,8 @@ Page({
       } : null,
       selectedKeepsake,
       selectedPostcard,
+      selectedPostcardSlides,
+      selectedPostcardIndex: restoredPostcardIndex,
       detailTitle: selectedKeepsake ? selectedKeepsake.name : (selectedPostcard ? selectedPostcard.sceneLabel || '明信片' : '')
     }, () => this.markTargetPostcardRead());
   },
@@ -111,6 +136,36 @@ Page({
   onCycleMemoryPreview() {
     if (!this.data.isDemo || this.data.loading) return;
     this.setData({ demoPreviewIndex: (this.data.demoPreviewIndex + 1) % 3 }, () => this.applyMemories());
+  },
+  onPostcardSlideChange(event) {
+    const index = Number(event && event.detail && event.detail.current);
+    const slides = this.data.selectedPostcardSlides || [];
+    if (!Number.isInteger(index) || index < 0 || index >= slides.length) return;
+    this.setData({ selectedPostcardIndex: index });
+  },
+  onOpenJourneyScene(event) {
+    const journey = this.data.selectedPostcard;
+    const slides = this.data.selectedPostcardSlides || [];
+    const requestedIndex = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index);
+    const index = Number.isInteger(requestedIndex) && requestedIndex >= 0 && requestedIndex < slides.length
+      ? requestedIndex
+      : this.data.selectedPostcardIndex;
+    if (!journey || !slides.length) return;
+    this.returnPostcardIndex = index;
+    const journeyId = encodeURIComponent(String(journey.journeyId || journey.id || ''));
+    wx.navigateTo({
+      url: `/pages/journey-scene/journey-scene?journey_id=${journeyId}&index=${index}`,
+      success: result => {
+        if (!result || !result.eventChannel) return;
+        result.eventChannel.emit('journey', {
+          id: journey.id,
+          journeyId: journey.journeyId || '',
+          destinationId: journey.destinationId || '',
+          title: journey.sceneLabel || '旅途回放',
+          slides
+        });
+      }
+    });
   },
   onOpenKeepsake(event) {
     const id = String(event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.id || '');

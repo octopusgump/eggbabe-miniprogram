@@ -9,17 +9,33 @@
     </view>
   </scroll-view>
 
-  <scroll-view wx:elif="{{selectedPostcard}}" class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
-    <view class="postcard-detail">
-      <image wx:if="{{selectedPostcard.asset}}" class="postcard-detail__art" src="{{selectedPostcard.asset}}" mode="aspectFill"></image>
-      <view wx:else class="postcard-detail__art postcard-paper" aria-hidden="true">
-        <view class="postcard-paper__stamp"></view>
-        <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+  <view wx:elif="{{selectedPostcard}}" class="postcard-detail-page">
+    <swiper wx:if="{{selectedPostcardSlides.length}}" class="postcard-journey-swiper" current="{{selectedPostcardIndex}}" circular="{{false}}" bindchange="onPostcardSlideChange">
+      <swiper-item wx:for="{{selectedPostcardSlides}}" wx:key="id">
+        <scroll-view class="postcard-journey-slide" scroll-y enhanced show-scrollbar="{{false}}">
+          <view class="postcard-journey-slide__inner">
+            <view class="postcard-journey-art postcard-journey-art--interactive" hover-class="postcard-journey-art--pressed" aria-role="button" aria-label="进入{{item.sceneLabel}}，{{item.actionLabel}}的旅途回放" data-index="{{index}}" bindtap="onOpenJourneyScene">
+              <image class="postcard-journey-image" src="{{item.asset}}" mode="aspectFit" aria-hidden="true"></image>
+            </view>
+            <text class="postcard-journey-scene">{{item.sceneLabel}}</text>
+            <text class="postcard-journey-action">{{item.actionLabel}}</text>
+            <text class="detail-story detail-story--postcard">{{item.line}}</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+    </swiper>
+    <scroll-view wx:else class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="postcard-detail">
+        <image wx:if="{{selectedPostcard.asset}}" class="postcard-detail__art" src="{{selectedPostcard.asset}}" mode="aspectFit"></image>
+        <view wx:else class="postcard-detail__art postcard-paper" aria-hidden="true">
+          <view class="postcard-paper__stamp"></view>
+          <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
+        </view>
+        <text wx:if="{{selectedPostcard.displayDate}}" class="detail-meta">{{selectedPostcard.displayDate}}</text>
+        <text class="detail-story detail-story--postcard">{{selectedPostcard.line}}</text>
       </view>
-      <text wx:if="{{selectedPostcard.displayDate}}" class="detail-meta">{{selectedPostcard.displayDate}}</text>
-      <text class="detail-story detail-story--postcard">{{selectedPostcard.line}}</text>
-    </view>
-  </scroll-view>
+    </scroll-view>
+  </view>
 
   <block wx:else>
     <view class="section-tabs">

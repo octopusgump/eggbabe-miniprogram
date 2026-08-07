@@ -107,7 +107,7 @@ assert.equal(cardContext.data.cardView.illustration_url.startsWith('/assets/'), 
   assert.equal(snapshot.ok, true, '开发版破壳后必须加载隔离的 5 小时状态快照');
   assert.equal(['home', 'travel', 'work', 'school'].includes(snapshot.currentState.major), true, '当前状态必须属于四个 PRD 大场景之一');
   assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action.kind === 'letter', true, '每个小状态只能暴露一个原生动作或写信入口');
-  assert.equal(lifeScenes.HOME_STATES.length, 7, '开发版必须包含七个居家小状态');
+assert.equal(lifeScenes.HOME_STATES.length, 9, '开发版必须包含九个居家小状态');
 
   const talk = await postHatch.sendSceneMessage(pet, {
     mood: snapshot.mood,

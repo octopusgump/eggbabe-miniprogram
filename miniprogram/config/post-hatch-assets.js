@@ -4,6 +4,8 @@ const preHatchAssets = require('./pre-hatch-assets').PRE_HATCH;
 // 每套房间只使用一张连续的 2823 × 1672 全景图，避免窄长设备上三张独立
 // aspectFill 切图产生裁切缺口与拼接线。
 const PANORAMA_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets';
+// 玉兔日常动作是已经烘焙角色与道具的完整全景，不属于环境底图或透明角色层。
+const ACTION_PANORAMA_ROOT = '/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom';
 const SCENE_ACTION_ROOT = '/assets/ui/3d-scene-actions/runtime';
 const READY_PANORAMA_SCENE_KEYS = Object.freeze((preHatchAssets.sceneTesterOptions || []).map(scene => scene.key));
 const readyPanoramaSceneKeys = new Set(READY_PANORAMA_SCENE_KEYS);
@@ -33,6 +35,33 @@ const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || 
   return result;
 }, {}));
 
+const ACTION_PANORAMA_FILES = Object.freeze({
+  sleep: Object.freeze({ day: 'home_bedroom_nap_day_v01.webp', night: 'home_bedroom_nap_night_v01.webp' }),
+  reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
+  gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
+  window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
+  drawing: Object.freeze({ day: 'home_bedroom_draw_day_v01.webp', night: 'home_bedroom_draw_night_v01.webp' }),
+  music: Object.freeze({ day: 'home_bedroom_music_day_v01.webp', night: 'home_bedroom_music_night_v01.webp' })
+});
+
+const ACTION_PANORAMA_SCENES = Object.freeze(Object.keys(ACTION_PANORAMA_FILES).reduce((result, stateKey) => {
+  const periods = ACTION_PANORAMA_FILES[stateKey];
+  result[stateKey] = Object.freeze({
+    stateKey,
+    label: `玉兔 · ${stateKey}`,
+    // 目前只有晴朗昼/夜两套已烘焙窗景；日落和其他天气必须继续使用环境全景。
+    weather: 'sunny',
+    panoramaByPeriod: Object.freeze({
+      day: `${ACTION_PANORAMA_ROOT}/${periods.day}`,
+      night: `${ACTION_PANORAMA_ROOT}/${periods.night}`
+    }),
+    windowMeta: PANORAMA_WINDOW_META,
+    bakedCharacter: true,
+    bakedProps: true
+  });
+  return result;
+}, {}));
+
 function resolveCdnPath(path, cdnBase) {
   const source = String(path || '');
   const base = String(cdnBase || '').replace(/\/$/, '');
@@ -45,9 +74,30 @@ function resolvePanoramaScene(sceneKey, cdnBase) {
   return Object.assign({}, sceneSet, { panorama: resolveCdnPath(sceneSet.panorama, cdnBase) });
 }
 
+function isJadeRabbit(pet) {
+  const prototype = String(pet && pet.prototype || '');
+  return prototype === '玉兔' || prototype === 'YT';
+}
+
+function resolveActionPanorama(pet, currentState, environment, cdnBase) {
+  if (!isJadeRabbit(pet) || !currentState || !currentState.atHome) return null;
+  const stateKey = String(currentState.key || '');
+  const scene = ACTION_PANORAMA_SCENES[stateKey];
+  const weather = String(environment && environment.weather || '');
+  const period = String(environment && environment.period || '');
+  const source = scene && scene.weather === weather ? scene.panoramaByPeriod[period] : '';
+  if (!source) return null;
+  return Object.assign({}, scene, {
+    id: `jade-rabbit-home-bedroom-${stateKey}-${period}`,
+    period,
+    panorama: resolveCdnPath(source, cdnBase)
+  });
+}
+
 module.exports = {
   expectedPaths: {
     panoramaSceneSets: `${PANORAMA_SCENE_ROOT}/{scene_key}_post_hatch_panorama_v01.webp`,
+    actionPanoramas: `${ACTION_PANORAMA_ROOT}/home_bedroom_{nap|read|game|window|draw|music}_{day|night}_v01.webp`,
     jadeRabbit: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/',
     boonKoi: '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/',
     magicWindow: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/',
@@ -62,6 +112,7 @@ module.exports = {
     // 仅供尚未加载环境状态的初始占位，不得作为错误天气的静默降级。
     panoramaFallback: '',
     panoramaFallbackMeta: PANORAMA_WINDOW_META,
+    actionPanoramaScenes: ACTION_PANORAMA_SCENES,
     characterPoses: {
       sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
       lazy: '',
@@ -103,5 +154,6 @@ module.exports = {
     postcards: {},
     moodFaces: {}
   },
-  resolvePanoramaScene
+  resolvePanoramaScene,
+  resolveActionPanorama
 };

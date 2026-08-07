@@ -63,7 +63,7 @@ const pet = {
   assert.equal(returned.memories.postcards.length, 1, '重复进入不得重复交付同一封回信');
   assert.equal(returned.memories.keepsakes.some(item => item.id === 'dali-cloud'), true, '外出纪念品必须在回家时带回');
 
-  const expectedTalk = { sleep: false, lazy: false, stare: true, tea: true, drawing: true, gaming: false, window: true };
+  const expectedTalk = { sleep: false, lazy: false, stare: true, tea: true, drawing: true, reading: true, gaming: false, music: true, window: true };
   lifeScenes.HOME_STATES.forEach(state => {
     const fixed = lifeScenes.resolveDefinition('home', state.key);
     assert.equal(fixed.canTalk, expectedTalk[state.key], `${state.label}的说话权限必须使用固定映射`);

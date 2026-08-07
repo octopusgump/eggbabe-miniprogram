@@ -24,6 +24,16 @@
 .postcard-paper__stamp{position:absolute;right:28rpx;top:24rpx;width:66rpx;height:80rpx;border:5rpx double #B7A88E;background:#F5F8ED}
 .postcard-paper__lines{position:absolute;left:34rpx;right:128rpx;bottom:34rpx;display:flex;flex-direction:column;gap:18rpx}
 .postcard-paper__lines view{height:2rpx;background:rgba(128,108,83,.30)}
+.postcard-detail-page{position:relative;flex:1;min-height:0}
+.postcard-journey-swiper{width:100%;height:100%}
+.postcard-journey-slide{height:100%}
+.postcard-journey-slide__inner{padding:28rpx 32rpx calc(60rpx + env(safe-area-inset-bottom));box-sizing:border-box}
+.postcard-journey-art{width:100%;height:386rpx;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1rpx solid #E5E3DF;border-radius:28rpx;background:#EEE9DF;box-shadow:0 14rpx 38rpx rgba(54,48,37,.08)}
+.postcard-journey-art--interactive{transition:transform .16s ease,opacity .16s ease}
+.postcard-journey-art--pressed{opacity:.86;transform:scale(.985)}
+.postcard-journey-image{width:100%;height:100%;display:block}
+.postcard-journey-scene{display:block;margin-top:28rpx;color:#8C8C88;font-size:21rpx}
+.postcard-journey-action{display:block;margin-top:8rpx;color:#1A1A1A;font-size:30rpx;font-weight:600}
 .keepsake-detail,.postcard-detail{padding:8rpx 0 50rpx}
 .keepsake-detail__art{height:650rpx;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1rpx solid #E5E3DF;border-radius:32rpx;background:radial-gradient(circle at 50% 42%,#FFFDF7 0,#F5F8ED 72%,#EEF2E5 100%);box-shadow:0 14rpx 38rpx rgba(0,41,0,.07)}
 .keepsake-detail__image{width:90%;height:90%;display:block;filter:drop-shadow(0 14rpx 16rpx rgba(45,37,27,.12))}

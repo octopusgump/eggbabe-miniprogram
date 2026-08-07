@@ -166,6 +166,8 @@ Page({
     hasScenes: false,
     syncPending: 0,
     sceneImage: '',
+    postHatchPanoPreload: '',
+    postHatchPanoPreloadToken: 0,
     environment: environmentService.resolve(),
     dailyWindowEnvironment: environmentService.resolve(),
     companionActions: companionActionsFor([], ''),
@@ -404,6 +406,7 @@ Page({
     // 不复位会让 openPostHatchLanding 误以为页面仍在打开，并停在空白首页。
     this.postHatchLandingActive = false;
     this.postHatchLandingOpening = false;
+    this.clearPostHatchPanoPreload();
     this.clearTimeSceneTimers();
     this.pendingTimeEnvironment = null;
     this.previousTimeEnvironment = null;
@@ -475,7 +478,9 @@ Page({
       nameCount: Array.from(pet.name || '').length,
       nameError: '',
       hasScenes: hatched,
-      sceneImage: panorama ? panorama.panorama : '',
+      // 破壳后不再显示 Pano 中屏作为跳转底图；只在后台预热正确的完整 Pano。
+      sceneImage: '',
+      postHatchPanoPreload: '',
       environment,
       fullSceneImageLoading: !hatched && Boolean(environment.fullSceneImage),
       fullSceneImageFailed: false,
@@ -519,7 +524,7 @@ Page({
         this.stopClock();
         this.stopWindowWeatherAnimation();
         const openLanding = () => {
-          if (this.pageActive && this.data.stage === 'hatched') this.openPostHatchLanding();
+          if (this.pageActive && this.data.stage === 'hatched') this.preparePostHatchLanding(panorama);
         };
         if (wx.nextTick) wx.nextTick(openLanding);
         else setTimeout(openLanding, 0);
@@ -610,6 +615,44 @@ Page({
         });
       }
     });
+  },
+
+  preparePostHatchLanding(panorama) {
+    if (this.postHatchLandingActive || this.postHatchLandingOpening) return;
+    const image = String(panorama && panorama.panorama || '');
+    if (!image) {
+      this.openPostHatchLanding();
+      return;
+    }
+    this.clearPostHatchPanoPreload();
+    const token = this.postHatchPanoPreloadToken = (this.postHatchPanoPreloadToken || 0) + 1;
+    this.setData({ postHatchPanoPreload: image, postHatchPanoPreloadToken: token });
+    this.postHatchPanoPreloadTimer = setTimeout(() => this.finishPostHatchPanoPreload(token), 6000);
+  },
+
+  finishPostHatchPanoPreload(token) {
+    if (!this.pageActive || token !== this.postHatchPanoPreloadToken || this.data.stage !== 'hatched') return;
+    clearTimeout(this.postHatchPanoPreloadTimer);
+    this.postHatchPanoPreloadTimer = null;
+    this.setData({ postHatchPanoPreload: '' });
+    this.openPostHatchLanding();
+  },
+
+  onPostHatchPanoPreloadLoad(event) {
+    const token = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.token);
+    this.finishPostHatchPanoPreload(token);
+  },
+
+  onPostHatchPanoPreloadError(event) {
+    const token = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.token);
+    this.finishPostHatchPanoPreload(token);
+  },
+
+  clearPostHatchPanoPreload() {
+    clearTimeout(this.postHatchPanoPreloadTimer);
+    this.postHatchPanoPreloadTimer = null;
+    this.postHatchPanoPreloadToken = (this.postHatchPanoPreloadToken || 0) + 1;
+    if (this.data && this.data.postHatchPanoPreload) this.setData({ postHatchPanoPreload: '' });
   },
 
   schedulePostHatchRefresh(slotEnd) {
@@ -1669,5 +1712,6 @@ Page({
     this.homeEggRenderToken = (this.homeEggRenderToken || 0) + 1;
     this.recentTouchLines = [];
     this.postHatchRequestToken = (this.postHatchRequestToken || 0) + 1;
+    this.clearPostHatchPanoPreload();
   }
 });

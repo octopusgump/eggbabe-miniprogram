@@ -21,6 +21,24 @@ sourceScenes.forEach(scene => {
 });
 
 assert.equal(postHatchAssets.resolvePanoramaScene('unknown_scene'), null, '未知 scene key 不得静默混入其他套装');
+const actionScenes = postHatchAssets.POST_HATCH.actionPanoramaScenes || {};
+assert.deepEqual(Object.keys(actionScenes), ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'], '12 张日常动作图必须按六个状态、昼夜两套登记');
+Object.values(actionScenes).forEach(scene => {
+  ['day', 'night'].forEach(period => {
+    const panorama = scene.panoramaByPeriod[period];
+    const absolute = path.resolve(__dirname, '../..', `.${panorama}`);
+    assert.equal(fs.existsSync(absolute), true, `${scene.stateKey} ${period} 动作全景资源缺失：${panorama}`);
+  });
+  assert.equal(scene.bakedCharacter && scene.bakedProps, true, `${scene.stateKey} 动作图必须声明角色与道具已烘焙`);
+  assert.deepEqual(scene.windowMeta, postHatchAssets.POST_HATCH.panoramaFallbackMeta, `${scene.stateKey} 必须复用三屏窗户热区坐标`);
+});
+const jadeRabbit = { prototype: '玉兔' };
+const sleepState = { atHome: true, key: 'sleep' };
+const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
+assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '晴朗日间睡觉必须读取对应 CDN 动作全景');
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'rain', period: 'day' }), null, '雨天不得静默使用晴天烘焙动作图');
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'sunset' }), null, '日落不得静默复用日间或夜间动作图');
+assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { weather: 'sunny', period: 'day' }), null, '玉兔专属动作图不得用于其他角色');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.sunset.endsWith('/jade-rabbit/stare_sunset_v01.webp'), true, '玉兔发呆日落样张必须使用明确的透明 WebP 文件');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.day, '', '日落样张不得静默复用为日间角色图');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.night, '', '日落样张不得静默复用为夜晚角色图');
@@ -28,7 +46,14 @@ assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.night, '', '日落�
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
 const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxss'), 'utf8');
+const homeLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.js'), 'utf8');
+const homeWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.wxml'), 'utf8');
+const homeStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.wxss'), 'utf8');
 assert.equal(lifeSceneLogic.includes('assets.resolvePanoramaScene(sceneKey, cdnBase)'), true, '全屏生活空间必须按当前环境 scene key 读取单张全景图，并支持备案 CDN');
+assert.equal(homeWxml.includes('post-hatch-redirect'), false, '破壳后不得把 Pano 中屏切片作为可见跳转底图');
+assert.equal(homeWxml.includes('postHatchPanoPreload') && homeWxml.includes('bindload="onPostHatchPanoPreloadLoad"'), true, '主页必须在跳转前不可见预热正确的完整 Pano');
+assert.equal(homeLogic.includes('preparePostHatchLanding(panorama)') && homeLogic.includes("animationType: 'none'"), true, '预热完成后必须无系统横向导航动画进入生活空间');
+assert.equal(homeStyles.includes('.post-hatch-pano-preloader'), true, '破壳后 Pano 预热节点必须脱离可见页面');
 assert.equal(/assets\.POST_HATCH\.panoramaFallback(?!Meta)/.test(lifeSceneLogic), false, '破壳后背景加载失败不得静默替换为其他天气场景');
 assert.equal(lifeSceneLogic.includes("isDemo: config.localDemoEnabled"), true, '破壳后环境测试器只能在开发验收模式启用');
 assert.equal(lifeSceneLogic.includes('onSceneTesterSelect(event)'), true, '破壳后必须支持选择同一套环境测试场景');
@@ -36,6 +61,11 @@ assert.equal(lifeSceneLogic.includes('onStageTesterSelect(event)'), true, '破�
 assert.equal(lifeSceneLogic.includes('onCompanionStateTesterSelect(event)'), true, '破壳后开发模式必须支持陪伴状态切换测试');
 assert.equal(lifeSceneLogic.includes("key: 'home-talk'"), true, '陪伴状态测试必须覆盖在家且可对话');
 assert.equal(lifeSceneLogic.includes("key: 'home-busy'"), true, '陪伴状态测试必须覆盖在家不便对话');
+['home-reading', 'home-music', 'home-window', 'home-gaming'].forEach(key => {
+  assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须覆盖 ${key} 动作全景`);
+});
+assert.equal(lifeSceneLogic.includes("key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing'"), true, '可对话快捷项必须验证画画动作全景');
+assert.equal(lifeSceneLogic.includes("key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep'"), true, '不便对话快捷项必须验证睡觉动作全景');
 assert.equal(lifeSceneLogic.includes("key: 'away-letter'"), true, '陪伴状态测试必须覆盖不在家写信');
 assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后右上角环境测试入口必须等全景图就绪后显示');
@@ -44,17 +74,23 @@ assert.equal(lifeSceneWxml.includes('catchtap="onStageTesterToggle"') && lifeSce
 assert.equal(lifeSceneWxml.includes('class="companion-state-tester"'), true, '破壳后必须显示开发模式陪伴状态测试入口');
 assert.equal(/pano-static-character|sceneCharacter3d|Three\.js/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, '3D MVP 关闭后，生活空间不得保留 WebGL 角色依赖或调试入口');
 assert.equal(lifeSceneLogic.includes('function characterPosePath(key, environment)'), true, '角色图必须按状态与环境时段取图');
-assert.equal(lifeSceneLogic.includes('characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment)'), true, '首次加载角色图必须读取当前环境时段');
-assert.equal(lifeSceneLogic.includes('const character = characterPresentation(this.data.pet, this.data.currentState, environment);'), true, '切换环境测试场景时必须重新判定角色图');
+assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase)'), true, '首次加载必须按当前状态与环境解析动作全景');
+assert.equal(lifeSceneLogic.includes('characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment, actionScene)'), true, '动作全景启用时必须抑制独立角色图层');
+assert.equal(lifeSceneLogic.includes('const character = characterPresentation(this.data.pet, this.data.currentState, environment, actionScene);'), true, '切换环境测试场景时必须重新判定动作与角色图层');
 assert.equal(lifeSceneWxml.includes('showSceneCharacter && sceneCharacterScreen === 1'), true, '中屏发呆角色图必须只渲染到中屏');
+assert.equal(lifeSceneWxml.includes('!sceneUsesBakedAction && currentState.action.kind === \'paper\''), true, '烘焙动作全景不得叠加纸张道具层');
+assert.equal(lifeSceneWxml.includes('!sceneUsesBakedAction && currentState.action.kind === \'screen\''), true, '烘焙动作全景不得叠加屏幕道具层');
+assert.equal(lifeSceneWxml.includes('wx:if="{{!sceneUsesBakedAction}}" class="panel-tone"'), true, '烘焙动作全景不得叠加环境色调层');
 assert.equal(lifeSceneStyles.includes('.scene-character--stare'), true, '发呆角色图必须具有独立摆位样式');
 assert.equal(lifeSceneLogic.includes('sceneTesterTopPx: Math.round(testerTopPx)'), true, '破壳后环境测试器应与破壳前一样位于第一行');
 assert.equal(lifeSceneLogic.includes('stageTesterTopPx: Math.round(testerTopPx + 44)'), true, '破壳后阶段切换入口必须位于场景与状态验收器之间');
 assert.equal(lifeSceneLogic.includes('restoreToolboxOnReturn = true') && lifeSceneLogic.includes('toolboxVisible: restoreToolbox'), true, '从百宝箱子页返回生活场景时必须恢复百宝箱，不得只落在空桌面');
-assert.equal(lifeSceneWxml.includes('wx:if="{{!sceneEntered && !error}}" class="state-layer"'), true, '首帧必须保持加载层直到全景与目标面板均可淡入');
+assert.equal(lifeSceneWxml.includes('wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer"'), true, '首帧必须保持加载层直到全景与目标面板定位完成后才能淡入');
 assert.equal(lifeSceneLogic.includes('sceneBackgroundReady: true, sceneBackgroundError: false'), true, '全景图加载成功后才能安排首帧淡入');
-assert.equal(lifeSceneLogic.includes('currentScreen: 1') && lifeSceneLogic.includes('scrollLeft: panelWidth'), true, '首帧必须先定位到中屏，避免异步状态回读时从左屏横向滑入');
-assert.equal(lifeSceneLogic.includes('revealInitialScene()') && lifeSceneWxml.includes("scene-stage {{sceneEntered ? 'scene-stage--entered' : ''}}"), true, '进入生活空间必须使用受资源就绪门槛控制的淡入层');
+assert.equal(lifeSceneLogic.includes('scroll-view 在 currentState 就绪前不会挂载；目标屏由快照一次性写入'), true, '首帧目标屏策略必须明确禁止先挂载中屏再异步横滑');
+assert.equal(lifeSceneLogic.includes('currentScreen: screen') && lifeSceneLogic.includes('scrollLeft: screen * this.data.panelWidth'), true, '快照就绪时必须一次性定位到当前状态的目标屏');
+assert.equal(lifeSceneLogic.includes('scheduleInitialViewportSettle(token)') && lifeSceneLogic.includes('markInitialViewportReady(token)'), true, '首次目标屏必须在不可见状态下等待原生滚动定位完成');
+assert.equal(lifeSceneLogic.includes('revealInitialScene()') && lifeSceneWxml.includes("scene-stage {{sceneEntered && initialViewportReady ? 'scene-stage--entered' : ''}}"), true, '进入生活空间必须在背景和目标屏均就绪后使用渐入层');
 assert.equal(lifeSceneStyles.includes('.scene-stage{position:absolute;inset:0;opacity:0;') && lifeSceneStyles.includes('.scene-stage--entered{opacity:1;'), true, '场景入场必须是渐入，而非横向页面滑动');
 assert.equal(lifeSceneWxml.includes('scene-action-talk-badge'), true, '可对话时的找到 ta 按钮必须展示对话标记');
 assert.equal(lifeSceneWxml.includes('scene-action-unread-dot'), true, '新明信片必须在场景入口展示红点提示');
@@ -73,8 +109,17 @@ assert.deepEqual(postHatchAssets.POST_HATCH.panoramaFallbackMeta, {
   height: 1672,
   windowRegions: [{ id: 'main-window', x: 1050, y: 0, width: 1570, height: 800 }]
 }, '全景图必须声明实际尺寸和原图窗口区域');
-assert.equal((lifeSceneWxml.match(/world-panorama-bg/g) || []).length, 3, '场景切换仅允许保留一张淡出的旧全景与一张当前全景');
+assert.equal((lifeSceneWxml.match(/<image[^>]*world-panorama-bg/g) || []).length, 2, '场景切换仅允许保留一张淡出的旧全景与一张当前全景');
 assert.equal(lifeSceneWxml.includes('src="{{panoramaImage}}"'), true, '运行场景和退场过渡必须使用当前全景图');
+assert.equal(lifeSceneWxml.includes('pendingPanoramaImage') && lifeSceneWxml.includes('bindload="onPendingPanoramaLoad"'), true, '新全景必须预加载成功后才替换当前底图');
+assert.equal(lifeSceneWxml.includes('bindanimationend="onPreviousPanoramaAnimationEnd"'), true, '旧全景淡出必须在动画完成时确定清理');
+assert.equal(lifeSceneLogic.includes('onPendingPanoramaError(event)') && lifeSceneLogic.includes('clearPanoramaTransition()'), true, '全景失败、快速切换与生命周期结束时必须清理临时过渡层');
+assert.equal(lifeSceneLogic.includes('scheduleInitialSceneDeadline()'), true, '首次背景加载必须有独立的超时兜底，不能无限 loading');
+assert.equal(lifeSceneLogic.includes('sceneTransitionError: true') && lifeSceneWxml.includes('房间背景更新失败 · 轻触重试'), true, '运行中背景更新失败必须保留当前场景并提供非阻塞重试');
+assert.equal(lifeSceneLogic.includes('|| this.data.pendingPanoramaImage'), false, '首次入场不得等待运行中下一张全景的预加载');
+assert.equal(lifeSceneLogic.includes('feedback: \'\',\n        playedActionKind: \'\''), true, '历史 actionDone 不得恢复临时反馈或动作视觉效果');
+assert.equal(lifeSceneWxml.includes('statusBubble && !feedback'), true, '状态气泡与动作反馈必须互斥显示');
+assert.equal(lifeSceneWxml.includes("isDemo ? 'scene-bubble--demo-safe' : ''"), true, '开发模式气泡必须避开右上角测试控件');
 assert.equal(/panelImages|class="panel-bg"|scroll-into-view/.test(lifeSceneWxml), false, 'WXML 不得保留三张切图节点或双重滚动定位');
 assert.equal(lifeSceneLogic.includes('windowGeometry.mapPanoramaRegions'), true, '全景窗口必须用原图坐标映射到设备屏幕');
 assert.equal(lifeSceneWxml.includes('daily-window-hotspot--panel-1'), true, '中屏可见窗户必须有独立点击区');

@@ -9,7 +9,8 @@ const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 const errors = [];
 const CDN_ENVIRONMENT_ASSET_PREFIXES = [
   'assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes/',
-  'assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/'
+  'assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/',
+  'assets/scenes/lifecycle/post-hatch/60-action-scenes/'
 ];
 
 function normalize(value) {

@@ -75,9 +75,9 @@ const lifeScenes = require(path.join(miniprogram, 'utils/life-scenes'));
 const lifeSceneTemplate = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneLogic = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/life-scene.js'), 'utf8');
 const petAvatarTemplate = fs.readFileSync(path.join(miniprogram, 'components/pet-avatar/pet-avatar.wxml'), 'utf8');
-if (lifeScenes.HOME_STATES.length !== 7) errors.push(`居家小状态应为 7 个，实际为 ${lifeScenes.HOME_STATES.length}`);
+if (lifeScenes.HOME_STATES.length !== 9) errors.push(`居家小状态应为 9 个，实际为 ${lifeScenes.HOME_STATES.length}`);
 if (lifeScenes.AWAY_STATES.length !== 10) errors.push(`旅行、打工、上学小状态应覆盖 10 个，实际为 ${lifeScenes.AWAY_STATES.length}`);
-if (lifeScenes.STORY_LINE.length !== 19) errors.push(`demo 5 小时故事线应为 19 段，实际为 ${lifeScenes.STORY_LINE.length}`);
+if (lifeScenes.STORY_LINE.length !== 21) errors.push(`demo 5 小时故事线应为 21 段，实际为 ${lifeScenes.STORY_LINE.length}`);
 const majors = new Set(lifeScenes.STORY_LINE.map(item => item.major));
 for (const major of ['home', 'travel', 'work', 'school']) if (!majors.has(major)) errors.push(`故事线缺少大场景：${major}`);
 for (const state of lifeScenes.HOME_STATES) {
@@ -88,7 +88,8 @@ const legacySceneIds = new Set(['grass', 'snow', 'room', 'sea', 'desk', 'rooftop
 for (const state of lifeScenes.STORY_LINE) if (legacySceneIds.has(state.key) || legacySceneIds.has(state.major)) errors.push(`故事线仍包含旧六场景：${state.key}`);
 const expectedActions = {
   sleep: ['lamp_off', false], lazy: ['pull_blanket', false], stare: ['tap_pet', true],
-  tea: ['push_cup', true], drawing: ['turn_paper', true], gaming: ['tap_screen', false], window: ['view_daily_window', true]
+  tea: ['push_cup', true], drawing: ['turn_paper', true], reading: ['turn_book_page', true],
+  gaming: ['tap_screen', false], music: ['listen_together', true], window: ['view_daily_window', true]
 };
 for (const [key, expected] of Object.entries(expectedActions)) {
   const state = lifeScenes.resolveDefinition('home', key);
@@ -101,7 +102,7 @@ if (/demo-scene-badge|>DEMO</.test(lifeSceneTemplate)) errors.push('破壳后正
 if (/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate)) errors.push('破壳后三屏不得叠加临时床铺、灯具或安静空地占位层');
 if (!fs.existsSync(path.join(miniprogram, 'assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) || !fs.existsSync(path.join(miniprogram, 'assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare_sunset_v01.webp')) || !lifeSceneTemplate.includes('sceneCharacterImage')) errors.push('破壳后已验收角色状态必须接入透明角色层');
 if (!lifeSceneTemplate.includes('scene-character__floor-shadow')) errors.push('玉兔躺卧角色层必须包含独立的接触阴影');
-if (!lifeSceneTemplate.includes('scene-character--{{sceneCharacterPose}}') || lifeSceneTemplate.includes('<pet-avatar') || !lifeSceneLogic.includes('function characterPosePath(key, environment)') || !lifeSceneLogic.includes("const image = isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';")) errors.push('角色层必须按玉兔原型、已验收状态与光线时段解析，不得对所有居家状态显示玉兔');
+if (!lifeSceneTemplate.includes('scene-character--{{sceneCharacterPose}}') || lifeSceneTemplate.includes('<pet-avatar') || !lifeSceneLogic.includes('function characterPosePath(key, environment)') || !lifeSceneLogic.includes("const image = !actionScene && isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';")) errors.push('角色层必须按玉兔原型、已验收状态与光线时段解析；烘焙动作全景不得叠加角色图');
 if (!petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") || /wx:else\s+class="koi"/.test(petAvatarTemplate)) errors.push('玉兔代码 YT 不得错误落入锦鲤兜底渲染');
 if (!lifeSceneTemplate.includes('class="scene-context-entry"') || !lifeSceneTemplate.includes('class="scene-action-dock"') || !lifeSceneTemplate.includes('contextActionIcon') || !lifeSceneTemplate.includes('toolboxIcon') || !lifeSceneTemplate.includes('scene-talk-nudge') || !lifeSceneLogic.includes('scene_find_home_button') || !lifeSceneLogic.includes('statusBubbleFor')) errors.push('破壳后必须使用左下找 ta / 写信入口、右下百宝箱与场景内对话触点');
 for (const target of ['my', 'card', 'postcards', 'keepsakes']) if (!lifeSceneTemplate.includes(`data-target="${target}"`)) errors.push(`百宝箱缺少入口：${target}`);

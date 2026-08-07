@@ -39,10 +39,22 @@ const HOME_STATES = [
     keepsake: { id: 'short-pencil', name: '短短的铅笔', story: '这支铅笔越画越短，最后只剩两根手指那么长。我舍不得扔，因为每一道被削掉的木屑里都有一张画。现在画新东西前，我还是会先用它轻轻起稿。' }
   },
   {
+    key: 'reading', major: 'home', majorLabel: '家', label: '看书', screen: 1,
+    line: '这一页讲到月亮，我把耳朵靠近一点听。', canTalk: true,
+    action: { id: 'turn_book_page', kind: 'book', screen: 1, feedback: '书页翻过去，故事又向前走了一小格。' },
+    keepsake: { id: 'short-pencil', name: '短短的铅笔', story: '这支铅笔越画越短，最后只剩两根手指那么长。我舍不得扔，因为每一道被削掉的木屑里都有一张画。现在画新东西前，我还是会先用它轻轻起稿。' }
+  },
+  {
     key: 'gaming', major: 'home', majorLabel: '家', label: '打游戏', screen: 1,
     line: '这一关差一点就过去了，我连耳朵都没敢动。', canTalk: false,
     action: { id: 'tap_screen', kind: 'screen', screen: 1, feedback: '画面里的小角色跳了一下，我没有抬头。' },
     keepsake: { id: 'paper-token', name: '纸做的小徽章', story: '有一关我试了很多次都没过去，就给自己剪了一枚歪歪的小徽章。它什么也不代表，只是让我愿意再笑一次。后来卡住的时候，我都会把它放在屏幕边。' }
+  },
+  {
+    key: 'music', major: 'home', majorLabel: '家', label: '听音乐', screen: 1,
+    line: '这首歌的尾巴轻轻绕了一圈，我还不想按暂停。', canTalk: true,
+    action: { id: 'listen_together', kind: 'music', screen: 1, feedback: '旋律又走了一小段，房间里像多了一点月光。' },
+    keepsake: { id: 'wood-rattle', name: '小拨浪鼓', story: '课堂结束时，老师拿它演示声音怎样一圈圈传出去。我轻轻摇了一下，教室里的人都笑了。后来每当想不出问题，我就听它先替我开个头。' }
   },
   {
     key: 'window', major: 'home', majorLabel: '家', label: '看窗外', screen: 2,
@@ -67,8 +79,8 @@ const AWAY_STATES = [
 
 const STORY_LINE = [
   HOME_STATES[0], HOME_STATES[1], HOME_STATES[2], AWAY_STATES[0], HOME_STATES[3],
-  AWAY_STATES[1], HOME_STATES[4], AWAY_STATES[2], HOME_STATES[5], AWAY_STATES[3],
-  HOME_STATES[6], AWAY_STATES[4], HOME_STATES[0], AWAY_STATES[5], HOME_STATES[3],
+  AWAY_STATES[1], HOME_STATES[4], AWAY_STATES[2], HOME_STATES[5], HOME_STATES[6], AWAY_STATES[3],
+  HOME_STATES[7], AWAY_STATES[4], HOME_STATES[8], HOME_STATES[0], AWAY_STATES[5], HOME_STATES[3],
   AWAY_STATES[6], AWAY_STATES[7], AWAY_STATES[9], AWAY_STATES[8]
 ];
 

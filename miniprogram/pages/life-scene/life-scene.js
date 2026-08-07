@@ -23,8 +23,13 @@ const SCENE_TESTER_OPTIONS = Object.freeze([AUTO_SCENE_OPTION].concat(preHatchAs
 const AUTO_COMPANION_STATE_OPTION = Object.freeze({ key: 'auto', label: '跟随时间' });
 const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   AUTO_COMPANION_STATE_OPTION,
-  Object.freeze({ key: 'home-talk', label: '在家 · 可对话', major: 'home', stateKey: 'stare' }),
-  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话', major: 'home', stateKey: 'sleep' }),
+  // 快捷项必须落到已有动作全景的状态，避免验收器选择后看不见对应画面。
+  Object.freeze({ key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing' }),
+  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep' }),
+  Object.freeze({ key: 'home-reading', label: '在家 · 看书', major: 'home', stateKey: 'reading' }),
+  Object.freeze({ key: 'home-music', label: '在家 · 听音乐', major: 'home', stateKey: 'music' }),
+  Object.freeze({ key: 'home-window', label: '在家 · 看窗外', major: 'home', stateKey: 'window' }),
+  Object.freeze({ key: 'home-gaming', label: '在家 · 打游戏', major: 'home', stateKey: 'gaming' }),
   Object.freeze({ key: 'away-letter', label: '不在家 · 写信', major: 'travel', stateKey: 'dali' })
 ]);
 
@@ -34,7 +39,9 @@ const STATUS_BUBBLE_POOL = Object.freeze({
   stare: Object.freeze(['我在和光斑一起走神。', '桌上的光跑得比我快。', '我发呆得很认真，真的。']),
   tea: Object.freeze(['热气在跳舞，我先看一会儿。', '这口有点烫，嘴巴先请假。', '杯子暖暖的，我也慢下来。']),
   drawing: Object.freeze(['它本来是云，现在像小鱼。', '我画的圆，自己偷偷跑偏啦。', '这张纸好像比我更有主意。']),
+  reading: Object.freeze(['这一页的月亮，和窗外那一盏有点像。', '我把喜欢的句子藏在耳朵旁边。', '故事慢慢走，我也慢一点。']),
   gaming: Object.freeze(['这一关很紧张，耳朵静音。', '小角色又跳歪了，我忍住笑。', '我快赢啦，先认真三小秒。']),
+  music: Object.freeze(['这段旋律像在给窗帘梳头发。', '我把安静放进歌里听一会儿。', '尾音还没走远，我先不说话。']),
   window: Object.freeze(['云走得好慢，我也慢一点。', '我在数窗外亮晶晶的东西。', '风把树叶的小秘密吹过来啦。']),
   travel: Object.freeze(['我把风装进帽子里啦。', '路边的云，今天特别会走。', '我在远处拐一个小小的弯。']),
   work: Object.freeze(['我在认真忙，袖口都精神了。', '今天的小事排队来找我。', '我先把这一点点做好。']),
@@ -109,14 +116,15 @@ function stageTesterPresentation(pet) {
   return { key: stage.key, label: stage.label };
 }
 
-function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase) {
-  const sceneSet = assets.resolvePanoramaScene(sceneKey, cdnBase);
+function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, actionScene) {
+  const sceneSet = actionScene || assets.resolvePanoramaScene(sceneKey, cdnBase);
   const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
   const imageMeta = sceneSet && sceneSet.windowMeta || fallbackMeta;
   return {
     valid: Boolean(sceneSet),
     sceneSetId: sceneSet ? sceneSet.id : '',
     panoramaImage: sceneSet ? sceneSet.panorama : '',
+    isActionScene: Boolean(actionScene),
     windowHotspots: windowGeometry.mapPanoramaRegions({
       imageWidth: imageMeta.width,
       imageHeight: imageMeta.height,
@@ -134,12 +142,13 @@ function characterPosePath(key, environment) {
   return pose && lightPhase ? String(pose[lightPhase] || '') : '';
 }
 
-function characterPresentation(pet, currentState, environment) {
+function characterPresentation(pet, currentState, environment, actionScene) {
   const prototype = String(pet && pet.prototype || '');
   const isJadeRabbit = prototype === '玉兔' || prototype === 'YT';
   const isAtHome = Boolean(currentState && currentState.atHome);
   const pose = String(currentState && currentState.key || '');
-  const image = isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';
+  // 动作全景已经烘焙角色与道具，不能再叠加透明角色图。
+  const image = !actionScene && isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';
   return {
     visible: Boolean(image),
     image,
@@ -261,6 +270,7 @@ Page({
     exitTransitionStyle: '',
     panelSceneSetId: '',
     panoramaImage: '',
+    pendingPanoramaImage: '',
     previousPanoramaImage: '',
     sceneCrossfadeActive: false,
     windowHotspots: [[], [], []],
@@ -268,8 +278,11 @@ Page({
     sceneCharacterImage: '',
     sceneCharacterPose: '',
     sceneCharacterScreen: -1,
+    sceneUsesBakedAction: false,
     sceneBackgroundError: false,
+    sceneTransitionError: false,
     sceneBackgroundReady: false,
+    initialViewportReady: false,
     sceneEntered: false,
     isDemo: config.localDemoEnabled,
     sceneTesterOpen: false,
@@ -294,6 +307,7 @@ Page({
   onLoad(query) {
     this.pageActive = true;
     this.hasTrackedEnter = false;
+    this.needsInitialViewport = true;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
     const testerTopPx = menuRect && Number(menuRect.bottom)
@@ -321,9 +335,9 @@ Page({
       statusBarHeight: info.statusBarHeight || 20,
       panelWidth,
       panelHeight,
-      // 首屏先定位到中屏，异步状态回来时不再从左屏横向滑过来。
-      currentScreen: 1,
-      scrollLeft: panelWidth,
+      // scroll-view 在 currentState 就绪前不会挂载；目标屏由快照一次性写入，避免首帧横滑。
+      currentScreen: 0,
+      scrollLeft: 0,
       pet,
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
@@ -348,7 +362,12 @@ Page({
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     const token = this.loadToken = (this.loadToken || 0) + 1;
     this.clearSlotTimer();
-    this.setData({ loading: true, error: '', talkError: '', letterError: '', actionBusy: false, talkBusy: false, letterBusy: false });
+    this.clearPresentationTimers();
+    this.setData({
+      loading: true, error: '', talkError: '', letterError: '', actionBusy: false, talkBusy: false, letterBusy: false,
+      feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false,
+      showSceneCharacter: false, sceneCharacterImage: '', sceneCharacterPose: '', sceneCharacterScreen: -1, sceneUsesBakedAction: false
+    });
     const request = postHatch.getSnapshot(this.data.pet);
     this.snapshotRequest = request;
     request.then(result => {
@@ -361,12 +380,23 @@ Page({
       const snapshot = previewCompanionSnapshot(result, this.companionStateTestOverride);
       const currentState = snapshot.currentState;
       const screen = Math.max(0, Math.min(2, Number(currentState.screen || 0)));
-      const character = characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment);
+      const app = typeof getApp === 'function' ? getApp() : null;
+      const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
+      const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
+      const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+      const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
+      const character = characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment, actionScene);
       const contextAction = contextActionPresentation(this.data.pet, currentState, snapshot.newMessage);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
       const restoreToolbox = !!this.restoreToolboxAfterSnapshot;
+      const preparingInitialViewport = Boolean(this.needsInitialViewport);
+      const initialViewportToken = preparingInitialViewport ? (this.initialViewportToken = (this.initialViewportToken || 0) + 1) : 0;
+      if (preparingInitialViewport) {
+        this.initialViewportScreen = screen;
+        this.initialViewportTarget = screen * this.data.panelWidth;
+      }
       this.restoreToolboxAfterSnapshot = false;
       this.clearHomeFocusTimers();
       this.setData({
@@ -378,14 +408,19 @@ Page({
         sceneCharacterImage: character.image,
         sceneCharacterPose: character.pose,
         sceneCharacterScreen: character.screen,
+        sceneUsesBakedAction: panorama.isActionScene,
+        panelSceneSetId: panorama.sceneSetId,
+        windowHotspots: panorama.windowHotspots,
         contextActionIcon: contextAction.icon,
         contextActionLabel: contextAction.label,
         contextActionHasNewMessage: contextAction.hasNewMessage,
         contextActionShowTalkBadge: contextAction.showTalkBadge,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
-        feedback: currentState.actionDone ? currentState.actionFeedback : '',
-        playedActionKind: currentState.actionDone ? currentState.action.kind : '',
+        initialViewportReady: preparingInitialViewport ? false : this.data.initialViewportReady,
+        // actionDone 是持久业务状态；反馈和场景动作效果仅属于本次交互，不能跨页面恢复。
+        feedback: '',
+        playedActionKind: '',
         letterDraft: '',
         talkDraft: '',
         talkReply: '',
@@ -394,6 +429,10 @@ Page({
         homeFocusVisible: false,
         homeTalkNudgeVisible: false
       }, () => {
+        this.scheduleInitialSceneDeadline();
+        this.revealInitialScene();
+        if (preparingInitialViewport) this.scheduleInitialViewportSettle(initialViewportToken);
+        if (panoramaChanged && panorama.valid) this.queuePanoramaTransition(panorama.panoramaImage);
         if (shouldShowStatusBubble) {
           this.lastStatusSlotKey = slotKey;
           this.showStatusBubble(nextStatusBubble);
@@ -433,31 +472,88 @@ Page({
     if (!this.pageActive || !this.data.pet || this.data.dailyWindowVisible || this.data.magicWindowVisible) return;
     const environment = this.displayedEnvironment();
     const app = typeof getApp === 'function' ? getApp() : null;
-    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
+    const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
+    const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, environment, cdnBase);
+    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
-    const character = characterPresentation(this.data.pet, this.data.currentState, environment);
+    const character = characterPresentation(this.data.pet, this.data.currentState, environment, actionScene);
     this.setData({
       dailyWindowEnvironment: environment,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间'),
-      panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage,
-      previousPanoramaImage: changed ? this.data.panoramaImage : '', windowHotspots: panorama.windowHotspots,
-      sceneCrossfadeActive: changed, sceneBackgroundError: !panorama.valid,
+      panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots,
+      sceneBackgroundError: !panorama.valid,
+      sceneTransitionError: false,
       showSceneCharacter: character.visible,
       sceneCharacterImage: character.image,
       sceneCharacterPose: character.pose,
-      sceneCharacterScreen: character.screen
+      sceneCharacterScreen: character.screen,
+      sceneUsesBakedAction: panorama.isActionScene
     }, () => {
-      if (changed) {
-        clearTimeout(this.environmentCrossfadeTimer);
-        this.environmentCrossfadeTimer = setTimeout(() => this.pageActive && this.setData({ previousPanoramaImage: '', sceneCrossfadeActive: false }), this.data.reducedMotion ? 20 : 520);
-      }
+      if (changed && panorama.valid) this.queuePanoramaTransition(panorama.panoramaImage);
       this.scheduleEnvironmentRefresh();
     });
   },
 
+  queuePanoramaTransition(nextImage) {
+    const next = String(nextImage || '');
+    if (!next || next === this.data.panoramaImage) return;
+    this.clearPanoramaTransition();
+    this.panoramaTransitionToken = (this.panoramaTransitionToken || 0) + 1;
+    this.pendingPanoramaUrl = next;
+    this.setData({ pendingPanoramaImage: next, sceneTransitionError: false });
+  },
+
+  onPendingPanoramaLoad(event) {
+    const loadedUrl = String(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.panoramaUrl || '');
+    if (!this.pageActive || !loadedUrl || loadedUrl !== this.pendingPanoramaUrl || loadedUrl !== this.data.pendingPanoramaImage) return;
+    const token = this.panoramaTransitionToken;
+    const previous = this.data.panoramaImage;
+    this.pendingPanoramaUrl = '';
+    this.setData({
+      panoramaImage: loadedUrl,
+      pendingPanoramaImage: '',
+      previousPanoramaImage: previous,
+      sceneCrossfadeActive: Boolean(previous),
+      sceneBackgroundReady: true,
+      sceneBackgroundError: false,
+      sceneTransitionError: false
+    }, () => {
+      this.revealInitialScene();
+      if (previous) this.schedulePanoramaCleanup(previous, token);
+    });
+  },
+
+  onPendingPanoramaError(event) {
+    const failedUrl = String(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.panoramaUrl || '');
+    if (!this.pageActive || !failedUrl || failedUrl !== this.pendingPanoramaUrl) return;
+    this.pendingPanoramaUrl = '';
+    this.setData({ pendingPanoramaImage: '', previousPanoramaImage: '', sceneCrossfadeActive: false, sceneTransitionError: true });
+  },
+
+  schedulePanoramaCleanup(previous, token) {
+    clearTimeout(this.environmentCrossfadeTimer);
+    this.environmentCrossfadeTimer = setTimeout(() => {
+      if (this.pageActive && token === this.panoramaTransitionToken && this.data.previousPanoramaImage === previous) this.clearPanoramaTransition();
+    }, this.data.reducedMotion ? 40 : 700);
+  },
+
+  onPreviousPanoramaAnimationEnd(event) {
+    const previous = String(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.panoramaUrl || '');
+    if (previous && previous === this.data.previousPanoramaImage) this.clearPanoramaTransition();
+  },
+
+  clearPanoramaTransition() {
+    clearTimeout(this.environmentCrossfadeTimer);
+    this.pendingPanoramaUrl = '';
+    if (this.data.pendingPanoramaImage || this.data.previousPanoramaImage || this.data.sceneCrossfadeActive) {
+      this.setData({ pendingPanoramaImage: '', previousPanoramaImage: '', sceneCrossfadeActive: false });
+    }
+  },
+
   onSceneBackgroundLoad() {
     if (!this.pageActive) return;
+    clearTimeout(this.initialSceneTimer);
     if (!this.data.sceneBackgroundReady || this.data.sceneBackgroundError) {
       this.setData({ sceneBackgroundReady: true, sceneBackgroundError: false }, () => this.revealInitialScene());
     }
@@ -465,6 +561,7 @@ Page({
 
   onSceneBackgroundError() {
     if (!this.pageActive) return;
+    clearTimeout(this.initialSceneTimer);
     this.setData({ sceneBackgroundReady: true, sceneBackgroundError: true }, () => this.revealInitialScene());
   },
 
@@ -476,15 +573,26 @@ Page({
     }, this.data.reducedMotion ? 0 : 24);
   },
 
+  scheduleInitialSceneDeadline() {
+    clearTimeout(this.initialSceneTimer);
+    if (this.data.sceneEntered || this.data.sceneBackgroundReady) return;
+    this.initialSceneTimer = setTimeout(() => {
+      if (!this.pageActive || this.data.sceneEntered || !this.data.currentState || this.data.sceneBackgroundReady) return;
+      this.setData({ sceneBackgroundReady: true, sceneBackgroundError: true }, () => this.revealInitialScene());
+    }, this.data.reducedMotion ? 1200 : 6000);
+  },
+
   onRetrySceneBackground() {
     const app = typeof getApp === 'function' ? getApp() : null;
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
-    this.setData({
-      sceneBackgroundError: false,
-      panelSceneSetId: panorama.sceneSetId,
-      panoramaImage: panorama.panoramaImage,
-      windowHotspots: panorama.windowHotspots
-    });
+    const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
+    const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, this.data.dailyWindowEnvironment, cdnBase);
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+    if (panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage) {
+      this.setData({ panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots, sceneUsesBakedAction: panorama.isActionScene, sceneBackgroundError: false, sceneTransitionError: false });
+      this.queuePanoramaTransition(panorama.panoramaImage);
+      return;
+    }
+    this.setData({ sceneBackgroundError: false, sceneTransitionError: false, panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage, windowHotspots: panorama.windowHotspots, sceneUsesBakedAction: panorama.isActionScene });
   },
 
   // DEV-ONLY：与破壳前首页使用同一套 36 个环境 key；release/trial 下不渲染。
@@ -589,6 +697,9 @@ Page({
 
   onScroll(event) {
     const left = Number(event.detail && event.detail.scrollLeft || 0);
+    if (this.needsInitialViewport && Math.abs(left - Number(this.initialViewportTarget || 0)) <= 2) {
+      this.markInitialViewportReady(this.initialViewportToken);
+    }
     if (this.windowGesture && Math.abs(left - this.windowGesture.startScrollLeft) > 3) this.windowGesture.moved = true;
     const screen = Math.max(0, Math.min(2, Math.round(left / this.data.panelWidth)));
     if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen, toolboxVisible: false });
@@ -600,16 +711,42 @@ Page({
     const panelHeight = Number(next.windowHeight || this.data.panelHeight);
     const screen = Number(this.data.currentScreen || 0);
     const app = typeof getApp === 'function' ? getApp() : null;
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
+    const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
+    const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, this.data.dailyWindowEnvironment, cdnBase);
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, cdnBase, actionScene);
+    const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
+    if (this.needsInitialViewport) this.initialViewportTarget = Math.max(0, Math.min(2, screen)) * panelWidth;
     this.setData({
       panelWidth,
       panelHeight,
       panelSceneSetId: panorama.sceneSetId,
-      panoramaImage: panorama.panoramaImage,
       windowHotspots: panorama.windowHotspots,
+      sceneUsesBakedAction: panorama.isActionScene,
       scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
       letterComposerTopPx: this.resolveLetterComposerTop(this.data.letterKeyboardHeight, panelHeight, panelWidth)
+    }, () => {
+      if (this.needsInitialViewport) this.scheduleInitialViewportSettle(this.initialViewportToken);
+      if (changed) this.queuePanoramaTransition(panorama.panoramaImage);
     });
+  },
+
+  scheduleInitialViewportSettle(token) {
+    clearTimeout(this.initialViewportTimer);
+    if (!this.needsInitialViewport || token !== this.initialViewportToken) return;
+    const settle = () => {
+      if (!this.needsInitialViewport || token !== this.initialViewportToken) return;
+      this.initialViewportTimer = setTimeout(() => this.markInitialViewportReady(token), this.data.reducedMotion ? 20 : 220);
+    };
+    if (wx.nextTick) wx.nextTick(() => wx.nextTick ? wx.nextTick(settle) : settle());
+    else setTimeout(settle, 0);
+  },
+
+  markInitialViewportReady(token) {
+    if (!this.pageActive || !this.needsInitialViewport || token !== this.initialViewportToken) return;
+    this.needsInitialViewport = false;
+    clearTimeout(this.initialViewportTimer);
+    this.initialViewportTimer = null;
+    this.setData({ initialViewportReady: true });
   },
 
   vibrateCuddleTick() {
@@ -655,21 +792,24 @@ Page({
 
   showFeedback(text) {
     clearTimeout(this.feedbackTimer);
-    this.setData({ feedback: text || '' });
+    clearTimeout(this.statusBubbleTimer);
+    clearTimeout(this.statusBubbleClearTimer);
+    this.setData({ feedback: text || '', statusBubble: '', statusBubbleVisible: false });
     this.feedbackTimer = setTimeout(() => {
-      if (this.pageActive) this.setData({ feedback: '' });
+      if (this.pageActive) this.setData({ feedback: '', playedActionKind: '' });
     }, 2600);
   },
 
   showStatusBubble(text) {
     clearTimeout(this.statusBubbleTimer);
     clearTimeout(this.statusBubbleClearTimer);
+    clearTimeout(this.feedbackTimer);
     if (!text) {
-      this.setData({ statusBubble: '', statusBubbleVisible: false });
+      this.setData({ statusBubble: '', statusBubbleVisible: false, feedback: '', playedActionKind: '' });
       return;
     }
     this.lastStatusBubble = text;
-    this.setData({ statusBubble: text, statusBubbleVisible: true });
+    this.setData({ statusBubble: text, statusBubbleVisible: true, feedback: '', playedActionKind: '' });
     this.statusBubbleTimer = setTimeout(() => {
       if (!this.pageActive) return;
       this.setData({ statusBubbleVisible: false });
@@ -1032,12 +1172,15 @@ Page({
   onDailyWindowRetry() {
     const environment = this.displayedEnvironment();
     const app = typeof getApp === 'function' ? getApp() : null;
-    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
+    const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
+    const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, environment, cdnBase);
+    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     this.setData({
       dailyWindowEnvironment: environment,
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
       windowHotspots: panorama.windowHotspots,
+      sceneUsesBakedAction: panorama.isActionScene,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间')
     });
@@ -1149,13 +1292,17 @@ Page({
   },
 
   onShow() {
+    const resuming = Boolean(this.hasShownOnce);
+    this.hasShownOnce = true;
     this.pageActive = true;
     if (this.data.dailyWindowVisible || this.data.magicWindowVisible) this.setData({ dailyWindowVisible: false, magicWindowVisible: false });
-    if (this.returningFromChild) {
+    this.refreshEnvironment();
+    if (this.returningFromChild || resuming) {
       this.returningFromChild = false;
       this.restoreToolboxAfterSnapshot = !!this.restoreToolboxOnReturn;
       this.restoreToolboxOnReturn = false;
       this.loadSnapshot();
+      return;
     }
     this.scheduleEnvironmentRefresh();
   },
@@ -1172,13 +1319,24 @@ Page({
     this.clearSlotTimer();
     this.clearCuddleTimers();
     this.clearHomeFocusTimers();
-    clearTimeout(this.feedbackTimer);
-    clearTimeout(this.statusBubbleTimer);
-    clearTimeout(this.statusBubbleClearTimer);
+    this.clearPresentationTimers();
     clearTimeout(this.magicKoiTimer);
     clearTimeout(this.environmentCrossfadeTimer);
     clearTimeout(this.sceneEnterTimer);
-    this.setData({ feedback: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false });
+    clearTimeout(this.initialSceneTimer);
+    clearTimeout(this.initialViewportTimer);
+    this.clearPanoramaTransition();
+    this.needsInitialViewport = true;
+    this.initialViewportToken = (this.initialViewportToken || 0) + 1;
+    this.setData({ feedback: '', playedActionKind: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false, showSceneCharacter: false, sceneCharacterImage: '', sceneCharacterPose: '', sceneCharacterScreen: -1, sceneUsesBakedAction: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+  },
+  clearPresentationTimers() {
+    clearTimeout(this.feedbackTimer);
+    clearTimeout(this.statusBubbleTimer);
+    clearTimeout(this.statusBubbleClearTimer);
+    this.feedbackTimer = null;
+    this.statusBubbleTimer = null;
+    this.statusBubbleClearTimer = null;
   },
   onUnload() {
     this.pageActive = false;

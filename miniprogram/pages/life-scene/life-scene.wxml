@@ -26,7 +26,7 @@
       <text class="companion-state-tester-tag">状态</text><text class="companion-state-tester-current">{{companionStateTesterLabel}}</text><text class="companion-state-tester-chevron">⌄</text>
     </view>
     <view wx:if="{{companionStateTesterOpen}}" class="companion-state-tester-menu">
-      <view wx:for="{{companionStateTesterOptions}}" wx:key="key" class="companion-state-tester-option {{companionStateTesterKey === item.key ? 'companion-state-tester-option--active' : ''}}" data-companion-state="{{item.key}}" aria-role="button" bindtap="onCompanionStateTesterSelect"><text>{{item.label}}</text><text wx:if="{{companionStateTesterKey === item.key}}">✓</text></view>
+      <view wx:for="{{companionStateTesterOptions}}" wx:key="key" class="companion-state-tester-option {{companionStateTesterKey === item.key ? 'companion-state-tester-option--active' : ''}} {{!item.available ? 'companion-state-tester-option--missing' : ''}}" data-companion-state="{{item.key}}" aria-role="button" aria-disabled="{{!item.available}}" bindtap="onCompanionStateTesterSelect"><text>{{item.label}}</text><text wx:if="{{!item.available}}" class="companion-state-tester-missing">缺图片</text><text wx:elif="{{companionStateTesterKey === item.key}}">✓</text></view>
     </view>
   </view>
   <view wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer">

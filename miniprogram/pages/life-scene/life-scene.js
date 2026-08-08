@@ -26,6 +26,9 @@ const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   // 快捷项必须落到已有动作全景的状态，避免验收器选择后看不见对应画面。
   Object.freeze({ key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing' }),
   Object.freeze({ key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep', actionDone: true }),
+  Object.freeze({ key: 'home-lazy', label: '在家 · 赖床', major: 'home', stateKey: 'lazy' }),
+  Object.freeze({ key: 'home-stare', label: '在家 · 发呆', major: 'home', stateKey: 'stare' }),
+  Object.freeze({ key: 'home-tea', label: '在家 · 泡茶', major: 'home', stateKey: 'tea' }),
   Object.freeze({ key: 'home-reading', label: '在家 · 看书', major: 'home', stateKey: 'reading' }),
   Object.freeze({ key: 'home-music', label: '在家 · 听音乐', major: 'home', stateKey: 'music' }),
   Object.freeze({ key: 'home-window', label: '在家 · 看窗外', major: 'home', stateKey: 'window' }),
@@ -76,6 +79,25 @@ function scenePreviewTarget(key) {
 function companionStatePreviewTarget(key) {
   if (!key || key === 'auto') return null;
   return COMPANION_STATE_TEST_OPTIONS.find(item => item.key === key) || null;
+}
+
+function companionStateTesterOptions(pet, environment) {
+  return COMPANION_STATE_TEST_OPTIONS.map(option => {
+    if (option.key === 'auto' || option.major !== 'home') return Object.assign({}, option, { available: true });
+    const definition = lifeScenes.resolveDefinition(option.major, option.stateKey);
+    const previewState = definition && Object.assign({}, definition, {
+      actionDone: Boolean(option.actionDone),
+      action: Object.assign({}, definition.action)
+    });
+    const available = Boolean(previewState && assets.resolveActionPanorama(pet, previewState, environment));
+    return Object.assign({}, option, { available });
+  });
+}
+
+function companionStateTesterLabel(options, key) {
+  const option = (options || []).find(item => item.key === key);
+  if (!option) return AUTO_COMPANION_STATE_OPTION.label;
+  return option.available ? option.label : `${option.label} · 缺图片`;
 }
 
 function previewCompanionSnapshot(snapshot, target) {
@@ -351,7 +373,8 @@ Page({
       stageTesterTopPx: Math.round(testerTopPx + 44),
       companionStateTesterTopPx: Math.round(testerTopPx + 88),
       stageTesterKey: stageTester.key,
-      stageTesterLabel: stageTester.label
+      stageTesterLabel: stageTester.label,
+      companionStateTesterOptions: companionStateTesterOptions(pet, dailyWindowEnvironment)
     });
     this.scheduleEnvironmentRefresh();
     this.loadSnapshot();
@@ -488,7 +511,9 @@ Page({
       sceneCharacterImage: character.image,
       sceneCharacterPose: character.pose,
       sceneCharacterScreen: character.screen,
-      sceneUsesBakedAction: panorama.isActionScene
+      sceneUsesBakedAction: panorama.isActionScene,
+      companionStateTesterOptions: companionStateTesterOptions(this.data.pet, environment),
+      companionStateTesterLabel: companionStateTesterLabel(companionStateTesterOptions(this.data.pet, environment), this.data.companionStateTesterKey)
     }, () => {
       if (changed && panorama.valid) this.queuePanoramaTransition(panorama.panoramaImage);
       this.scheduleEnvironmentRefresh();
@@ -678,6 +703,8 @@ Page({
   onCompanionStateTesterSelect(event) {
     if (!this.data.isDemo) return;
     const key = event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.companionState;
+    const option = (this.data.companionStateTesterOptions || []).find(item => item.key === key);
+    if (option && !option.available) return;
     const target = companionStatePreviewTarget(key);
     if (key !== 'auto' && !target) return;
     if (key === this.data.companionStateTesterKey) {
@@ -688,7 +715,7 @@ Page({
     this.setData({
       companionStateTesterOpen: false,
       companionStateTesterKey: key,
-      companionStateTesterLabel: target ? target.label : AUTO_COMPANION_STATE_OPTION.label
+      companionStateTesterLabel: companionStateTesterLabel(this.data.companionStateTesterOptions, key)
     }, () => {
       this.loadSnapshot();
       wx.showToast({ title: target ? `已切换：${target.label}` : '已跟随真实时间', icon: 'none' });

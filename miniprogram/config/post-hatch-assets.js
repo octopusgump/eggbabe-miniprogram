@@ -4,8 +4,19 @@ const preHatchAssets = require('./pre-hatch-assets').PRE_HATCH;
 // 每套房间只使用一张连续的 2823 × 1672 全景图，避免窄长设备上三张独立
 // aspectFill 切图产生裁切缺口与拼接线。
 const PANORAMA_SCENE_ROOT = '/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets';
-// 玉兔日常动作是已经烘焙角色与道具的完整全景，不属于环境底图或透明角色层。
-const ACTION_PANORAMA_ROOT = '/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom';
+// 日常动作是已经烘焙角色与道具的完整全景，不属于环境底图或透明角色层。
+const ACTION_PANORAMA_CHARACTERS = Object.freeze({
+  'jade-rabbit': Object.freeze({
+    label: '玉兔',
+    root: '/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom',
+    supportsLampOffVariant: true
+  }),
+  'boon-koi': Object.freeze({
+    label: '锦鲤',
+    root: '/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom',
+    supportsLampOffVariant: false
+  })
+});
 const SCENE_ACTION_ROOT = '/assets/ui/3d-scene-actions/runtime';
 const READY_PANORAMA_SCENE_KEYS = Object.freeze((preHatchAssets.sceneTesterOptions || []).map(scene => scene.key));
 const readyPanoramaSceneKeys = new Set(READY_PANORAMA_SCENE_KEYS);
@@ -38,34 +49,67 @@ const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || 
 const ACTION_PANORAMA_FILES = Object.freeze({
   sleep: Object.freeze({
     day: 'home_bedroom_nap_day_v01.webp',
+    sunset: 'home_bedroom_nap_sunset_v01.webp',
     night: 'home_bedroom_nap_night_v01.webp',
     nightAfterLampOff: 'home_bedroom_nap_lights_off_night_v01.webp'
   }),
-  reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
-  gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
-  window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
-  drawing: Object.freeze({ day: 'home_bedroom_draw_day_v01.webp', night: 'home_bedroom_draw_night_v01.webp' }),
-  music: Object.freeze({ day: 'home_bedroom_music_day_v01.webp', night: 'home_bedroom_music_night_v01.webp' })
+  reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', sunset: 'home_bedroom_read_sunset_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
+  gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', sunset: 'home_bedroom_game_sunset_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
+  window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', sunset: 'home_bedroom_window_sunset_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
+  drawing: Object.freeze({ day: 'home_bedroom_draw_day_v01.webp', sunset: 'home_bedroom_draw_sunset_v01.webp', night: 'home_bedroom_draw_night_v01.webp' }),
+  music: Object.freeze({ day: 'home_bedroom_music_day_v01.webp', sunset: 'home_bedroom_music_sunset_v01.webp', night: 'home_bedroom_music_night_v01.webp' })
+});
+// 已审核的季节天气动作图优先于通用晴朗动作图；没有登记的环境键继续使用环境全景。
+const ACTION_PANORAMA_SCENE_KEY_FILES = Object.freeze({
+  'jade-rabbit': Object.freeze({
+    tea: Object.freeze({ spring_cloudy_day: 'home_bedroom_tea_spring_cloudy_day_v01.webp' }),
+    reading: Object.freeze({ autumn_rain_sunset: 'home_bedroom_read_autumn_rain_sunset_v01.webp' })
+  }),
+  'boon-koi': Object.freeze({
+    sleep: Object.freeze({ summer_storm_night: 'home_bedroom_nap_summer_storm_night_v01.webp' }),
+    window: Object.freeze({ winter_snow_day: 'home_bedroom_window_winter_snow_day_v01.webp' })
+  })
 });
 
+function actionPanoramaScenesFor(characterKey) {
+  const character = ACTION_PANORAMA_CHARACTERS[characterKey];
+  const sceneKeyActions = ACTION_PANORAMA_SCENE_KEY_FILES[characterKey] || {};
+  const stateKeys = Array.from(new Set(Object.keys(ACTION_PANORAMA_FILES).concat(Object.keys(sceneKeyActions))));
+  return Object.freeze(stateKeys.reduce((result, stateKey) => {
+    const periods = ACTION_PANORAMA_FILES[stateKey] || {};
+    const sceneKeyFiles = ACTION_PANORAMA_SCENE_KEY_FILES[characterKey] && ACTION_PANORAMA_SCENE_KEY_FILES[characterKey][stateKey] || {};
+    result[stateKey] = Object.freeze({
+      stateKey,
+      label: `${character.label} · ${stateKey}`,
+      // 仅晴朗天气具备已烘焙的日间、日落与夜间窗景；其他天气继续使用环境全景。
+      weather: 'sunny',
+      panoramaByPeriod: Object.freeze({
+        day: periods.day ? `${character.root}/${periods.day}` : '',
+        sunset: periods.sunset ? `${character.root}/${periods.sunset}` : '',
+        night: periods.night ? `${character.root}/${periods.night}` : ''
+      }),
+      panoramaBySceneKey: Object.freeze(Object.keys(sceneKeyFiles).reduce((paths, sceneKey) => {
+        paths[sceneKey] = `${character.root}/${sceneKeyFiles[sceneKey]}`;
+        return paths;
+      }, {})),
+      panoramaAfterAction: character.supportsLampOffVariant && periods.nightAfterLampOff
+        ? Object.freeze({ night: `${character.root}/${periods.nightAfterLampOff}` })
+        : null,
+      windowMeta: PANORAMA_WINDOW_META,
+      bakedCharacter: true,
+      bakedProps: true
+    });
+    return result;
+  }, {}));
+}
+
+const ACTION_PANORAMA_SCENES_BY_CHARACTER = Object.freeze(Object.keys(ACTION_PANORAMA_CHARACTERS).reduce((result, characterKey) => {
+  result[characterKey] = actionPanoramaScenesFor(characterKey);
+  return result;
+}, {}));
+// 兼容现有只读取玉兔清单的调用方；新调用必须按角色使用 actionPanoramaScenesByCharacter。
 const ACTION_PANORAMA_SCENES = Object.freeze(Object.keys(ACTION_PANORAMA_FILES).reduce((result, stateKey) => {
-  const periods = ACTION_PANORAMA_FILES[stateKey];
-  result[stateKey] = Object.freeze({
-    stateKey,
-    label: `玉兔 · ${stateKey}`,
-    // 目前只有晴朗昼/夜两套已烘焙窗景；日落和其他天气必须继续使用环境全景。
-    weather: 'sunny',
-    panoramaByPeriod: Object.freeze({
-      day: `${ACTION_PANORAMA_ROOT}/${periods.day}`,
-      night: `${ACTION_PANORAMA_ROOT}/${periods.night}`
-    }),
-    panoramaAfterAction: periods.nightAfterLampOff
-      ? Object.freeze({ night: `${ACTION_PANORAMA_ROOT}/${periods.nightAfterLampOff}` })
-      : null,
-    windowMeta: PANORAMA_WINDOW_META,
-    bakedCharacter: true,
-    bakedProps: true
-  });
+  result[stateKey] = ACTION_PANORAMA_SCENES_BY_CHARACTER['jade-rabbit'][stateKey];
   return result;
 }, {}));
 
@@ -81,24 +125,28 @@ function resolvePanoramaScene(sceneKey, cdnBase) {
   return Object.assign({}, sceneSet, { panorama: resolveCdnPath(sceneSet.panorama, cdnBase) });
 }
 
-function isJadeRabbit(pet) {
+function actionPanoramaCharacterKey(pet) {
   const prototype = String(pet && pet.prototype || '');
-  return prototype === '玉兔' || prototype === 'YT';
+  if (prototype === '玉兔' || prototype === 'YT') return 'jade-rabbit';
+  if (prototype === '锦鲤' || prototype === 'KOI') return 'boon-koi';
+  return '';
 }
 
 function resolveActionPanorama(pet, currentState, environment, cdnBase) {
-  if (!isJadeRabbit(pet) || !currentState || !currentState.atHome) return null;
+  const characterKey = actionPanoramaCharacterKey(pet);
+  if (!characterKey || !currentState || !currentState.atHome) return null;
   const stateKey = String(currentState.key || '');
-  const scene = ACTION_PANORAMA_SCENES[stateKey];
+  const scene = ACTION_PANORAMA_SCENES_BY_CHARACTER[characterKey][stateKey];
   const weather = String(environment && environment.weather || '');
   const period = String(environment && environment.period || '');
+  const sceneKey = String(environment && environment.sceneKey || '');
   const lampTurnedOff = stateKey === 'sleep' && currentState.actionDone && currentState.action && currentState.action.id === 'lamp_off';
-  const source = scene && scene.weather === weather
+  const source = scene && (scene.panoramaBySceneKey[sceneKey] || (scene.weather === weather
     ? (lampTurnedOff && scene.panoramaAfterAction && scene.panoramaAfterAction[period]) || scene.panoramaByPeriod[period]
-    : '';
+    : ''));
   if (!source) return null;
   return Object.assign({}, scene, {
-    id: `jade-rabbit-home-bedroom-${stateKey}-${period}`,
+    id: `${characterKey}-home-bedroom-${stateKey}-${period}`,
     period,
     variant: lampTurnedOff && scene.panoramaAfterAction && scene.panoramaAfterAction[period] ? 'lights-off' : 'default',
     panorama: resolveCdnPath(source, cdnBase)
@@ -108,7 +156,7 @@ function resolveActionPanorama(pet, currentState, environment, cdnBase) {
 module.exports = {
   expectedPaths: {
     panoramaSceneSets: `${PANORAMA_SCENE_ROOT}/{scene_key}_post_hatch_panorama_v01.webp`,
-    actionPanoramas: `${ACTION_PANORAMA_ROOT}/home_bedroom_{nap|read|game|window|draw|music}_{day|night}_v01.webp`,
+    actionPanoramas: '/assets/scenes/lifecycle/post-hatch/60-action-scenes/{jade-rabbit|boon-koi}/home-bedroom/home_bedroom_{nap|read|game|window|draw|music}_{day|sunset|night}_v01.webp',
     jadeRabbit: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/',
     boonKoi: '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/',
     magicWindow: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/',
@@ -124,6 +172,7 @@ module.exports = {
     panoramaFallback: '',
     panoramaFallbackMeta: PANORAMA_WINDOW_META,
     actionPanoramaScenes: ACTION_PANORAMA_SCENES,
+    actionPanoramaScenesByCharacter: ACTION_PANORAMA_SCENES_BY_CHARACTER,
     characterPoses: {
       sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
       lazy: '',

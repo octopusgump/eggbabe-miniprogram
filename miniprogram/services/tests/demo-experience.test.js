@@ -70,6 +70,17 @@ const previewHatched = demoExperience.setPreviewStage('hatched');
 assert.equal(previewHatched.ok, true, '开发验收器必须可以直接预览破壳后');
 assert.equal(petStore.getStage(previewHatched.pet), 'hatched', '破壳后预览必须进入真实已破壳页面分支');
 
+const previewKoi = demoExperience.setPreviewPrototype('锦鲤');
+assert.equal(previewKoi.ok, true, '开发验收器必须可以切换到锦鲤');
+assert.equal(previewKoi.pet.prototype, '锦鲤', '切换后本地 demo 蛋宝宝必须保留锦鲤原型');
+assert.equal(previewKoi.pet.collectionCard.prototype, 'KOI', '已破壳 demo 收藏卡必须同步为锦鲤代码');
+assert.equal(previewKoi.pet.collectionCard.illustration_url, '/assets/cards/KOI-S01/koi-s01-001.webp', '锦鲤 demo 收藏卡必须读取本地锦鲤卡图');
+
+const previewJade = demoExperience.setPreviewPrototype('YT');
+assert.equal(previewJade.ok, true, '开发验收器必须接受玉兔代码切换');
+assert.equal(previewJade.pet.prototype, '玉兔', '切回后本地 demo 蛋宝宝必须保留玉兔原型');
+assert.equal(previewJade.pet.collectionCard.prototype, 'YT', '切回后 demo 收藏卡必须同步为玉兔代码');
+
 const previewDay1 = demoExperience.setPreviewStage('day1');
 assert.equal(previewDay1.ok, true, '破壳后必须可以返回第 1 天继续验收');
 assert.equal(previewDay1.pet.collectionCard, null, '返回破壳前必须清除 demo 收藏卡，避免持续被判定为已破壳');

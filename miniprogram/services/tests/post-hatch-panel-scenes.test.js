@@ -1,5 +1,6 @@
 const assert = require('assert');
 const fs = require('fs');
+const childProcess = require('child_process');
 const path = require('path');
 
 const preHatch = require('../../config/pre-hatch-assets').PRE_HATCH;
@@ -59,6 +60,11 @@ assert.equal(jadeTeaWeatherAction && jadeTeaWeatherAction.panorama.endsWith('/ja
 const koiNapWeatherAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'summer_storm_night', weather: 'storm', period: 'night' });
 assert.equal(koiNapWeatherAction && koiNapWeatherAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_nap_summer_storm_night_v01.webp'), true, '已审核锦鲤夏季雷暴小憩图必须覆盖对应环境键');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.sunset.endsWith('/jade-rabbit/stare_sunset_v01.webp'), true, '玉兔发呆日落样张必须使用明确的透明 WebP 文件');
+
+const manifest = JSON.parse(childProcess.execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: process.cwd(), encoding: 'utf8' }));
+const actionAssets = manifest.assets.filter(item => item.kind === 'post_hatch_action_panorama');
+assert.equal(actionAssets.length, 41, 'CDN 清单必须覆盖 18 张玉兔通用动作图、18 张锦鲤通用动作图、玉兔关灯变体和 4 张季节天气动作图（共 41 条运行时路径）');
+assert.equal(actionAssets.every(item => item.exists && item.sha256 && item.cdn_path.startsWith('/assets/scenes/lifecycle/post-hatch/60-action-scenes/')), true, 'CDN 动作清单中的每个正式 WebP 必须在本地存在并包含校验哈希');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.day, '', '日落样张不得静默复用为日间角色图');
 assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.night, '', '日落样张不得静默复用为夜晚角色图');
 
@@ -78,6 +84,7 @@ assert.equal(lifeSceneLogic.includes("isDemo: config.localDemoEnabled"), true, '
 assert.equal(lifeSceneLogic.includes('onSceneTesterSelect(event)'), true, '破壳后必须支持选择同一套环境测试场景');
 assert.equal(lifeSceneLogic.includes('onStageTesterSelect(event)'), true, '破壳后必须支持 Day 1–Day 7 与破壳后阶段测试');
 assert.equal(lifeSceneLogic.includes('onCompanionStateTesterSelect(event)'), true, '破壳后开发模式必须支持陪伴状态切换测试');
+assert.equal(lifeSceneLogic.includes('const resetCompanionStatePreview = Boolean(') && lifeSceneLogic.includes("companionStateTesterLabel: companionStateTesterMissing\n        ? `${AUTO_COMPANION_STATE_OPTION.label} · 缺图片`"), true, '环境切换使已选动作失配时，验收器必须回到跟随时间并明确标记缺图片');
 assert.equal(lifeSceneLogic.includes("key: 'home-talk'"), true, '陪伴状态测试必须覆盖在家且可对话');
 assert.equal(lifeSceneLogic.includes("key: 'home-busy'"), true, '陪伴状态测试必须覆盖在家不便对话');
 ['home-reading', 'home-music', 'home-window', 'home-gaming'].forEach(key => {

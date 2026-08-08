@@ -7,6 +7,10 @@ const DEMO_USER_ID = 'demo-user-v228';
 const DEMO_EGG_ID = 'demo-egg-v228';
 const DAY_MS = 86400000;
 const DEMO_TIMELINE_VERSION = 2;
+const PREVIEW_PROTOTYPES = Object.freeze([
+  Object.freeze({ key: '玉兔', label: '玉兔', cardCode: 'YT', cardSeries: 'YT-S01', cardFile: 'yt-s01-001.webp' }),
+  Object.freeze({ key: '锦鲤', label: '锦鲤', cardCode: 'KOI', cardSeries: 'KOI-S01', cardFile: 'koi-s01-001.webp' })
+]);
 const PREVIEW_STAGES = Object.freeze([
   { key: 'day1', label: '第 1 天', day: 1 },
   { key: 'day2', label: '第 2 天', day: 2 },
@@ -24,6 +28,11 @@ function allowed() {
 
 function reject() {
   return { ok: false, code: 'DEMO_NOT_ALLOWED', message: '仅微信开发版可以使用本地验收数据' };
+}
+
+function previewPrototype(value) {
+  const key = String(value || '');
+  return PREVIEW_PROTOTYPES.find(item => item.key === key || item.cardCode === key) || null;
 }
 
 function bootstrap() {
@@ -105,20 +114,35 @@ function normalizeDemoTimeline(pet) {
 }
 
 function demoHatchCard(pet) {
+  const prototype = previewPrototype(pet && pet.prototype) || PREVIEW_PROTOTYPES[0];
   return {
     card_id: 'demo-card-v228',
     egg_id: pet.id,
     mode: 'demo',
-    prototype: 'YT',
-    style: '月白桂花款（开发验收）',
-    display_name: pet.name || '小月',
+    prototype: prototype.cardCode,
+    prototype_name: prototype.label,
+    style: prototype.key === '锦鲤' ? '锦鲤绒面款（开发验收）' : '月白桂花款（开发验收）',
+    display_name: pet.name || (prototype.key === '锦鲤' ? '小锦' : '小月'),
     hatched_at: pet.hatchAt || new Date().toISOString(),
-    identity_code: 'EGG-DEMO-YT-000001',
+    identity_code: `EGG-DEMO-${prototype.cardCode}-000001`,
     source_batch: 'DEMO-ONLY',
-    illustration_key: 'YT-S01-001-DEMO',
-    illustration_url: '/assets/cards/YT-S01/yt-s01-001.webp',
+    illustration_key: `${prototype.cardSeries}-001-DEMO`,
+    illustration_url: `/assets/cards/${prototype.cardSeries}/${prototype.cardFile}`,
     mini_program_code_url: '/assets/tab/egg.png'
   };
+}
+
+// DEV-ONLY：切换本地验收角色，绝不进入 live 数据或服务端接口。
+function setPreviewPrototype(prototypeKey) {
+  if (!allowed()) return reject();
+  const pet = petStore.getPet();
+  if (!pet) return { ok: false, code: 'DEMO_PET_REQUIRED', message: '请先绑定开发验收蛋宝宝' };
+  const prototype = previewPrototype(prototypeKey);
+  if (!prototype) return { ok: false, code: 'DEMO_PROTOTYPE_INVALID', message: '测试角色无效' };
+  pet.prototype = prototype.key;
+  if (pet.collectionCard || pet.lifecycleStage === 'HATCHED') pet.collectionCard = demoHatchCard(pet);
+  const saved = petStore.savePet(pet);
+  return saved ? { ok: true, mode: 'demo', pet: saved, prototype } : { ok: false, code: 'DEMO_PET_WRITE_FAILED', message: '测试角色保存失败，请重试' };
 }
 
 // DEV-ONLY: 首页阶段验收器使用。正式发布前可整体删除此函数与对应 UI。
@@ -166,11 +190,13 @@ function generateHatchCard() {
 
 module.exports = {
   DEMO_CODE,
+  PREVIEW_PROTOTYPES,
   PREVIEW_STAGES,
   normalizeDemoTimeline,
   bootstrap,
   redeemActivationCode,
   advanceToHatchable,
+  setPreviewPrototype,
   setPreviewStage,
   generateHatchCard
 };

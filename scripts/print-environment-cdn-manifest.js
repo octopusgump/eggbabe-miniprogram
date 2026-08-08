@@ -28,4 +28,17 @@ const assets = [];
   const panorama = postHatch.panoramaSceneSets[scene.key];
   assets.push(entry('post_hatch_panorama', scene.key, panorama && panorama.panorama || ''));
 });
+(Object.entries(postHatch.actionPanoramaScenesByCharacter || {})).forEach(([characterKey, scenes]) => {
+  Object.entries(scenes || {}).forEach(([stateKey, scene]) => {
+    Object.entries(scene.panoramaByPeriod || {}).forEach(([period, runtimePath]) => {
+      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${period}`, runtimePath));
+    });
+    Object.entries(scene.panoramaBySceneKey || {}).forEach(([sceneKey, runtimePath]) => {
+      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${sceneKey}`, runtimePath));
+    });
+    Object.entries(scene.panoramaAfterAction || {}).forEach(([period, runtimePath]) => {
+      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${period}:after-action`, runtimePath));
+    });
+  });
+});
 console.log(JSON.stringify({ version: 'environment-v1', assets }, null, 2));

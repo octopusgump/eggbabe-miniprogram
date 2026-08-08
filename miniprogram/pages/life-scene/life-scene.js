@@ -138,6 +138,11 @@ function stageTesterPresentation(pet) {
   return { key: stage.key, label: stage.label };
 }
 
+function prototypeTesterPresentation(pet) {
+  const prototype = String(pet && pet.prototype || '玉兔');
+  return demoExperience.PREVIEW_PROTOTYPES.find(item => item.key === prototype || item.cardCode === prototype) || demoExperience.PREVIEW_PROTOTYPES[0];
+}
+
 function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, actionScene) {
   const sceneSet = actionScene || assets.resolvePanoramaScene(sceneKey, cdnBase);
   const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
@@ -317,7 +322,14 @@ Page({
     companionStateTesterTopPx: 176,
     companionStateTesterKey: 'auto',
     companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label,
+    companionStateTesterMissing: false,
     companionStateTesterOptions: COMPANION_STATE_TEST_OPTIONS,
+    prototypeTesterOpen: false,
+    prototypeTesterBusy: false,
+    prototypeTesterTopPx: 220,
+    prototypeTesterKey: '玉兔',
+    prototypeTesterLabel: '玉兔',
+    prototypeTesterOptions: demoExperience.PREVIEW_PROTOTYPES,
     stageTesterOpen: false,
     stageTesterBusy: false,
     stageTesterTopPx: 132,
@@ -342,6 +354,7 @@ Page({
       return;
     }
     const stageTester = stageTesterPresentation(pet);
+    const prototypeTester = prototypeTesterPresentation(pet);
     const origin = {
       left: Number(query.origin_left), top: Number(query.origin_top),
       width: Number(query.origin_width), height: Number(query.origin_height)
@@ -372,8 +385,11 @@ Page({
       sceneTesterTopPx: Math.round(testerTopPx),
       stageTesterTopPx: Math.round(testerTopPx + 44),
       companionStateTesterTopPx: Math.round(testerTopPx + 88),
+      prototypeTesterTopPx: Math.round(testerTopPx + 132),
       stageTesterKey: stageTester.key,
       stageTesterLabel: stageTester.label,
+      prototypeTesterKey: prototypeTester.key,
+      prototypeTesterLabel: prototypeTester.label,
       companionStateTesterOptions: companionStateTesterOptions(pet, dailyWindowEnvironment)
     });
     this.scheduleEnvironmentRefresh();
@@ -500,6 +516,17 @@ Page({
     const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
     const character = characterPresentation(this.data.pet, this.data.currentState, environment, actionScene);
+    const stateOptions = companionStateTesterOptions(this.data.pet, environment);
+    const selectedStateOption = stateOptions.find(item => item.key === this.data.companionStateTesterKey);
+    // 环境变化后不允许保留一个已失配的动作预览：清空覆盖状态，回到真实陪伴状态，
+    // 并在验收器上保留“缺图片”反馈，直到验收者重新选择状态。
+    const resetCompanionStatePreview = Boolean(
+      this.companionStateTestOverride
+      && selectedStateOption
+      && !selectedStateOption.available
+    );
+    if (resetCompanionStatePreview) this.companionStateTestOverride = null;
+    const companionStateTesterMissing = resetCompanionStatePreview || this.data.companionStateTesterMissing;
     this.setData({
       dailyWindowEnvironment: environment,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
@@ -512,11 +539,16 @@ Page({
       sceneCharacterPose: character.pose,
       sceneCharacterScreen: character.screen,
       sceneUsesBakedAction: panorama.isActionScene,
-      companionStateTesterOptions: companionStateTesterOptions(this.data.pet, environment),
-      companionStateTesterLabel: companionStateTesterLabel(companionStateTesterOptions(this.data.pet, environment), this.data.companionStateTesterKey)
+      companionStateTesterOptions: stateOptions,
+      companionStateTesterKey: resetCompanionStatePreview ? 'auto' : this.data.companionStateTesterKey,
+      companionStateTesterMissing,
+      companionStateTesterLabel: companionStateTesterMissing
+        ? `${AUTO_COMPANION_STATE_OPTION.label} · 缺图片`
+        : companionStateTesterLabel(stateOptions, resetCompanionStatePreview ? 'auto' : this.data.companionStateTesterKey)
     }, () => {
       if (changed && panorama.valid) this.queuePanoramaTransition(panorama.panoramaImage);
-      this.scheduleEnvironmentRefresh();
+      if (resetCompanionStatePreview) this.loadSnapshot();
+      else this.scheduleEnvironmentRefresh();
     });
   },
 
@@ -623,7 +655,7 @@ Page({
   // DEV-ONLY：与破壳前首页使用同一套 36 个环境 key；release/trial 下不渲染。
   onSceneTesterToggle() {
     if (!this.data.isDemo || this.data.sceneTesterBusy) return;
-    this.setData({ sceneTesterOpen: !this.data.sceneTesterOpen, stageTesterOpen: false, companionStateTesterOpen: false });
+    this.setData({ sceneTesterOpen: !this.data.sceneTesterOpen, stageTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false });
   },
 
   onSceneTesterSelect(event) {
@@ -651,7 +683,7 @@ Page({
   // DEV-ONLY：与首页共享 Day 1–Day 7 / 破壳后阶段验收器。
   onStageTesterToggle() {
     if (!this.data.isDemo || this.data.stageTesterBusy) return;
-    this.setData({ stageTesterOpen: !this.data.stageTesterOpen, sceneTesterOpen: false, companionStateTesterOpen: false });
+    this.setData({ stageTesterOpen: !this.data.stageTesterOpen, sceneTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false });
   },
 
   onStageTesterSelect(event) {
@@ -663,7 +695,7 @@ Page({
       this.setData({ stageTesterOpen: false });
       return;
     }
-    this.setData({ stageTesterBusy: true, stageTesterOpen: false, sceneTesterOpen: false, companionStateTesterOpen: false });
+    this.setData({ stageTesterBusy: true, stageTesterOpen: false, sceneTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false });
     const result = demoExperience.setPreviewStage(stageKey);
     if (!result.ok) {
       this.setData({ stageTesterBusy: false });
@@ -681,7 +713,8 @@ Page({
       stageTesterKey: target.key,
       stageTesterLabel: target.label,
       companionStateTesterKey: 'auto',
-      companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label
+      companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label,
+      companionStateTesterMissing: false
     }, () => {
       this.companionStateTestOverride = null;
       this.refreshEnvironment();
@@ -696,7 +729,51 @@ Page({
     this.setData({
       companionStateTesterOpen: !this.data.companionStateTesterOpen,
       stageTesterOpen: false,
-      sceneTesterOpen: false
+      sceneTesterOpen: false,
+      prototypeTesterOpen: false
+    });
+  },
+
+  // DEV-ONLY：只替换本地 demo 角色，用于核验玉兔与锦鲤各自的动作全景。
+  onPrototypeTesterToggle() {
+    if (!this.data.isDemo || this.data.prototypeTesterBusy) return;
+    this.setData({
+      prototypeTesterOpen: !this.data.prototypeTesterOpen,
+      stageTesterOpen: false,
+      sceneTesterOpen: false,
+      companionStateTesterOpen: false
+    });
+  },
+
+  onPrototypeTesterSelect(event) {
+    if (!this.data.isDemo || this.data.prototypeTesterBusy) return;
+    const prototypeKey = event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.prototype;
+    const target = demoExperience.PREVIEW_PROTOTYPES.find(item => item.key === prototypeKey);
+    if (!target) return;
+    if (target.key === this.data.prototypeTesterKey) {
+      this.setData({ prototypeTesterOpen: false });
+      return;
+    }
+    this.setData({ prototypeTesterBusy: true, prototypeTesterOpen: false, stageTesterOpen: false, sceneTesterOpen: false, companionStateTesterOpen: false });
+    const result = demoExperience.setPreviewPrototype(target.key);
+    if (!result.ok) {
+      this.setData({ prototypeTesterBusy: false });
+      wx.showToast({ title: result.message || '测试角色切换失败', icon: 'none' });
+      return;
+    }
+    this.companionStateTestOverride = null;
+    this.setData({
+      pet: result.pet,
+      prototypeTesterBusy: false,
+      prototypeTesterKey: target.key,
+      prototypeTesterLabel: target.label,
+      companionStateTesterKey: 'auto',
+      companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label,
+      companionStateTesterMissing: false
+    }, () => {
+      this.refreshEnvironment();
+      this.loadSnapshot();
+      wx.showToast({ title: `已切换：${target.label}`, icon: 'none' });
     });
   },
 
@@ -708,14 +785,19 @@ Page({
     const target = companionStatePreviewTarget(key);
     if (key !== 'auto' && !target) return;
     if (key === this.data.companionStateTesterKey) {
-      this.setData({ companionStateTesterOpen: false });
+      this.setData({
+        companionStateTesterOpen: false,
+        companionStateTesterLabel: key === 'auto' ? AUTO_COMPANION_STATE_OPTION.label : this.data.companionStateTesterLabel,
+        companionStateTesterMissing: false
+      });
       return;
     }
     this.companionStateTestOverride = target;
     this.setData({
       companionStateTesterOpen: false,
       companionStateTesterKey: key,
-      companionStateTesterLabel: companionStateTesterLabel(this.data.companionStateTesterOptions, key)
+      companionStateTesterLabel: companionStateTesterLabel(this.data.companionStateTesterOptions, key),
+      companionStateTesterMissing: false
     }, () => {
       this.loadSnapshot();
       wx.showToast({ title: target ? `已切换：${target.label}` : '已跟随真实时间', icon: 'none' });

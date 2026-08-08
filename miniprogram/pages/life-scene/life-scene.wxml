@@ -29,6 +29,15 @@
       <view wx:for="{{companionStateTesterOptions}}" wx:key="key" class="companion-state-tester-option {{companionStateTesterKey === item.key ? 'companion-state-tester-option--active' : ''}} {{!item.available ? 'companion-state-tester-option--missing' : ''}}" data-companion-state="{{item.key}}" aria-role="button" aria-disabled="{{!item.available}}" bindtap="onCompanionStateTesterSelect"><text>{{item.label}}</text><text wx:if="{{!item.available}}" class="companion-state-tester-missing">缺图片</text><text wx:elif="{{companionStateTesterKey === item.key}}">✓</text></view>
     </view>
   </view>
+
+  <view wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="prototype-tester" style="top:{{prototypeTesterTopPx}}px;">
+    <view class="prototype-tester-button {{prototypeTesterOpen ? 'prototype-tester-button--open' : ''}} {{prototypeTesterBusy ? 'prototype-tester-button--busy' : ''}}" aria-role="button" aria-label="测试角色，当前{{prototypeTesterLabel}}" bindtap="onPrototypeTesterToggle">
+      <text class="prototype-tester-tag">角色</text><text>{{prototypeTesterBusy ? '切换中…' : prototypeTesterLabel}}</text><text class="prototype-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{prototypeTesterOpen}}" class="prototype-tester-menu">
+      <view wx:for="{{prototypeTesterOptions}}" wx:key="key" class="prototype-tester-option {{prototypeTesterKey === item.key ? 'prototype-tester-option--active' : ''}}" data-prototype="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" bindtap="onPrototypeTesterSelect"><text>{{item.label}}</text><text wx:if="{{prototypeTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
   <view wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer">
     <view class="loading-orbit"></view><text>{{loading ? '正在确认 ta 此刻状态…' : '正在加载房间…'}}</text>
   </view>

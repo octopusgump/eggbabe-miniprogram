@@ -44,7 +44,7 @@ function resolve(serverPresentation, context) {
       valid: false,
       error: `MISSING_ENVIRONMENT_SCENE:${environment.sceneKey}`,
       fullSceneImage: '', backgroundImage: '', windowImage: '', weatherOverlay: '',
-      nestImage: '', eggImage: '', roomLightingEnabled: false, roomLightingImages: { on: '', off: '' },
+      nestImage: '', eggImage: '',
       className: `season-${environment.season} weather-${environment.weather} period-${environment.period} light-${environment.lightPhase}`
     });
   }
@@ -52,7 +52,7 @@ function resolve(serverPresentation, context) {
   return Object.assign({}, environment, {
     valid: true,
     fullSceneImage: resolveAssetUrl(scene.background, cdnBase),
-    backgroundImage: PRE_HATCH_ASSETS.roomBase,
+    backgroundImage: '',
     // 非晴朗日落尚无独立 Window Weather 裁图时，直接使用语义一致的完整场景，
     // 禁止以晴天日落图冒充多云、雨或雷雨。
     windowImage: resolveAssetUrl(
@@ -62,10 +62,8 @@ function resolve(serverPresentation, context) {
       cdnBase
     ),
     weatherOverlay: '',
-    roomLightingEnabled: false,
-    roomLightingImages: { on: '', off: '' },
-    nestImage: scene.nest || EGG_ASSET,
-    eggImage: scene.egg || EGG_ASSET,
+    nestImage: resolveAssetUrl(scene.nest, cdnBase),
+    eggImage: resolveAssetUrl(scene.egg, cdnBase),
     className: `season-${environment.season} weather-${environment.weather} period-${environment.period} light-${environment.lightPhase}`
   });
 }

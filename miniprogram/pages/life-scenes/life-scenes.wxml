@@ -3,7 +3,10 @@
 
   <scroll-view wx:if="{{selectedKeepsake}}" class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
     <view class="keepsake-detail">
-      <view class="keepsake-detail__art"><image class="keepsake-detail__image" src="{{selectedKeepsake.asset}}" mode="aspectFit"></image></view>
+      <view class="keepsake-detail__art">
+        <image wx:if="{{selectedKeepsake.asset && !selectedKeepsake.imageFailed}}" class="keepsake-detail__image" src="{{selectedKeepsake.asset}}" mode="aspectFit" data-scope="keepsake-detail" binderror="onMemoryImageError"></image>
+        <view wx:else class="memory-asset-error"><text>纪念物图片没有加载好</text><view class="memory-asset-retry" data-scope="keepsake-detail" aria-role="button" aria-label="重新加载纪念物图片" bindtap="onRetryMemoryImage">重新加载</view></view>
+      </view>
       <text wx:if="{{selectedKeepsake.sourceScene}}" class="keepsake-detail__meta">来自：{{selectedKeepsake.sourceScene}}</text>
       <view class="keepsake-memory">
         <text class="keepsake-memory__eyebrow">我还记得</text>
@@ -18,7 +21,8 @@
         <scroll-view class="postcard-journey-slide" scroll-y enhanced show-scrollbar="{{false}}">
           <view class="postcard-journey-slide__inner">
             <view class="postcard-journey-art postcard-journey-art--interactive" hover-class="postcard-journey-art--pressed" aria-role="button" aria-label="进入{{item.sceneLabel}}，{{item.actionLabel}}的旅途回放" data-index="{{index}}" bindtap="onOpenJourneyScene">
-              <image class="postcard-journey-image" src="{{item.asset}}" mode="aspectFit" aria-hidden="true"></image>
+              <image wx:if="{{item.asset && !item.imageFailed}}" class="postcard-journey-image" src="{{item.asset}}" mode="aspectFit" aria-hidden="true" data-scope="postcard-slide" data-index="{{index}}" binderror="onMemoryImageError"></image>
+              <view wx:else class="memory-asset-error"><text>旅途图片没有加载好</text><view class="memory-asset-retry" data-scope="postcard-slide" data-index="{{index}}" aria-role="button" aria-label="重新加载旅途图片" catchtap="onRetryMemoryImage">重新加载</view></view>
             </view>
             <text class="postcard-journey-scene">{{item.sceneLabel}}</text>
             <text class="postcard-journey-action">{{item.actionLabel}}</text>
@@ -29,11 +33,8 @@
     </swiper>
     <scroll-view wx:else class="detail-content" scroll-y enhanced show-scrollbar="{{false}}">
       <view class="postcard-detail">
-        <image wx:if="{{selectedPostcard.asset}}" class="postcard-detail__art" src="{{selectedPostcard.asset}}" mode="aspectFit"></image>
-        <view wx:else class="postcard-detail__art postcard-paper" aria-hidden="true">
-          <view class="postcard-paper__stamp"></view>
-          <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
-        </view>
+        <image wx:if="{{selectedPostcard.asset && !selectedPostcard.imageFailed}}" class="postcard-detail__art" src="{{selectedPostcard.asset}}" mode="aspectFit" data-scope="postcard-detail" binderror="onMemoryImageError"></image>
+        <view wx:else class="postcard-detail__art memory-asset-error"><text>明信片图片没有加载好</text><view class="memory-asset-retry" data-scope="postcard-detail" aria-role="button" aria-label="重新加载明信片图片" bindtap="onRetryMemoryImage">重新加载</view></view>
         <text wx:if="{{selectedPostcard.displayDate}}" class="detail-meta">{{selectedPostcard.displayDate}}</text>
         <text class="detail-story detail-story--postcard">{{selectedPostcard.line}}</text>
       </view>
@@ -47,7 +48,7 @@
       <block wx:elif="{{section === 'keepsakes'}}">
         <view wx:if="{{keepsakes.length}}" class="keepsake-grid">
           <view wx:for="{{keepsakes}}" wx:key="id" class="keepsake-grid-item" hover-class="keepsake-grid-item--pressed" hover-start-time="0" hover-stay-time="400" aria-role="button" aria-label="查看{{item.name}}" data-id="{{item.id}}" bindtap="onOpenKeepsake">
-            <view class="keepsake-grid-art"><image class="keepsake-grid-image" src="{{item.asset}}" mode="aspectFit"></image><view class="memory-card-glare" aria-hidden="true"></view></view>
+            <view class="keepsake-grid-art"><image wx:if="{{item.asset && !item.imageFailed}}" class="keepsake-grid-image" src="{{item.asset}}" mode="aspectFit" data-scope="keepsake-list" data-index="{{index}}" binderror="onMemoryImageError"></image><view wx:else class="memory-asset-error memory-asset-error--compact"><text>图片失败</text><view class="memory-asset-retry" data-scope="keepsake-list" data-index="{{index}}" aria-role="button" aria-label="重新加载{{item.name}}图片" catchtap="onRetryMemoryImage">重试</view></view><view class="memory-card-glare" aria-hidden="true"></view></view>
             <text class="keepsake-grid-name">{{item.name}}</text>
           </view>
         </view>
@@ -57,11 +58,8 @@
         <view wx:if="{{postcards.length}}" class="postcard-list">
           <view wx:for="{{postcards}}" wx:key="id" class="postcard-list-item" hover-class="postcard-list-item--pressed" hover-start-time="0" hover-stay-time="420" aria-role="button" aria-label="查看{{item.sceneLabel}}明信片" data-id="{{item.id}}" bindtap="onOpenPostcard">
             <view class="postcard-list-cover-frame">
-              <image wx:if="{{item.asset}}" class="postcard-list-cover" src="{{item.asset}}" mode="aspectFill"></image>
-              <view wx:else class="postcard-list-cover postcard-paper" aria-hidden="true">
-                <view class="postcard-paper__stamp"></view>
-                <view class="postcard-paper__lines"><view></view><view></view><view></view></view>
-              </view>
+              <image wx:if="{{item.asset && !item.imageFailed}}" class="postcard-list-cover" src="{{item.asset}}" mode="aspectFill" data-scope="postcard-list" data-index="{{index}}" binderror="onMemoryImageError"></image>
+              <view wx:else class="postcard-list-cover memory-asset-error"><text>图片没有加载好</text><view class="memory-asset-retry" data-scope="postcard-list" data-index="{{index}}" aria-role="button" aria-label="重新加载{{item.sceneLabel}}明信片" catchtap="onRetryMemoryImage">重新加载</view></view>
               <view class="memory-card-glare" aria-hidden="true"></view>
             </view>
             <text class="postcard-list-title">{{item.sceneLabel || '远方的明信片'}}</text>
@@ -76,8 +74,8 @@
           <view class="collection-card-preview">
             <view class="collection-card-preview__header"><text class="collection-card-preview__name">{{cardPreview.name}}</text><text class="collection-card-preview__brand">eggbabe</text></view>
             <view class="collection-card-preview__art">
-              <image wx:if="{{cardPreview.illustration}}" class="collection-card-preview__image" src="{{cardPreview.illustration}}" mode="aspectFit"></image>
-              <pet-avatar wx:else pet-type="{{pet.prototype}}" size="{{160}}"></pet-avatar>
+              <image wx:if="{{cardPreview.illustration && !cardPreview.imageFailed}}" class="collection-card-preview__image" src="{{cardPreview.illustration}}" mode="aspectFit" data-scope="card-preview" binderror="onMemoryImageError"></image>
+              <view wx:else class="memory-asset-error"><text>收藏卡插画没有加载好</text><view class="memory-asset-retry" data-scope="card-preview" aria-role="button" aria-label="重新加载收藏卡插画" catchtap="onRetryMemoryImage">重新加载</view></view>
             </view>
             <text wx:if="{{cardPreview.style}}" class="collection-card-preview__style">{{cardPreview.style}}</text>
           </view>

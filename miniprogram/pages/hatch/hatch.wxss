@@ -13,7 +13,7 @@
 .sub { font-size: 24rpx; color: #8C8C88; margin-bottom: 20rpx; }
 .headline { font-size: 38rpx; font-weight: 600; color: #1A1A1A; margin-bottom: 56rpx; }
 .gate-message { max-width: 560rpx; color: #77756E; font-size: 25rpx; line-height: 1.7; text-align: center; }
-.retry-button { min-width: 260rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; margin-top: 34rpx; border-radius: 999rpx; background: #3F5A47; color: #FFF; font-size: 26rpx; }
+.retry-button { min-width: 260rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; margin-top: 34rpx; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 26rpx; }
 .secondary-link { margin-top: 22rpx; padding: 16rpx 24rpx; color: #70766D; font-size: 23rpx; }
 .review-list { width: 100%; max-height: 300rpx; margin: -28rpx 0 42rpx; padding: 22rpx 28rpx; box-sizing: border-box; border-radius: 28rpx; background: rgba(255,255,255,.74); }
 .review-item { display: block; color: #596050; font-size: 23rpx; line-height: 1.8; }

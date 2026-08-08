@@ -17,6 +17,6 @@
 .answer-response { margin-top: 28rpx; color: #66705F; font-size: 24rpx; line-height: 1.6; }
 .error { margin-top: 18rpx; color: #A34B44; font-size: 22rpx; }
 .spacer { flex: 1; min-height: 30rpx; }
-.primary { height: 96rpx; padding: 0; border: 0; border-radius: 999rpx; background: #173B29; color: #FFF; font-size: 28rpx; line-height: normal; }
+.primary { height: 96rpx; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 28rpx; line-height: normal; }
 .primary[disabled] { background: #AEB9AE; color: rgba(255,255,255,.86); }
 .primary::after { border: none; }

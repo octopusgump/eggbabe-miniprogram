@@ -1,7 +1,7 @@
 <view class="navbar-root">
   <view class="status-bar" style="height:{{statusBarHeight}}px"></view>
   <view class="nav-row">
-    <view wx:if="{{showBack}}" class="nav-side nav-side--back" hover-class="nav-side--pressed" bindtap="onBack">
+    <view wx:if="{{showBack}}" class="nav-side nav-side--back" hover-class="nav-side--pressed" aria-role="button" aria-label="返回上一页" bindtap="onBack">
       <view class="chevron chevron-back"></view>
     </view>
     <view wx:else class="nav-side"></view>

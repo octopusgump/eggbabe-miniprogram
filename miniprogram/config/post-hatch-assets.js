@@ -173,17 +173,6 @@ module.exports = {
     panoramaFallbackMeta: PANORAMA_WINDOW_META,
     actionPanoramaScenes: ACTION_PANORAMA_SCENES,
     actionPanoramaScenesByCharacter: ACTION_PANORAMA_SCENES_BY_CHARACTER,
-    characterPoses: {
-      sleep: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp',
-      lazy: '',
-      // 首张 2D 验收样张：只有日落版本通过审核才显示；日间、夜晚绝不复用，避免光影语义错误。
-      stare: Object.freeze({
-        day: '',
-        sunset: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare_sunset_v01.webp',
-        night: ''
-      }),
-      tea: '', drawing: '', gaming: '', window: ''
-    },
     sceneActions: {
       envelope: `${SCENE_ACTION_ROOT}/ui_3d_scene_message_envelope_96_v01.webp`,
       toolbox: `${SCENE_ACTION_ROOT}/ui_3d_scene_toolbox_closed_chest_96_v01.webp`,

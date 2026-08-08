@@ -25,6 +25,8 @@ function entry(kind, sceneKey, runtimePath) {
 const assets = [];
 (preHatch.sceneTesterOptions || []).forEach(scene => {
   assets.push(entry('pre_hatch_center', scene.key, scene.background));
+  assets.push(entry('pre_hatch_egg', scene.key, scene.egg));
+  assets.push(entry('pre_hatch_nest', scene.key, scene.nest));
   const panorama = postHatch.panoramaSceneSets[scene.key];
   assets.push(entry('post_hatch_panorama', scene.key, panorama && panorama.panorama || ''));
 });

@@ -13,11 +13,13 @@ function memoryDateLabel(value) {
 
 function normalizePostcard(item) {
   const postcard = Object.assign({}, item, {
-    displayDate: memoryDateLabel(item && (item.deliveredAt || item.sentAt || item.appearedAt))
+    displayDate: memoryDateLabel(item && (item.deliveredAt || item.sentAt || item.appearedAt)),
+    imageFailed: false
   });
   const journeySlides = Array.isArray(item && item.postcards)
     ? item.postcards.map(slide => Object.assign({}, slide, {
-      displayDate: memoryDateLabel(slide.deliveredAt || item.deliveredAt || item.sentAt || item.appearedAt)
+      displayDate: memoryDateLabel(slide.deliveredAt || item.deliveredAt || item.sentAt || item.appearedAt),
+      imageFailed: false
     }))
     : [];
   if (journeySlides.length) {
@@ -86,7 +88,7 @@ Page({
     const memories = this.data.isDemo && !this.useSourceMemoriesForDetail
       ? memoryDemoPreview.build(this.data.demoPreviewIndex, this.data.pet, source)
       : source;
-    const keepsakes = memories.keepsakes || [];
+    const keepsakes = (memories.keepsakes || []).map(item => Object.assign({}, item, { imageFailed: false }));
     const postcards = (memories.postcards || []).map(normalizePostcard);
     const recommendation = memories.cardRecommendation || null;
     const card = recommendation && recommendation.card || null;
@@ -108,7 +110,8 @@ Page({
       cardPreview: card ? {
         illustration: card.illustration_url || card.illustrationUrl || '',
         name: card.display_name || card.displayName || this.data.pet.name || '我的蛋宝宝',
-        style: card.style || ''
+        style: card.style || '',
+        imageFailed: false
       } : null,
       selectedKeepsake,
       selectedPostcard,
@@ -174,6 +177,27 @@ Page({
     if (!id) return;
     const preview = this.data.isDemo ? `&preview=${this.data.demoPreviewIndex}` : '';
     wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=postcards&postcard_id=${encodeURIComponent(id)}${preview}` });
+  },
+  setMemoryImageFailed(scope, index, failed) {
+    const paths = {
+      'keepsake-detail': 'selectedKeepsake.imageFailed',
+      'postcard-detail': 'selectedPostcard.imageFailed',
+      'card-preview': 'cardPreview.imageFailed'
+    };
+    let path = paths[scope];
+    if (scope === 'keepsake-list' && Number.isInteger(index)) path = `keepsakes[${index}].imageFailed`;
+    if (scope === 'postcard-list' && Number.isInteger(index)) path = `postcards[${index}].imageFailed`;
+    if (scope === 'postcard-slide' && Number.isInteger(index)) path = `selectedPostcardSlides[${index}].imageFailed`;
+    if (!path) return;
+    this.setData({ [path]: failed });
+  },
+  onMemoryImageError(event) {
+    const dataset = event.currentTarget && event.currentTarget.dataset || {};
+    this.setMemoryImageFailed(String(dataset.scope || ''), Number(dataset.index), true);
+  },
+  onRetryMemoryImage(event) {
+    const dataset = event.currentTarget && event.currentTarget.dataset || {};
+    this.setMemoryImageFailed(String(dataset.scope || ''), Number(dataset.index), false);
   },
   onRetry() { if (!this.data.loading) this.onShow(); },
   onOpenCard() {

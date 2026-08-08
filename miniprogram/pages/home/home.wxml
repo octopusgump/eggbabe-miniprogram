@@ -36,16 +36,12 @@
             bindload="onFullSceneImageLoad"
             binderror="onFullSceneImageError"
           ></image>
-          <block wx:else>
-            <image class="incubation-window-image" src="{{environment.windowImage}}" mode="aspectFill"></image>
-            <image class="incubation-scene-image" src="{{environment.backgroundImage}}" mode="aspectFill"></image>
-            <image wx:if="{{environment.roomLightingEnabled}}" class="incubation-room-lighting-image" src="{{lampOn ? environment.roomLightingImages.on : environment.roomLightingImages.off}}" mode="aspectFill"></image>
-          </block>
-          <image class="incubation-nest-image" src="{{environment.nestImage}}" mode="aspectFit"></image>
-          <view wx:if="{{fullSceneImageFailed && !environment.backgroundImage}}" class="scene-fallback">
-            <view class="window-glow"></view>
-            <view class="room-floor"></view>
-            <view class="room-lamp"></view>
+          <image wx:if="{{environment.nestImage && !fullSceneImageFailed}}" class="incubation-nest-image" src="{{environment.nestImage}}" mode="aspectFit" data-asset="窝垫" binderror="onIncubationAssetError"></image>
+          <view wx:if="{{fullSceneImageFailed}}" class="incubation-scene-error">
+            <text class="incubation-scene-error__title">房间没有加载完整</text>
+            <text class="incubation-scene-error__copy">不会用其他天气或角色图片代替当前场景。</text>
+            <view class="incubation-scene-error__retry" aria-role="button" aria-label="重新加载当前房间" bindtap="onRetryFullSceneImage">重新加载</view>
+            <view class="incubation-scene-error__back" aria-role="button" aria-label="返回欢迎页" bindtap="onSceneAssetBack">返回欢迎页</view>
           </view>
           <view wx:if="{{!dailyWindowVisible}}" class="window-effects">
             <view class="window-visual-effects">
@@ -109,7 +105,7 @@
         <view wx:if="{{feedback}}" class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">{{feedback}}</view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg-aura {{eggMotion}}"></view>
 
-        <view wx:if="{{stage !== 'hatched'}}" class="egg egg-shell {{eggMotion}}" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
+        <view wx:if="{{stage !== 'hatched' && !fullSceneImageFailed}}" class="egg egg-shell {{eggMotion}}" aria-role="button" aria-label="轻触蛋宝宝" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
           <image class="egg-shell-preview egg-shell-preview--base" src="{{homeEggBasePreview || environment.eggImage}}" mode="aspectFit" data-layer="base" binderror="onHomeEggPreviewError"></image>
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
           <image
@@ -283,8 +279,8 @@
     <view class="name-sheet">
       <view class="name-handle"></view>
       <view class="name-sheet-content">
-        <text class="name-sheet-title">我还没有名字</text>
-        <text class="name-sheet-copy">给我起一个昵称吧，也可以以后再决定。</text>
+        <text class="name-sheet-title">{{pet && pet.name ? '修改名字' : '我还没有名字'}}</text>
+        <text class="name-sheet-copy">{{pet && pet.name ? '新名字保存后会继续留在这间房里。' : '给我起一个昵称吧，也可以以后再决定。'}}</text>
         <view class="name-input-wrap">
           <input class="name-input" value="{{nameDraft}}" maxlength="10" placeholder="最多 10 个字" bindinput="onNameInput" />
           <text class="name-count">{{nameCount}}/10</text>
@@ -292,7 +288,7 @@
         <text wx:if="{{nameError}}" class="name-error">{{nameError}}</text>
         <view class="name-actions">
           <button class="name-save" hover-class="button-press" disabled="{{savingName}}" bindtap="onSaveName"><text class="button-label">{{savingName ? '正在保存…' : '记住这个名字'}}</text></button>
-          <button class="name-skip" hover-class="button-press" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
+          <button wx:if="{{!pet || !pet.name}}" class="name-skip" hover-class="button-press" bindtap="onSkipName"><text class="button-label">暂不命名</text></button>
         </view>
       </view>
     </view>

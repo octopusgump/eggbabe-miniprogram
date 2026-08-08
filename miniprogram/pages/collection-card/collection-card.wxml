@@ -12,7 +12,9 @@
         <text class="brand">eggbabe</text>
       </view>
       <view class="card-illustration-section">
-        <image class="card-illustration" src="{{cardView.illustration_url}}" mode="aspectFit"></image>
+        <image wx:if="{{illustrationSrc && !illustrationError}}" class="card-illustration" src="{{illustrationSrc}}" mode="aspectFit" bindload="onIllustrationLoad" binderror="onIllustrationError"></image>
+        <view wx:if="{{illustrationLoading}}" class="card-image-state"><view class="card-image-loader"></view><text>正在加载收藏卡插画…</text></view>
+        <view wx:if="{{illustrationError}}" class="card-image-state card-image-state--error"><text>收藏卡插画没有加载好</text><view class="card-image-retry" aria-role="button" aria-label="重新加载收藏卡插画" bindtap="onRetryIllustration">重新加载</view></view>
       </view>
       <view class="card-data-section">
         <view class="data-row"><text class="data-label">破壳日期</text><text class="data-value">{{hatchedAtLabel}}</text></view>

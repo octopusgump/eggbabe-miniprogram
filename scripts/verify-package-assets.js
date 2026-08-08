@@ -9,6 +9,8 @@ const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 const errors = [];
 const CDN_ENVIRONMENT_ASSET_PREFIXES = [
   'assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes/',
+  'assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/',
+  'assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/',
   'assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/',
   'assets/scenes/lifecycle/post-hatch/60-action-scenes/'
 ];
@@ -74,7 +76,8 @@ collectConfig(require('../miniprogram/config/post-hatch-assets'), new Set());
 
 const sourceExtensions = new Set(['.js', '.json', '.wxml', '.wxss']);
 walkFiles(miniprogram, absolute => {
-  if (!sourceExtensions.has(path.extname(absolute)) || absolute.includes(`${path.sep}services${path.sep}tests${path.sep}`)) return;
+  const relative = normalize(path.relative(miniprogram, absolute));
+  if (ignored(relative) || !sourceExtensions.has(path.extname(absolute)) || absolute.includes(`${path.sep}services${path.sep}tests${path.sep}`)) return;
   const source = fs.readFileSync(absolute, 'utf8');
   const matches = source.match(/\/assets\/[A-Za-z0-9_./-]+\.(?:png|webp|jpg|jpeg|svg|woff2?)/g) || [];
   matches.forEach(addAsset);

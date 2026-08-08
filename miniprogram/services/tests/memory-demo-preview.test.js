@@ -58,7 +58,7 @@ assert.equal(styles.includes('.keepsake-detail__art{height:560rpx') && styles.in
 assert.equal(template.includes('来自：{{selectedKeepsake.sourceScene}}') && styles.includes('.keepsake-detail__meta{display:block;margin-top:24rpx;padding:0 40rpx') && styles.includes('font-weight:600'), true, '纪念物来历文字必须补全“来自”语义、增加字重，并与回忆区内容左对齐');
 assert.equal(template.includes('class="postcard-list"') && template.includes('bindtap="onOpenPostcard"'), true, '明信片必须使用封面列表并支持进入正文详情');
 assert.equal(template.includes('hover-class="keepsake-grid-item--pressed"') && (template.match(/class="memory-card-glare"/g) || []).length >= 2, true, '纪念物与明信片小卡片必须共用按压波光层');
-assert.equal(styles.includes('@keyframes memory-card-glare-sweep') && styles.includes('animation:memory-card-glare-sweep .4s ease-out both') && styles.includes('.keepsake-grid-item--pressed{transform:translateY(-4rpx) scale(.99)}'), true, '纪念物小卡片点击时必须使用 400ms 波光和 180ms 轻抬反馈');
+assert.equal(styles.includes('@keyframes memory-card-glare-sweep') && styles.includes('animation:memory-card-glare-sweep .4s ease-out both') && styles.includes('.keepsake-grid-item--pressed{transform:scale(.98)}'), true, '纪念物小卡片点击时必须使用 400ms 波光和统一的 0.98 按压反馈');
 assert.equal(styles.includes('prefers-reduced-motion:reduce') && styles.includes('.keepsake-grid-item--pressed{transform:none}') && styles.includes('.postcard-list-item--pressed .memory-card-glare{opacity:.18;transform:none}'), true, '波光与卡片位移需有减少动态效果的静态退化');
 assert.equal(template.includes('bindtouchmove="onPostcardGlareMove"') || logic.includes('onPostcardGlareMove'), false, '小卡片波光不得用高频触摸事件干扰列表滚动');
 assert.equal(template.includes('wx:elif="{{selectedPostcard}}"') && template.includes('class="postcard-detail"'), true, '明信片详情必须独立展示封面与正文');

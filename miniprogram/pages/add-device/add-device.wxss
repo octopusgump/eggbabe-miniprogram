@@ -46,3 +46,4 @@
 .success-text { font-size: 32rpx; font-weight: 600; color: #1A1A1A; }
 @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.15); } }
 @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .success-glow, .success-egg { animation: none; } }

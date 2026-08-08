@@ -24,3 +24,4 @@
 .auth-button::after { border: none; }
 .auth-note { display: block; margin-top: 18rpx; text-align: center; font-size: 20rpx; color: #9B9992; }
 .demo-notice { margin-bottom: 18rpx; padding: 12rpx 20rpx; border-radius: 999rpx; background: #F1F4E8; color: #687548; font-size: 20rpx; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .egg { animation: none; } }

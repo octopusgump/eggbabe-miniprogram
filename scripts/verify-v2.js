@@ -167,7 +167,7 @@ assert.equal(
 const windowWeatherAssets = ['w_01_clear_day.webp', 'w_02_clear_sunset.webp', 'w_03_clear_night.webp', 'w_04_cloudy_day.webp', 'w_05_cloudy_night.webp', 'w_06_snow_day.webp', 'w_07_snow_night.webp'];
 windowWeatherAssets.forEach(file => assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/shared/10-background/window-weather', file)), true, `缺少日常窗外素材：${file}`));
 assert.equal(homeTemplate.includes('room-lamp-hotspot') && homeLogic.includes('onLampTap'), true, '台灯必须融入房间画面并可直接开关');
-assert.equal(homeTemplate.includes('incubation-room-lighting-image') && homeTemplate.includes('environment.roomLightingEnabled'), true, '房间夜间光影必须预留独立图片层');
+assert.equal(homeTemplate.includes('incubation-scene-error') && homeTemplate.includes('bindtap="onRetryFullSceneImage"') && homeTemplate.includes('incubation-room-lighting-image') === false, true, '完整房间图失败时必须显示明确错误与重试，不能叠加未完成的房间光影占位层');
 assert.equal(/room-lamp-state|period-night\.room-lamp-off[^}]*brightness|rgba\(8,15,25/.test(`${homeTemplate}\n${homeStyles}`), false, '房间变黑变暗不得使用 CSS 遮罩或 brightness 滤镜渲染');
 assert.equal(homeTemplate.includes('room-clock') && homeLogic.includes('onClockTap'), true, '孵化房间左上角必须保留可交互设备时钟');
 assert.equal(homeLogic.includes("require('../../services/device-clock')") && homeLogic.includes('millisecondsUntilNextSecond'), true, '设备时钟必须按手机本地时间整秒校准');
@@ -191,9 +191,8 @@ assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
 assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|这里留着一块安静的空地/.test(lifeSceneTemplate), false, '三屏背景上不得叠加临时床铺或安静空地占位层');
-assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp')) && fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare_sunset_v01.webp')) && lifeSceneTemplate.includes('sceneCharacterImage'), true, '已验收角色状态必须使用透明角色层');
-assert.equal(lifeSceneTemplate.includes('scene-character__floor-shadow'), true, '玉兔躺卧角色层必须包含独立的接触阴影');
-assert.equal(lifeSceneTemplate.includes('scene-character--{{sceneCharacterPose}}') && lifeSceneTemplate.includes('<pet-avatar') === false && lifeSceneLogic.includes('function characterPosePath(key, environment)') && lifeSceneLogic.includes("const image = !actionScene && isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';"), true, '角色层必须按玉兔原型、已验收状态与光线时段显示；烘焙动作全景不得叠加角色图');
+assert.equal(/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`), false, '角色与动作道具必须烘焙进正式全景，不得叠加透明角色、接触阴影、CSS 道具或色调层');
+assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama') && lifeSceneTemplate.includes('class="scene-character-hotspot') && lifeSceneTemplate.includes('bindtap="onCharacterTap"'), true, '生活空间必须使用正式动作全景，并以透明热区保留角色互动');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
 assert.equal(lifeSceneTemplate.includes('class="scene-context-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('toolboxIcon') && lifeSceneTemplate.includes('scene-talk-nudge') && lifeSceneLogic.includes('scene_find_home_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '必须使用左下找 ta / 写信入口、右下百宝箱与场景内对话触点');
 assert.equal(['my', 'card', 'postcards', 'keepsakes'].every(target => lifeSceneTemplate.includes(`data-target="${target}"`)), true, '百宝箱必须包含我的、收藏卡、明信片与 ta 带回来的东西');

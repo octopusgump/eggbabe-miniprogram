@@ -30,7 +30,7 @@
 .answer-response { margin-top: 16rpx; color: #647064; font-size: 23rpx; line-height: 1.55; }
 .error { margin-top: 18rpx; color: #A34B44; font-size: 22rpx; }
 .spacer { flex: 1; min-height: 28rpx; }
-.primary { height: 96rpx; padding: 0; border: 0; border-radius: 999rpx; background: #173B29; color: #FFF; font-size: 28rpx; line-height: normal; }
+.primary { height: 96rpx; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 28rpx; line-height: normal; }
 .primary[disabled] { background: #AEB9AE; color: rgba(255,255,255,.86); }
 .primary::after { border: none; }
 @keyframes hello { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } 75% { transform: rotate(-4deg); } }

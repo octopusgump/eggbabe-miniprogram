@@ -19,7 +19,7 @@
 
   <view class="bottom-panel page-safe-bottom">
     <view wx:if="{{isDemo}}" class="demo-notice">开发验收模式 · 数据与正式环境隔离</view>
-    <view class="agreement" bindtap="onToggleAgreement">
+    <view class="agreement" aria-role="checkbox" aria-label="同意蛋宝宝隐私政策" aria-checked="{{agreed}}" bindtap="onToggleAgreement">
       <view class="check {{agreed ? 'check--on' : ''}}"><text wx:if="{{agreed}}">✓</text></view>
       <text class="agreement-text">我已阅读并同意</text>
       <text class="privacy-link" catchtap="onPrivacy">《蛋宝宝隐私政策》</text>

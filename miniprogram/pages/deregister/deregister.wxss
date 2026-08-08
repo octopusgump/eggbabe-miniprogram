@@ -57,7 +57,7 @@
 
 .warn-mark {
   font-size: 48rpx;
-  font-weight: 700;
+  font-weight: 600;
   color: #D9463C;
   line-height: 1;
 }
@@ -109,7 +109,7 @@
 
 .x-mark {
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 600;
   color: #D9463C;
   line-height: 1;
 }

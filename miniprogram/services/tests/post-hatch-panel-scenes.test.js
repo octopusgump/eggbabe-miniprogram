@@ -59,14 +59,11 @@ const jadeTeaWeatherAction = postHatchAssets.resolveActionPanorama(jadeRabbit, {
 assert.equal(jadeTeaWeatherAction && jadeTeaWeatherAction.panorama.endsWith('/jade-rabbit/home-bedroom/home_bedroom_tea_spring_cloudy_day_v01.webp'), true, '已审核玉兔春季多云泡茶图必须覆盖对应环境键');
 const koiNapWeatherAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'summer_storm_night', weather: 'storm', period: 'night' });
 assert.equal(koiNapWeatherAction && koiNapWeatherAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_nap_summer_storm_night_v01.webp'), true, '已审核锦鲤夏季雷暴小憩图必须覆盖对应环境键');
-assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.sunset.endsWith('/jade-rabbit/stare_sunset_v01.webp'), true, '玉兔发呆日落样张必须使用明确的透明 WebP 文件');
-
 const manifest = JSON.parse(childProcess.execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: process.cwd(), encoding: 'utf8' }));
 const actionAssets = manifest.assets.filter(item => item.kind === 'post_hatch_action_panorama');
 assert.equal(actionAssets.length, 41, 'CDN 清单必须覆盖 18 张玉兔通用动作图、18 张锦鲤通用动作图、玉兔关灯变体和 4 张季节天气动作图（共 41 条运行时路径）');
 assert.equal(actionAssets.every(item => item.exists && item.sha256 && item.cdn_path.startsWith('/assets/scenes/lifecycle/post-hatch/60-action-scenes/')), true, 'CDN 动作清单中的每个正式 WebP 必须在本地存在并包含校验哈希');
-assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.day, '', '日落样张不得静默复用为日间角色图');
-assert.equal(postHatchAssets.POST_HATCH.characterPoses.stare.night, '', '日落样张不得静默复用为夜晚角色图');
+assert.equal(Object.prototype.hasOwnProperty.call(postHatchAssets.POST_HATCH, 'characterPoses'), false, '正式运行时不得登记会与动作全景重复叠加的透明角色图');
 
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
 const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
@@ -104,15 +101,10 @@ assert.equal(lifeSceneWxml.includes('catchtap="onStageTesterToggle"') && lifeSce
 assert.equal(lifeSceneWxml.includes('class="companion-state-tester"'), true, '破壳后必须显示开发模式陪伴状态测试入口');
 assert.equal(lifeSceneWxml.includes('companion-state-tester-option--missing') && lifeSceneWxml.includes('缺图片'), true, '无对应动作全景的测试配置项必须明确显示缺图片并置灰');
 assert.equal(/pano-static-character|sceneCharacter3d|Three\.js/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, '3D MVP 关闭后，生活空间不得保留 WebGL 角色依赖或调试入口');
-assert.equal(lifeSceneLogic.includes('function characterPosePath(key, environment)'), true, '角色图必须按状态与环境时段取图');
 assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase)'), true, '首次加载必须按当前状态与环境解析动作全景');
-assert.equal(lifeSceneLogic.includes('characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment, actionScene)'), true, '动作全景启用时必须抑制独立角色图层');
-assert.equal(lifeSceneLogic.includes('const character = characterPresentation(this.data.pet, this.data.currentState, environment, actionScene);'), true, '切换环境测试场景时必须重新判定动作与角色图层');
-assert.equal(lifeSceneWxml.includes('showSceneCharacter && sceneCharacterScreen === 1'), true, '中屏发呆角色图必须只渲染到中屏');
-assert.equal(lifeSceneWxml.includes('!sceneUsesBakedAction && currentState.action.kind === \'paper\''), true, '烘焙动作全景不得叠加纸张道具层');
-assert.equal(lifeSceneWxml.includes('!sceneUsesBakedAction && currentState.action.kind === \'screen\''), true, '烘焙动作全景不得叠加屏幕道具层');
-assert.equal(lifeSceneWxml.includes('wx:if="{{!sceneUsesBakedAction}}" class="panel-tone"'), true, '烘焙动作全景不得叠加环境色调层');
-assert.equal(lifeSceneStyles.includes('.scene-character--stare'), true, '发呆角色图必须具有独立摆位样式');
+assert.equal(/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, '正式动作全景不得再叠加透明角色、接触阴影、CSS 道具或色调层');
+assert.equal(lifeSceneWxml.includes('class="scene-character-hotspot') && lifeSceneWxml.includes('bindtap="onCharacterTap"'), true, '烘焙角色仍必须保留可访问的互动热区');
+assert.equal(lifeSceneStyles.includes('.scene-character-hotspot{') && lifeSceneStyles.includes('background:transparent'), true, '角色热区不得额外绘制视觉内容');
 assert.equal(lifeSceneLogic.includes('sceneTesterTopPx: Math.round(testerTopPx)'), true, '破壳后环境测试器应与破壳前一样位于第一行');
 assert.equal(lifeSceneLogic.includes('stageTesterTopPx: Math.round(testerTopPx + 44)'), true, '破壳后阶段切换入口必须位于场景与状态验收器之间');
 assert.equal(lifeSceneLogic.includes('restoreToolboxOnReturn = true') && lifeSceneLogic.includes('toolboxVisible: restoreToolbox'), true, '从百宝箱子页返回生活场景时必须恢复百宝箱，不得只落在空桌面');

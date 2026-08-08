@@ -151,7 +151,6 @@ function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, action
     valid: Boolean(sceneSet),
     sceneSetId: sceneSet ? sceneSet.id : '',
     panoramaImage: sceneSet ? sceneSet.panorama : '',
-    isActionScene: Boolean(actionScene),
     windowHotspots: windowGeometry.mapPanoramaRegions({
       imageWidth: imageMeta.width,
       imageHeight: imageMeta.height,
@@ -159,28 +158,6 @@ function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, action
       panelHeight,
       regions: imageMeta.windowRegions
     })
-  };
-}
-
-function characterPosePath(key, environment) {
-  const pose = assets.POST_HATCH.characterPoses && assets.POST_HATCH.characterPoses[String(key || '')];
-  if (typeof pose === 'string') return pose;
-  const lightPhase = String(environment && environment.lightPhase || '');
-  return pose && lightPhase ? String(pose[lightPhase] || '') : '';
-}
-
-function characterPresentation(pet, currentState, environment, actionScene) {
-  const prototype = String(pet && pet.prototype || '');
-  const isJadeRabbit = prototype === '玉兔' || prototype === 'YT';
-  const isAtHome = Boolean(currentState && currentState.atHome);
-  const pose = String(currentState && currentState.key || '');
-  // 动作全景已经烘焙角色与道具，不能再叠加透明角色图。
-  const image = !actionScene && isJadeRabbit && isAtHome ? characterPosePath(pose, environment) : '';
-  return {
-    visible: Boolean(image),
-    image,
-    pose: image ? pose : '',
-    screen: image ? Math.max(0, Math.min(2, Number(currentState && currentState.action && currentState.action.screen || 0))) : -1
   };
 }
 
@@ -301,11 +278,6 @@ Page({
     previousPanoramaImage: '',
     sceneCrossfadeActive: false,
     windowHotspots: [[], [], []],
-    showSceneCharacter: false,
-    sceneCharacterImage: '',
-    sceneCharacterPose: '',
-    sceneCharacterScreen: -1,
-    sceneUsesBakedAction: false,
     sceneBackgroundError: false,
     sceneTransitionError: false,
     sceneBackgroundReady: false,
@@ -404,8 +376,7 @@ Page({
     this.clearPresentationTimers();
     this.setData({
       loading: true, error: '', talkError: '', letterError: '', actionBusy: false, talkBusy: false, letterBusy: false,
-      feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false,
-      showSceneCharacter: false, sceneCharacterImage: '', sceneCharacterPose: '', sceneCharacterScreen: -1, sceneUsesBakedAction: false
+      feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false
     });
     const request = postHatch.getSnapshot(this.data.pet);
     this.snapshotRequest = request;
@@ -424,7 +395,6 @@ Page({
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
       const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
-      const character = characterPresentation(this.data.pet, currentState, this.data.dailyWindowEnvironment, actionScene);
       const contextAction = contextActionPresentation(this.data.pet, currentState, snapshot.newMessage);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = slotKey !== this.lastStatusSlotKey;
@@ -443,11 +413,6 @@ Page({
         error: '',
         snapshot,
         currentState,
-        showSceneCharacter: character.visible,
-        sceneCharacterImage: character.image,
-        sceneCharacterPose: character.pose,
-        sceneCharacterScreen: character.screen,
-        sceneUsesBakedAction: panorama.isActionScene,
         panelSceneSetId: panorama.sceneSetId,
         windowHotspots: panorama.windowHotspots,
         contextActionIcon: contextAction.icon,
@@ -515,7 +480,6 @@ Page({
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, environment, cdnBase);
     const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
-    const character = characterPresentation(this.data.pet, this.data.currentState, environment, actionScene);
     const stateOptions = companionStateTesterOptions(this.data.pet, environment);
     const selectedStateOption = stateOptions.find(item => item.key === this.data.companionStateTesterKey);
     // 环境变化后不允许保留一个已失配的动作预览：清空覆盖状态，回到真实陪伴状态，
@@ -534,11 +498,6 @@ Page({
       panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots,
       sceneBackgroundError: !panorama.valid,
       sceneTransitionError: false,
-      showSceneCharacter: character.visible,
-      sceneCharacterImage: character.image,
-      sceneCharacterPose: character.pose,
-      sceneCharacterScreen: character.screen,
-      sceneUsesBakedAction: panorama.isActionScene,
       companionStateTesterOptions: stateOptions,
       companionStateTesterKey: resetCompanionStatePreview ? 'auto' : this.data.companionStateTesterKey,
       companionStateTesterMissing,
@@ -645,11 +604,11 @@ Page({
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, this.data.dailyWindowEnvironment, cdnBase);
     const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     if (panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage) {
-      this.setData({ panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots, sceneUsesBakedAction: panorama.isActionScene, sceneBackgroundError: false, sceneTransitionError: false });
+      this.setData({ panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots, sceneBackgroundError: false, sceneTransitionError: false });
       this.queuePanoramaTransition(panorama.panoramaImage);
       return;
     }
-    this.setData({ sceneBackgroundError: false, sceneTransitionError: false, panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage, windowHotspots: panorama.windowHotspots, sceneUsesBakedAction: panorama.isActionScene });
+    this.setData({ sceneBackgroundError: false, sceneTransitionError: false, panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage, windowHotspots: panorama.windowHotspots });
   },
 
   // DEV-ONLY：与破壳前首页使用同一套 36 个环境 key；release/trial 下不渲染。
@@ -830,7 +789,6 @@ Page({
       panelHeight,
       panelSceneSetId: panorama.sceneSetId,
       windowHotspots: panorama.windowHotspots,
-      sceneUsesBakedAction: panorama.isActionScene,
       scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
       letterComposerTopPx: this.resolveLetterComposerTop(this.data.letterKeyboardHeight, panelHeight, panelWidth)
     }, () => {
@@ -1289,7 +1247,6 @@ Page({
       panelSceneSetId: panorama.sceneSetId,
       panoramaImage: panorama.panoramaImage,
       windowHotspots: panorama.windowHotspots,
-      sceneUsesBakedAction: panorama.isActionScene,
       dailyWindowWeatherLabel: WEATHER_LABELS[environment.weather] || '晴朗',
       dailyWindowPeriodLabel: environment.lightPhase === 'sunset' ? '日落' : (environment.period === 'night' ? '夜晚' : '日间')
     });
@@ -1437,7 +1394,7 @@ Page({
     this.clearPanoramaTransition();
     this.needsInitialViewport = true;
     this.initialViewportToken = (this.initialViewportToken || 0) + 1;
-    this.setData({ feedback: '', playedActionKind: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false, showSceneCharacter: false, sceneCharacterImage: '', sceneCharacterPose: '', sceneCharacterScreen: -1, sceneUsesBakedAction: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+    this.setData({ feedback: '', playedActionKind: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
   },
   clearPresentationTimers() {
     clearTimeout(this.feedbackTimer);

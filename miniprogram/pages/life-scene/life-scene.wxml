@@ -54,33 +54,22 @@
         <image class="world-panorama-bg" src="{{panoramaImage}}" mode="aspectFill" bindload="onSceneBackgroundLoad" binderror="onSceneBackgroundError"></image>
         <image wx:if="{{pendingPanoramaImage}}" class="world-panorama-preload" src="{{pendingPanoramaImage}}" data-panorama-url="{{pendingPanoramaImage}}" mode="aspectFill" bindload="onPendingPanoramaLoad" binderror="onPendingPanoramaError"></image>
         <view id="world-panel-0" class="world-panel world-panel--living">
-          <view wx:if="{{!sceneUsesBakedAction}}" class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view>
           <view wx:for="{{windowHotspots[0]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-0 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
-          <view wx:if="{{showSceneCharacter && sceneCharacterScreen === 0}}" class="scene-character scene-character--{{sceneCharacterPose}} {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
-            <view class="scene-character__floor-shadow" aria-hidden="true"></view>
-            <image class="scene-character__pose-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
-          </view>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="scene-character-hotspot scene-character-hotspot--0" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
           <view wx:if="{{currentState.atHome && !currentState.actionDone && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
           <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 0}}" class="home-locator-focus home-locator-focus--0" aria-hidden="true"></view>
           <view wx:if="{{homeTalkNudgeVisible && currentState.atHome && currentState.canTalk && currentState.action.screen === 0}}" class="scene-talk-nudge scene-talk-nudge--0" aria-role="button" aria-label="和蛋宝宝说话" bindtap="onOpenTalkComposer"><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view></view>
         </view>
         <view id="world-panel-1" class="world-panel world-panel--desk">
-          <view wx:if="{{!sceneUsesBakedAction}}" class="panel-tone"></view>
           <view wx:for="{{windowHotspots[1]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-1 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
-          <view wx:if="{{showSceneCharacter && sceneCharacterScreen === 1}}" class="scene-character scene-character--{{sceneCharacterPose}} {{characterWarming ? 'scene-character--warming' : ''}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd">
-            <view class="scene-character__floor-shadow" aria-hidden="true"></view>
-            <image class="scene-character__pose-image" src="{{sceneCharacterImage}}" mode="aspectFit"></image>
-          </view>
-          <view wx:if="{{!sceneUsesBakedAction && currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
-          <view wx:if="{{!sceneUsesBakedAction && currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
-          <view wx:if="{{!sceneUsesBakedAction && currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 1}}" class="scene-character-hotspot scene-character-hotspot--1" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
           <view wx:if="{{currentState.atHome && !currentState.actionDone && currentState.action.screen === 1}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
           <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 1}}" class="home-locator-focus home-locator-focus--1" aria-hidden="true"></view>
           <view wx:if="{{homeTalkNudgeVisible && currentState.atHome && currentState.canTalk && currentState.action.screen === 1}}" class="scene-talk-nudge scene-talk-nudge--1" aria-role="button" aria-label="和蛋宝宝说话" bindtap="onOpenTalkComposer"><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view><view class="scene-talk-nudge__dot"></view></view>
           <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
         </view>
         <view id="world-panel-2" class="world-panel world-panel--decor">
-          <view wx:if="{{!sceneUsesBakedAction}}" class="panel-tone"></view>
+          <view wx:if="{{currentState.atHome && currentState.action.screen === 2}}" class="scene-character-hotspot scene-character-hotspot--2" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
           <view wx:for="{{windowHotspots[2]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-2 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
           <view wx:if="{{currentState.atHome && !currentState.actionDone && currentState.action.screen === 2 && currentState.action.kind !== 'window'}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
           <view wx:if="{{homeFocusVisible && currentState.atHome && currentState.action.screen === 2}}" class="home-locator-focus home-locator-focus--2" aria-hidden="true"></view>
@@ -111,13 +100,13 @@
     <view wx:if="{{toolboxVisible}}" class="toolbox-sheet">
       <text class="toolbox-title">百宝箱</text>
       <view class="toolbox-grid">
-        <view class="toolbox-item" data-target="my" bindtap="onToolboxItemTap">
+        <view class="toolbox-item" data-target="my" aria-role="button" aria-label="打开我的和设置" bindtap="onToolboxItemTap">
           <image class="toolbox-item-icon" src="/assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png" mode="aspectFit"></image>
           <text>我的 / 设置</text>
         </view>
-        <view class="toolbox-item" data-target="card" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_collection_card_front_96_v03.webp" mode="aspectFit"></image><text>收藏卡</text></view>
-        <view class="toolbox-item" data-target="postcards" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.webp" mode="aspectFit"></image><text>明信片</text></view>
-        <view class="toolbox-item" data-target="keepsakes" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_keepsake_box_96_v01.png" mode="aspectFit"></image><text>ta 带回来的东西</text></view>
+        <view class="toolbox-item" data-target="card" aria-role="button" aria-label="打开收藏卡" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_collection_card_front_96_v03.webp" mode="aspectFit"></image><text>收藏卡</text></view>
+        <view class="toolbox-item" data-target="postcards" aria-role="button" aria-label="打开明信片" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.webp" mode="aspectFit"></image><text>明信片</text></view>
+        <view class="toolbox-item" data-target="keepsakes" aria-role="button" aria-label="打开蛋宝宝带回来的东西" bindtap="onToolboxItemTap"><image class="toolbox-item-icon" src="/assets/ui/3d-toolbox/runtime/ui_3d_toolbox_keepsake_box_96_v01.png" mode="aspectFit"></image><text>ta 带回来的东西</text></view>
       </view>
     </view>
 

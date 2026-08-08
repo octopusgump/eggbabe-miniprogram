@@ -24,7 +24,10 @@ Page({
     hatchedAtLabel: '',
     isNew: false,
     savingImage: false,
-    posterReady: false
+    posterReady: false,
+    illustrationSrc: '',
+    illustrationLoading: true,
+    illustrationError: false
   },
 
   onLoad(query) {
@@ -47,8 +50,26 @@ Page({
     this.setData({
       pet,
       cardView,
+      illustrationSrc: cardView.illustration_url,
+      illustrationLoading: true,
+      illustrationError: false,
       hatchedAtLabel: dateLabel(cardView.hatched_at),
       isNew: query.new === '1'
+    });
+  },
+
+  onIllustrationLoad() {
+    this.setData({ illustrationLoading: false, illustrationError: false });
+  },
+
+  onIllustrationError() {
+    this.setData({ illustrationLoading: false, illustrationError: true });
+  },
+
+  onRetryIllustration() {
+    if (this.data.illustrationLoading || !this.data.cardView) return;
+    this.setData({ illustrationSrc: '', illustrationLoading: true, illustrationError: false }, () => {
+      this.setData({ illustrationSrc: this.data.cardView.illustration_url });
     });
   },
 
@@ -73,7 +94,7 @@ Page({
     context.setFillStyle('#FFFDF7');
     context.fillRect(0, 0, 600, 1067);
     context.setTextAlign('center');
-    context.setFillStyle('#3F5A47');
+    context.setFillStyle('#002900');
     context.setFontSize(18);
     context.fillText('eggbabe', 300, 54);
     context.setFillStyle('#2D352F');

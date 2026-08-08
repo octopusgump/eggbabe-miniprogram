@@ -67,6 +67,10 @@
         "type": "folder"
       },
       {
+        "value": "assets/scenes/lifecycle/post-hatch/10-background/kitchen/candidates",
+        "type": "folder"
+      },
+      {
         "value": "assets/scenes/lifecycle/post-hatch/10-background/left-living/scene-sets/_candidates",
         "type": "folder"
       },
@@ -76,6 +80,18 @@
       },
       {
         "value": "assets/scenes/lifecycle/pre-hatch/90-reference-composites",
+        "type": "folder"
+      },
+      {
+        "value": "pages/egg-rotation-sample",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample",
         "type": "folder"
       },
       {
@@ -124,6 +140,10 @@
       },
       {
         "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/incubation_room_empty_day_reference.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/room_base_candidate_v2.webp",
         "type": "file"
       },
       {

@@ -31,7 +31,7 @@
 
 .nav-side--pressed {
   background: #F3F7E7;
-  transform: scale(.96);
+  transform: scale(.98);
 }
 
 .nav-title {
@@ -55,7 +55,7 @@
   margin-left: 8rpx;
 }
 
-.demo-chip { padding: 5rpx 10rpx; border-radius: 999rpx; background: #EEF2E3; color: #687548; font-size: 16rpx; font-weight: 600; letter-spacing: 1rpx; }
+.demo-chip { padding: 5rpx 10rpx; border-radius: 999rpx; background: #EEF2E3; color: #687548; font-size: 20rpx; font-weight: 600; letter-spacing: 1rpx; }
 
 @media (prefers-reduced-motion: reduce) {
   .nav-side--back { transition: none; }

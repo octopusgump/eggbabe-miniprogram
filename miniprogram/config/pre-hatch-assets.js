@@ -55,18 +55,14 @@ const SCENE_TESTER_OPTIONS = [
   period,
   lightPhase,
   className: `season-${season} weather-${weather} period-${period} light-${lightPhase}`,
-  background: `${FULL_SCENE_ROOT}/${key === 'spring_clear_night' ? 'spring_clear_night_moonlight' : key}.webp`,
-  // 当前占位层经哈希确认仅有日间、夜间各一份内容。统一引用可避免把相同字节重复打进包；
-  // 正式差异化素材交付后再恢复按 scene key 的原子映射。
-  egg: `${EGG_SCENE_ROOT}/spring_clear_${period === 'night' ? 'night' : 'day'}_egg_right45.webp`,
-  nest: `${NEST_SCENE_ROOT}/spring_clear_${period === 'night' ? 'night' : 'day'}_nest_pad.webp`,
-  placeholder: true
+  background: `${FULL_SCENE_ROOT}/${key}.webp`,
+  egg: `${EGG_SCENE_ROOT}/${key}_egg_right45.webp`,
+  nest: `${NEST_SCENE_ROOT}/${key}_nest_pad.webp`
 }));
 
 module.exports = {
   ROOT,
   PRE_HATCH: {
-    roomBase: `${PRE_HATCH_ROOT}/10-background/incubation-room/room_base_candidate_v2.webp`,
     sceneTesterOptions: SCENE_TESTER_OPTIONS,
     fullScenes: {
       spring: {
@@ -103,43 +99,6 @@ module.exports = {
     nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/nest_pad.webp`,
     eggOnNest: `${PRE_HATCH_ROOT}/30-character/egg/egg_on_nest.webp`,
     eggWindowBack: `${PRE_HATCH_ROOT}/30-character/egg/egg_window_back.webp`,
-    rotationSample: {
-      warmDay: {
-        nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/warm-day/nest_pad.webp`,
-        egg: {
-          left45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day/egg_left_45.webp`,
-          front: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day/egg_front.webp`,
-          right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day/egg_right_45.webp`,
-          sprite: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day/egg_rotation_sprite.webp`
-        }
-      },
-      warmDayV2: {
-        nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/warm-day-v2/nest_pad.webp`,
-        egg: {
-          left45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_left_45.webp`,
-          front: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_front.webp`,
-          right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_right_45.webp`,
-          sprite: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_rotation_sprite.webp`
-        }
-      },
-      clearNightV1: {
-        background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night.webp`,
-        // 夜晚垫子尚未定稿；测试页先复用分层日间垫子，方便后续无代码替换。
-        nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/warm-day-v2/nest_pad.webp`,
-        egg: {
-          right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v1/egg_right_45.webp`
-        }
-      },
-      clearNightV2: {
-        // 已确认：保留底图现有的地板月光阴影，不叠加垫子落地阴影；蛋底接触阴影保持独立可替换。
-        background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night_moonlight.webp`,
-        nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.webp`,
-        egg: {
-          right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_right_45.webp`,
-          contactShadow: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.webp`
-        }
-      }
-    },
     windowWeather: {
       clearDay: `${SHARED_ROOT}/10-background/window-weather/w_01_clear_day.webp`,
       clearSunset: `${SHARED_ROOT}/10-background/window-weather/w_02_clear_sunset.webp`,
@@ -148,13 +107,6 @@ module.exports = {
       cloudyNight: `${SHARED_ROOT}/10-background/window-weather/w_05_cloudy_night.webp`,
       snowDay: `${SHARED_ROOT}/10-background/window-weather/w_06_snow_day.webp`,
       snowNight: `${SHARED_ROOT}/10-background/window-weather/w_07_snow_night.webp`
-    },
-    // 房间明暗只允许使用正式图片层，禁止 CSS 渐变或 brightness 模拟。
-    // 两张图完成并放入目录后，将 enabled 改为 true 即可启用。
-    roomLighting: {
-      enabled: false,
-      nightLampOn: `${PRE_HATCH_ROOT}/40-interaction-fx/room-lighting/room_night_lamp_on_overlay.webp`,
-      nightLampOff: `${PRE_HATCH_ROOT}/40-interaction-fx/room-lighting/room_night_lamp_off_overlay.webp`
     },
     interactionIcons: {
       secret: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_secret.svg`,

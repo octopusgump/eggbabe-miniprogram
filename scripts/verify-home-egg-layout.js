@@ -9,8 +9,9 @@ const source = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.js')
 const depthOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_depth_overlay_512_v01.webp');
 const specularOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_specular_overlay_512_v01.webp');
 
-const visibleEggMatch = template.match(/<view wx:if="\{\{stage !== 'hatched'\}\}" class="egg egg-shell[\s\S]*?<\/view>/);
+const visibleEggMatch = template.match(/<view wx:if="\{\{stage !== 'hatched' && !fullSceneImageFailed\}\}" class="egg egg-shell[\s\S]*?<\/view>/);
 assert.ok(visibleEggMatch, '首页必须保留位于孵化窝中的可交互蛋体容器');
+assert.equal(template.includes('wx:if="{{fullSceneImageFailed}}" class="incubation-scene-error"'), true, '精确场景素材失败时必须隐藏残缺蛋体并显示明确错误状态');
 assert.equal(visibleEggMatch[0].includes('<canvas'), false, '可见蛋体容器不得直接嵌套原生 Canvas，否则滚动时会脱离孵化窝');
 assert.equal(visibleEggMatch[0].includes('egg-shell-preview'), true, '可见蛋体必须使用 Canvas 导出的预览图片');
 assert.equal(template.includes('class="egg-shell-specular"'), true, '真实蛋体必须保留可随触摸响应的表面光泽层');
@@ -32,7 +33,8 @@ assert.match(styles, /\.egg-zone--incubating \.egg\s*\{[^}]*margin-top:\s*-142rp
 assert.equal(template.includes('incubation-nest-shadow'), false, '窝垫下方不得再叠加代码阴影，地板环境光影必须来自完整背景图');
 assert.equal(template.includes('egg-contact-shadow'), false, '蛋体接触阴影必须烘焙进透明蛋体层，避免运行时代码阴影割裂');
 assert.equal(template.includes('wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== \'hatched\'}}" class="stage-tester '), true, '开发版阶段验收控件只能出现在破壳前，且画画时必须卸载');
-assert.equal(template.includes('wx:if="{{pet && stage === \'hatched\'}}" class="post-hatch-redirect"'), true, '破壳后首页跳转期间必须有与生活空间连续的过渡层');
+assert.equal(template.includes('class="post-hatch-redirect"'), false, '破壳后不得短暂显示错误房间或跳转占位层');
+assert.equal(template.includes('class="post-hatch-pano-preloader"') && template.includes('bindload="onPostHatchPanoPreloadLoad"'), true, '破壳后必须先在不可见节点预热正确全景，再无动画进入生活空间');
 assert.equal(source.includes('this.postHatchLandingActive = false'), true, '返回首页时必须复位破壳后跳转锁，避免永久停在空白首页');
 assert.equal(template.includes('class="scene-tester ') && template.includes('onSceneTesterSelect'), true, '开发版必须提供 36 场景季节天气验收下拉控件');
 assert.equal(source.includes('wx.getImageInfo'), false, '本地 WebP 场景不得再依赖 wx.getImageInfo 预检查');
@@ -81,9 +83,11 @@ const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets'))
 assert.equal(preHatch.sceneTesterOptions.length, 36, '季节天气验收器必须完整覆盖 36 个选项');
 preHatch.sceneTesterOptions.forEach(option => {
   assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.background)), `缺少场景背景：${option.key}`);
-  assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.egg)), `缺少蛋体层：${option.key}`);
-  assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.nest)), `缺少窝垫层：${option.key}`);
+  assert.equal(option.egg.endsWith(`/${option.key}_egg_right45.webp`), true, `蛋体层必须与环境 key 精确匹配：${option.key}`);
+  assert.equal(option.nest.endsWith(`/${option.key}_nest_pad.webp`), true, `窝垫层必须与环境 key 精确匹配：${option.key}`);
 });
+assert.equal(new Set(preHatch.sceneTesterOptions.map(option => option.egg)).size, 36, '36 个环境键不得静默复用其他天气或时段的蛋体层');
+assert.equal(new Set(preHatch.sceneTesterOptions.map(option => option.nest)).size, 36, '36 个环境键不得静默复用其他天气或时段的窝垫层');
 
 const canvas2d = require(path.join(root, 'miniprogram/utils/canvas-2d'));
 const layer = { canvas: { width: 560, height: 800 }, width: 280, height: 400 };

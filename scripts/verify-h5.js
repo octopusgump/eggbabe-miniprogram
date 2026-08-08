@@ -58,8 +58,8 @@ assert.equal(/Math\.random|new Date\(/.test(poster), false, '分享图不得生�
 const native = read('miniprogram/pages/collection-card/collection-card.wxml');
 assert.equal(native.includes('cardView.identity_code'), true, '原生兜底必须显示身份编号');
 assert.equal(native.includes('cardView.source_batch'), true, '原生兜底必须显示来源批次');
-assert.equal(native.includes('cardView.illustration_url'), true, '原生兜底必须显示服务端固定插画');
 const nativeLogic = read('miniprogram/pages/collection-card/collection-card.js');
+assert.equal(native.includes('src="{{illustrationSrc}}"') && nativeLogic.includes('illustrationSrc: cardView.illustration_url'), true, '原生兜底必须显示服务端固定插画，并支持独立加载状态');
 assert.equal(nativeLogic.includes('loadPosterAsset'), true, '原生分享图必须加载服务端固定素材');
 assert.equal(nativeLogic.includes('mini_program_code_url'), true, '原生分享图必须绘制服务端小程序码');
 assert.equal(nativeLogic.includes('drawPetAvatar'), false, '固定插画失败时不得导出通用角色替代图');

@@ -88,8 +88,7 @@ function previewEnvironment(base, target) {
     fullSceneImage: target.background,
     windowImage: environmentService.windowAssetPath(target.weather, target.period),
     nestImage: target.nest,
-    eggImage: target.egg,
-    roomLightingEnabled: false
+    eggImage: target.egg
   });
 }
 
@@ -191,6 +190,7 @@ Page({
     dailyWindowPeriodLabel: '日间',
     fullSceneImageLoading: true,
     fullSceneImageFailed: false,
+    sceneAssetError: '',
     previousFullSceneImage: '',
     sceneCrossfadeActive: false,
     pendingTimeSceneImage: '',
@@ -361,6 +361,7 @@ Page({
       pendingTimeSceneImage: '',
       fullSceneImageLoading: false,
       fullSceneImageFailed: false,
+      sceneAssetError: '',
       windowFogVisible: windowFogSceneChanged ? true : this.data.windowFogVisible,
       lampOn,
       homeEggBasePreview: this.sceneLayerEggActive ? environment.eggImage : this.data.homeEggBasePreview
@@ -984,7 +985,9 @@ Page({
     }
     if (this.data.homeEggBasePreview !== this.data.environment.eggImage) {
       this.setData({ homeEggBasePreview: this.data.environment.eggImage });
+      return;
     }
+    this.onIncubationAssetError({ currentTarget: { dataset: { asset: '蛋体' } } });
   },
 
   onAddDevice() { wx.navigateTo({ url: '/pages/add-device/add-device' }); },
@@ -1006,13 +1009,10 @@ Page({
   },
 
   onPetNameTap() {
-    if (this.data.stage === 'hatched') {
-      wx.navigateTo({ url: '/pages/nickname/nickname' });
-      return;
-    }
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ hidden: true, elevated: false });
-    this.setData({ showNameSheet: true, nameError: '' });
+    const name = this.data.pet && this.data.pet.name || '';
+    this.setData({ showNameSheet: true, nameDraft: name, nameCount: Array.from(name).length, nameError: '' });
   },
 
   showFeedback(text) {
@@ -1375,33 +1375,29 @@ Page({
   },
 
   onFullSceneImageLoad() {
-    if (this.data.fullSceneImageLoading) this.setData({ fullSceneImageLoading: false });
+    if (this.data.fullSceneImageLoading || this.data.sceneAssetError) this.setData({ fullSceneImageLoading: false, fullSceneImageFailed: false, sceneAssetError: '' });
   },
 
   onFullSceneImageError() {
-    if (this.data.previousFullSceneImage && this.previousTimeEnvironment) {
-      const previousEnvironment = this.previousTimeEnvironment;
-      clearTimeout(this.timeSceneCrossfadeTimer);
-      this.timeSceneCrossfadeTimer = null;
-      this.previousTimeEnvironment = null;
-      this.setData({
-        environment: previousEnvironment,
-        previousFullSceneImage: '',
-        sceneCrossfadeActive: false,
-        fullSceneImageLoading: false,
-        fullSceneImageFailed: false,
-        homeEggBasePreview: this.sceneLayerEggActive ? previousEnvironment.eggImage : this.data.homeEggBasePreview
-      }, () => {
-        this.setupWindowWeatherCanvas();
-        this.scheduleTimeSceneRefresh();
-      });
-      return;
-    }
-    this.setData({ fullSceneImageLoading: false, fullSceneImageFailed: true });
-    this.showFeedback('窗外景色暂时没加载好，先回到熟悉的小房间。');
+    this.setData({ fullSceneImageLoading: false, fullSceneImageFailed: true, sceneAssetError: '房间背景加载失败' });
     analytics.track('incubation_scene_asset_error', {
       asset: (this.data.environment && this.data.environment.fullSceneImage) || ''
     });
+  },
+
+  onIncubationAssetError(event) {
+    const asset = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.asset || '场景素材';
+    this.setData({ fullSceneImageLoading: false, fullSceneImageFailed: true, sceneAssetError: `${asset}加载失败` });
+    analytics.track('incubation_scene_asset_error', { asset });
+  },
+
+  onRetryFullSceneImage() {
+    if (this.data.fullSceneImageLoading) return;
+    this.setData({ fullSceneImageFailed: false, fullSceneImageLoading: true, sceneAssetError: '' });
+  },
+
+  onSceneAssetBack() {
+    wx.reLaunch({ url: '/pages/welcome/welcome' });
   },
 
   createWindowWeatherParticles(width, height) {

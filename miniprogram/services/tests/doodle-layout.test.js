@@ -70,7 +70,7 @@ assert.match(wxss, /\.brush-setting-title\s*\{[^}]*font-size:\s*24rpx;/, '粗细
 assert.match(wxss, /\.brush-color-popover\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*120;[^}]*left:\s*-12rpx;[^}]*right:\s*-12rpx;[^}]*bottom:\s*calc\(100% \+ 12rpx\);[^}]*background:\s*#FFF;/, '十色色块必须在工具卡上方以接近屏幕宽度的最高原生覆盖层展开');
 assert.match(wxss, /\.brush-color-grid\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;/, '十种颜色必须使用 cover-view 兼容的两排弹性布局');
 assert.match(wxss, /\.brush-color-card\s*\{[^}]*width:\s*20%;[^}]*height:\s*112rpx;[^}]*border:\s*4rpx solid #FFF;/, '每排必须显示五个足够大的颜色块');
-assert.match(wxss, /\.brush-color-card--selected\s*\{[^}]*box-shadow:[^}]*#3F5A47/, '默认森林绿及其他选中色必须显示清楚的双层边框');
+assert.match(wxss, /\.brush-color-card--selected\s*\{[^}]*box-shadow:[^}]*#002900/, '默认森林绿及其他选中色必须使用设计系统深绿双层边框');
 assert.equal(pageScript.includes('brushColors: shellArtService.BRUSH_COLORS'), true, '页面颜色弹窗必须直接使用完整的十色配置');
 assert.equal(!wxml.includes('brush-color-trigger-mark') && !wxss.includes('.brush-color-trigger-chevron'), true, '颜色入口不得继续显示下拉箭头');
 assert.equal(wxml.includes('点这里选颜色') && wxml.includes('colorHintRendered') && pageScript.includes('eggbabe_doodle_color_hint_seen_v1'), true, '首次进入画笔设置必须复用首页胶囊提示节奏，引导用户点击颜色');

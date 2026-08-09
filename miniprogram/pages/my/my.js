@@ -1,7 +1,8 @@
 const petStore = require('../../utils/pet-store');
+const releaseSurface = require('../../utils/release-surface');
 
 Page({
-  data: { userName: '微信用户', eggCount: 0 },
+  data: { userName: '微信用户', eggCount: 0, deferredContentAvailable: releaseSurface.deferredContentAvailable() },
 
   onShow() {
     if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 1, hidden: true });

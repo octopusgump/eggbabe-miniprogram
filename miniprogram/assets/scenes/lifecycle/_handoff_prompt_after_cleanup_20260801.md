@@ -1,5 +1,7 @@
 # 蛋宝宝小程序图片续作提示词（删除旧 incubation 后）
 
+> **历史提示词，已停止执行。** 其中“五层运行时”“三屏独立背景”和透明角色姿态方案均已被当前完整场景／动作全景方案替代；不得复制本文继续生产。当前判据见 `docs/eggbabe-DESIGN.md` 与两份运行时资产配置。
+
 下面代码块可直接完整复制到新的 Codex 对话框。
 
 ```text
@@ -133,7 +135,6 @@ C. 玉兔姿态（6 张）
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -149,7 +150,6 @@ D. 锦鲤姿态（6 张）
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -176,7 +176,6 @@ E. 互动反馈（8 张）
 
 前景：post-hatch/40-interaction-fx/
 
-- tea_steam.webp
 
 两张被子使用相同画布和锚点；lamp_dark_overlay 是透明深蓝夜色层；paper_front 只保留无文字涂鸦；游戏画面只能是无品牌、无文字的抽象微光；蒸汽必须真实透明。
 

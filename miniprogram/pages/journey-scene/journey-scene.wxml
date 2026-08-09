@@ -29,6 +29,7 @@
   <view wx:if="{{error}}" class="journey-state" aria-live="assertive">
     <text class="journey-state__title">旅途回放没有加载好</text>
     <text>{{error}}</text>
-    <view class="journey-state__back" aria-role="button" bindtap="onBack">返回明信片</view>
+    <view wx:if="{{slides.length}}" class="journey-state__retry" aria-role="button" aria-label="重新加载这张旅途画面" bindtap="onRetrySlide">重新看看</view>
+    <view class="journey-state__back" aria-role="button" aria-label="返回明信片" bindtap="onBack">返回明信片</view>
   </view>
 </view>

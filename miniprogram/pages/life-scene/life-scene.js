@@ -25,22 +25,20 @@ const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   AUTO_COMPANION_STATE_OPTION,
   // 快捷项必须落到已有动作全景的状态，避免验收器选择后看不见对应画面。
   Object.freeze({ key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing' }),
-  Object.freeze({ key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep', actionDone: true }),
+  Object.freeze({ key: 'home-sleep', label: '在家 · 睡觉（可对话）', major: 'home', stateKey: 'sleep', actionDone: true }),
   Object.freeze({ key: 'home-lazy', label: '在家 · 赖床', major: 'home', stateKey: 'lazy' }),
   Object.freeze({ key: 'home-stare', label: '在家 · 发呆', major: 'home', stateKey: 'stare' }),
-  Object.freeze({ key: 'home-tea', label: '在家 · 泡茶', major: 'home', stateKey: 'tea' }),
   Object.freeze({ key: 'home-reading', label: '在家 · 看书', major: 'home', stateKey: 'reading' }),
   Object.freeze({ key: 'home-music', label: '在家 · 听音乐', major: 'home', stateKey: 'music' }),
   Object.freeze({ key: 'home-window', label: '在家 · 看窗外', major: 'home', stateKey: 'window' }),
   Object.freeze({ key: 'home-gaming', label: '在家 · 打游戏', major: 'home', stateKey: 'gaming' }),
-  Object.freeze({ key: 'away-letter', label: '不在家 · 写信', major: 'travel', stateKey: 'dali' })
+  Object.freeze({ key: 'away', label: '不在家', major: 'travel', stateKey: 'dali' })
 ]);
 
 const STATUS_BUBBLE_POOL = Object.freeze({
   sleep: Object.freeze(['我把自己卷成小饭团啦。', '枕头批准我再眯一会儿。', '我在梦里追一朵慢吞吞的云。']),
   lazy: Object.freeze(['被子太会抱人，我还没赢。', '我刚醒一点点，又困回去了。', '早晨先放口袋里，晚点再打开。']),
   stare: Object.freeze(['我在和光斑一起走神。', '桌上的光跑得比我快。', '我发呆得很认真，真的。']),
-  tea: Object.freeze(['热气在跳舞，我先看一会儿。', '这口有点烫，嘴巴先请假。', '杯子暖暖的，我也慢下来。']),
   drawing: Object.freeze(['它本来是云，现在像小鱼。', '我画的圆，自己偷偷跑偏啦。', '这张纸好像比我更有主意。']),
   reading: Object.freeze(['这一页的月亮，和窗外那一盏有点像。', '我把喜欢的句子藏在耳朵旁边。', '故事慢慢走，我也慢一点。']),
   gaming: Object.freeze(['这一关很紧张，耳朵静音。', '小角色又跳歪了，我忍住笑。', '我快赢啦，先认真三小秒。']),
@@ -87,7 +85,7 @@ function companionStateTesterOptions(pet, environment) {
     const definition = lifeScenes.resolveDefinition(option.major, option.stateKey);
     const previewState = definition && Object.assign({}, definition, {
       actionDone: Boolean(option.actionDone),
-      action: Object.assign({}, definition.action)
+      action: definition.action ? Object.assign({}, definition.action) : null
     });
     const available = Boolean(previewState && assets.resolveActionPanorama(pet, previewState, environment));
     return Object.assign({}, option, { available });
@@ -111,8 +109,7 @@ function previewCompanionSnapshot(snapshot, target) {
       slotStart: current.slotStart,
       slotEnd: current.slotEnd,
       actionDone: Boolean(target.actionDone),
-      actionFeedback: target.actionDone ? definition.action.feedback : '',
-      letterSent: false,
+      actionFeedback: target.actionDone && definition.action ? definition.action.feedback : '',
       isPreview: true
     })
   });
@@ -161,6 +158,30 @@ function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, action
   };
 }
 
+// 把当前状态的角色与动作锚点换算成本机屏幕位置。
+function sceneAnchorPresentation(pet, currentState, panelWidth, panelHeight) {
+  const empty = { characterPanel: -1, characterStyle: '', actionPanel: -1, actionStyle: '' };
+  if (!currentState) return empty;
+  const anchors = assets.resolveStateAnchors(pet, currentState);
+  const meta = assets.POST_HATCH.panoramaFallbackMeta || {};
+  const points = {};
+  if (anchors.character) points.character = anchors.character;
+  if (anchors.action) points.action = anchors.action;
+  const mapped = windowGeometry.mapPanoramaPoints({
+    imageWidth: meta.width,
+    imageHeight: meta.height,
+    panelWidth,
+    panelHeight,
+    points
+  });
+  return {
+    characterPanel: mapped.character ? mapped.character.panel : -1,
+    characterStyle: mapped.character ? mapped.character.style : '',
+    actionPanel: mapped.action ? mapped.action.panel : -1,
+    actionStyle: mapped.action ? mapped.action.style : ''
+  };
+}
+
 function homeFinderIcon(pet) {
   const sceneActions = assets.POST_HATCH.sceneActions || {};
   const findHome = sceneActions.findHome || {};
@@ -170,14 +191,11 @@ function homeFinderIcon(pet) {
   return findHome.egg || '';
 }
 
-function contextActionPresentation(pet, currentState, hasNewMessage) {
-  const sceneActions = assets.POST_HATCH.sceneActions || {};
+function contextActionPresentation(pet, currentState) {
   const atHome = Boolean(currentState && currentState.atHome);
   return {
-    icon: atHome ? homeFinderIcon(pet) : sceneActions.envelope || '',
-    label: atHome ? '找到蛋宝宝' : '给蛋宝宝写信',
-    hasNewMessage: Boolean(hasNewMessage),
-    showTalkBadge: Boolean(atHome && currentState && currentState.canTalk && !hasNewMessage)
+    icon: atHome ? homeFinderIcon(pet) : '',
+    label: atHome ? '和蛋宝宝说话' : ''
   };
 }
 
@@ -226,17 +244,6 @@ Page({
     feedback: '',
     playedActionKind: '',
     actionBusy: false,
-    talkDraft: '',
-    talkBusy: false,
-    talkReply: '',
-    talkError: '',
-    letterDraft: '',
-    letterBusy: false,
-    letterError: '',
-    letterKeyboardHeight: 0,
-    letterComposerTopPx: 220,
-    composerVisible: false,
-    toolboxVisible: false,
     dailyWindowVisible: false,
     magicWindowVisible: false,
     magicWindowLoading: false,
@@ -259,11 +266,11 @@ Page({
     statusBubbleVisible: false,
     contextActionIcon: '',
     contextActionLabel: '',
-    contextActionHasNewMessage: false,
-    contextActionShowTalkBadge: false,
-    toolboxIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolbox || '',
-    homeFocusVisible: false,
-    homeTalkNudgeVisible: false,
+    mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
+    characterPanel: -1,
+    characterStyle: '',
+    actionPanel: -1,
+    actionStyle: '',
     screens: [0, 1, 2],
     currentScreen: 1,
     scrollLeft: 0,
@@ -375,7 +382,7 @@ Page({
     this.clearSlotTimer();
     this.clearPresentationTimers();
     this.setData({
-      loading: true, error: '', talkError: '', letterError: '', actionBusy: false, talkBusy: false, letterBusy: false,
+      loading: true, error: '', actionBusy: false,
       feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false
     });
     const request = postHatch.getSnapshot(this.data.pet);
@@ -395,20 +402,17 @@ Page({
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
       const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
-      const contextAction = contextActionPresentation(this.data.pet, currentState, snapshot.newMessage);
+      const contextAction = contextActionPresentation(this.data.pet, currentState);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
-      const restoreToolbox = !!this.restoreToolboxAfterSnapshot;
       const preparingInitialViewport = Boolean(this.needsInitialViewport);
       const initialViewportToken = preparingInitialViewport ? (this.initialViewportToken = (this.initialViewportToken || 0) + 1) : 0;
       if (preparingInitialViewport) {
         this.initialViewportScreen = screen;
         this.initialViewportTarget = screen * this.data.panelWidth;
       }
-      this.restoreToolboxAfterSnapshot = false;
-      this.clearHomeFocusTimers();
-      this.setData({
+      this.setData(Object.assign(sceneAnchorPresentation(this.data.pet, currentState, this.data.panelWidth, this.data.panelHeight), {
         loading: false,
         error: '',
         snapshot,
@@ -417,22 +421,13 @@ Page({
         windowHotspots: panorama.windowHotspots,
         contextActionIcon: contextAction.icon,
         contextActionLabel: contextAction.label,
-        contextActionHasNewMessage: contextAction.hasNewMessage,
-        contextActionShowTalkBadge: contextAction.showTalkBadge,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
         initialViewportReady: preparingInitialViewport ? false : this.data.initialViewportReady,
         // actionDone 是持久业务状态；反馈和场景动作效果仅属于本次交互，不能跨页面恢复。
         feedback: '',
-        playedActionKind: '',
-        letterDraft: '',
-        talkDraft: '',
-        talkReply: '',
-        composerVisible: false,
-        toolboxVisible: restoreToolbox,
-        homeFocusVisible: false,
-        homeTalkNudgeVisible: false
-      }, () => {
+        playedActionKind: ''
+      }), () => {
         this.scheduleInitialSceneDeadline();
         this.revealInitialScene();
         if (preparingInitialViewport) this.scheduleInitialViewportSettle(initialViewportToken);
@@ -770,7 +765,7 @@ Page({
     }
     if (this.windowGesture && Math.abs(left - this.windowGesture.startScrollLeft) > 3) this.windowGesture.moved = true;
     const screen = Math.max(0, Math.min(2, Math.round(left / this.data.panelWidth)));
-    if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen, toolboxVisible: false });
+    if (screen !== this.data.currentScreen) this.setData({ currentScreen: screen });
   },
 
   onResize(size) {
@@ -784,14 +779,14 @@ Page({
     const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
     if (this.needsInitialViewport) this.initialViewportTarget = Math.max(0, Math.min(2, screen)) * panelWidth;
-    this.setData({
+    // 屏幕尺寸变了，母图锚点要按新的 aspectFill 结果重新换算。
+    this.setData(Object.assign(sceneAnchorPresentation(this.data.pet, this.data.currentState, panelWidth, panelHeight), {
       panelWidth,
       panelHeight,
       panelSceneSetId: panorama.sceneSetId,
       windowHotspots: panorama.windowHotspots,
-      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth,
-      letterComposerTopPx: this.resolveLetterComposerTop(this.data.letterKeyboardHeight, panelHeight, panelWidth)
-    }, () => {
+      scrollLeft: Math.max(0, Math.min(2, screen)) * panelWidth
+    }), () => {
       if (this.needsInitialViewport) this.scheduleInitialViewportSettle(this.initialViewportToken);
       if (changed) this.queuePanoramaTransition(panorama.panoramaImage);
     });
@@ -946,205 +941,25 @@ Page({
 
   onContextActionTap() {
     const current = this.data.currentState;
-    if (!current) return;
-    const newMessage = this.data.snapshot && this.data.snapshot.newMessage;
-    if (newMessage) {
-      if (current.atHome) {
-        this.focusHomeCharacter(current);
-        this.showFeedback(newMessage.line || '我给你留了一句话。');
-        this.markNewMessageRead(newMessage);
-      } else {
-        this.returningFromChild = true;
-        wx.navigateTo({ url: `/pages/life-scenes/life-scenes?section=postcards&postcard_id=${encodeURIComponent(newMessage.id)}` });
+    if (!current || !current.atHome) return;
+    this.openChatPage(current);
+  },
+
+  openChatPage(current) {
+    this.returningFromChild = true;
+    const preview = this.isCompanionStatePreview() ? '1' : '0';
+    wx.navigateTo({
+      url: `/pages/chat/chat?state_key=${encodeURIComponent(current.key)}&preview=${preview}`,
+      success: () => analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'opened' }),
+      fail: () => {
+        this.returningFromChild = false;
+        if (this.pageActive) this.showFeedback('对话页面没有打开，请重试');
       }
-      analytics.track('room_element_interaction', { element_id: 'scene_new_message_button', result: 'opened' });
-      return;
-    }
-    if (current.atHome) {
-      this.focusHomeCharacter(current);
-      return;
-    }
-    const screen = Math.max(0, Math.min(2, Number(current.screen || 0)));
-    this.setData({
-      composerVisible: true,
-      toolboxVisible: false,
-      currentScreen: screen,
-      scrollLeft: screen * this.data.panelWidth,
-      letterKeyboardHeight: 0,
-      letterComposerTopPx: this.resolveLetterComposerTop(0)
-    });
-    analytics.track('room_element_interaction', { element_id: 'scene_letter_button', result: 'opened' });
-  },
-
-  markNewMessageRead(message) {
-    postHatch.markPostcardRead(this.data.pet, message && message.id).then(result => {
-      if (!this.pageActive || !result || !result.ok) return;
-      const contextAction = contextActionPresentation(this.data.pet, this.data.currentState, null);
-      this.setData({
-        'snapshot.newMessage': null,
-        contextActionHasNewMessage: false,
-        contextActionShowTalkBadge: contextAction.showTalkBadge
-      });
-    }).catch(() => {});
-  },
-
-  focusHomeCharacter(current) {
-    const screen = Math.max(0, Math.min(2, Number(current.screen || 0)));
-    this.clearHomeFocusTimers();
-    this.setData({
-      composerVisible: false,
-      toolboxVisible: false,
-      currentScreen: screen,
-      scrollLeft: screen * this.data.panelWidth,
-      homeFocusVisible: true,
-      homeTalkNudgeVisible: !!current.canTalk
-    });
-    this.homeFocusTimer = setTimeout(() => {
-      if (this.pageActive) this.setData({ homeFocusVisible: false });
-    }, this.data.reducedMotion ? 20 : 1120);
-    if (current.canTalk) {
-      this.homeTalkNudgeTimer = setTimeout(() => {
-        if (this.pageActive) this.setData({ homeTalkNudgeVisible: false });
-      }, this.data.reducedMotion ? 2400 : 4200);
-    }
-    analytics.track('room_element_interaction', { element_id: 'scene_find_home_button', result: 'focused' });
-  },
-
-  onOpenTalkComposer() {
-    const current = this.data.currentState;
-    if (!current || !current.atHome || !current.canTalk) return;
-    this.clearHomeFocusTimers();
-    this.setData({
-      composerVisible: true,
-      toolboxVisible: false,
-      homeFocusVisible: false,
-      homeTalkNudgeVisible: false
-    });
-    analytics.track('room_element_interaction', { element_id: 'scene_talk_button', result: 'opened' });
-  },
-
-  onCloseComposer() {
-    this.setData({ composerVisible: false, talkError: '', letterError: '', letterKeyboardHeight: 0 });
-  },
-
-  resolveLetterComposerTop(keyboardHeight, panelHeight, panelWidth) {
-    const height = Number(panelHeight || this.data.panelHeight || 667);
-    const width = Number(panelWidth || this.data.panelWidth || 375);
-    const keyboard = Math.max(0, Number(keyboardHeight || 0));
-    const safeTop = Math.max(20, Number(this.data.statusBarHeight || 20)) + 52;
-    const desiredTop = Math.round(height * 0.29);
-    // 按包含错误文案的 240rpx 高度估算，键盘上方保留 18px 可点击间隔。
-    const estimatedComposerHeight = Math.max(120, Math.round(240 * width / 750));
-    const keyboardSafeTop = height - keyboard - estimatedComposerHeight - 18;
-    return Math.max(safeTop, Math.min(desiredTop, keyboardSafeTop));
-  },
-
-  onLetterKeyboardHeightChange(event) {
-    const height = Math.max(0, Number(event.detail && event.detail.height || 0));
-    this.setData({
-      letterKeyboardHeight: height,
-      letterComposerTopPx: this.resolveLetterComposerTop(height)
     });
   },
 
-  clearHomeFocusTimers() {
-    clearTimeout(this.homeFocusTimer);
-    clearTimeout(this.homeTalkNudgeTimer);
-    this.homeFocusTimer = null;
-    this.homeTalkNudgeTimer = null;
-  },
-
-  onToggleToolbox() {
-    this.setData({ toolboxVisible: !this.data.toolboxVisible, composerVisible: false });
-  },
-
-  onCloseToolbox() {
-    if (this.data.toolboxVisible) this.setData({ toolboxVisible: false });
-  },
-
-  onToolboxItemTap(event) {
-    const target = event.currentTarget.dataset.target;
-    this.setData({ toolboxVisible: false });
-    if (target === 'my') {
-      wx.switchTab({ url: '/pages/my/my' });
-      return;
-    }
-    if (target === 'card') {
-      this.restoreToolboxOnReturn = true;
-      wx.navigateTo({
-        url: '/pages/collection-card/collection-card',
-        fail: () => {
-          this.restoreToolboxOnReturn = false;
-          if (this.pageActive) this.setData({ toolboxVisible: true });
-        }
-      });
-      return;
-    }
-    if (target === 'postcards' || target === 'keepsakes') {
-      this.restoreToolboxOnReturn = true;
-      wx.navigateTo({
-        url: `/pages/life-scenes/life-scenes?section=${target}`,
-        fail: () => {
-          this.restoreToolboxOnReturn = false;
-          if (this.pageActive) this.setData({ toolboxVisible: true });
-        }
-      });
-    }
-  },
-
-  onTalkInput(event) { this.setData({ talkDraft: event.detail.value, talkError: '' }); },
-  onSendTalk() {
-    if (this.data.talkBusy) return;
-    const messageLength = Array.from(this.data.talkDraft || '').length;
-    if (this.isCompanionStatePreview()) {
-      if (!messageLength) {
-        this.setData({ talkError: '先说一句话吧' });
-        return;
-      }
-      this.setData({ talkDraft: '', talkError: '', talkReply: '我在呢。这是测试回复，不会写进陪伴记录。' });
-      return;
-    }
-    this.setData({ talkBusy: true, talkError: '', talkReply: '' });
-    postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, this.data.talkDraft).then(result => {
-      if (!this.pageActive) return;
-      if (!result.ok) {
-        this.setData({ talkBusy: false, talkError: result.message || '这句话没有送到，请重试' });
-        return;
-      }
-      this.setData({ talkBusy: false, talkDraft: '', talkReply: result.text || '我在听。' });
-      analytics.track('chat_message_sent', { msg_len: messageLength, scene_id: this.data.currentState.key });
-    }).catch(() => this.pageActive && this.setData({ talkBusy: false, talkError: '这句话没有送到，请重试' }));
-  },
-
-  onLetterInput(event) { this.setData({ letterDraft: event.detail.value, letterError: '' }); },
-  onSendLetter() {
-    if (this.data.letterBusy) return;
-    if (this.isCompanionStatePreview()) {
-      if (!String(this.data.letterDraft || '').trim()) {
-        this.setData({ letterError: '写一句话再寄出吧' });
-        return;
-      }
-      const feedback = this.data.currentState && this.data.currentState.action && this.data.currentState.action.feedback || '信已经寄出，家里又安静下来。';
-      this.setData({
-        letterDraft: '',
-        letterError: '',
-        'currentState.actionDone': true,
-        'currentState.letterSent': true,
-        'currentState.actionFeedback': feedback
-      });
-      this.showFeedback(`${feedback}（测试预览）`);
-      return;
-    }
-    this.setData({ letterBusy: true, letterError: '' });
-    postHatch.sendLetter(this.data.pet, this.data.snapshot, this.data.letterDraft).then(result => {
-      if (!this.pageActive) return;
-      if (!result.ok) {
-        this.setData({ letterBusy: false, letterError: result.message || '信没有寄出去，请重试' });
-        return;
-      }
-      this.setData({ letterBusy: false, letterDraft: '', 'currentState.actionDone': true, 'currentState.letterSent': true, 'currentState.actionFeedback': result.feedback });
-      this.showFeedback(result.feedback || '信已经寄出，家里又安静下来。');
-    }).catch(() => this.pageActive && this.setData({ letterBusy: false, letterError: '信没有寄出去，请重试' }));
+  onOpenMySettings() {
+    wx.switchTab({ url: '/pages/my/my' });
   },
 
   onDailyWindowTouchStart(event) {
@@ -1326,14 +1141,6 @@ Page({
       else this.onDailyWindowClosed();
       return;
     }
-    if (this.data.toolboxVisible) {
-      this.onCloseToolbox();
-      return;
-    }
-    if (this.data.composerVisible) {
-      this.onCloseComposer();
-      return;
-    }
     if (this.data.isExiting) return;
     let reducedMotion = false;
     try {
@@ -1365,8 +1172,6 @@ Page({
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
       this.returningFromChild = false;
-      this.restoreToolboxAfterSnapshot = !!this.restoreToolboxOnReturn;
-      this.restoreToolboxOnReturn = false;
       this.loadSnapshot();
       return;
     }
@@ -1384,7 +1189,6 @@ Page({
   clearTransientState() {
     this.clearSlotTimer();
     this.clearCuddleTimers();
-    this.clearHomeFocusTimers();
     this.clearPresentationTimers();
     clearTimeout(this.magicKoiTimer);
     clearTimeout(this.environmentCrossfadeTimer);
@@ -1394,7 +1198,7 @@ Page({
     this.clearPanoramaTransition();
     this.needsInitialViewport = true;
     this.initialViewportToken = (this.initialViewportToken || 0) + 1;
-    this.setData({ feedback: '', playedActionKind: '', talkReply: '', statusBubble: '', statusBubbleVisible: false, composerVisible: false, toolboxVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, homeFocusVisible: false, homeTalkNudgeVisible: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+    this.setData({ feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
   },
   clearPresentationTimers() {
     clearTimeout(this.feedbackTimer);

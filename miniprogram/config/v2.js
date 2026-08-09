@@ -8,6 +8,10 @@ module.exports = {
   localDemoEnabled: policy.localDemoEnabled,
   defaultMode: policy.mode,
   backendEnabled: false,
+  // V3.6 / V3.7 正式版只上线对话与我的/设置。已完成的收藏卡、明信片、
+  // 纪念物和旅途回放代码保留供 develop 验收，trial / release 不开放。
+  deferredContentEnabled: false,
+  deferredContentDeveloperPreviewEnabled: true,
   apiBase: '',
   requestTimeoutMs: 15000,
   timezone: 'Asia/Shanghai',

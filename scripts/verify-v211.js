@@ -5,6 +5,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
 const app = JSON.parse(read('miniprogram/app.json'));
+const preHatchAssets = require(path.join(root, 'miniprogram/config/pre-hatch-assets')).PRE_HATCH;
 const userFacingFiles = app.pages
   .map(page => `miniprogram/${page}.wxml`)
   .filter(file => fs.existsSync(path.join(root, file)) && !file.includes('/privacy/'));
@@ -25,7 +26,13 @@ assert.equal(homeTemplate.includes('talkUnlocked') || homeTemplate.includes('tal
 assert.equal(homeTemplate.includes('暂不命名'), true, '命名必须允许跳过');
 assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.includes('id="homeEggArtCanvas"'), true, '首页必须保留三层蛋壳 Canvas');
 assert.equal(homeLogic.includes('shellArtService.drawEggBase') && homeLogic.includes('shellArtService.drawEggArt'), true, '首页必须回显免费蛋壳创作');
-assert.equal(homeTemplate.includes('egg_shell_depth_overlay_512_v01.webp') && homeTemplate.includes('egg_shell_specular_overlay_512_v01.webp'), true, '真实蛋体光影必须使用透明 WebP image 层');
+assert.equal(homeTemplate.includes('src="{{eggShellOverlays.depth}}"') && homeTemplate.includes('src="{{eggShellOverlays.specular}}"'), true, '真实蛋体光影必须使用透明 WebP image 层，路径从配置读取');
+assert.equal(
+  preHatchAssets.eggShellOverlays.depth.endsWith('/egg_shell_depth_overlay_512_v01.webp')
+    && preHatchAssets.eggShellOverlays.specular.endsWith('/egg_shell_specular_overlay_512_v01.webp'),
+  true,
+  '蛋体光影层必须登记为审核通过的 512 WebP'
+);
 assert.equal(/(?:mask-image|background-image)\s*:\s*url\([^)]*\/assets\//.test(homeStyles), false, 'WXSS 不得通过 url() 读取本地图片');
 assert.equal(homeStyles.includes('.egg-contact-shadow'), false, '蛋体阴影必须进入透明蛋体图片层，不得继续由 CSS 重绘');
 assert.equal(homeStyles.includes('.incubation-nest-shadow'), false, '窝垫下方不得叠加额外代码阴影');
@@ -56,14 +63,17 @@ assert.equal(/function addProgress|function completeDailyTask|inactiveDays|CARD_
 assert.equal(petStore.includes("HATCHABLE: 'ready'"), true, '破壳入口只能由服务端生命周期映射');
 
 const lifeSceneLogic = read('miniprogram/pages/life-scene/life-scene.js');
+const chatPageLogic = read('miniprogram/pages/chat/chat.js');
 const postHatchCompanion = read('miniprogram/services/post-hatch-companion.js');
 const chatService = read('miniprogram/services/chat-service.js');
-const activeChatFlow = `${lifeSceneLogic}\n${postHatchCompanion}\n${chatService}`;
-assert.equal(app.pages.includes('pages/chat/chat'), false, '破壳后对话不得保留独立页面入口');
+const activeChatFlow = `${lifeSceneLogic}\n${chatPageLogic}\n${postHatchCompanion}\n${chatService}`;
+assert.equal(app.pages.includes('pages/chat/chat'), true, '破壳后居家对话必须使用完整页面');
 assert.equal(/只有我|不要离开|一直都在|我就知道你会来/.test(activeChatFlow), false, '对话不得制造排他或依赖');
-assert.equal(lifeSceneLogic.includes('postHatch.sendSceneMessage'), true, '生活场景对话必须进入统一陪伴服务');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && chatPageLogic.includes('postHatch.sendSceneMessage'), true, '生活场景必须直达完整对话页，并进入统一陪伴服务');
 assert.equal(postHatchCompanion.includes('chatSafety.assessInput') && postHatchCompanion.includes('chatSafety.CRISIS_RESPONSE'), true, '用户输入必须经过敏感信息与危机内容检查');
 assert.equal(postHatchCompanion.includes('chatService.requestReply'), true, 'live 对话必须经过服务适配层');
+assert.equal(postHatchCompanion.includes("from: item && (item.from === 'user' || item.role === 'user')") && postHatchCompanion.includes("text: String(item && (item.text || item.content)"), true, '对话历史必须按服务适配层的 from / text 契约传递');
+assert.equal(chatPageLogic.includes('postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, priorMessages)'), true, '当前消息已单独传递，不得在 history 中重复');
 assert.equal(postHatchCompanion.includes('chatService.approvedFallback'), true, '模型不可用时必须使用审核通过的兜底文案');
 assert.equal(chatService.includes("safetyResult !== 'passed'"), true, '模型输出必须经 CTO 内容安全确认后展示');
 const chatSafety = read('miniprogram/services/chat-safety.js');

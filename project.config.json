@@ -445,6 +445,154 @@
       {
         "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_snow_night_nest_pad.webp",
         "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_clear_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_clear_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_clear_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_clear_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_rain_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_rain_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_rain_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_rain_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_storm_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_storm_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_storm_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_storm_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_rain_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_rain_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_rain_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_rain_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_clear_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_clear_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_snow_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_snow_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_post_snow_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_post_snow_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_post_snow_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_post_snow_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "pages/nickname",
+        "type": "folder"
       }
     ],
     "include": []

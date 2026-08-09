@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page {{reducedMotion ? 'page--reduced' : ''}}">
   <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
   <scroll-view wx:if="{{!doodleEditorVisible}}" class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
@@ -110,13 +110,13 @@
           <image wx:if="{{homeEggArtPreview}}" class="egg-shell-preview egg-shell-preview--art" src="{{homeEggArtPreview}}" mode="aspectFit" data-layer="art" binderror="onHomeEggPreviewError"></image>
           <image
             class="egg-shell-depth"
-            src="/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_depth_overlay_512_v01.webp"
+            src="{{eggShellOverlays.depth}}"
             mode="scaleToFill"
             aria-hidden="true"
           ></image>
           <image
             class="egg-shell-specular"
-            src="/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_specular_overlay_512_v01.webp"
+            src="{{eggShellOverlays.specular}}"
             mode="scaleToFill"
             aria-hidden="true"
           ></image>

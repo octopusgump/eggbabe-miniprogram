@@ -108,9 +108,6 @@ function getPostHatchHome(eggId) {
 function performPostHatchAction(eggId, slotIndex, actionId, requestId) {
   return call('performPostHatchAction', { egg_id: eggId, slot_index: slotIndex, action_id: actionId, request_id: requestId });
 }
-function sendPostHatchLetter(eggId, slotIndex, message, requestId) {
-  return call('sendPostHatchLetter', { egg_id: eggId, slot_index: slotIndex, message, request_id: requestId });
-}
 function getPostHatchMemories(eggId) {
   return call('getPostHatchMemories', { egg_id: eggId });
 }
@@ -165,7 +162,6 @@ module.exports = {
   recordRoomElementInteraction,
   getPostHatchHome,
   performPostHatchAction,
-  sendPostHatchLetter,
   getPostHatchMemories,
   manageDeletion,
   trackEvents,

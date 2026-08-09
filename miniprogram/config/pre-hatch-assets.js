@@ -7,6 +7,7 @@ const FULL_SCENE_ROOT = `${PRE_HATCH_ROOT}/10-background/incubation-room/season-
 const EGG_SCENE_ROOT = `${PRE_HATCH_ROOT}/30-character/egg/season-weather`;
 const NEST_SCENE_ROOT = `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/season-weather`;
 const UI_3D_ACTIONS_ROOT = '/assets/ui/3d-actions/runtime';
+const UI_TOOLBAR_ROOT = '/assets/ui/3d-toolbar/runtime';
 
 const SCENE_TESTER_OPTIONS = [
   ['spring_clear_day', '春季', '晴朗·日间', 'spring', 'sunny', 'day', 'midday'],
@@ -64,41 +65,22 @@ module.exports = {
   ROOT,
   PRE_HATCH: {
     sceneTesterOptions: SCENE_TESTER_OPTIONS,
-    fullScenes: {
-      spring: {
-        clearDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_day.webp`,
-        clearSunset: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_sunset.webp`,
-        clearNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night.webp`,
-        clearNightV2: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night_v2.webp`,
-        clearNightMoonlight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night_moonlight.webp`,
-        cloudyDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_cloudy_day.webp`,
-        rainDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_rain_day.webp`
-      },
-      summer: {
-        clearDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/summer_clear_day.webp`,
-        clearSunset: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/summer_clear_sunset.webp`,
-        clearNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/summer_clear_night.webp`,
-        cloudyDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/summer_cloudy_day.webp`,
-        stormNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/summer_storm_night.webp`
-      },
-      autumn: {
-        clearDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/autumn_clear_day.webp`,
-        clearSunset: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/autumn_clear_sunset.webp`,
-        clearNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/autumn_clear_night.webp`,
-        rainDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/autumn_rain_day.webp`
-      },
-      winter: {
-        clearDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_clear_day.webp`,
-        clearNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_clear_night.webp`,
-        cloudyDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_cloudy_day.webp`,
-        snowDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_snow_day.webp`,
-        snowNight: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_snow_night.webp`,
-        postSnowDay: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/winter_post_snow_day.webp`
-      }
-    },
-    nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/nest_pad.webp`,
     eggOnNest: `${PRE_HATCH_ROOT}/30-character/egg/egg_on_nest.webp`,
-    eggWindowBack: `${PRE_HATCH_ROOT}/30-character/egg/egg_window_back.webp`,
+    // 蛋体的景深与高光叠加层：首页直接读这里，不在页面里写死路径。
+    eggShellOverlays: {
+      depth: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_depth_overlay_512_v01.webp`,
+      specular: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_specular_overlay_512_v01.webp`
+    },
+    // 画蛋壳工具条与右侧撤销／清空图标，禁用态使用专用置灰图。
+    doodleToolbar: {
+      brush: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_brush_96_v02.png`,
+      eraser: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_eraser_96_v02.png`,
+      sticker: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_sticker_96_v02.png`,
+      undo: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_96_v02.webp`,
+      undoDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_disabled_96_v01.webp`,
+      clear: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_96_v01.webp`,
+      clearDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_disabled_96_v01.webp`
+    },
     windowWeather: {
       clearDay: `${SHARED_ROOT}/10-background/window-weather/w_01_clear_day.webp`,
       clearSunset: `${SHARED_ROOT}/10-background/window-weather/w_02_clear_sunset.webp`,

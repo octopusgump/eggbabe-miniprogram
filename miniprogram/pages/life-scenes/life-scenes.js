@@ -2,6 +2,7 @@ const petStore = require('../../utils/pet-store');
 const postHatch = require('../../services/post-hatch-companion');
 const config = require('../../config/v2');
 const memoryDemoPreview = require('../../utils/memory-demo-preview');
+const releaseSurface = require('../../utils/release-surface');
 
 const SECTIONS = ['keepsakes', 'postcards', 'card'];
 
@@ -48,6 +49,8 @@ Page({
     demoPreviewIndex: 0
   },
   onLoad(query) {
+    this.accessAllowed = releaseSurface.guardDeferredContent();
+    if (!this.accessAllowed) return;
     const params = query || {};
     this.requestedKeepsakeId = String(params.keepsake_id || '');
     this.postcardIdToRead = String(params.postcard_id || '');
@@ -58,6 +61,7 @@ Page({
     this.setData({ section, demoPreviewIndex: previewIndex });
   },
   onShow() {
+    if (!this.accessAllowed) return;
     this.pageActive = true;
     const pet = petStore.getPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') {

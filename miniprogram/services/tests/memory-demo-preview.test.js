@@ -28,7 +28,7 @@ assert.deepEqual(empty, { keepsakes: [], postcards: [], cardRecommendation: null
 assert.equal(partial.keepsakes.length, 3, '第二个预览状态必须展示三件真实资源纪念物');
 assert.equal(partial.postcards.length, 2, '第二个预览状态必须展示两张明信片');
 assert.equal(partial.cardRecommendation.card.card_id, 'memory-preview-card', '有内容状态必须展示当前蛋宝宝真实收藏卡');
-assert.equal(complete.keepsakes.length, 10, '第三个预览状态必须覆盖当前配置中十件带正式图片的纪念物');
+assert.equal(complete.keepsakes.length, 9, '第三个预览状态必须覆盖当前配置中九件带正式图片的纪念物');
 assert.equal(complete.keepsakes[0].sourceScene, '在家 · 赖床', '居家来历文字必须使用自然的“在家”表达，不显示机械分类“家”');
 assert.equal(complete.postcards.length, 1, '第三个预览状态必须只显示一个东京旅程入口');
 assert.equal(complete.postcards[0].journeyId, 'tokyo-preview-2026-08-07', '东京旅程入口必须绑定稳定 journey_id');

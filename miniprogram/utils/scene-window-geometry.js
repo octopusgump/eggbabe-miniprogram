@@ -77,6 +77,49 @@ function mapPanoramaRegions(options) {
   return panels;
 }
 
+function validPoint(point) {
+  if (!point || typeof point !== 'object') return null;
+  const x = Number(point.x);
+  const y = Number(point.y);
+  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+}
+
+/**
+ * Maps original-image anchor points onto the three visible panels.
+ * Anchors are stored as pixel coordinates on the 2823 x 1672 master panorama so
+ * they stay locked to the prop they describe; the rendered box keeps its own
+ * rpx size and is centred on the returned point via translate(-50%, -50%).
+ * Returns { [id]: { panel, style } } — panel is derived from the anchor itself,
+ * so a hint can never end up on a different screen than the prop it marks.
+ */
+function mapPanoramaPoints(options) {
+  const imageWidth = finitePositive(options && options.imageWidth);
+  const imageHeight = finitePositive(options && options.imageHeight);
+  const panelWidth = finitePositive(options && options.panelWidth);
+  const panelHeight = finitePositive(options && options.panelHeight);
+  const points = options && options.points && typeof options.points === 'object' ? options.points : {};
+  const result = {};
+  if (!imageWidth || !imageHeight || !panelWidth || !panelHeight) return result;
+
+  const trackWidth = panelWidth * PANEL_COUNT;
+  const scale = Math.max(trackWidth / imageWidth, panelHeight / imageHeight);
+  const offsetX = (trackWidth - imageWidth * scale) / 2;
+  const offsetY = (panelHeight - imageHeight * scale) / 2;
+
+  Object.keys(points).forEach(id => {
+    const point = validPoint(points[id]);
+    if (!point) return;
+    const x = point.x * scale + offsetX;
+    const y = point.y * scale + offsetY;
+    const panel = Math.max(0, Math.min(PANEL_COUNT - 1, Math.floor(x / panelWidth)));
+    result[id] = {
+      panel,
+      style: `left:${roundPixel(x - panel * panelWidth)}px;top:${roundPixel(y)}px`
+    };
+  });
+  return result;
+}
+
 /** Maps panel-local image regions for accepted 941 x 1672 scene slices. */
 function mapPanelRegions(options) {
   const panelWidth = finitePositive(options && options.panelWidth);
@@ -119,4 +162,4 @@ function shouldActivateWindowGesture(options) {
   return !source.moved && Number.isFinite(dx) && Number.isFinite(dy) && dx <= threshold && dy <= threshold && Number.isFinite(elapsedMs) && elapsedMs >= 0 && elapsedMs <= 500;
 }
 
-module.exports = { mapPanoramaRegions, mapPanelRegions, windowGestureThreshold, shouldActivateWindowGesture };
+module.exports = { mapPanoramaRegions, mapPanoramaPoints, mapPanelRegions, windowGestureThreshold, shouldActivateWindowGesture };

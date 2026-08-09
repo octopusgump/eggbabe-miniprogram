@@ -52,20 +52,14 @@
 .period-night .window-light { background: rgba(181,211,235,.12); opacity: .24; }
 .time-atmosphere { position: absolute; z-index: 1; inset: 0; overflow: hidden; pointer-events: none; }
 .time-beam { position: absolute; top: -18%; left: 22%; width: 29%; height: 138%; border-radius: 50%; opacity: 0; filter: blur(16rpx); transform: rotate(7deg); transform-origin: 50% 0; }
-.light-morning .time-beam { background: linear-gradient(180deg, rgba(255,246,202,.23), rgba(255,237,183,.055) 72%, transparent); animation: time-beam-morning 14s ease-in-out infinite; }
 .light-midday .time-beam { left: 38%; width: 20%; background: linear-gradient(180deg, rgba(255,252,226,.17), rgba(255,246,211,.025) 74%, transparent); animation: time-beam-midday 18s ease-in-out infinite; }
-.light-afternoon .time-beam { left: 49%; width: 34%; background: linear-gradient(180deg, rgba(255,232,176,.17), rgba(255,214,145,.04) 78%, transparent); animation: time-beam-afternoon 16s ease-in-out infinite; }
 .light-sunset .time-beam { left: 56%; width: 39%; background: linear-gradient(180deg, rgba(255,211,141,.22), rgba(255,174,99,.05) 76%, transparent); animation: time-beam-sunset 14s ease-in-out infinite; }
 .light-night .time-beam { display: none; }
 .time-mote { position: absolute; width: 5rpx; height: 5rpx; border-radius: 50%; opacity: 0; }
 .time-mote--one { left: 18%; top: 72%; }.time-mote--two { left: 36%; top: 54%; }.time-mote--three { left: 54%; top: 78%; }
 .time-mote--four { left: 69%; top: 43%; }.time-mote--five { left: 82%; top: 65%; }.time-mote--six { left: 47%; top: 31%; }
-.light-morning .time-mote { background: rgba(255,249,218,.62); animation: time-mote-rise 13s ease-in-out infinite; }
-.light-morning .time-mote--two { animation-delay: -3s; }.light-morning .time-mote--three { animation-delay: -7s; }.light-morning .time-mote--four { animation-delay: -10s; }
 .light-midday .time-mote--one,.light-midday .time-mote--four,.light-midday .time-mote--six { background: rgba(255,253,231,.48); animation: time-mote-midday 18s ease-in-out infinite; }
 .light-midday .time-mote--four { animation-delay: -6s; }.light-midday .time-mote--six { animation-delay: -12s; }
-.light-afternoon .time-mote { background: rgba(255,232,190,.5); animation: time-mote-afternoon 15s ease-in-out infinite; }
-.light-afternoon .time-mote--two { animation-delay: -4s; }.light-afternoon .time-mote--four { animation-delay: -8s; }.light-afternoon .time-mote--six { animation-delay: -12s; }
 .light-sunset .time-mote { background: rgba(255,214,154,.58); animation: time-mote-sunset 14s ease-in-out infinite; }
 .light-sunset .time-mote--two { animation-delay: -3s; }.light-sunset .time-mote--three { animation-delay: -6s; }.light-sunset .time-mote--five { animation-delay: -10s; }
 .time-night-glint { position: absolute; width: 4rpx; height: 4rpx; border-radius: 50%; opacity: 0; background: rgba(224,238,255,.72); box-shadow: 0 0 10rpx rgba(196,220,250,.5); }
@@ -114,7 +108,7 @@
 .clock-hand--second { width: 2rpx; height: 39rpx; margin-left: -1rpx; background: #819A54; }
 .clock-pin { position: absolute; z-index: 3; left: 50%; top: 50%; width: 9rpx; height: 9rpx; margin: -4.5rpx 0 0 -4.5rpx; border-radius: 50%; background: #819A54; box-shadow: 0 0 0 2rpx rgba(255,255,255,.85); }
 .clock-digital { width: 176rpx; height: 92rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; border: 2rpx solid rgba(107,86,59,.42); border-radius: 22rpx; background: rgba(250,246,231,.93); box-shadow: 0 9rpx 22rpx rgba(43,32,21,.16), inset 0 0 0 2rpx rgba(255,255,255,.55); color: #4D493D; }
-.clock-time { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 34rpx; font-weight: 600; line-height: 1.1; letter-spacing: 1rpx; }
+.clock-time { font-size: 34rpx; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: 1rpx; }
 .clock-date { margin-top: 7rpx; color: rgba(82,73,56,.72); font-size: 20rpx; line-height: 1; }
 .stage-tester { position: fixed; z-index: 88; right: 28rpx; width: 210rpx; }
 .stage-tester-button { min-height: 64rpx; display: flex; align-items: center; justify-content: center; gap: 9rpx; padding: 0 14rpx; box-sizing: border-box; border: 1rpx solid rgba(225,229,215,.95); border-radius: 999rpx; background: rgba(255,253,247,.92); box-shadow: 0 9rpx 26rpx rgba(44,54,39,.14); color: #3F5543; font-size: 21rpx; font-weight: 600; backdrop-filter: blur(10rpx); }
@@ -155,16 +149,11 @@
 .egg-shell-depth, .egg-shell-specular { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; opacity: 0; transform: translate3d(0,0,0) scale(1); will-change: transform, opacity; }
 .egg-shell-depth { z-index: 2; transform-origin: 50% 86%; filter: blur(2rpx); }
 .egg-shell-specular { z-index: 3; transform-origin: 28% 24%; filter: blur(1rpx); }
-.light-morning .egg { animation-duration: 4.8s; }
-.light-afternoon .egg { animation-duration: 4.8s; }
 .light-sunset .egg { animation-duration: 5.2s; }
 .light-night .egg { animation: egg-breathe-night 5.8s ease-in-out infinite; }
-.light-morning .egg-shell-specular { opacity: .1; animation: morning-shell-light 12s ease-in-out infinite; }
 .light-midday .egg-shell-specular { opacity: .07; transform: translate(2%,-2%) scale(.94); }
-.light-afternoon .egg-shell-specular { opacity: .08; transform: translate(8%,3%) scale(.98); }
 .light-sunset .egg-shell-specular { opacity: .1; transform: translate(14%,7%) scale(1.08); }
 .light-night .egg-shell-specular { opacity: .08; transform: translate(-8%,-6%) scale(.9); }
-.time-intro--morning .egg { animation: morning-egg-wake 1.05s ease-out both; }
 .time-intro--sunset .egg-shell-specular { animation: sunset-shell-sweep 1.15s ease-out both; }
 .scene-paused .egg,.scene-paused .egg-aura,.scene-paused .egg-shell-specular,.scene-paused .egg-shell-depth,.scene-paused .room-light-breathe { animation-play-state: paused; }
 .egg-render-cache { position: fixed; left: -2000px; top: 0; width: 500rpx; height: 500rpx; pointer-events: none; }
@@ -248,7 +237,6 @@
 
 @keyframes egg-breathe { 0%,100% { transform: scale(1); } 50% { transform: translateY(2rpx) scale(1.008,.986); } }
 @keyframes egg-breathe-night { 0%,100% { transform: scale(1); } 50% { transform: translateY(1rpx) scale(1.004,.992); } }
-@keyframes morning-egg-wake { 0% { transform: translateY(3rpx) scale(1,.982); } 48% { transform: translateY(-2rpx) scale(1.012,1.006); } 100% { transform: translateY(0) scale(1); } }
 @keyframes aura { 0%,100% { transform: scale(.96); opacity: .42; } 50% { transform: scale(1.035); opacity: .7; } }
 @keyframes wobble { 0%,100% { transform: translateY(0) rotate(0) scale(1); } 24% { transform: translateY(2rpx) rotate(-4deg) scale(.992,1.005); } 52% { transform: translateY(4rpx) rotate(2deg) scale(1.012,.982); } 72% { transform: translateY(1rpx) rotate(3.5deg) scale(.998,1.002); } }
 @keyframes warm-lean { 0%,100% { transform: translateY(1rpx) rotate(0) scale(1); } 50% { transform: translateY(5rpx) rotate(1.4deg) scale(.99,.975); } }
@@ -261,20 +249,15 @@
 @keyframes shell-depth-touch { 0%,100% { transform: translate(0,0) scale(1); opacity: 0; } 38% { transform: translate(-4%,2%) scale(.98,1.06); opacity: .34; } 70% { transform: translate(4%,0) scale(1.04,.96); opacity: .27; } }
 @keyframes shell-glint-cuddle { 0%,100% { transform: translate(0,0) scale(1); opacity: .08; } 50% { transform: translate(2%,5%) scale(1.08,.94); opacity: .28; } }
 @keyframes shell-glint-warm { 0%,100% { transform: translate(0,0) scale(1); opacity: 0; } 46% { transform: translate(-2%,4%) scale(1.16); opacity: .42; } }
-@keyframes morning-shell-light { 0%,100% { transform: translate(-5%,-2%) scale(.92); opacity: .07; } 50% { transform: translate(3%,3%) scale(1); opacity: .15; } }
 @keyframes sunset-shell-sweep { 0% { transform: translate(-16%,7%) scale(.9); opacity: 0; } 48% { transform: translate(14%,4%) scale(1.18); opacity: .27; } 100% { transform: translate(27%,7%) scale(1.08); opacity: .1; } }
 @keyframes aura-listen { 0%,100% { transform: scale(.96); opacity: .46; } 50% { transform: scale(1.04); opacity: .74; } }
 @keyframes aura-touch { 0% { transform: scale(.92); opacity: .3; } 45% { transform: scale(1.08); opacity: .74; } 100% { transform: scale(1); opacity: .45; } }
 @keyframes room-breathe { 0%,100% { opacity: .08; } 50% { opacity: .8; } }
 @keyframes window-light-drift { 0%,100% { transform: translateX(-10rpx) rotate(5deg); opacity: .26; } 50% { transform: translateX(18rpx) rotate(5deg); opacity: .5; } }
 @keyframes window-look { 0% { transform: translateX(-70rpx) rotate(5deg); opacity: 0; } 42%,76% { transform: translateX(24rpx) rotate(5deg); opacity: .65; } 100% { transform: translateX(70rpx) rotate(5deg); opacity: 0; } }
-@keyframes time-beam-morning { 0%,100% { transform: translateX(-12rpx) rotate(7deg); opacity: .08; } 50% { transform: translateX(14rpx) rotate(7deg); opacity: .24; } }
 @keyframes time-beam-midday { 0%,100% { transform: translateX(-3rpx) rotate(3deg); opacity: .07; } 50% { transform: translateX(4rpx) rotate(3deg); opacity: .14; } }
-@keyframes time-beam-afternoon { 0%,100% { transform: translate(-12rpx,-3rpx) rotate(10deg); opacity: .07; } 50% { transform: translate(18rpx,10rpx) rotate(10deg); opacity: .19; } }
 @keyframes time-beam-sunset { 0%,100% { transform: translate(-16rpx,-4rpx) rotate(12deg); opacity: .09; } 50% { transform: translate(20rpx,12rpx) rotate(12deg); opacity: .24; } }
-@keyframes time-mote-rise { 0%,100% { transform: translate(0,10rpx) scale(.75); opacity: 0; } 35% { opacity: .3; } 68% { opacity: .18; } 85% { transform: translate(5rpx,-24rpx) scale(1); opacity: 0; } }
 @keyframes time-mote-midday { 0%,100% { transform: translate(0,0) scale(.8); opacity: .05; } 50% { transform: translate(3rpx,-6rpx) scale(1); opacity: .2; } }
-@keyframes time-mote-afternoon { 0%,100% { transform: translate(-5rpx,4rpx) scale(.8); opacity: 0; } 35% { opacity: .24; } 78% { transform: translate(18rpx,-12rpx) scale(1); opacity: .12; } }
 @keyframes time-mote-sunset { 0%,100% { transform: translate(-7rpx,5rpx) scale(.8); opacity: 0; } 38% { opacity: .3; } 76% { transform: translate(21rpx,-8rpx) scale(1.08); opacity: .14; } }
 @keyframes time-night-glint { 0%,72%,100% { transform: scale(.7); opacity: 0; } 82% { transform: scale(1.15); opacity: .34; } 90% { transform: scale(.9); opacity: .08; } }
 @keyframes time-sunset-glint { 0%,72%,100% { transform: translateX(0) rotate(9deg); opacity: 0; } 78% { opacity: .1; } 91% { transform: translateX(420%) rotate(9deg); opacity: .2; } 96% { opacity: 0; } }
@@ -296,16 +279,60 @@
 @keyframes home-stage-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes home-stage-fade-out { from { opacity: 1; } to { opacity: 0; } }
 
+/* 「减少动态效果」：停用全部位移、旋转与循环动画，保留静态状态反馈。
+   这里必须用 !important —— 摸蛋（.egg.egg--wobble）、时段光（.light-midday .time-beam）
+   和季节氛围（.season-spring .season-piece）等状态规则的特异性都高于单类选择器，
+   只写 animation:none 会被它们覆盖，动画仍会照常播放。
+   .page--reduced 由 home.js 的 prefersReducedMotion() 驱动，媒体查询作为双保险；
+   微信 WebView 对 prefers-reduced-motion 的支持并不一致，不能只依赖它。 */
+.page--reduced .egg,
+.page--reduced .egg .egg-shell-specular,
+.page--reduced .egg .egg-shell-depth,
+.page--reduced .egg-shell-specular,
+.page--reduced .egg-shell-depth,
+.page--reduced .egg-aura,
+.page--reduced .egg-aura::after,
+.page--reduced .window-light,
+.page--reduced .curtain-light,
+.page--reduced .room-light-breathe,
+.page--reduced .season-piece,
+.page--reduced .season-atmosphere,
+.page--reduced .scene-color-layer,
+.page--reduced .incubation-scene-loading-glow,
+.page--reduced .time-beam,
+.page--reduced .time-mote,
+.page--reduced .time-night-glint,
+.page--reduced .time-sunset-glint,
+.page--reduced .feedback-bubble,
+.page--reduced .draw-action-spark,
+.page--reduced .window-visual-effects::after { animation: none !important; }
+.page--reduced .incubation-full-scene-image--revealing,
+.page--reduced .home-stage--entering,
+.page--reduced .home-stage--exiting,
+.page--reduced .scene-expand-overlay,
+.page--reduced .name-sheet { animation-duration: 20ms !important; }
+.page--reduced .room-clock,
+.page--reduced .companion-icon-hint,
+.page--reduced .companion-item { transition: none !important; }
+.page--reduced .companion-item--pressed { transform: none !important; }
+.page--reduced .tap-particle--two,
+.page--reduced .tap-particle--three { display: none; }
+.page--reduced .tap-particle--one { animation: tap-fade .45s ease-out forwards !important; }
+
 @media (prefers-reduced-motion: reduce) {
-  .egg, .egg-shell-specular, .egg-shell-depth, .egg-aura, .window-light, .curtain-light, .room-light-breathe, .season-piece, .season-atmosphere, .incubation-scene-loading-glow, .time-beam, .time-mote, .time-night-glint, .time-sunset-glint { animation: none; }
-  .incubation-full-scene-image--revealing { animation-duration: 20ms; }
-  .home-stage--entering, .home-stage--exiting { animation-duration: 20ms; }
-  .room-clock { transition: none; }
-  .companion-icon-hint { transition: none; }
-  .name-sheet { animation: none; }
-  .companion-item { transition: none; }
-  .companion-item--pressed { transform: none; }
+  .egg,
+  .egg .egg-shell-specular,
+  .egg .egg-shell-depth,
+  .egg-shell-specular, .egg-shell-depth, .egg-aura, .egg-aura::after,
+  .window-light, .curtain-light, .room-light-breathe, .season-piece, .season-atmosphere, .scene-color-layer,
+  .incubation-scene-loading-glow, .time-beam, .time-mote, .time-night-glint, .time-sunset-glint,
+  .feedback-bubble, .draw-action-spark, .window-visual-effects::after { animation: none !important; }
+  .incubation-full-scene-image--revealing,
+  .home-stage--entering, .home-stage--exiting,
+  .scene-expand-overlay, .name-sheet { animation-duration: 20ms !important; }
+  .room-clock, .companion-icon-hint, .companion-item { transition: none !important; }
+  .companion-item--pressed { transform: none !important; }
   .tap-particle--two, .tap-particle--three { display: none; }
-  .tap-particle--one { animation: tap-fade .45s ease-out forwards; }
+  .tap-particle--one { animation: tap-fade .45s ease-out forwards !important; }
 }
 @keyframes tap-fade { from { opacity: 1; } to { opacity: 0; } }

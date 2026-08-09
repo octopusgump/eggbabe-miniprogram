@@ -32,14 +32,11 @@ const assets = [];
 });
 (Object.entries(postHatch.actionPanoramaScenesByCharacter || {})).forEach(([characterKey, scenes]) => {
   Object.entries(scenes || {}).forEach(([stateKey, scene]) => {
-    Object.entries(scene.panoramaByPeriod || {}).forEach(([period, runtimePath]) => {
-      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${period}`, runtimePath));
-    });
     Object.entries(scene.panoramaBySceneKey || {}).forEach(([sceneKey, runtimePath]) => {
       if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${sceneKey}`, runtimePath));
     });
-    Object.entries(scene.panoramaAfterAction || {}).forEach(([period, runtimePath]) => {
-      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${period}:after-action`, runtimePath));
+    Object.entries(scene.panoramaAfterActionBySceneKey || {}).forEach(([sceneKey, runtimePath]) => {
+      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${sceneKey}:after-action`, runtimePath));
     });
   });
 });

@@ -16,7 +16,8 @@ assert.equal(visibleEggMatch[0].includes('<canvas'), false, '可见蛋体容器�
 assert.equal(visibleEggMatch[0].includes('egg-shell-preview'), true, '可见蛋体必须使用 Canvas 导出的预览图片');
 assert.equal(template.includes('class="egg-shell-specular"'), true, '真实蛋体必须保留可随触摸响应的表面光泽层');
 assert.equal(template.includes('class="egg-shell-depth"'), true, '真实蛋体必须保留贴近窝垫的柔和体积层');
-assert.equal(template.includes('egg_shell_depth_overlay_512_v01.webp') && template.includes('egg_shell_specular_overlay_512_v01.webp'), true, '蛋体光影必须通过 image 组件读取本地 WebP');
+assert.equal(template.includes('src="{{eggShellOverlays.depth}}"') && template.includes('src="{{eggShellOverlays.specular}}"'), true, '蛋体光影必须通过 image 组件读取配置登记的本地 WebP');
+assert.equal(source.includes('eggShellOverlays: preHatchAssets.eggShellOverlays'), true, '蛋体光影路径必须来自 pre-hatch 配置，不得在模板里写死');
 assert.equal(fs.existsSync(depthOverlay) && fs.existsSync(specularOverlay), true, '蛋体体积与高光 WebP 必须存在');
 assert.equal(fs.readFileSync(depthOverlay, { encoding: null }).subarray(0, 4).toString('ascii'), 'RIFF', '体积层必须为 WebP');
 assert.equal(fs.readFileSync(specularOverlay, { encoding: null }).subarray(0, 4).toString('ascii'), 'RIFF', '高光层必须为 WebP');
@@ -73,11 +74,13 @@ assert.equal(template.includes('companion-icon-hint--wish') && template.includes
 assert.match(styles, /\.companion-icon-hint\s*\{[^}]*bottom:\s*calc\(100% \+ 10rpx\);[^}]*background:\s*rgba\(255,255,255,\.96\);[^}]*color:\s*rgba\(25,30,26,\.96\);[^}]*opacity:\s*0;[^}]*transition:\s*opacity 180ms ease-out/s, '入口名称必须在对应图标上方使用白底深色文字轻量淡入淡出');
 assert.match(source, /onCompanionTap\(event\)[\s\S]*?if \(key === 'wish' \|\| key === 'learn' \|\| key === 'draw'\) this\.showCompanionHint\(key\);[\s\S]*?const routes =/s, '点击许愿池、早教班或画画时必须先显示对应的就地名称');
 assert.match(styles, /\.companion-item--learn::before, \.companion-item--draw::before\s*\{[^}]*left:\s*0;[^}]*top:\s*22rpx;[^}]*bottom:\s*22rpx;[^}]*width:\s*1rpx;/s, '三等分功能胶囊必须在两个分界处使用克制的竖向分隔线');
-assert.equal(source.includes('蛋宝宝还没到早教的年龄，明天来试试吧。'), true, '第 1 天早教班必须使用年龄语义说明次日再来');
+assert.equal(source.includes('蛋宝宝还没到早教的年龄。'), true, '第 1 天早教班必须使用年龄语义反馈');
+assert.equal(/明天|再来|试试吧|别忘了/.test(source), false, 'design.md §6：锁定态反馈不得出现催回访文案');
 assert.match(styles, /\.companion-item--locked \.companion-icon-wrap::after\s*\{[^}]*background:\s*rgba\(112,117,108,\.24\);/s, '锁定中的早教班必须只在图标上覆盖灰色蒙层');
 assert.match(styles, /\.companion-item--locked\s*\{[^}]*opacity:\s*1;/s, '早教班锁定时不得让整个 Dock 按钮降透明度');
 assert.match(styles, /\.companion-primary-dock \.companion-item\s*\{[^}]*width:\s*112rpx;[^}]*height:\s*112rpx;/s, '画画入口必须在统一胶囊内保留不小于 44px 的触控区域');
-assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none;/s, '弱动效模式必须取消入口缩放反馈');
+assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.companion-item--pressed\s*\{[^}]*transform:\s*none\s*!important;/s, '弱动效模式必须取消入口缩放反馈');
+assert.match(styles, /\.page--reduced \.companion-item--pressed\s*\{[^}]*transform:\s*none\s*!important;/s, '弱动效模式必须同时由 page--reduced 类名生效，不能只依赖媒体查询');
 
 const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets')).PRE_HATCH;
 assert.equal(preHatch.sceneTesterOptions.length, 36, '季节天气验收器必须完整覆盖 36 个选项');

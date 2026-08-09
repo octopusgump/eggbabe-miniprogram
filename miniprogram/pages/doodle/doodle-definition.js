@@ -6,6 +6,7 @@ const shellArtService = require('../../services/egg-shell-art');
 const runtime = require('../../services/runtime-context');
 const canvas2d = require('../../utils/canvas-2d');
 const practice = require('../../services/incubation-practice');
+const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 
 const AUTO_SAVE_DELAY = 700;
 const PAGE_TRANSITION_MS = 320;
@@ -56,6 +57,7 @@ function markColorHintSeen() {
 const doodleDefinition = {
   data: {
     statusBarHeight: 20,
+    toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
     brushSizes: BRUSH_SIZE_OPTIONS,
     eraserSizes: ERASER_SIZE_OPTIONS,

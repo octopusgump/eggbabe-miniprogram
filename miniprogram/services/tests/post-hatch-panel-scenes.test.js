@@ -15,7 +15,7 @@ assert.deepEqual(Object.keys(panoramaSets), sourceScenes.map(scene => scene.key)
 sourceScenes.forEach(scene => {
   const set = panoramaSets[scene.key];
   assert.equal(set.expected.panorama.endsWith(`/panorama-three-screen/scene-sets/${scene.key}_post_hatch_panorama_v01.webp`), true, `${scene.key} 全景文件名不符合规范`);
-  assert.equal(set.ready, Boolean(set.panorama), `${scene.key} 必须完整启用一张全景图，不能使用半套切图`);
+  assert.equal(set.panorama, set.expected.panorama, `${scene.key} 必须精确使用约定的完整全景路径`);
   const absolute = path.resolve(__dirname, '../..', `.${set.panorama}`);
   assert.equal(fs.existsSync(absolute), true, `${scene.key} 正式运行时全景资源缺失：${set.panorama}`);
   assert.deepEqual(set.windowMeta, postHatchAssets.POST_HATCH.panoramaFallbackMeta, `${scene.key} 必须使用同一套完整全景窗口坐标`);
@@ -27,47 +27,60 @@ const actionScenesByCharacter = postHatchAssets.POST_HATCH.actionPanoramaScenesB
 assert.deepEqual(Object.keys(actionScenes), ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'], '18 张日常动作图必须按六个状态、日间/日落/夜间三套登记');
 assert.deepEqual(Object.keys(actionScenesByCharacter), ['jade-rabbit', 'boon-koi'], '玉兔与锦鲤都必须登记各自的正式动作全景');
 Object.entries(actionScenesByCharacter).forEach(([characterKey, scenes]) => {
-  const expectedStates = characterKey === 'jade-rabbit'
-    ? ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music', 'tea']
-    : ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'];
+  const expectedStates = ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'];
   assert.deepEqual(Object.keys(scenes), expectedStates, `${characterKey} 必须登记所有已交付动作`);
   Object.values(scenes).forEach(scene => {
-    ['day', 'sunset', 'night'].filter(period => scene.panoramaByPeriod[period]).forEach(period => {
-      const panorama = scene.panoramaByPeriod[period];
+    const registeredSceneKeys = Object.keys(scene.panoramaBySceneKey);
+    assert.equal(registeredSceneKeys.length > 0, true, `${characterKey} ${scene.stateKey} 必须至少登记一个环境键`);
+    registeredSceneKeys.forEach(sceneKey => {
+      assert.equal(Object.prototype.hasOwnProperty.call(panoramaSets, sceneKey), true, `${characterKey} ${scene.stateKey} 登记了未知环境键：${sceneKey}`);
+      const panorama = scene.panoramaBySceneKey[sceneKey];
       const absolute = path.resolve(__dirname, '../..', `.${panorama}`);
-      assert.equal(fs.existsSync(absolute), true, `${characterKey} ${scene.stateKey} ${period} 动作全景资源缺失：${panorama}`);
+      assert.equal(fs.existsSync(absolute), true, `${characterKey} ${scene.stateKey} ${sceneKey} 动作全景资源缺失：${panorama}`);
     });
     assert.equal(scene.bakedCharacter && scene.bakedProps, true, `${characterKey} ${scene.stateKey} 动作图必须声明角色与道具已烘焙`);
     assert.deepEqual(scene.windowMeta, postHatchAssets.POST_HATCH.panoramaFallbackMeta, `${characterKey} ${scene.stateKey} 必须复用三屏窗户热区坐标`);
   });
 });
-const lightsOffPanorama = actionScenes.sleep && actionScenes.sleep.panoramaAfterAction && actionScenes.sleep.panoramaAfterAction.night;
+const lightsOffPanorama = actionScenes.sleep
+  && actionScenes.sleep.panoramaAfterActionBySceneKey
+  && actionScenes.sleep.panoramaAfterActionBySceneKey.spring_clear_night;
 assert.equal(fs.existsSync(path.resolve(__dirname, '../..', `.${lightsOffPanorama}`)), true, '关灯闭眼的夜间睡觉动作图必须存在');
 const jadeRabbit = { prototype: '玉兔' };
 const sleepState = { atHome: true, key: 'sleep', action: { id: 'lamp_off' } };
-const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
-assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '晴朗日间睡觉必须读取对应 CDN 动作全景');
-const sunsetAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'sunset' }, 'https://cdn.example.com');
-assert.equal(sunsetAction && sunsetAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_sunset_v01.webp', '晴朗日落睡觉必须读取对应 CDN 动作全景');
-const lightsOffAction = postHatchAssets.resolveActionPanorama(jadeRabbit, Object.assign({}, sleepState, { actionDone: true }), { weather: 'sunny', period: 'night' });
+const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey: 'spring_clear_day', weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
+assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '春季晴朗日间睡觉必须读取对应 CDN 动作全景');
+const sunsetAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey: 'spring_clear_sunset', weather: 'sunny', period: 'sunset' }, 'https://cdn.example.com');
+assert.equal(sunsetAction && sunsetAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_sunset_v01.webp', '春季晴朗日落睡觉必须读取对应 CDN 动作全景');
+const lightsOffAction = postHatchAssets.resolveActionPanorama(jadeRabbit, Object.assign({}, sleepState, { actionDone: true }), { sceneKey: 'spring_clear_night', weather: 'sunny', period: 'night' });
 assert.equal(lightsOffAction && lightsOffAction.panorama.endsWith('/home_bedroom_nap_lights_off_night_v01.webp') && lightsOffAction.variant === 'lights-off', true, '夜间关灯后必须切换为闭眼关灯动作全景');
-assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'rain', period: 'day' }), null, '雨天不得静默使用晴天烘焙动作图');
-const koiDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
-assert.equal(koiDayAction && koiDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom/home_bedroom_nap_day_v01.webp', '锦鲤晴朗日间睡觉必须读取自己的正式动作全景');
-assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { weather: 'rain', period: 'day' }), null, '锦鲤雨天不得静默使用晴天烘焙动作图');
-const jadeTeaWeatherAction = postHatchAssets.resolveActionPanorama(jadeRabbit, { atHome: true, key: 'tea', action: {} }, { sceneKey: 'spring_cloudy_day', weather: 'cloudy', period: 'day' });
-assert.equal(jadeTeaWeatherAction && jadeTeaWeatherAction.panorama.endsWith('/jade-rabbit/home-bedroom/home_bedroom_tea_spring_cloudy_day_v01.webp'), true, '已审核玉兔春季多云泡茶图必须覆盖对应环境键');
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '雨天不得静默使用晴天烘焙动作图');
+// 通用晴朗动作图只烘焙了春季窗景；夏、秋、冬晴天必须回落空房全景，不得跨季节代用。
+['summer_clear_day', 'autumn_clear_day', 'winter_clear_day'].forEach(sceneKey => {
+  assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey, weather: 'sunny', period: 'day' }), null, `${sceneKey} 不得复用春季烘焙动作图`);
+});
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'day' }), null, '缺少环境键时不得按时段猜测动作全景');
+const koiDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'spring_clear_day', weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
+assert.equal(koiDayAction && koiDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom/home_bedroom_nap_day_v01.webp', '锦鲤春季晴朗日间睡觉必须读取自己的正式动作全景');
+assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '锦鲤雨天不得静默使用晴天烘焙动作图');
+assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, Object.assign({}, sleepState, { actionDone: true }), { sceneKey: 'spring_clear_night', weather: 'sunny', period: 'night' }).variant, 'default', '锦鲤没有关灯资产时不得复用玉兔关灯版本');
 const koiNapWeatherAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'summer_storm_night', weather: 'storm', period: 'night' });
 assert.equal(koiNapWeatherAction && koiNapWeatherAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_nap_summer_storm_night_v01.webp'), true, '已审核锦鲤夏季雷暴小憩图必须覆盖对应环境键');
 const manifest = JSON.parse(childProcess.execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: process.cwd(), encoding: 'utf8' }));
 const actionAssets = manifest.assets.filter(item => item.kind === 'post_hatch_action_panorama');
-assert.equal(actionAssets.length, 41, 'CDN 清单必须覆盖 18 张玉兔通用动作图、18 张锦鲤通用动作图、玉兔关灯变体和 4 张季节天气动作图（共 41 条运行时路径）');
+assert.equal(actionAssets.length, 40, 'CDN 清单必须覆盖 18 张玉兔春季通用动作图、18 张锦鲤春季通用动作图、玉兔关灯变体和 3 张季节天气动作图（共 40 条运行时路径）');
+assert.equal(new Set(actionAssets.map(item => item.cdn_path)).size, 40, 'CDN 动作清单不得出现同一张图被登记到多个环境键');
 assert.equal(actionAssets.every(item => item.exists && item.sha256 && item.cdn_path.startsWith('/assets/scenes/lifecycle/post-hatch/60-action-scenes/')), true, 'CDN 动作清单中的每个正式 WebP 必须在本地存在并包含校验哈希');
 assert.equal(Object.prototype.hasOwnProperty.call(postHatchAssets.POST_HATCH, 'characterPoses'), false, '正式运行时不得登记会与动作全景重复叠加的透明角色图');
 
 const lifeSceneLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.js'), 'utf8');
 const lifeSceneWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
 const lifeSceneStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/life-scene/life-scene.wxss'), 'utf8');
+const chatLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/chat/chat.js'), 'utf8');
+const chatWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/chat/chat.wxml'), 'utf8');
+const chatStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/chat/chat.wxss'), 'utf8');
+const postHatchCompanionLogic = fs.readFileSync(path.resolve(__dirname, '../post-hatch-companion.js'), 'utf8');
+const cloudApiLogic = fs.readFileSync(path.resolve(__dirname, '../cloud-api.js'), 'utf8');
 const homeLogic = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.js'), 'utf8');
 const homeWxml = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.wxml'), 'utf8');
 const homeStyles = fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.wxss'), 'utf8');
@@ -83,17 +96,17 @@ assert.equal(lifeSceneLogic.includes('onStageTesterSelect(event)'), true, '破�
 assert.equal(lifeSceneLogic.includes('onCompanionStateTesterSelect(event)'), true, '破壳后开发模式必须支持陪伴状态切换测试');
 assert.equal(lifeSceneLogic.includes('const resetCompanionStatePreview = Boolean(') && lifeSceneLogic.includes("companionStateTesterLabel: companionStateTesterMissing\n        ? `${AUTO_COMPANION_STATE_OPTION.label} · 缺图片`"), true, '环境切换使已选动作失配时，验收器必须回到跟随时间并明确标记缺图片');
 assert.equal(lifeSceneLogic.includes("key: 'home-talk'"), true, '陪伴状态测试必须覆盖在家且可对话');
-assert.equal(lifeSceneLogic.includes("key: 'home-busy'"), true, '陪伴状态测试必须覆盖在家不便对话');
+assert.equal(lifeSceneLogic.includes("key: 'home-sleep'"), true, '陪伴状态测试必须覆盖睡觉时仍可对话');
 ['home-reading', 'home-music', 'home-window', 'home-gaming'].forEach(key => {
   assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须覆盖 ${key} 动作全景`);
 });
-['home-lazy', 'home-stare', 'home-tea'].forEach(key => {
+['home-lazy', 'home-stare'].forEach(key => {
   assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须显示 ${key} 的缺图配置项`);
 });
 assert.equal(lifeSceneLogic.includes("key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing'"), true, '可对话快捷项必须验证画画动作全景');
-assert.equal(lifeSceneLogic.includes("key: 'home-busy', label: '在家 · 不便对话（睡觉）', major: 'home', stateKey: 'sleep', actionDone: true"), true, '不便对话快捷项必须验证闭眼关灯睡觉全景');
+assert.equal(lifeSceneLogic.includes("key: 'home-sleep', label: '在家 · 睡觉（可对话）', major: 'home', stateKey: 'sleep', actionDone: true"), true, '睡觉快捷项必须验证闭眼关灯全景仍可对话');
 assert.equal(lifeSceneLogic.includes('}, () => this.refreshEnvironment());'), true, '完成居家动作后必须重新解析动作全景');
-assert.equal(lifeSceneLogic.includes("key: 'away-letter'"), true, '陪伴状态测试必须覆盖不在家写信');
+assert.equal(lifeSceneLogic.includes("key: 'away', label: '不在家'"), true, '陪伴状态测试必须覆盖不在家且无写信入口');
 assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后右上角环境测试入口必须等全景图就绪后显示');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester"'), true, '破壳后必须恢复开发版阶段切换入口，并等待全景图就绪后显示');
@@ -107,7 +120,7 @@ assert.equal(lifeSceneWxml.includes('class="scene-character-hotspot') && lifeSce
 assert.equal(lifeSceneStyles.includes('.scene-character-hotspot{') && lifeSceneStyles.includes('background:transparent'), true, '角色热区不得额外绘制视觉内容');
 assert.equal(lifeSceneLogic.includes('sceneTesterTopPx: Math.round(testerTopPx)'), true, '破壳后环境测试器应与破壳前一样位于第一行');
 assert.equal(lifeSceneLogic.includes('stageTesterTopPx: Math.round(testerTopPx + 44)'), true, '破壳后阶段切换入口必须位于场景与状态验收器之间');
-assert.equal(lifeSceneLogic.includes('restoreToolboxOnReturn = true') && lifeSceneLogic.includes('toolboxVisible: restoreToolbox'), true, '从百宝箱子页返回生活场景时必须恢复百宝箱，不得只落在空桌面');
+assert.equal(/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, 'V3.6 / V3.7 生活场景不得保留百宝箱弹层或复杂内容入口');
 assert.equal(lifeSceneWxml.includes('wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer"'), true, '首帧必须保持加载层直到全景与目标面板定位完成后才能淡入');
 assert.equal(lifeSceneLogic.includes('sceneBackgroundReady: true, sceneBackgroundError: false'), true, '全景图加载成功后才能安排首帧淡入');
 assert.equal(lifeSceneLogic.includes('scroll-view 在 currentState 就绪前不会挂载；目标屏由快照一次性写入'), true, '首帧目标屏策略必须明确禁止先挂载中屏再异步横滑');
@@ -115,17 +128,19 @@ assert.equal(lifeSceneLogic.includes('currentScreen: screen') && lifeSceneLogic.
 assert.equal(lifeSceneLogic.includes('scheduleInitialViewportSettle(token)') && lifeSceneLogic.includes('markInitialViewportReady(token)'), true, '首次目标屏必须在不可见状态下等待原生滚动定位完成');
 assert.equal(lifeSceneLogic.includes('revealInitialScene()') && lifeSceneWxml.includes("scene-stage {{sceneEntered && initialViewportReady ? 'scene-stage--entered' : ''}}"), true, '进入生活空间必须在背景和目标屏均就绪后使用渐入层');
 assert.equal(lifeSceneStyles.includes('.scene-stage{position:absolute;inset:0;opacity:0;') && lifeSceneStyles.includes('.scene-stage--entered{opacity:1;'), true, '场景入场必须是渐入，而非横向页面滑动');
-assert.equal(lifeSceneWxml.includes('scene-action-talk-badge'), true, '可对话时的找到 ta 按钮必须展示对话标记');
-assert.equal(lifeSceneWxml.includes('scene-action-unread-dot'), true, '新明信片必须在场景入口展示红点提示');
-assert.equal(lifeSceneWxml.includes('contextActionShowTalkBadge') && lifeSceneWxml.includes('contextActionHasNewMessage'), true, '红点与可对话徽标必须由互斥状态控制');
-assert.equal(lifeSceneStyles.includes('.scene-action-button--talkable'), true, '可对话状态必须与不便对话状态有明确的按钮视觉差异');
-assert.equal(lifeSceneStyles.includes('background:#F1EC9A'), true, '可对话徽标必须使用晨露黄，表达互动而非成长状态');
-assert.equal(lifeSceneStyles.includes('background:#26362B'), true, '可对话徽标图形必须使用深墨绿');
-assert.equal(lifeSceneStyles.includes('top:30rpx;right:16rpx') && lifeSceneStyles.includes('background:#D9463C'), true, '新消息红点必须靠近角色头像头部侧边，并使用功能提示红');
-assert.equal(lifeSceneWxml.includes('composer-send--paper-plane'), true, '写信发送按钮必须使用与场景操作一致的 3D 纸飞机视觉');
-assert.equal(lifeSceneWxml.includes('adjust-position="{{false}}"') && lifeSceneWxml.includes('bindkeyboardheightchange="onLetterKeyboardHeightChange"'), true, '写信栏必须自主响应键盘高度，避免系统与页面双重上推');
-assert.equal(lifeSceneLogic.includes('resolveLetterComposerTop(keyboardHeight, panelHeight, panelWidth)'), true, '写信栏必须根据屏幕与键盘可用高度计算安全位置');
-assert.equal(lifeSceneStyles.includes('.scene-composer--letter{position:fixed;bottom:auto;'), true, '写信栏必须脱离底部停靠并放到屏幕上中部');
+assert.equal(/scene-action-talk-badge|contextActionShowTalkBadge|scene-action-button--talkable/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '居家对话入口不得叠加三点对话状态');
+assert.equal(/scene-talk-nudge|home-locator-focus|onOpenTalkComposer|composerVisible && currentState\.atHome/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '居家入口不得恢复聚焦光圈、三点提示或场景内对话弹层');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneLogic.includes('scene_chat_button'), true, '居家左下按钮必须直接打开完整对话页');
+assert.equal(chatWxml.includes('class="conversation"') && chatWxml.includes('class="composer"') && chatLogic.includes('postHatch.sendSceneMessage'), true, '完整对话页必须同时包含消息区、输入区并复用统一陪伴服务');
+assert.equal(chatWxml.includes('id="message-typing"') && chatWxml.includes('aria-label="蛋宝宝正在回复"') && chatLogic.includes("this.setScrollTarget('message-typing')"), true, '等待回复时必须显示可访问的三点气泡并自动滚入视野');
+assert.equal(chatStyles.includes('animation:typing .5s ease-in-out infinite') && chatStyles.includes('animation-delay:.08s') && chatStyles.includes('animation-delay:.16s'), true, '正在回复的三点微动效必须按 0.5 秒完整循环依次跳动');
+assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatStyles.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
+assert.equal(lifeSceneWxml.includes('aria-label="打开我的和设置"') && lifeSceneWxml.includes('bindtap="onOpenMySettings"') && lifeSceneWxml.includes('src="{{mySettingsIcon}}"'), true, '右下角必须使用我的/设置图标并直接打开我的页');
+assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '我的/设置入口不得经过中间弹层');
+assert.equal(/scene-action-unread-dot|contextActionHasNewMessage|toolboxHasNewMessage/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '停用的明信片不得在生活场景显示不可处理的未读提示');
+assert.equal(Boolean(postHatchAssets.POST_HATCH.sceneActions.toolbox) && ['card', 'postcards', 'keepsakes'].every(key => postHatchAssets.POST_HATCH.sceneActions.toolboxItems[key]), true, '已完成的百宝箱与复杂内容图片配置必须保留供后续版本使用');
+assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}\n${postHatchCompanionLogic}\n${cloudApiLogic}`), false, '写信的界面、事件、服务与云接口必须完全移除');
+assert.equal(lifeSceneWxml.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"'), true, '左下角沟通入口只能在居家时显示');
 assert.equal(/resolvePanelSceneSet|panelImages|usingPanoramaFallback|scrollIntoView/.test(lifeSceneLogic), false, '生活空间不得保留三张切图或双重滚动定位逻辑');
 assert.deepEqual(postHatchAssets.POST_HATCH.panoramaFallbackMeta, {
   width: 2823,

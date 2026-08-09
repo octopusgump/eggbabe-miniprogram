@@ -16,12 +16,18 @@ function resolveAssetUrl(path, cdnBase) {
   return `${base}${source}`;
 }
 
+// 全屏「日常窗外详情」只使用与当前天气、时段精确匹配的窗景。
+// 已登记 7 张：晴朗日间／日落／夜晚、多云日间／夜晚、降雪日间／夜晚。
+// 其余组合（雨、雷雨、雪后，以及多云与降雪的日落）尚无对应素材，返回空串，
+// 由 daily-window-detail 显示空态与重试；禁止用其他天气或整张房间图代替。
 function windowAssetPath(weather, period) {
   const windowWeather = PRE_HATCH_ASSETS.windowWeather || {};
-  if (weather === 'snow' || weather === 'postSnow') return period === 'night' ? windowWeather.snowNight : windowWeather.snowDay;
-  if (weather === 'cloudy' || weather === 'rain' || weather === 'storm') return period === 'night' ? windowWeather.cloudyNight : windowWeather.cloudyDay;
-  if (period === 'night') return windowWeather.clearNight;
-  return period === 'sunset' ? windowWeather.clearSunset : windowWeather.clearDay;
+  const byWeather = {
+    sunny: { day: windowWeather.clearDay, sunset: windowWeather.clearSunset, night: windowWeather.clearNight },
+    cloudy: { day: windowWeather.cloudyDay, night: windowWeather.cloudyNight },
+    snow: { day: windowWeather.snowDay, night: windowWeather.snowNight }
+  };
+  return (byWeather[String(weather || '')] || {})[String(period || '')] || '';
 }
 
 function resolve(serverPresentation, context) {
@@ -53,14 +59,9 @@ function resolve(serverPresentation, context) {
     valid: true,
     fullSceneImage: resolveAssetUrl(scene.background, cdnBase),
     backgroundImage: '',
-    // 非晴朗日落尚无独立 Window Weather 裁图时，直接使用语义一致的完整场景，
-    // 禁止以晴天日落图冒充多云、雨或雷雨。
-    windowImage: resolveAssetUrl(
-      environment.period === 'sunset' && environment.weather !== 'sunny'
-        ? scene.background
-        : windowAssetPath(environment.weather, environment.period),
-      cdnBase
-    ),
+    // 缺少精确匹配的窗景时留空，让窗外详情进入空态；不用其他天气的窗景，
+    // 也不用整张房间中央场景冒充窗外。
+    windowImage: resolveAssetUrl(windowAssetPath(environment.weather, environment.period), cdnBase),
     weatherOverlay: '',
     nestImage: resolveAssetUrl(scene.nest, cdnBase),
     eggImage: resolveAssetUrl(scene.egg, cdnBase),

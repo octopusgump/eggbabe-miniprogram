@@ -207,6 +207,8 @@ Page({
     clockSecondStyle: 'transform:rotate(0deg);',
     sceneOpening: false,
     sceneTransitionStyle: '',
+    eggShellOverlays: preHatchAssets.eggShellOverlays,
+    reducedMotion: false,
     isDemo: config.localDemoEnabled,
     stageTesterOpen: false,
     stageTesterBusy: false,
@@ -397,6 +399,10 @@ Page({
 
   async onShow() {
     this.pageActive = true;
+    // 系统「减少动态效果」可能在后台被改动；每次回到前台重新读取，
+    // 由 .page--reduced 停用位移、旋转与循环动画，不依赖 WebView 的媒体查询支持。
+    const reducedMotion = this.prefersReducedMotion();
+    if (reducedMotion !== this.data.reducedMotion) this.setData({ reducedMotion });
     if (this.data.doodleEditorVisible) {
       const activeTabBar = this.getTabBar && this.getTabBar();
       if (activeTabBar) activeTabBar.setData({ selected: 0, hidden: true, elevated: false });
@@ -1349,7 +1355,7 @@ Page({
     this.cancelCompanionFirstHint();
     if (key === 'wish' || key === 'learn' || key === 'draw') this.showCompanionHint(key);
     if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
-    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('蛋宝宝还没到早教的年龄，明天来试试吧。');
+    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('蛋宝宝还没到早教的年龄。');
     if (key === 'draw') {
       this.openDoodleEditor();
       return;

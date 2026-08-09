@@ -110,7 +110,6 @@ C. 玉兔剩余姿态，6 张
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -126,7 +125,6 @@ D. 锦鲤剩余姿态，6 张
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -153,7 +151,6 @@ E. 破壳后互动反馈，8 张
 
 前景效果：post-hatch/40-interaction-fx/
 
-- tea_steam.webp
 
 两张被子必须相同画布和锚点；lamp_dark_overlay 是透明深蓝夜色层；paper_front 只有无文字涂鸦；游戏画面只能是无品牌、无文字的抽象彩色微光；蒸汽必须真实透明。
 

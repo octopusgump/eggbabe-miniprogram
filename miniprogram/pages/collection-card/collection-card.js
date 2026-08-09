@@ -2,6 +2,7 @@ const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
 const analytics = require('../../services/analytics');
+const releaseSurface = require('../../utils/release-surface');
 
 function dateLabel(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
@@ -31,6 +32,7 @@ Page({
   },
 
   onLoad(query) {
+    if (!releaseSurface.guardDeferredContent()) return;
     const pet = petStore.getPet();
     if (!pet || !pet.collectionCard) {
       wx.showToast({ title: '还没有收藏卡', icon: 'none' });

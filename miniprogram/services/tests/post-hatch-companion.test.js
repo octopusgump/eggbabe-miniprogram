@@ -40,33 +40,19 @@ const pet = {
   pet.hatchAt = new Date(baseNow - 3 * SLOT_MS).toISOString();
   const away = await postHatch.getSnapshot(pet);
   assert.equal(away.currentState.atHome, false, '故事线第四个时段必须外出');
-  assert.equal(away.currentState.action.kind, 'letter', '外出时唯一入口必须为写信');
+  assert.equal(away.currentState.action, null, '外出时不得暴露写信或留言动作');
+  assert.equal(away.currentState.canTalk, false, '外出时不开放实时对话');
+  assert.equal(typeof postHatch.sendLetter, 'undefined', '陪伴服务不得保留写信接口');
 
   pet.hatchAt = new Date(baseNow - 4 * SLOT_MS).toISOString();
-  const returnedWithoutLetter = await postHatch.getSnapshot(pet);
-  assert.equal(returnedWithoutLetter.memories.keepsakes.some(item => item.id === 'dali-cloud'), false, '未完成外出对应动作不得补发纪念物');
-  pet.hatchAt = new Date(baseNow - 3 * SLOT_MS).toISOString();
-  const letter = await postHatch.sendLetter(pet, away, '等你回来，再告诉我风是什么味道。');
-  const repeatedLetter = await postHatch.sendLetter(pet, away, '重复寄出');
-  assert.equal(letter.ok, true, '外出时必须可寄信');
-  assert.equal(repeatedLetter.alreadyDone, true, '同一时段重复寄信必须幂等');
-  const delivered = await postHatch.getSnapshot(pet);
-  assert.equal(delivered.memories.postcards.length, 1, '寄信后的下一次进入必须收到一次反馈');
-  assert.equal(delivered.newMessage && delivered.newMessage.unread, true, '新到回信必须在未查看前展示新消息状态');
-  const readPostcard = await postHatch.markPostcardRead(pet, delivered.newMessage.id);
-  assert.equal(readPostcard.ok, true, '用户查看回信后必须能写入已读状态');
-  assert.equal((await postHatch.getSnapshot(pet)).newMessage, null, '用户查看回信后必须移除新消息状态');
-
-  Date.now = () => baseNow + SLOT_MS;
   const returned = await postHatch.getSnapshot(pet);
-  assert.equal(returned.currentState.atHome, true, '下一个故事时段必须回家');
-  assert.equal(returned.memories.postcards.length, 1, '重复进入不得重复交付同一封回信');
-  assert.equal(returned.memories.keepsakes.some(item => item.id === 'dali-cloud'), true, '外出纪念品必须在回家时带回');
+  assert.equal(returned.currentState.atHome, true, '后续故事时段必须回家');
+  assert.equal(returned.memories.postcards.length, 0, '不得因本地写信逻辑派生回信');
+  assert.equal(returned.memories.keepsakes.some(item => item.id === 'dali-cloud'), false, '不得因已移除的写信动作派生纪念物');
 
-  const expectedTalk = { sleep: false, lazy: false, stare: true, tea: true, drawing: true, reading: true, gaming: false, music: true, window: true };
   lifeScenes.HOME_STATES.forEach(state => {
     const fixed = lifeScenes.resolveDefinition('home', state.key);
-    assert.equal(fixed.canTalk, expectedTalk[state.key], `${state.label}的说话权限必须使用固定映射`);
+    assert.equal(fixed.canTalk, true, `${state.label}必须开放场景内对话`);
     assert.equal(Boolean(fixed.action && fixed.action.id), true, `${state.label}必须有一个固定对应动作`);
   });
 
@@ -77,7 +63,7 @@ const pet = {
     current_state: {
       major_scene_id: 'home',
       small_scene_id: 'sleep',
-      can_talk: true,
+      can_talk: false,
       action_id: 'random_action',
       action_kind: 'random',
       slot_index: 2,
@@ -86,11 +72,11 @@ const pet = {
       line: '我睡着了。'
     }
   });
-  assert.equal(normalized.currentState.canTalk, false, 'live 响应不得随机改写睡觉状态的说话权限');
+  assert.equal(normalized.currentState.canTalk, true, 'live 响应不得关闭任何居家状态的对话权限');
   assert.equal(normalized.currentState.action.id, 'lamp_off', 'live 响应不得随机改写固定对应动作');
 
   Date.now = originalNow;
-  console.log('破壳后 5 小时状态、固定动作映射、来信与纪念物校验通过。');
+  console.log('破壳后 5 小时状态、居家固定动作与外出无写信入口校验通过。');
 })().catch(error => {
   Date.now = originalNow;
   console.error(error);

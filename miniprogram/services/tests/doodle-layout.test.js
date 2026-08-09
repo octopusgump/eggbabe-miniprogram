@@ -11,6 +11,7 @@ const componentWxss = fs.readFileSync(path.join(miniprogramRoot, 'components/doo
 const componentScript = fs.readFileSync(path.join(miniprogramRoot, 'components/doodle-editor/doodle-editor.js'), 'utf8');
 const noticeWxml = fs.readFileSync(path.join(miniprogramRoot, 'components/inline-notice/inline-notice.wxml'), 'utf8');
 const noticeWxss = fs.readFileSync(path.join(miniprogramRoot, 'components/inline-notice/inline-notice.wxss'), 'utf8');
+const toolbarIcons = require('../../config/pre-hatch-assets').PRE_HATCH.doodleToolbar;
 const undoIconPath = path.join(miniprogramRoot, 'assets/ui/3d-toolbar/runtime/ui_3d_toolbar_undo_96_v02.webp');
 const clearIconPath = path.join(miniprogramRoot, 'assets/ui/3d-toolbar/runtime/ui_3d_toolbar_clear_96_v01.webp');
 const disabledUndoIconPath = path.join(miniprogramRoot, 'assets/ui/3d-toolbar/runtime/ui_3d_toolbar_undo_disabled_96_v01.webp');
@@ -87,12 +88,16 @@ assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'
 assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*calc\(50% - 448rpx\);[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '画布内提示必须跟随累计上移 168rpx 后的蛋头位置并避开右侧操作按钮');
 assert.equal(noticeWxml.includes('inline-notice--{{tone}}') && noticeWxss.includes('.inline-notice--warning'), true, '标准轻提示只需提供普通与注意两种语义样式');
 assert.equal((noticeWxss.match(/\.inline-notice--(?:info|warning)\b/g) || []).length <= 2, true, '标准轻提示不得扩张为多套重复视觉');
-assert.equal(wxml.includes('ui_3d_toolbar_undo_96_v02.webp') && wxml.includes('ui_3d_toolbar_clear_96_v01.webp'), true, '撤销和清空必须使用审核通过的 3D 专用图标');
+// design.md §5：正式运行时路径只在配置文件中登记，页面只读配置项。
+assert.doesNotMatch(wxml, /src="[^"]*\/assets\//, '画画页不得在模板里写死资源路径');
+assert.equal(toolbarIcons.undo.endsWith('/ui_3d_toolbar_undo_96_v02.webp') && toolbarIcons.clear.endsWith('/ui_3d_toolbar_clear_96_v01.webp'), true, '撤销和清空必须使用审核通过的 3D 专用图标');
+assert.equal(wxml.includes('toolbarIcons.undo') && wxml.includes('toolbarIcons.clear'), true, '撤销和清空图标必须从配置读取');
 assert.equal(fs.existsSync(undoIconPath), true, '撤销按钮必须包含审核通过的 3D WebP 图标资源');
 assert.equal(fs.readFileSync(undoIconPath).subarray(0, 4).toString('ascii'), 'RIFF', '撤销按钮资源必须是有效 WebP');
 assert.equal(fs.existsSync(clearIconPath), true, '清空按钮必须包含审核通过的 3D WebP 图标资源');
 assert.equal(fs.readFileSync(clearIconPath).subarray(0, 4).toString('ascii'), 'RIFF', '清空按钮资源必须是有效 WebP');
-assert.equal(wxml.includes('ui_3d_toolbar_undo_disabled_96_v01.webp') && wxml.includes('ui_3d_toolbar_clear_disabled_96_v01.webp'), true, '撤销和清空必须分别切换到独立的置灰 3D 图标');
+assert.equal(toolbarIcons.undoDisabled.endsWith('/ui_3d_toolbar_undo_disabled_96_v01.webp') && toolbarIcons.clearDisabled.endsWith('/ui_3d_toolbar_clear_disabled_96_v01.webp'), true, '撤销和清空必须分别切换到独立的置灰 3D 图标');
+assert.equal(wxml.includes('toolbarIcons.undoDisabled') && wxml.includes('toolbarIcons.clearDisabled'), true, '禁用态必须切换到配置登记的置灰图标');
 assert.equal(fs.existsSync(disabledUndoIconPath) && fs.existsSync(disabledClearIconPath), true, '两枚置灰 3D WebP 图标资源必须存在');
 assert.doesNotMatch(wxss, /\.canvas-action-button--disabled\s*\{[^}]*(?:opacity|color)\s*:/, '禁用状态不得降低整颗按钮透明度或淡化文字颜色');
 

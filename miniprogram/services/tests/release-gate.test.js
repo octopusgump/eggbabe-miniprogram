@@ -51,5 +51,13 @@ assert.equal(homeTemplate.includes('wx:if="{{!doodleEditorVisible && isDemo && p
 assert.equal(homeSource.includes('isDemo: config.localDemoEnabled'), true, '测试阶段控件不得使用可被普通用户修改的本地开关');
 assert.equal(postHatchAssetsSource.includes('_candidates'), false, '正式破壳后素材配置不得引用开发验收候选图');
 assert.deepEqual(require('../../config/post-hatch-assets').POST_HATCH.postcards, {}, '候选东京明信片未终审前不得进入正式运行时配置');
+// design.md §4.2：ta 外出时只显示空着的家与第一人称去向文字，不把目的地图片放进实时
+// 生活空间。目的地「魔法窗」的全屏视图代码仍在包内，这里锁住开关，避免被误打开。
+assert.equal(require('../../config/post-hatch-assets').POST_HATCH.magicWindow.enabled, false, '目的地魔法窗开启前必须重新走一次设计评审，正式包内不得默认打开');
+assert.equal(
+  Object.values(require('../../config/post-hatch-assets').POST_HATCH.magicWindow.destinations).every(value => !value),
+  true,
+  '正式运行时不得登记任何目的地窗景素材'
+);
 
 console.log('正式版后端门禁校验通过。');

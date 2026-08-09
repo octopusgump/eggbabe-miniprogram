@@ -12,6 +12,9 @@
   display: flex;
   align-items: center;
   position: relative;
+  /* 横屏与刘海机型下状态栏高度不覆盖左右安全区，这里单独让开。 */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   border-bottom: 1rpx solid #E5E3DF; /* --hairline */
 }
 

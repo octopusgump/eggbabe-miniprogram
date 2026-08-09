@@ -38,7 +38,7 @@ Page({
   async onLoad() {
     const pet = petStore.getPet();
     if (pet && pet.collectionCard) {
-      wx.redirectTo({ url: '/pages/collection-card/collection-card' });
+      wx.switchTab({ url: '/pages/home/home' });
       return;
     }
     if (!pet || petStore.getStage(pet) !== 'ready') {
@@ -119,7 +119,7 @@ Page({
         }
       }
       analytics.track('hatch_card_ready', { card_id: result.card.card_id || result.card.id });
-      wx.redirectTo({ url: '/pages/collection-card/collection-card?new=1' });
+      wx.switchTab({ url: '/pages/home/home' });
   },
 
   onUnload() {

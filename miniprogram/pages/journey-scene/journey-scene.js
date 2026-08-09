@@ -1,4 +1,5 @@
 const JOURNEY_PAYLOAD_WAIT_MS = 800;
+const releaseSurface = require('../../utils/release-surface');
 
 function decodedQueryValue(value) {
   const source = String(value || '');
@@ -67,6 +68,7 @@ Page({
     error: ''
   },
   onLoad(query) {
+    if (!releaseSurface.guardDeferredContent()) return;
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     this.failedSlideIndexes = new Set();
     this.requestedIndex = requestedSlideIndex(query && query.index);
@@ -129,6 +131,17 @@ Page({
     if (index !== this.data.current) return;
     this.clearJourneyDeadline();
     this.setData({ loading: false, ready: false, error: '这张旅途画面没有加载好' });
+  },
+  // 单项重试：只把当前这张标记回可用并重新挂载 swiper，不重新请求整段旅程，
+  // 也不改变 ta 当前状态。失败态始终保留「返回明信片」。
+  onRetrySlide() {
+    const index = Number(this.data.current);
+    if (!this.data.slides.length || !Number.isInteger(index)) return;
+    if (this.failedSlideIndexes) this.failedSlideIndexes.delete(index);
+    this.setData({ loading: true, ready: false, error: '' }, () => {
+      if (!this.data.slides.length) return;
+      this.setData({ loading: false, ready: true, current: Math.min(index, this.data.slides.length - 1) });
+    });
   },
   clearJourneyDeadline() {
     clearTimeout(this.journeyDeadline);

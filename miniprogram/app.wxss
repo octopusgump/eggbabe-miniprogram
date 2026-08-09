@@ -99,7 +99,7 @@ button {
 
 .pressable--pressed {
   opacity: 0.72;
-  transform: scale(0.99);
+  transform: scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {

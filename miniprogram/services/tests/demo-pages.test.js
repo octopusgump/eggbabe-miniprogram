@@ -106,16 +106,17 @@ assert.equal(cardContext.data.cardView.illustration_url.startsWith('/assets/'), 
   const snapshot = await postHatch.getSnapshot(pet);
   assert.equal(snapshot.ok, true, '开发版破壳后必须加载隔离的 5 小时状态快照');
   assert.equal(['home', 'travel', 'work', 'school'].includes(snapshot.currentState.major), true, '当前状态必须属于四个 PRD 大场景之一');
-  assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action.kind === 'letter', true, '每个小状态只能暴露一个原生动作或写信入口');
-assert.equal(lifeScenes.HOME_STATES.length, 9, '开发版必须包含九个居家小状态');
+  assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action === null, true, '居家状态暴露一个原生动作，外出状态不得暴露写信动作');
+  assert.equal(lifeScenes.HOME_STATES.length, 8, '开发版必须包含八个居家小状态');
+  assert.equal(lifeScenes.HOME_STATES.every(item => lifeScenes.resolveDefinition('home', item.key).canTalk), true, '八个居家小状态必须全部开放对话');
 
   const talk = await postHatch.sendSceneMessage(pet, {
     mood: snapshot.mood,
-    currentState: Object.assign({}, lifeScenes.HOME_STATES.find(item => item.canTalk), { atHome: true, canTalk: true })
+    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key))
   }, '今天陪我待一会儿');
-  assert.equal(talk.ok, true, '允许说话的小状态必须在场景内返回审核过的回应');
-  assert.equal(talk.safety, 'approved-fallback', '开发版场景内对话不得伪装成 live');
-  assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), false, '开发版不得注册独立聊天页');
+  assert.equal(talk.ok, true, '允许说话的小状态必须在完整对话页返回审核过的回应');
+  assert.equal(talk.safety, 'approved-fallback', '开发版完整对话页不得伪装成 live');
+  assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), true, '开发版必须注册完整聊天页');
   assert.equal(toasts.includes('账号服务尚未接入，请稍后再试'), false, '开发版流程不得显示正式服务器未接入提示');
 
   global.setTimeout = originalSetTimeout;

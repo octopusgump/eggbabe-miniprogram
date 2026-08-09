@@ -37,6 +37,7 @@ const homeLogic = read('miniprogram/pages/home/home.js');
 const homeStyles = read('miniprogram/pages/home/home.wxss');
 const lifeSceneTemplate = read('miniprogram/pages/life-scene/life-scene.wxml');
 const lifeSceneLogic = read('miniprogram/pages/life-scene/life-scene.js');
+const postHatchCompanion = read('miniprogram/services/post-hatch-companion.js');
 const lifeSceneStyles = read('miniprogram/pages/life-scene/life-scene.wxss');
 const petAvatarTemplate = read('miniprogram/components/pet-avatar/pet-avatar.wxml');
 const dailyWindowTemplate = read('miniprogram/components/daily-window-detail/daily-window-detail.wxml');
@@ -90,12 +91,19 @@ assert.equal(
 assert.equal(
   homeLogic.includes('clearTimeSceneTimers()')
     && homeTemplate.includes('wx:if="{{!dailyWindowVisible}}" class="window-effects"')
-    && homeStyles.includes('.scene-paused .egg')
-    && homeStyles.includes('@media (prefers-reduced-motion: reduce)')
-    && /\.time-night-glint[^}]*\{\s*animation:\s*none;/.test(homeStyles),
+    && homeStyles.includes('.scene-paused .egg'),
   true,
-  '日常窗外打开或离页时必须暂停并清理房间时段动效，减少动态效果模式不得持续播放'
+  '日常窗外打开或离页时必须暂停并清理房间时段动效'
 );
+// 「减少动态效果」必须走 JS 类名 + 媒体查询双通道，并用 !important 覆盖
+// .egg--wobble、.light-*、.season-* 等特异性更高的状态动画，否则动画仍会播放。
+assert.equal(homeTemplate.includes("reducedMotion ? 'page--reduced' : ''"), true, '首页根节点必须绑定 page--reduced');
+assert.equal(/reducedMotion = this\.prefersReducedMotion\(\)/.test(homeLogic), true, '首页必须在 onShow 重新读取系统减少动态效果设置');
+assert.equal(homeStyles.includes('@media (prefers-reduced-motion: reduce)'), true, '首页必须保留媒体查询作为双保险');
+['.page--reduced .egg,', '.page--reduced .egg .egg-shell-specular,', '.page--reduced .time-night-glint,', '.page--reduced .season-piece,'].forEach(selector => {
+  assert.equal(homeStyles.includes(selector), true, `减少动态效果必须覆盖高特异性状态动画：${selector}`);
+});
+assert.equal((homeStyles.match(/animation:\s*none\s*!important;/g) || []).length >= 2, true, '减少动态效果的停用规则必须使用 !important，否则会被状态类覆盖');
 assert.equal(homeLogic.includes('windowImage: environmentService.windowAssetPath(target.weather, target.period)'), true, '季节天气验收状态必须同步替换日常窗外图片，不得沿用切换前窗景');
 assert.equal(homeTemplate.includes('<daily-window-detail') && lifeSceneTemplate.includes('<daily-window-detail'), true, '破壳前后房间必须共用日常窗外详情组件');
 assert.equal(
@@ -183,10 +191,10 @@ assert.equal(homeTemplate.includes('egg_on_nest.webp') || homeLogic.includes('sh
 
 const lifeScene = lifeSceneLogic;
 assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${lifeScene}\n${lifeSceneTemplate}`), false, '生活场景只能返回内容反馈');
-assert.equal(app.pages.includes('pages/chat/chat'), false, 'V3.6 不得注册独立聊天页');
+assert.equal(app.pages.includes('pages/chat/chat'), true, '居家对话必须注册完整聊天页');
 assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 PRD 未放行的 AI 布置额度页面不得注册');
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
-assert.equal(lifeSceneTemplate.includes('给远方的 ta 写一句') && lifeSceneTemplate.includes('currentState.canTalk'), true, '外出时必须可写信，对话只能在允许的小状态原地出现');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"'), true, '居家时必须直达完整对话页，外出时不显示沟通入口');
 assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
@@ -194,9 +202,20 @@ assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-plac
 assert.equal(/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`), false, '角色与动作道具必须烘焙进正式全景，不得叠加透明角色、接触阴影、CSS 道具或色调层');
 assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama') && lifeSceneTemplate.includes('class="scene-character-hotspot') && lifeSceneTemplate.includes('bindtap="onCharacterTap"'), true, '生活空间必须使用正式动作全景，并以透明热区保留角色互动');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
-assert.equal(lifeSceneTemplate.includes('class="scene-context-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('toolboxIcon') && lifeSceneTemplate.includes('scene-talk-nudge') && lifeSceneLogic.includes('scene_find_home_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '必须使用左下找 ta / 写信入口、右下百宝箱与场景内对话触点');
-assert.equal(['my', 'card', 'postcards', 'keepsakes'].every(target => lifeSceneTemplate.includes(`data-target="${target}"`)), true, '百宝箱必须包含我的、收藏卡、明信片与 ta 带回来的东西');
-assert.equal(lifeSceneTemplate.includes('ui_3d_tabbar_interaction_gear_flat_96_v04.png') && lifeSceneTemplate.includes('ui_3d_toolbox_settings_gear_96_v03.webp') === false, true, '破壳后百宝箱的我的/设置必须复用破壳前的设置图标');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('mySettingsIcon') && lifeSceneTemplate.includes('aria-label="打开我的和设置"') && lifeSceneLogic.includes('scene_chat_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '必须使用居家左下对话入口和右下我的/设置，居家入口直达完整对话页');
+assert.equal(/scene-talk-nudge|home-locator-focus|onOpenTalkComposer|composerVisible && currentState\.atHome/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, '居家入口不得恢复聚焦光圈、三点提示或场景内对话弹层');
+assert.equal(/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"|scene-action-unread-dot/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, 'V3.6 / V3.7 不得暴露百宝箱弹层、复杂内容入口或未读提示');
+assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '右下我的/设置必须直接打开我的页');
+// 已完成素材保留在配置中，供后续版本重新评估时使用；V3.6 / V3.7 模板不得读取。
+assert.doesNotMatch(lifeSceneTemplate, /src="[^"]*\/assets\//, '生活空间模板不得写死资源路径');
+const toolboxItemIcons = require('../miniprogram/config/post-hatch-assets').POST_HATCH.sceneActions.toolboxItems;
+assert.equal(
+  toolboxItemIcons.my.endsWith('/ui_3d_tabbar_interaction_gear_flat_96_v04.png')
+    && ['card', 'postcards', 'keepsakes'].every(key => toolboxItemIcons[key])
+    && Object.values(toolboxItemIcons).some(icon => icon.includes('ui_3d_toolbox_settings_gear_96_v03.webp')) === false,
+  true,
+  '我的/设置必须复用现有设置图标，并保留已完成的复杂内容图标资产'
+);
 assert.equal(homeLogic.includes('/pages/life-scene/life-scene?entry=post-hatch-landing'), true, '破壳后进入首页必须直接落到全屏生活空间');
 assert.equal(/post-hatch-landing__memory|看看回忆/.test(homeTemplate), false, '首页不得保留空的破壳后落地层或重复的回忆入口');
 assert.equal(homeLogic.includes('wx.redirectTo') && homeLogic.includes('生活空间没有打开，请重试'), true, '生活空间常规跳转失败时必须替换跳转，不能回退为空房间');
@@ -213,7 +232,8 @@ assert.equal(cloudApi.includes('recordCompanionInteraction'), true, '服务层�
 assert.equal(cloudApi.includes('recordRoomElementInteraction'), true, '服务层必须预留房间小物接口');
 assert.equal(cloudApi.includes('chatReply'), true, '服务层必须预留正式对话回复接口');
 assert.equal(cloudApi.includes('saveEggCreation'), true, '服务层必须预留蛋壳创作写入接口');
-assert.equal(cloudApi.includes('getPostHatchHome') && cloudApi.includes('performPostHatchAction') && cloudApi.includes('sendPostHatchLetter') && cloudApi.includes('getPostHatchMemories'), true, '服务层必须预留主 PRD 的破壳后接口');
+assert.equal(cloudApi.includes('getPostHatchHome') && cloudApi.includes('performPostHatchAction') && cloudApi.includes('getPostHatchMemories'), true, '服务层必须保留主 PRD 的破壳后读取与居家动作接口');
+assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}\n${postHatchCompanion}\n${cloudApi}`), false, '写信的界面、事件、服务和云接口必须完全移除');
 assert.equal(/getPostHatchDecorations|createRoomDecoration|moveRoomDecoration/.test(cloudApi), false, '服务层不得预留装饰额度或装饰物库接口');
 assert.equal(cloudApi.includes("mode: 'live'") && cloudApi.includes('request_id'), true, '正式请求必须带 live 与唯一请求 ID');
 assert.equal(read('miniprogram/services/chat-service.js').includes("result.mode !== 'live'"), true, '对话适配层必须拒绝非 live 回复');

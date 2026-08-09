@@ -19,12 +19,11 @@ const MOODS = [
 function key() { return runtime.scopedKey(STATE_KEY); }
 function readState() {
   const value = storage.read(key(), null);
-  if (!value || value.version !== 36) return { version: 36, actions: {}, keepsakes: [], letters: [], postcards: [] };
+  if (!value || value.version !== 36) return { version: 36, actions: {}, keepsakes: [], postcards: [] };
   return {
     version: 36,
     actions: value.actions || {},
     keepsakes: Array.isArray(value.keepsakes) ? value.keepsakes : [],
-    letters: Array.isArray(value.letters) ? value.letters : [],
     postcards: Array.isArray(value.postcards) ? value.postcards : []
   };
 }
@@ -98,49 +97,12 @@ function normalizeMemories(memories) {
 function firstUnreadPostcard(postcards) {
   return (Array.isArray(postcards) ? postcards : []).find(item => item && item.unread) || null;
 }
-function deliverReplies(state) {
-  let changed = false;
-  state.letters.forEach(letter => {
-    if (letter.direction !== 'out' || letter.replyDelivered) return;
-    letter.replyDelivered = true;
-    state.postcards.unshift({
-      id: `reply-${letter.id}`,
-      direction: 'in',
-      sceneLabel: letter.sceneLabel,
-      sentAt: letter.sentAt,
-      deliveredAt: businessNow(),
-      line: `我收到你的信了。${letter.sceneLabel}的风很远，你写的字却像在我旁边。`,
-      asset: '',
-      unread: true
-    });
-    changed = true;
-  });
-  return changed;
-}
-function deliverAwayKeepsakes(state, scene) {
-  if (!scene.atHome) return false;
-  const pending = state.letters.filter(letter => letter.direction === 'out' && letter.keepsake && !letter.keepsakeDelivered);
-  pending.forEach(letter => {
-    letter.keepsakeDelivered = true;
-    if (!state.keepsakes.some(item => item.id === letter.keepsake.id)) {
-      state.keepsakes.unshift(Object.assign({}, letter.keepsake, { appearedAt: businessNow(), sourceScene: letter.sceneLabel }));
-    }
-  });
-  return pending.length > 0;
-}
 function localSnapshot(pet) {
   const meta = slotMeta(pet);
   if (!meta) return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步此刻状态，请稍后重试' };
   const state = readState();
   const scene = lifeScenes.stateForSlot(meta.slotIndex, meta.slotStart);
-  const repliesChanged = deliverReplies(state);
-  const keepsakesChanged = deliverAwayKeepsakes(state, scene);
-  const changed = repliesChanged || keepsakesChanged;
-  if (changed) {
-    const saved = writeState(state);
-    if (!saved.ok) return saved;
-  }
-  const actionRecord = state.actions[String(meta.slotIndex)] || null;
+  const actionRecord = scene.atHome ? state.actions[String(meta.slotIndex)] || null : null;
   const memories = normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) });
   return {
     ok: true,
@@ -148,8 +110,7 @@ function localSnapshot(pet) {
     mood: moodFor(pet, businessNow()),
     currentState: Object.assign({}, scene, meta, {
       actionDone: !!actionRecord,
-      actionFeedback: actionRecord ? actionRecord.feedback : '',
-      letterSent: !!(actionRecord && actionRecord.kind === 'letter')
+      actionFeedback: actionRecord ? actionRecord.feedback : ''
     }),
     previewImage: scene.previewImage,
     memories,
@@ -174,9 +135,8 @@ function normalizeLiveSnapshot(result) {
     slotIndex: Number(source.slot_index),
     slotStart,
     slotEnd,
-    actionDone: !!source.action_done,
-    actionFeedback: source.action_feedback || definition.action.feedback,
-    letterSent: !!source.letter_sent,
+    actionDone: definition.atHome && !!source.action_done,
+    actionFeedback: definition.action ? source.action_feedback || definition.action.feedback : '',
     previewImage: lifeScenes.assets.POST_HATCH.panoramaFallback
   });
   if (!Number.isInteger(state.slotIndex)) {
@@ -206,7 +166,7 @@ function getSnapshot(pet) {
 }
 function performAction(pet, snapshot) {
   const current = snapshot && snapshot.currentState;
-  if (!pet || !current || !current.atHome) return Promise.resolve({ ok: false, code: 'ACTION_NOT_AVAILABLE', message: '此刻没有这个动作' });
+  if (!pet || !current || !current.atHome || !current.action) return Promise.resolve({ ok: false, code: 'ACTION_NOT_AVAILABLE', message: '此刻没有这个动作' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
     const requestId = `post-hatch-action-${pet.id}-${current.slotIndex}-${current.action.id}`;
     return cloudApi.performPostHatchAction(pet.id, current.slotIndex, current.action.id, requestId);
@@ -224,32 +184,7 @@ function performAction(pet, snapshot) {
   const saved = writeState(state);
   return Promise.resolve(saved.ok ? { ok: true, alreadyDone: false, feedback: record.feedback, keepsake } : saved);
 }
-function sendLetter(pet, snapshot, text) {
-  const current = snapshot && snapshot.currentState;
-  const value = String(text || '').trim();
-  if (!current || current.atHome) return Promise.resolve({ ok: false, code: 'LETTER_NOT_AVAILABLE', message: 'ta 现在就在家里' });
-  if (!value) return Promise.resolve({ ok: false, code: 'LETTER_EMPTY', message: '写一句话再寄出吧' });
-  if (Array.from(value).length > 120) return Promise.resolve({ ok: false, code: 'LETTER_TOO_LONG', message: '这封信最多写 120 个字' });
-  const assessment = chatSafety.assessInput(value);
-  if (!assessment.allowed || assessment.crisis) return Promise.resolve({ ok: false, code: 'LETTER_UNSAFE', message: assessment.message || '换个说法试试' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    const requestId = `post-hatch-letter-${pet.id}-${current.slotIndex}`;
-    return cloudApi.sendPostHatchLetter(pet.id, current.slotIndex, value, requestId);
-  }
-  const state = readState();
-  const slotKey = String(current.slotIndex);
-  if (state.actions[slotKey]) return Promise.resolve({ ok: true, alreadyDone: true, feedback: state.actions[slotKey].feedback });
-  const letter = {
-    id: `letter-${pet.id}-${current.slotIndex}`,
-    direction: 'out', slotIndex: current.slotIndex, sceneLabel: `${current.majorLabel} · ${current.label}`,
-    text: value, sentAt: businessNow(), replyDelivered: false, keepsakeDelivered: false, keepsake: current.keepsake
-  };
-  state.letters.unshift(letter);
-  state.actions[slotKey] = { kind: 'letter', feedback: current.action.feedback, actedAt: letter.sentAt };
-  const saved = writeState(state);
-  return Promise.resolve(saved.ok ? { ok: true, alreadyDone: false, feedback: current.action.feedback } : saved);
-}
-function sendSceneMessage(pet, snapshot, text) {
+function sendSceneMessage(pet, snapshot, text, history) {
   const current = snapshot && snapshot.currentState;
   const value = String(text || '').trim();
   if (!current || !current.canTalk) return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: '此刻没有说话入口' });
@@ -258,7 +193,11 @@ function sendSceneMessage(pet, snapshot, text) {
   if (!assessment.allowed) return Promise.resolve({ ok: false, code: 'TALK_UNSAFE', message: assessment.message || '换个说法试试' });
   if (assessment.crisis) return Promise.resolve({ ok: true, text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return chatService.requestReply({ eggId: pet.id, text: value, history: [], scene: { major: current.major, small: current.key } });
+    const safeHistory = (Array.isArray(history) ? history : []).slice(-12).map(item => ({
+      from: item && (item.from === 'user' || item.role === 'user') ? 'user' : 'assistant',
+      text: String(item && (item.text || item.content) || '').slice(0, 500)
+    })).filter(item => item.text);
+    return chatService.requestReply({ eggId: pet.id, text: value, history: safeHistory, scene: { major: current.major, small: current.key } });
   }
   return Promise.resolve({ ok: true, text: chatService.approvedFallback(snapshot.mood && snapshot.mood.mood), safety: 'approved-fallback' });
 }
@@ -299,4 +238,4 @@ function markPostcardRead(pet, postcardId) {
   return Promise.resolve(saved.ok ? { ok: true, alreadyRead: false } : saved);
 }
 
-module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };
+module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };

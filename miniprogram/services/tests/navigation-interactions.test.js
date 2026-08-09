@@ -176,7 +176,9 @@ try {
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'learn' } } });
   runTimers();
   assert.deepEqual(routes.splice(0), [], '未解锁入口不得导航');
-  assert.equal(homeContext.lastFeedback, '蛋宝宝还没到早教的年龄，明天来试试吧。', '未解锁入口必须保留既定的年龄语义反馈');
+  assert.equal(homeContext.lastFeedback, '蛋宝宝还没到早教的年龄。', '未解锁入口必须保留既定的年龄语义反馈');
+  // design.md §6：状态反馈不得出现诱导回访表达。
+  assert.doesNotMatch(homeContext.lastFeedback, /明天|再来|试试吧|每天|别忘了/, '锁定态反馈不得出现催回访文案');
 
   homeContext.data.learnUnlocked = true;
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });

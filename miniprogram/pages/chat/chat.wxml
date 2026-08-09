@@ -1,0 +1,24 @@
+<view class="page {{reducedMotion ? 'page--reduced' : ''}}">
+  <nav-bar title="{{title}}" fallback-url="/pages/home/home"></nav-bar>
+  <view wx:if="{{sceneLabel}}" class="scene-context"><view class="scene-context__dot"></view><text>{{sceneLabel}}</text></view>
+
+  <scroll-view class="conversation" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}">
+    <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在打开对话…</text></view>
+    <view wx:elif="{{error && !snapshot}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
+    <view wx:else class="message-list">
+      <view wx:for="{{messages}}" wx:key="id" id="message-{{item.id}}" class="message-row message-row--{{item.role}}">
+        <view class="message-bubble message-bubble--{{item.role}}"><text>{{item.text}}</text></view>
+      </view>
+      <view wx:if="{{busy}}" id="message-typing" class="message-row message-row--assistant" aria-live="polite" aria-label="蛋宝宝正在回复"><view class="typing-bubble"><view></view><view></view><view></view></view></view>
+      <view class="thread-spacer"></view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{snapshot}}" class="composer">
+    <text wx:if="{{error}}" class="composer-error">{{error}}</text>
+    <view class="composer-row">
+      <textarea class="composer-input" value="{{draft}}" maxlength="120" auto-height fixed focus="{{inputFocus}}" adjust-position="{{true}}" cursor-spacing="24" confirm-type="send" placeholder="在这里说一句…" bindinput="onInput" bindconfirm="onSend"></textarea>
+      <view class="send-button {{busy ? 'send-button--busy' : ''}}" aria-role="button" aria-disabled="{{busy}}" aria-label="{{busy ? '正在等待回复' : '发送消息'}}" bindtap="onSend">{{busy ? '…' : '发送'}}</view>
+    </view>
+  </view>
+</view>

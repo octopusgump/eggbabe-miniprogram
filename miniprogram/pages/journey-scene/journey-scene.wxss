@@ -19,7 +19,8 @@
 .journey-state--loading{background:#171712;color:rgba(255,255,255,.84)}
 .journey-loader{width:50rpx;height:50rpx;border:5rpx solid rgba(255,255,255,.24);border-top-color:#FFF;border-radius:50%;animation:journey-loading-spin .8s linear infinite}
 .journey-state__title{color:#1A1A1A;font-size:31rpx;font-weight:600}
-.journey-state__back{height:96rpx;display:flex;align-items:center;justify-content:center;margin-top:10rpx;padding:0 30rpx;border-radius:999rpx;background:#002900;color:#FFF}
+.journey-state__retry{height:96rpx;display:flex;align-items:center;justify-content:center;margin-top:10rpx;padding:0 30rpx;border-radius:999rpx;background:#002900;color:#FFF;font-size:24rpx}
+.journey-state__back{height:96rpx;display:flex;align-items:center;justify-content:center;padding:0 30rpx;border-radius:999rpx;color:#5C5C5C;font-size:24rpx}
 @media (prefers-reduced-motion:reduce){.journey-back{transition:none}.journey-scene__backdrop{filter:none}}
 .page--reduced .journey-loader{animation:none}
 .page--reduced .journey-back{transition:none}

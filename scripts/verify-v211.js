@@ -81,11 +81,11 @@ assert.equal(chatSafety.includes('SENSITIVE_INFO_PATTERNS'), true, '对话安全
 assert.equal(chatSafety.includes('当地官方紧急或专业支持'), true, '危机兜底不得临时生成未经核验的具体资源');
 
 const privacy = read('miniprogram/pages/privacy/privacy.wxml');
-assert.equal(privacy.includes('适用版本 v3.6'), true, '隐私说明必须对齐当前版本');
+assert.equal(privacy.includes('适用版本 v3.7'), true, '隐私说明必须对齐当前版本');
 assert.equal(privacy.includes('不用于用户画像或蛋宝宝性格生成'), true, '隐私说明必须声明愿望答案不用于画像');
 assert.equal(privacy.includes('演示数据边界'), true, '隐私说明必须披露 live 与演示隔离');
 
 const h5Sources = ['h5/birth-card/app.js', 'h5/birth-card/card-model.js', 'h5/birth-card/poster-renderer.js'].map(read).join('\n');
 assert.equal(/Math\.random|card_data|preview=|new Date\(/.test(h5Sources), false, 'H5 不得生成或注入正式业务结果');
 
-console.log('V3.6 普通版页面、文案、房间互动与数据边界校验通过。');
+console.log('V3.7 普通版页面、文案、房间互动与数据边界校验通过。');

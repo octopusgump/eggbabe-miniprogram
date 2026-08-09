@@ -25,7 +25,7 @@
 唯一有效的主 PRD 是：
 
 ```text
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/PRD归档/蛋宝宝小程序_V3_6_PRD.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/蛋宝宝小程序_V3_6_PRD.md
 ```
 
 冲突优先级固定为：
@@ -37,7 +37,7 @@ V3.6 主 PRD → 专项实现/美术规格 → eggbabe-DESIGN.md → 当前代�
 以下 V3.5 文件只是历史资料，不得作为当前合规依据：
 
 ```text
-../PRD归档/蛋宝宝小程序_V3.5_PRD.md
+仓库外历史归档：蛋宝宝小程序_V3.5_PRD.md
 docs/蛋宝宝小程序_V3.5_实现口径.md
 ```
 
@@ -68,7 +68,7 @@ docs/蛋宝宝小程序_V3.5_实现口径.md
 | 状态 key | 用户名称 | 对应动作 | 屏 | 能说话 |
 | --- | --- | --- | --- | --- |
 | `sleep` | 睡觉 | `lamp_off` 关台灯 | 左 | 否 |
-| `lazy` | 赖床 | `pull_blanket` 盖被子 | 左 | 否 |
+| `lazy` | 小憩（历史文档称赖床） | `pull_blanket` 盖被子 | 左 | 否 |
 | `stare` | 发呆 | `tap_pet` 点 ta | 中 | 是 |
 | `drawing` | 涂涂画画 | `turn_paper` 点画纸 | 中 | 是 |
 | `reading` | 看书 | `turn_book_page` 翻书页 | 中 | 是 |

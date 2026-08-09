@@ -20,7 +20,7 @@ const petStore = require('../miniprogram/utils/pet-store');
 const analytics = require('../miniprogram/services/analytics');
 const h5Bridge = require('../miniprogram/services/birth-card-h5');
 
-assert.equal(config.version, '3.6.0-ordinary', '前端版本必须对齐 V3.6 普通版');
+assert.equal(config.version, '3.7.0-ordinary', '前端版本必须对齐 V3.7 普通版');
 assert.equal(config.buildTarget, 'ordinary-live', '生产构建必须明确为普通版 live');
 assert.equal(runtime.getMode(), 'live', '普通版运行时只能使用 live');
 assert.equal(runtime.setMode('demo').ok, false, '普通版不得切换到 demo');
@@ -302,4 +302,4 @@ assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋�
   execFileSync(process.execPath, [path.join(root, 'miniprogram/services/tests', test)], { stdio: 'pipe' });
 });
 
-console.log('V3.6 普通小程序核心合规回归通过。');
+console.log('V3.7 普通小程序核心合规回归通过。');

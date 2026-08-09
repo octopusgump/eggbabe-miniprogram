@@ -2,7 +2,7 @@
   <nav-bar title="隐私协议"></nav-bar>
   <scroll-view scroll-y class="content" scroll-into-view="{{scrollTarget}}" scroll-with-animation="{{true}}">
     <text class="doc-title">蛋宝宝隐私政策</text>
-    <text class="doc-meta">更新日期：2026年8月1日 · 适用版本 v3.6</text>
+    <text class="doc-meta">更新日期：2026年8月9日 · 适用版本 v3.7</text>
     <text class="doc-intro">本政策说明上海爱予慧科技有限责任公司如何在 eggbabe 普通小程序中处理个人信息。我们会处理实体蛋绑定、孵化互动、安全对话、收藏卡和账户服务所必需的信息。正式发布文本须以法务审核并部署在 eggbabe.com 的版本为准。</text>
 
     <view class="toc">

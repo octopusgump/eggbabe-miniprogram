@@ -26,7 +26,7 @@ const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   // 快捷项必须落到已有动作全景的状态，避免验收器选择后看不见对应画面。
   Object.freeze({ key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing' }),
   Object.freeze({ key: 'home-sleep', label: '在家 · 睡觉（可对话）', major: 'home', stateKey: 'sleep', actionDone: true }),
-  Object.freeze({ key: 'home-lazy', label: '在家 · 赖床', major: 'home', stateKey: 'lazy' }),
+  Object.freeze({ key: 'home-lazy', label: '在家 · 小憩', major: 'home', stateKey: 'lazy' }),
   Object.freeze({ key: 'home-stare', label: '在家 · 发呆', major: 'home', stateKey: 'stare' }),
   Object.freeze({ key: 'home-reading', label: '在家 · 看书', major: 'home', stateKey: 'reading' }),
   Object.freeze({ key: 'home-music', label: '在家 · 听音乐', major: 'home', stateKey: 'music' }),

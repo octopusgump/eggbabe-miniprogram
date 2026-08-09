@@ -24,10 +24,10 @@ sourceScenes.forEach(scene => {
 assert.equal(postHatchAssets.resolvePanoramaScene('unknown_scene'), null, '未知 scene key 不得静默混入其他套装');
 const actionScenes = postHatchAssets.POST_HATCH.actionPanoramaScenes || {};
 const actionScenesByCharacter = postHatchAssets.POST_HATCH.actionPanoramaScenesByCharacter || {};
-assert.deepEqual(Object.keys(actionScenes), ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'], '18 张日常动作图必须按六个状态、日间/日落/夜间三套登记');
+assert.deepEqual(Object.keys(actionScenes), ['sleep', 'stare', 'reading', 'gaming', 'window', 'drawing', 'music'], '21 张通用日常动作图必须按七个状态、日间/日落/夜间三套登记');
 assert.deepEqual(Object.keys(actionScenesByCharacter), ['jade-rabbit', 'boon-koi'], '玉兔与锦鲤都必须登记各自的正式动作全景');
 Object.entries(actionScenesByCharacter).forEach(([characterKey, scenes]) => {
-  const expectedStates = ['sleep', 'reading', 'gaming', 'window', 'drawing', 'music'];
+  const expectedStates = ['sleep', 'stare', 'reading', 'gaming', 'window', 'drawing', 'music', 'lazy'];
   assert.deepEqual(Object.keys(scenes), expectedStates, `${characterKey} 必须登记所有已交付动作`);
   Object.values(scenes).forEach(scene => {
     const registeredSceneKeys = Object.keys(scene.panoramaBySceneKey);
@@ -52,6 +52,28 @@ const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, 
 assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '春季晴朗日间睡觉必须读取对应 CDN 动作全景');
 const sunsetAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey: 'spring_clear_sunset', weather: 'sunny', period: 'sunset' }, 'https://cdn.example.com');
 assert.equal(sunsetAction && sunsetAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_sunset_v01.webp', '春季晴朗日落睡觉必须读取对应 CDN 动作全景');
+const lazyState = { atHome: true, key: 'lazy' };
+const lazyDayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, lazyState, { sceneKey: 'spring_clear_day', weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
+assert.equal(lazyDayAction && lazyDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_lazy_day_v01.webp', '玉兔春季晴朗日间小憩必须读取已晋级的正式动作全景');
+['day', 'sunset', 'night'].forEach(period => {
+  const sceneKey = `spring_clear_${period}`;
+  const sleepPanorama = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey, weather: 'sunny', period });
+  const lazyPanorama = postHatchAssets.resolveActionPanorama(jadeRabbit, lazyState, { sceneKey, weather: 'sunny', period });
+  assert.equal(Boolean(sleepPanorama && lazyPanorama), true, `玉兔 ${period} 必须同时具备独立的睡觉与小憩图片`);
+  assert.notEqual(sleepPanorama.panorama, lazyPanorama.panorama, `玉兔 ${period} 的睡觉与小憩不得复用同一张图片`);
+});
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, lazyState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '玉兔小憩不得在未登记的雨天复用春季晴天动作图');
+const koiLazyDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, lazyState, { sceneKey: 'spring_clear_day', weather: 'sunny', period: 'day' });
+assert.equal(koiLazyDayAction && koiLazyDayAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_lazy_day_v01.webp'), true, '锦鲤春季晴朗日间小憩必须读取自己的正式动作全景');
+const stareState = { atHome: true, key: 'stare' };
+['day', 'sunset', 'night'].forEach(period => {
+  const sceneKey = `spring_clear_${period}`;
+  const jadeStare = postHatchAssets.resolveActionPanorama(jadeRabbit, stareState, { sceneKey, weather: 'sunny', period });
+  const koiStare = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, stareState, { sceneKey, weather: 'sunny', period });
+  assert.equal(jadeStare && jadeStare.panorama.endsWith(`/jade-rabbit/home-bedroom/home_bedroom_stare_${period}_v01.webp`), true, `玉兔 ${period} 发呆必须读取自己的正式动作全景`);
+  assert.equal(koiStare && koiStare.panorama.endsWith(`/boon-koi/home-bedroom/home_bedroom_stare_${period}_v01.webp`), true, `锦鲤 ${period} 发呆必须读取自己的正式动作全景`);
+});
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, stareState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '发呆不得在未登记的雨天复用春季晴天动作图');
 const lightsOffAction = postHatchAssets.resolveActionPanorama(jadeRabbit, Object.assign({}, sleepState, { actionDone: true }), { sceneKey: 'spring_clear_night', weather: 'sunny', period: 'night' });
 assert.equal(lightsOffAction && lightsOffAction.panorama.endsWith('/home_bedroom_nap_lights_off_night_v01.webp') && lightsOffAction.variant === 'lights-off', true, '夜间关灯后必须切换为闭眼关灯动作全景');
 assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '雨天不得静默使用晴天烘焙动作图');
@@ -62,14 +84,21 @@ assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { sce
 assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { weather: 'sunny', period: 'day' }), null, '缺少环境键时不得按时段猜测动作全景');
 const koiDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'spring_clear_day', weather: 'sunny', period: 'day' }, 'https://cdn.example.com');
 assert.equal(koiDayAction && koiDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom/home_bedroom_nap_day_v01.webp', '锦鲤春季晴朗日间睡觉必须读取自己的正式动作全景');
+['day', 'sunset', 'night'].forEach(period => {
+  const sceneKey = `spring_clear_${period}`;
+  const sleepPanorama = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey, weather: 'sunny', period });
+  const lazyPanorama = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, lazyState, { sceneKey, weather: 'sunny', period });
+  assert.equal(Boolean(sleepPanorama && lazyPanorama), true, `锦鲤 ${period} 必须同时具备独立的睡觉与小憩图片`);
+  assert.notEqual(sleepPanorama.panorama, lazyPanorama.panorama, `锦鲤 ${period} 的睡觉与小憩不得复用同一张图片`);
+});
 assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'spring_rain_day', weather: 'rain', period: 'day' }), null, '锦鲤雨天不得静默使用晴天烘焙动作图');
 assert.equal(postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, Object.assign({}, sleepState, { actionDone: true }), { sceneKey: 'spring_clear_night', weather: 'sunny', period: 'night' }).variant, 'default', '锦鲤没有关灯资产时不得复用玉兔关灯版本');
 const koiNapWeatherAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { sceneKey: 'summer_storm_night', weather: 'storm', period: 'night' });
 assert.equal(koiNapWeatherAction && koiNapWeatherAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_nap_summer_storm_night_v01.webp'), true, '已审核锦鲤夏季雷暴小憩图必须覆盖对应环境键');
 const manifest = JSON.parse(childProcess.execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: process.cwd(), encoding: 'utf8' }));
 const actionAssets = manifest.assets.filter(item => item.kind === 'post_hatch_action_panorama');
-assert.equal(actionAssets.length, 40, 'CDN 清单必须覆盖 18 张玉兔春季通用动作图、18 张锦鲤春季通用动作图、玉兔关灯变体和 3 张季节天气动作图（共 40 条运行时路径）');
-assert.equal(new Set(actionAssets.map(item => item.cdn_path)).size, 40, 'CDN 动作清单不得出现同一张图被登记到多个环境键');
+assert.equal(actionAssets.length, 52, 'CDN 清单必须覆盖玉兔与锦鲤各 24 张春季动作图、玉兔关灯变体和 3 张季节天气动作图（共 52 条运行时路径）');
+assert.equal(new Set(actionAssets.map(item => item.cdn_path)).size, 52, 'CDN 动作清单不得出现同一张图被登记到多个环境键');
 assert.equal(actionAssets.every(item => item.exists && item.sha256 && item.cdn_path.startsWith('/assets/scenes/lifecycle/post-hatch/60-action-scenes/')), true, 'CDN 动作清单中的每个正式 WebP 必须在本地存在并包含校验哈希');
 assert.equal(Object.prototype.hasOwnProperty.call(postHatchAssets.POST_HATCH, 'characterPoses'), false, '正式运行时不得登记会与动作全景重复叠加的透明角色图');
 
@@ -97,11 +126,8 @@ assert.equal(lifeSceneLogic.includes('onCompanionStateTesterSelect(event)'), tru
 assert.equal(lifeSceneLogic.includes('const resetCompanionStatePreview = Boolean(') && lifeSceneLogic.includes("companionStateTesterLabel: companionStateTesterMissing\n        ? `${AUTO_COMPANION_STATE_OPTION.label} · 缺图片`"), true, '环境切换使已选动作失配时，验收器必须回到跟随时间并明确标记缺图片');
 assert.equal(lifeSceneLogic.includes("key: 'home-talk'"), true, '陪伴状态测试必须覆盖在家且可对话');
 assert.equal(lifeSceneLogic.includes("key: 'home-sleep'"), true, '陪伴状态测试必须覆盖睡觉时仍可对话');
-['home-reading', 'home-music', 'home-window', 'home-gaming'].forEach(key => {
+['home-lazy', 'home-stare', 'home-reading', 'home-music', 'home-window', 'home-gaming'].forEach(key => {
   assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须覆盖 ${key} 动作全景`);
-});
-['home-lazy', 'home-stare'].forEach(key => {
-  assert.equal(lifeSceneLogic.includes(`key: '${key}'`), true, `陪伴状态测试必须显示 ${key} 的缺图配置项`);
 });
 assert.equal(lifeSceneLogic.includes("key: 'home-talk', label: '在家 · 可对话（画画）', major: 'home', stateKey: 'drawing'"), true, '可对话快捷项必须验证画画动作全景');
 assert.equal(lifeSceneLogic.includes("key: 'home-sleep', label: '在家 · 睡觉（可对话）', major: 'home', stateKey: 'sleep', actionDone: true"), true, '睡觉快捷项必须验证闭眼关灯全景仍可对话');

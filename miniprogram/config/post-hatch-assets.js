@@ -43,6 +43,8 @@ const PANORAMA_SCENE_SETS = Object.freeze((preHatchAssets.sceneTesterOptions || 
   return result;
 }, {}));
 
+// 产品口径中 `sleep` 是“睡觉”；其正式文件沿用早期 `nap` 文件名以保持 CDN 路径兼容。
+// 产品口径中的“小憩”使用独立状态 `lazy` 和独立 `home_bedroom_lazy_*` 文件，不得复用本组图片。
 const ACTION_PANORAMA_FILES = Object.freeze({
   sleep: Object.freeze({
     day: 'home_bedroom_nap_day_v01.webp',
@@ -50,6 +52,7 @@ const ACTION_PANORAMA_FILES = Object.freeze({
     night: 'home_bedroom_nap_night_v01.webp',
     nightAfterLampOff: 'home_bedroom_nap_lights_off_night_v01.webp'
   }),
+  stare: Object.freeze({ day: 'home_bedroom_stare_day_v01.webp', sunset: 'home_bedroom_stare_sunset_v01.webp', night: 'home_bedroom_stare_night_v01.webp' }),
   reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', sunset: 'home_bedroom_read_sunset_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
   gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', sunset: 'home_bedroom_game_sunset_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
   window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', sunset: 'home_bedroom_window_sunset_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
@@ -68,9 +71,20 @@ const GENERIC_ACTION_SCENE_KEYS = Object.freeze({
 // 已审核的季节天气动作图优先于通用晴朗动作图；没有登记的环境键继续使用环境全景。
 const ACTION_PANORAMA_SCENE_KEY_FILES = Object.freeze({
   'jade-rabbit': Object.freeze({
+    // `lazy` 是产品对外显示的“小憩”，与 `sleep`（睡觉）是两个独立动作。
+    lazy: Object.freeze({
+      spring_clear_day: 'home_bedroom_lazy_day_v01.webp',
+      spring_clear_sunset: 'home_bedroom_lazy_sunset_v01.webp',
+      spring_clear_night: 'home_bedroom_lazy_night_v01.webp'
+    }),
     reading: Object.freeze({ autumn_rain_sunset: 'home_bedroom_read_autumn_rain_sunset_v01.webp' })
   }),
   'boon-koi': Object.freeze({
+    lazy: Object.freeze({
+      spring_clear_day: 'home_bedroom_lazy_day_v01.webp',
+      spring_clear_sunset: 'home_bedroom_lazy_sunset_v01.webp',
+      spring_clear_night: 'home_bedroom_lazy_night_v01.webp'
+    }),
     sleep: Object.freeze({ summer_storm_night: 'home_bedroom_nap_summer_storm_night_v01.webp' }),
     window: Object.freeze({ winter_snow_day: 'home_bedroom_window_winter_snow_day_v01.webp' })
   })

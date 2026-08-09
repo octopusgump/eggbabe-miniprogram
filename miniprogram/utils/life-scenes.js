@@ -15,7 +15,7 @@ const HOME_STATES = [
     keepsake: { id: 'copper-spoon', name: '糖画铜勺', story: '小喜鹊的奶奶是庙会上画糖画的手艺人。奶奶走后，小喜鹊把那只旧铜勺带在身边，想奶奶了就画一只歪歪扭扭的喜鹊。奶奶说过，画得像不像没关系，甜就行。' }
   },
   {
-    key: 'lazy', major: 'home', majorLabel: '家', label: '赖床', screen: 0,
+    key: 'lazy', major: 'home', majorLabel: '家', label: '小憩', screen: 0,
     line: '我听见窗外亮起来了，还想再缩一会儿。',
     action: { id: 'pull_blanket', kind: 'blanket', screen: 0, feedback: '被子轻轻盖好，我往里缩了缩。' },
     keepsake: { id: 'soft-button', name: '旧木纽扣', story: '这颗纽扣原本缝在一条很旧的围巾上。围巾散线以后，我把它留了下来。天气凉的时候握一会儿，就像有人替我把领口掖好了。' }

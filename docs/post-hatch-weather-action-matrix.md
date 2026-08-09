@@ -26,7 +26,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_clear_day_v01.webp | boon-koi/home_bedroom_nap_spring_clear_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_clear_day_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_clear_day_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_clear_day_v01.webp | boon-koi/home_bedroom_stare_spring_clear_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_clear_day_v01.webp | boon-koi/home_bedroom_draw_spring_clear_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_clear_day_v01.webp | boon-koi/home_bedroom_read_spring_clear_day_v01.webp |
@@ -39,7 +39,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_nap_spring_clear_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_stare_spring_clear_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_draw_spring_clear_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_clear_sunset_v01.webp | boon-koi/home_bedroom_read_spring_clear_sunset_v01.webp |
@@ -52,7 +52,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_clear_night_v01.webp | boon-koi/home_bedroom_nap_spring_clear_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_clear_night_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_clear_night_v01.webp | boon-koi/home_bedroom_lazy_spring_clear_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_clear_night_v01.webp | boon-koi/home_bedroom_stare_spring_clear_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_clear_night_v01.webp | boon-koi/home_bedroom_draw_spring_clear_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_clear_night_v01.webp | boon-koi/home_bedroom_read_spring_clear_night_v01.webp |
@@ -65,7 +65,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_nap_spring_cloudy_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_stare_spring_cloudy_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_draw_spring_cloudy_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_cloudy_day_v01.webp | boon-koi/home_bedroom_read_spring_cloudy_day_v01.webp |
@@ -78,7 +78,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_nap_spring_cloudy_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_stare_spring_cloudy_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_draw_spring_cloudy_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_cloudy_sunset_v01.webp | boon-koi/home_bedroom_read_spring_cloudy_sunset_v01.webp |
@@ -91,7 +91,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_nap_spring_cloudy_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_spring_cloudy_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_stare_spring_cloudy_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_draw_spring_cloudy_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_cloudy_night_v01.webp | boon-koi/home_bedroom_read_spring_cloudy_night_v01.webp |
@@ -104,7 +104,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_rain_day_v01.webp | boon-koi/home_bedroom_nap_spring_rain_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_rain_day_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_rain_day_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_rain_day_v01.webp | boon-koi/home_bedroom_stare_spring_rain_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_rain_day_v01.webp | boon-koi/home_bedroom_draw_spring_rain_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_rain_day_v01.webp | boon-koi/home_bedroom_read_spring_rain_day_v01.webp |
@@ -117,7 +117,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_nap_spring_rain_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_stare_spring_rain_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_draw_spring_rain_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_rain_sunset_v01.webp | boon-koi/home_bedroom_read_spring_rain_sunset_v01.webp |
@@ -130,7 +130,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_spring_rain_night_v01.webp | boon-koi/home_bedroom_nap_spring_rain_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_spring_rain_night_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_spring_rain_night_v01.webp | boon-koi/home_bedroom_lazy_spring_rain_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_spring_rain_night_v01.webp | boon-koi/home_bedroom_stare_spring_rain_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_spring_rain_night_v01.webp | boon-koi/home_bedroom_draw_spring_rain_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_spring_rain_night_v01.webp | boon-koi/home_bedroom_read_spring_rain_night_v01.webp |
@@ -143,7 +143,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_clear_day_v01.webp | boon-koi/home_bedroom_nap_summer_clear_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_clear_day_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_clear_day_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_clear_day_v01.webp | boon-koi/home_bedroom_stare_summer_clear_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_clear_day_v01.webp | boon-koi/home_bedroom_draw_summer_clear_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_clear_day_v01.webp | boon-koi/home_bedroom_read_summer_clear_day_v01.webp |
@@ -156,7 +156,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_nap_summer_clear_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_stare_summer_clear_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_draw_summer_clear_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_clear_sunset_v01.webp | boon-koi/home_bedroom_read_summer_clear_sunset_v01.webp |
@@ -169,7 +169,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_clear_night_v01.webp | boon-koi/home_bedroom_nap_summer_clear_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_clear_night_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_clear_night_v01.webp | boon-koi/home_bedroom_lazy_summer_clear_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_clear_night_v01.webp | boon-koi/home_bedroom_stare_summer_clear_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_clear_night_v01.webp | boon-koi/home_bedroom_draw_summer_clear_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_clear_night_v01.webp | boon-koi/home_bedroom_read_summer_clear_night_v01.webp |
@@ -182,7 +182,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_nap_summer_cloudy_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_stare_summer_cloudy_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_draw_summer_cloudy_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_cloudy_day_v01.webp | boon-koi/home_bedroom_read_summer_cloudy_day_v01.webp |
@@ -195,7 +195,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_nap_summer_cloudy_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_stare_summer_cloudy_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_draw_summer_cloudy_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_cloudy_sunset_v01.webp | boon-koi/home_bedroom_read_summer_cloudy_sunset_v01.webp |
@@ -208,7 +208,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_nap_summer_cloudy_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_summer_cloudy_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_stare_summer_cloudy_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_draw_summer_cloudy_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_cloudy_night_v01.webp | boon-koi/home_bedroom_read_summer_cloudy_night_v01.webp |
@@ -221,7 +221,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_storm_day_v01.webp | boon-koi/home_bedroom_nap_summer_storm_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_storm_day_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_storm_day_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_storm_day_v01.webp | boon-koi/home_bedroom_stare_summer_storm_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_storm_day_v01.webp | boon-koi/home_bedroom_draw_summer_storm_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_storm_day_v01.webp | boon-koi/home_bedroom_read_summer_storm_day_v01.webp |
@@ -234,7 +234,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_nap_summer_storm_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_stare_summer_storm_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_draw_summer_storm_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_storm_sunset_v01.webp | boon-koi/home_bedroom_read_summer_storm_sunset_v01.webp |
@@ -247,7 +247,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_summer_storm_night_v01.webp | boon-koi/home_bedroom_nap_summer_storm_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_summer_storm_night_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_summer_storm_night_v01.webp | boon-koi/home_bedroom_lazy_summer_storm_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_summer_storm_night_v01.webp | boon-koi/home_bedroom_stare_summer_storm_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_summer_storm_night_v01.webp | boon-koi/home_bedroom_draw_summer_storm_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_summer_storm_night_v01.webp | boon-koi/home_bedroom_read_summer_storm_night_v01.webp |
@@ -260,7 +260,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_clear_day_v01.webp | boon-koi/home_bedroom_nap_autumn_clear_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_clear_day_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_clear_day_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_clear_day_v01.webp | boon-koi/home_bedroom_stare_autumn_clear_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_clear_day_v01.webp | boon-koi/home_bedroom_draw_autumn_clear_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_clear_day_v01.webp | boon-koi/home_bedroom_read_autumn_clear_day_v01.webp |
@@ -273,7 +273,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_nap_autumn_clear_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_stare_autumn_clear_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_draw_autumn_clear_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_clear_sunset_v01.webp | boon-koi/home_bedroom_read_autumn_clear_sunset_v01.webp |
@@ -286,7 +286,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_clear_night_v01.webp | boon-koi/home_bedroom_nap_autumn_clear_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_clear_night_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_clear_night_v01.webp | boon-koi/home_bedroom_lazy_autumn_clear_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_clear_night_v01.webp | boon-koi/home_bedroom_stare_autumn_clear_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_clear_night_v01.webp | boon-koi/home_bedroom_draw_autumn_clear_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_clear_night_v01.webp | boon-koi/home_bedroom_read_autumn_clear_night_v01.webp |
@@ -299,7 +299,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_rain_day_v01.webp | boon-koi/home_bedroom_nap_autumn_rain_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_rain_day_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_rain_day_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_rain_day_v01.webp | boon-koi/home_bedroom_stare_autumn_rain_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_rain_day_v01.webp | boon-koi/home_bedroom_draw_autumn_rain_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_rain_day_v01.webp | boon-koi/home_bedroom_read_autumn_rain_day_v01.webp |
@@ -312,7 +312,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_nap_autumn_rain_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_stare_autumn_rain_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_draw_autumn_rain_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_rain_sunset_v01.webp | boon-koi/home_bedroom_read_autumn_rain_sunset_v01.webp |
@@ -325,7 +325,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_autumn_rain_night_v01.webp | boon-koi/home_bedroom_nap_autumn_rain_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_autumn_rain_night_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_autumn_rain_night_v01.webp | boon-koi/home_bedroom_lazy_autumn_rain_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_autumn_rain_night_v01.webp | boon-koi/home_bedroom_stare_autumn_rain_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_autumn_rain_night_v01.webp | boon-koi/home_bedroom_draw_autumn_rain_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_autumn_rain_night_v01.webp | boon-koi/home_bedroom_read_autumn_rain_night_v01.webp |
@@ -338,7 +338,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_clear_day_v01.webp | boon-koi/home_bedroom_nap_winter_clear_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_clear_day_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_clear_day_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_clear_day_v01.webp | boon-koi/home_bedroom_stare_winter_clear_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_clear_day_v01.webp | boon-koi/home_bedroom_draw_winter_clear_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_clear_day_v01.webp | boon-koi/home_bedroom_read_winter_clear_day_v01.webp |
@@ -351,7 +351,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_nap_winter_clear_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_stare_winter_clear_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_draw_winter_clear_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_clear_sunset_v01.webp | boon-koi/home_bedroom_read_winter_clear_sunset_v01.webp |
@@ -364,7 +364,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_clear_night_v01.webp | boon-koi/home_bedroom_nap_winter_clear_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_clear_night_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_clear_night_v01.webp | boon-koi/home_bedroom_lazy_winter_clear_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_clear_night_v01.webp | boon-koi/home_bedroom_stare_winter_clear_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_clear_night_v01.webp | boon-koi/home_bedroom_draw_winter_clear_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_clear_night_v01.webp | boon-koi/home_bedroom_read_winter_clear_night_v01.webp |
@@ -377,7 +377,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_nap_winter_cloudy_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_stare_winter_cloudy_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_draw_winter_cloudy_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_cloudy_day_v01.webp | boon-koi/home_bedroom_read_winter_cloudy_day_v01.webp |
@@ -390,7 +390,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_nap_winter_cloudy_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_stare_winter_cloudy_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_draw_winter_cloudy_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_cloudy_sunset_v01.webp | boon-koi/home_bedroom_read_winter_cloudy_sunset_v01.webp |
@@ -403,7 +403,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_nap_winter_cloudy_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_lazy_winter_cloudy_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_stare_winter_cloudy_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_draw_winter_cloudy_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_cloudy_night_v01.webp | boon-koi/home_bedroom_read_winter_cloudy_night_v01.webp |
@@ -416,7 +416,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_snow_day_v01.webp | boon-koi/home_bedroom_nap_winter_snow_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_snow_day_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_snow_day_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_snow_day_v01.webp | boon-koi/home_bedroom_stare_winter_snow_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_snow_day_v01.webp | boon-koi/home_bedroom_draw_winter_snow_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_snow_day_v01.webp | boon-koi/home_bedroom_read_winter_snow_day_v01.webp |
@@ -429,7 +429,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_nap_winter_snow_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_stare_winter_snow_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_draw_winter_snow_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_snow_sunset_v01.webp | boon-koi/home_bedroom_read_winter_snow_sunset_v01.webp |
@@ -442,7 +442,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_snow_night_v01.webp | boon-koi/home_bedroom_nap_winter_snow_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_snow_night_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_snow_night_v01.webp | boon-koi/home_bedroom_lazy_winter_snow_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_snow_night_v01.webp | boon-koi/home_bedroom_stare_winter_snow_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_snow_night_v01.webp | boon-koi/home_bedroom_draw_winter_snow_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_snow_night_v01.webp | boon-koi/home_bedroom_read_winter_snow_night_v01.webp |
@@ -455,7 +455,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_nap_winter_post_snow_day_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_day_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_day_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_stare_winter_post_snow_day_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_draw_winter_post_snow_day_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_post_snow_day_v01.webp | boon-koi/home_bedroom_read_winter_post_snow_day_v01.webp |
@@ -468,7 +468,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_nap_winter_post_snow_sunset_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_sunset_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_sunset_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_stare_winter_post_snow_sunset_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_draw_winter_post_snow_sunset_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_post_snow_sunset_v01.webp | boon-koi/home_bedroom_read_winter_post_snow_sunset_v01.webp |
@@ -481,7 +481,7 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 | 居家状态 | 玉兔 | 锦鲤 |
 | --- | --- | --- |
 | sleep · 睡觉 | jade-rabbit/home_bedroom_nap_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_nap_winter_post_snow_night_v01.webp |
-| lazy · 赖床 | jade-rabbit/home_bedroom_lazy_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_night_v01.webp |
+| lazy · 小憩 | jade-rabbit/home_bedroom_lazy_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_lazy_winter_post_snow_night_v01.webp |
 | stare · 发呆 | jade-rabbit/home_bedroom_stare_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_stare_winter_post_snow_night_v01.webp |
 | drawing · 涂涂画画 | jade-rabbit/home_bedroom_draw_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_draw_winter_post_snow_night_v01.webp |
 | reading · 看书 | jade-rabbit/home_bedroom_read_winter_post_snow_night_v01.webp | boon-koi/home_bedroom_read_winter_post_snow_night_v01.webp |
@@ -491,6 +491,6 @@ home_bedroom_<action-key>_<environment-key>_v01.webp
 
 ## 锦鲤动作约束
 
-- 睡觉、赖床：像鱼一样侧卧或贴地休息，不能以人形姿势躺床。
+- 睡觉、小憩：像鱼一样侧卧或贴地休息，不能以人形姿势躺床。
 - 看书、游戏、画画：只能使用既定的分离淡青蓝灵魂手；不得出现实体手臂、肉色人手或靴子误作手。
 - 看窗外、听音乐、发呆：优先使用自然鱼鳍。

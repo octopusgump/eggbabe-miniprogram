@@ -16,12 +16,18 @@ function resolveAssetUrl(path, cdnBase) {
   return `${base}${source}`;
 }
 
-// 全屏「日常窗外详情」只使用与当前天气、时段精确匹配的窗景。
-// 已登记 7 张：晴朗日间／日落／夜晚、多云日间／夜晚、降雪日间／夜晚。
-// 其余组合（雨、雷雨、雪后，以及多云与降雪的日落）尚无对应素材，返回空串，
-// 由 daily-window-detail 显示空态与重试；禁止用其他天气或整张房间图代替。
-function windowAssetPath(weather, period) {
+// 全屏「日常窗外详情」优先使用 scene_key 精确匹配的窗景。
+// 既有的 7 张共享图继续覆盖其余 20 个环境键；禁止跨天气、跨季节或用房间图回退。
+function windowAssetPath(sceneKey, weather, period) {
+  // 保持两参数旧调用兼容：windowAssetPath(weather, period)。
+  if (period === undefined) {
+    period = weather;
+    weather = sceneKey;
+    sceneKey = '';
+  }
   const windowWeather = PRE_HATCH_ASSETS.windowWeather || {};
+  const exactPath = (windowWeather.bySceneKey || {})[String(sceneKey || '')];
+  if (exactPath) return exactPath;
   const byWeather = {
     sunny: { day: windowWeather.clearDay, sunset: windowWeather.clearSunset, night: windowWeather.clearNight },
     cloudy: { day: windowWeather.cloudyDay, night: windowWeather.cloudyNight },
@@ -59,9 +65,7 @@ function resolve(serverPresentation, context) {
     valid: true,
     fullSceneImage: resolveAssetUrl(scene.background, cdnBase),
     backgroundImage: '',
-    // 缺少精确匹配的窗景时留空，让窗外详情进入空态；不用其他天气的窗景，
-    // 也不用整张房间中央场景冒充窗外。
-    windowImage: resolveAssetUrl(windowAssetPath(environment.weather, environment.period), cdnBase),
+    windowImage: resolveAssetUrl(windowAssetPath(environment.sceneKey, environment.weather, environment.period), cdnBase),
     weatherOverlay: '',
     nestImage: resolveAssetUrl(scene.nest, cdnBase),
     eggImage: resolveAssetUrl(scene.egg, cdnBase),

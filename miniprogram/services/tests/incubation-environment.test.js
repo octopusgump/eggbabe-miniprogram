@@ -1,5 +1,6 @@
 const assert = require('assert');
 const environment = require('../incubation-environment');
+const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 
 const pet = {
   id: 'egg-environment-test',
@@ -35,6 +36,18 @@ assert.equal(environment.millisecondsUntilNextEnvironmentBoundary(new Date(2026,
 assert.equal(environment.millisecondsUntilNextEnvironmentBoundary(new Date(2026, 6, 26, 23, 59).getTime()), 60 * 1000);
 assert.equal(resolveAt(12, 0, 26, true).season, 'summer', '破壳后按中国上海月份映射季节');
 assert.equal(environment.resolveAssetUrl('/assets/scenes/lifecycle/pre-hatch/x.webp', 'https://cdn.example.com/').startsWith('https://cdn.example.com/assets/'), true);
+
+const exactWindowScenes = Object.keys(preHatchAssets.windowWeather.bySceneKey || {});
+assert.equal(exactWindowScenes.length, 16, '16 张新增窗景必须按完整 scene_key 登记');
+exactWindowScenes.forEach(sceneKey => {
+  const scene = preHatchAssets.sceneTesterOptions.find(item => item.key === sceneKey);
+  const image = environment.windowAssetPath(sceneKey, scene.weather, scene.period);
+  assert.equal(image, preHatchAssets.windowWeather.bySceneKey[sceneKey], `${sceneKey} 必须返回精确窗景`);
+  assert.equal(image.includes('candidate'), false, `${sceneKey} 不得读取候选目录`);
+});
+preHatchAssets.sceneTesterOptions.forEach(scene => {
+  assert.ok(environment.windowAssetPath(scene.key, scene.weather, scene.period), `${scene.key} 必须有可用的全屏窗景`);
+});
 
 const manifest = JSON.parse(require('child_process').execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: process.cwd(), encoding: 'utf8' }));
 assert.equal(manifest.assets.filter(item => item.kind === 'pre_hatch_egg').length, 36, 'CDN 清单必须逐一列出 36 个精确蛋体层，包括尚待补齐的素材');

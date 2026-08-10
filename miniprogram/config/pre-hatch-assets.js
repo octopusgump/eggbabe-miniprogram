@@ -88,7 +88,26 @@ module.exports = {
       cloudyDay: `${SHARED_ROOT}/10-background/window-weather/w_04_cloudy_day.webp`,
       cloudyNight: `${SHARED_ROOT}/10-background/window-weather/w_05_cloudy_night.webp`,
       snowDay: `${SHARED_ROOT}/10-background/window-weather/w_06_snow_day.webp`,
-      snowNight: `${SHARED_ROOT}/10-background/window-weather/w_07_snow_night.webp`
+      snowNight: `${SHARED_ROOT}/10-background/window-weather/w_07_snow_night.webp`,
+      // 其余 16 个环境键不再跨季节/天气复用；全屏窗外详情优先按 scene_key 精确取图。
+      bySceneKey: Object.freeze({
+        spring_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_cloudy_sunset_v01.webp`,
+        spring_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_day_v01.webp`,
+        spring_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_sunset_v01.webp`,
+        spring_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_night_v01.webp`,
+        summer_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_cloudy_sunset_v01.webp`,
+        summer_storm_day: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_day_v01.webp`,
+        summer_storm_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_sunset_v01.webp`,
+        summer_storm_night: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_night_v01.webp`,
+        autumn_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_day_v01.webp`,
+        autumn_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_sunset_v01.webp`,
+        autumn_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_night_v01.webp`,
+        winter_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_cloudy_sunset_v01.webp`,
+        winter_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_snow_sunset_v01.webp`,
+        winter_post_snow_day: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_day_v01.webp`,
+        winter_post_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_sunset_v01.webp`,
+        winter_post_snow_night: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_night_v01.webp`
+      })
     },
     interactionIcons: {
       secret: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_secret.svg`,

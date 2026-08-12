@@ -143,6 +143,19 @@ try {
   assert.equal(closingDoodleContext.data.homeStagePhase, 'hidden', '首页重建前必须保持隐藏，避免退出动画从可见帧重新播放');
   assert.equal(closingDoodleContext.data.homeEggArtPreview, '', '清空作品返回首页前必须先清除旧蛋壳预览缓存');
   assert.equal(homeResumeCalls, 1, '清理旧预览后必须继续恢复首页资源');
+  assert.equal(closingDoodleContext.data.doodleReturnNoticeVisible, false, '普通关闭画画编辑器不得误报蛋壳已更新');
+
+  const savedDoodleContext = pageContext(home, {
+    doodleEditorVisible: true,
+    doodleReturnNoticeText: '',
+    doodleReturnNoticeVisible: false
+  });
+  savedDoodleContext.onShow = () => {};
+  home.onDoodleEditorClose.call(savedDoodleContext, { detail: { saved: true } });
+  assert.equal(savedDoodleContext.data.doodleReturnNoticeText, '蛋壳已更新', '保存返回桌面必须使用明确的更新提示');
+  assert.equal(savedDoodleContext.data.doodleReturnNoticeVisible, true, '保存返回桌面必须立即显示标准轻提示');
+  runTimers();
+  assert.equal(savedDoodleContext.data.doodleReturnNoticeVisible, false, '桌面更新提示必须在 1.8 秒后自动收起');
 
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'wish' } } });
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
@@ -233,22 +246,20 @@ try {
   doodleContext.pageActive = true;
   doodleContext.editRevision = 1;
   doodleContext.savedRevision = 0;
-  let autoSaveCalls = 0;
-  doodleContext.persistCurrent = () => { autoSaveCalls += 1; };
-  doodle.scheduleAutoSave.call(doodleContext);
+  let backgroundSaveCalls = 0;
+  doodleContext.persistCurrent = () => { backgroundSaveCalls += 1; };
   doodle.onHide.call(doodleContext);
   runTimers();
-  assert.equal(autoSaveCalls, 0, '画画页隐藏后不得执行残留自动保存定时器');
+  assert.equal(backgroundSaveCalls, 0, '画画页隐藏后不得上传未确认的作品');
 
   doodle.onShow.call(doodleContext);
   runTimers();
-  assert.equal(autoSaveCalls, 1, '未保存作品回到前台后必须恢复自动保存');
+  assert.equal(backgroundSaveCalls, 0, '未保存作品回到前台后仍必须等待用户手动保存');
 
   doodleContext.pageActive = true;
-  doodle.scheduleAutoSave.call(doodleContext);
   doodle.onUnload.call(doodleContext);
   runTimers();
-  assert.equal(autoSaveCalls, 1, '画画页卸载后不得执行残留自动保存');
+  assert.equal(backgroundSaveCalls, 0, '画画页卸载时不得隐式上传作品');
 
   console.log('交互导航状态机校验通过。');
 } finally {

@@ -2,6 +2,7 @@
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
     "daily-window-detail": "../../components/daily-window-detail/daily-window-detail",
-    "doodle-editor": "../../components/doodle-editor/doodle-editor"
+    "doodle-editor": "../../components/doodle-editor/doodle-editor",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

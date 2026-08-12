@@ -158,6 +158,7 @@
 .scene-paused .egg,.scene-paused .egg-aura,.scene-paused .egg-shell-specular,.scene-paused .egg-shell-depth,.scene-paused .room-light-breathe { animation-play-state: paused; }
 .egg-render-cache { position: fixed; left: -2000px; top: 0; width: 500rpx; height: 500rpx; pointer-events: none; }
 .egg-render-cache--art { top: 500px; }
+.doodle-return-notice-anchor { position: fixed; z-index: 120; top: 180rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .scene-expand-overlay { position: fixed; z-index: 100; overflow: hidden; border-radius: 42rpx; background: #DCE5CE; pointer-events: none; animation: scene-expand-to-screen var(--scene-expand-duration, 560ms) cubic-bezier(.22,.61,.36,1) forwards; }
 .scene-expand-image { display: block; width: 100%; height: 100%; }
 .feedback-bubble { position: absolute; z-index: 8; max-width: 480rpx; padding: 18rpx 26rpx; border-radius: 28rpx 28rpx 28rpx 8rpx; background: rgba(255,255,255,.80); box-shadow: 0 12rpx 36rpx rgba(0,41,0,.10); color: #3D4930; font-size: 25rpx; animation: bubble-in .25s ease-out; }

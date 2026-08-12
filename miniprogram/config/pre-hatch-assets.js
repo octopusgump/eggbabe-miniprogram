@@ -73,13 +73,13 @@ module.exports = {
     },
     // 画蛋壳工具条与右侧撤销／清空图标，禁用态使用专用置灰图。
     doodleToolbar: {
-      brush: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_brush_96_v02.png`,
-      eraser: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_eraser_96_v02.png`,
-      sticker: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_sticker_96_v02.png`,
-      undo: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_96_v02.webp`,
-      undoDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_disabled_96_v01.webp`,
-      clear: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_96_v01.webp`,
-      clearDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_disabled_96_v01.webp`
+      brush: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_brush_96_v02_p8_v01.png`,
+      eraser: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_eraser_96_v02_p8_v01.png`,
+      sticker: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_sticker_96_v02_p8_v01.png`,
+      undo: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_96_v02_p8_v01.png`,
+      undoDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_undo_disabled_96_v01_p8_v01.png`,
+      clear: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_96_v01_p8_v01.png`,
+      clearDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_disabled_96_v01_p8_v01.png`
     },
     windowWeather: {
       clearDay: `${SHARED_ROOT}/10-background/window-weather/w_01_clear_day.webp`,
@@ -110,15 +110,15 @@ module.exports = {
       })
     },
     interactionIcons: {
-      secret: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_secret.svg`,
-      quiet: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_quiet.svg`,
-      window: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_window.svg`,
-      touch: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_touch.svg`,
-      draw: `${UI_3D_ACTIONS_ROOT}/ui_3d_drawing_palette_256_v02.webp`,
-      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_fountain_two_tier_simple_256_v04.webp`,
-      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_picture_book_simple_256_v03.webp`,
-      schedule: `${UI_3D_ACTIONS_ROOT}/ui_3d_schedule_flip_calendar_256_v02.webp`,
-      talk: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_talk.svg`
+      secret: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_secret_p8_v01.png`,
+      quiet: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_quiet_p8_v01.png`,
+      window: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_window_p8_v01.png`,
+      touch: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_touch_p8_v01.png`,
+      draw: `${UI_3D_ACTIONS_ROOT}/ui_3d_drawing_palette_128_p8_v01.png`,
+      wish: `${UI_3D_ACTIONS_ROOT}/ui_3d_wishing_fountain_two_tier_simple_128_p8_v01.png`,
+      learn: `${UI_3D_ACTIONS_ROOT}/ui_3d_early_learning_picture_book_simple_128_p8_v01.png`,
+      schedule: `${UI_3D_ACTIONS_ROOT}/ui_3d_schedule_flip_calendar_128_p8_v01.png`,
+      talk: `${PRE_HATCH_ROOT}/50-overlays/interaction-icons/interaction_talk_p8_v01.png`
     }
   }
 };

@@ -162,6 +162,8 @@ Page({
     sceneEffect: '',
     homeStagePhase: 'hidden',
     doodleEditorVisible: false,
+    doodleReturnNoticeText: '',
+    doodleReturnNoticeVisible: false,
     hasScenes: false,
     syncPending: 0,
     sceneImage: '',
@@ -1332,7 +1334,20 @@ Page({
     }, transitionDuration);
   },
 
-  onDoodleEditorClose() {
+  showDoodleReturnNotice() {
+    clearTimeout(this.doodleReturnNoticeTimer);
+    this.setData({
+      doodleReturnNoticeText: '蛋壳已更新',
+      doodleReturnNoticeVisible: true
+    });
+    this.doodleReturnNoticeTimer = setTimeout(() => {
+      this.doodleReturnNoticeTimer = null;
+      this.setData({ doodleReturnNoticeVisible: false });
+    }, 1800);
+  },
+
+  onDoodleEditorClose(event) {
+    const saved = Boolean(event && event.detail && event.detail.saved);
     this.doodleEditorPending = false;
     clearTimeout(this.doodleOpenTimer);
     this.doodleOpenTimer = null;
@@ -1340,7 +1355,10 @@ Page({
       doodleEditorVisible: false,
       homeStagePhase: 'hidden',
       homeEggArtPreview: ''
-    }, () => this.onShow());
+    }, () => {
+      this.onShow();
+      if (saved) this.showDoodleReturnNotice();
+    });
   },
 
   onCompanionTap(event) {
@@ -1642,6 +1660,8 @@ Page({
     this.doodleEditorPending = false;
     this.clearCuddleTimers();
     clearTimeout(this.feedbackTimer);
+    clearTimeout(this.doodleReturnNoticeTimer);
+    this.doodleReturnNoticeTimer = null;
     clearTimeout(this.sceneOpenTimer);
     clearTimeout(this.postHatchSlotTimer);
     this.cancelCompanionFirstHint();
@@ -1675,6 +1695,7 @@ Page({
       eggMotion: '',
       sceneEffect: '',
       feedback: '',
+      doodleReturnNoticeVisible: false,
       companionHintKey: '',
       companionHintVisible: false,
       tapParticles: [],

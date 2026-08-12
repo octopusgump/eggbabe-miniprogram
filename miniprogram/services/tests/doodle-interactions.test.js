@@ -43,7 +43,10 @@ try {
       },
       renderArt() {},
       renderAll() {},
-      scheduleAutoSave() {}
+      waitForPageExit() {
+        this.setData({ pageTransitionPhase: 'exiting' });
+        return Promise.resolve();
+      }
     });
   }
 
@@ -200,60 +203,135 @@ try {
   assert.equal(stickerWarning.data.canvasNoticeTone, 'warning', '需要用户处理的画布提示必须使用注意样式');
   doodlePage.dismissCanvasNotice.call(stickerWarning);
 
-  const saveSuccess = context();
-  saveSuccess.shellArt.operations = [shellArt.createSticker('star', 1, { x: 0.5, y: 0.5 })];
-  saveSuccess.editRevision = 1;
-  saveSuccess.performPersistence = async () => ({ ok: true });
-  const successResult = await doodlePage.persistCurrent.call(saveSuccess, { silent: true });
-  assert.equal(successResult.ok, true, '自动保存成功必须返回成功状态');
-  assert.equal(saveSuccess.savedRevision, 1, '自动保存成功必须推进已保存版本');
-  assert.equal(saveSuccess.data.saveStatus, 'saved', '自动保存成功后必须显示已保存');
+  const manualSave = context();
+  let manualUploadCount = 0;
+  manualSave.shellArt.operations = [shellArt.createSticker('star', 1, { x: 0.5, y: 0.5 })];
+  manualSave.performPersistence = async () => {
+    manualUploadCount += 1;
+    return { ok: true };
+  };
+  doodlePage.markDirty.call(manualSave);
+  assert.equal(manualSave.data.saveStatus, 'unsaved', '产生修改后必须进入等待手动保存状态');
+  assert.equal(manualSave.data.saveStatusText, '保存', '未保存状态必须提供明确的保存入口');
+  assert.equal(manualUploadCount, 0, '绘画、撤销或清空后不得自动上传作品');
+  const successResult = await doodlePage.onManualSave.call(manualSave);
+  assert.equal(successResult.ok, true, '用户点击保存后必须返回成功状态');
+  assert.equal(manualSave.savedRevision, 1, '手动保存成功必须推进已保存版本');
+  assert.equal(manualSave.data.saveStatus, 'saved', '手动保存成功后必须显示已保存');
+  assert.notEqual(manualSave.data.canvasNoticeText, '已保存', '保存成功只更新左上角状态，不得在蛋后方重复显示提示');
+  assert.equal(manualUploadCount, 1, '一次用户确认只能触发一次作品上传');
+  await doodlePage.onManualSave.call(manualSave);
+  assert.equal(manualUploadCount, 1, '没有新修改时重复点击不得再次上传');
 
   const saveFailure = context();
   saveFailure.editRevision = 1;
   saveFailure.pageActive = true;
   saveFailure.performPersistence = async () => ({ ok: false, message: '测试保存失败' });
-  const failureResult = await doodlePage.persistCurrent.call(saveFailure, { silent: true });
-  assert.equal(failureResult.ok, false, '自动保存失败必须保留失败状态');
-  assert.equal(saveFailure.savedRevision, 0, '自动保存失败不得错误推进已保存版本');
-  assert.equal(saveFailure.data.saveStatus, 'unsaved', '自动保存失败后必须恢复未保存状态');
+  const failureResult = await doodlePage.onManualSave.call(saveFailure);
+  assert.equal(failureResult.ok, false, '手动保存失败必须保留失败状态');
+  assert.equal(saveFailure.savedRevision, 0, '手动保存失败不得错误推进已保存版本');
+  assert.equal(saveFailure.data.saveStatus, 'error', '手动保存失败后必须显示重新保存状态');
+  assert.equal(saveFailure.data.saveStatusText, '重新保存', '保存失败必须允许用户明确重试');
+  assert.equal(saveFailure.data.canvasNoticeText, '测试保存失败', '保存失败必须使用画布内深色轻提示反馈');
 
   const racingSave = context();
   racingSave.editRevision = 1;
+  let racingUploadCount = 0;
   let resolveSave;
-  racingSave.performPersistence = () => new Promise(resolve => { resolveSave = resolve; });
-  const racingPromise = doodlePage.persistCurrent.call(racingSave, { silent: true });
-  racingSave.editRevision = 2;
+  racingSave.performPersistence = () => {
+    racingUploadCount += 1;
+    return new Promise(resolve => { resolveSave = resolve; });
+  };
+  const racingPromise = doodlePage.onManualSave.call(racingSave);
+  doodlePage.markDirty.call(racingSave);
   resolveSave({ ok: true });
   const racingResult = await racingPromise;
   assert.equal(racingResult.ok, false, '保存期间出现新编辑时旧请求不得宣称全部已保存');
   assert.equal(racingSave.savedRevision, 1, '保存竞态只能推进到请求对应的编辑版本');
   assert.equal(racingSave.data.saveStatus, 'unsaved', '保存期间的新编辑必须继续显示未保存');
+  assert.equal(racingUploadCount, 1, '保存期间的新编辑不得自动追加第二次上传');
 
-  const backSuccess = context();
-  backSuccess.editRevision = 1;
-  backSuccess.performPersistence = async () => ({ ok: true });
-  await doodlePage.onBack.call(backSuccess);
-  assert.equal(routes.pop(), 'BACK', '点击返回必须等待保存成功后再离开页面');
+  const savedBack = context();
+  await doodlePage.onBack.call(savedBack);
+  assert.equal(routes.pop(), 'BACK', '没有未保存修改时点击返回必须直接离开页面');
 
-  const embeddedBack = context();
+  const dirtyBack = context();
+  dirtyBack.editRevision = 1;
+  let dirtyBackUploads = 0;
+  dirtyBack.performPersistence = async () => {
+    dirtyBackUploads += 1;
+    return { ok: true };
+  };
+  const dirtyRouteCount = routes.length;
+  await doodlePage.onBack.call(dirtyBack);
+  assert.equal(dirtyBack.data.exitConfirmVisible, true, '未保存时点击返回必须显示二次确认');
+  assert.equal(routes.length, dirtyRouteCount, '未保存确认前不得退出页面');
+  assert.equal(dirtyBackUploads, 0, '点击返回不得隐式上传作品');
+  doodlePage.onExitConfirmTap.call(dirtyBack);
+  assert.equal(dirtyBack.data.exitConfirmVisible, false, '点击确认窗口外的遮罩必须关闭弹窗并保留草稿');
+  await doodlePage.onBack.call(dirtyBack);
+  await doodlePage.onDiscardAndExit.call(dirtyBack);
+  assert.equal(routes.pop(), 'BACK', '点击右上角关闭后必须离开独立画画页');
+  assert.equal(dirtyBackUploads, 0, '右上角关闭不得产生任何上传');
+
+  const confirmSave = context({ exitConfirmVisible: true });
+  confirmSave.editRevision = 1;
+  let confirmSaveUploads = 0;
+  confirmSave.performPersistence = async () => {
+    confirmSaveUploads += 1;
+    return { ok: true };
+  };
+  await doodlePage.onSaveAndExit.call(confirmSave);
+  assert.equal(confirmSaveUploads, 1, '确认窗口点击保存必须只上传一次当前作品');
+  assert.equal(routes.pop(), 'BACK', '确认窗口保存成功后必须退出到上一页');
+
+  const confirmSaveFailure = context({ exitConfirmVisible: true });
+  confirmSaveFailure.editRevision = 1;
+  confirmSaveFailure.pageActive = true;
+  const failureRouteCount = routes.length;
+  confirmSaveFailure.performPersistence = async () => ({ ok: false, message: '确认窗口保存失败' });
+  await doodlePage.onSaveAndExit.call(confirmSaveFailure);
+  assert.equal(confirmSaveFailure.data.exitConfirmVisible, true, '确认窗口保存失败后必须停留当前页面');
+  assert.equal(confirmSaveFailure.data.exitConfirmSaving, false, '保存失败后必须恢复按钮以便重试或继续画');
+  assert.equal(confirmSaveFailure.data.exitConfirmErrorText, '确认窗口保存失败', '保存失败原因必须直接显示在确认窗口内');
+  assert.equal(routes.length, failureRouteCount, '确认窗口保存失败不得退出页面');
+
+  const embeddedBack = context({ exitConfirmVisible: false });
+  embeddedBack.editRevision = 1;
   embeddedBack.properties = { embedded: true };
   embeddedBack.triggerEvent = eventName => { embeddedBack.closedEvent = eventName; };
   const embeddedRouteCount = routes.length;
   await doodlePage.onBack.call(embeddedBack);
-  assert.equal(embeddedBack.closedEvent, 'close', '首页内嵌编辑器返回时必须通知首页关闭');
+  assert.equal(embeddedBack.data.exitConfirmVisible, true, '回到小房间前也必须提示未保存修改');
+  assert.equal(embeddedBack.closedEvent, undefined, '用户确认前不得关闭首页内嵌编辑器');
+  await doodlePage.onDiscardAndExit.call(embeddedBack);
+  assert.equal(embeddedBack.closedEvent, 'close', '确认不保存后首页内嵌编辑器必须通知首页关闭');
   assert.equal(routes.length, embeddedRouteCount, '首页内嵌编辑器返回时不得触发微信原生路由');
 
-  const backFailure = context();
-  backFailure.editRevision = 1;
-  backFailure.performPersistence = async () => ({ ok: false, message: '测试保存失败' });
-  const routeCount = routes.length;
-  await doodlePage.onBack.call(backFailure);
-  assert.equal(routes.length, routeCount, '返回保存失败时必须停留当前页面');
-  assert.equal(backFailure.data.saveStatus, 'unsaved', '返回保存失败后必须允许用户重试');
-  assert.equal(toasts.pop(), '测试保存失败', '返回保存失败必须提供明确反馈');
+  const embeddedSavedBack = context();
+  embeddedSavedBack.editRevision = 1;
+  embeddedSavedBack.properties = { embedded: true };
+  embeddedSavedBack.performPersistence = async () => ({ ok: true });
+  embeddedSavedBack.triggerEvent = (eventName, detail) => {
+    embeddedSavedBack.closedEvent = eventName;
+    embeddedSavedBack.closedDetail = detail;
+  };
+  await doodlePage.onManualSave.call(embeddedSavedBack);
+  await doodlePage.onBack.call(embeddedSavedBack);
+  assert.equal(embeddedSavedBack.closedEvent, 'close', '顶部保存后返回必须关闭首页内嵌编辑器');
+  assert.deepEqual(embeddedSavedBack.closedDetail, { saved: true }, '顶部保存后返回必须通知桌面显示更新提示');
 
-  console.log('画画页笔宽颜色、双指缩放、撤销清空与自动保存状态机校验通过。');
+  const savingBack = context();
+  savingBack.editRevision = 1;
+  let resolveSavingBack;
+  savingBack.performPersistence = () => new Promise(resolve => { resolveSavingBack = resolve; });
+  const activeSave = doodlePage.onManualSave.call(savingBack);
+  const activeBack = doodlePage.onBack.call(savingBack);
+  resolveSavingBack({ ok: true });
+  await Promise.all([activeSave, activeBack]);
+  assert.equal(routes.pop(), 'BACK', '用户已手动保存时，快速返回必须等待该次上传成功后退出');
+
+  console.log('画画页笔宽颜色、双指缩放、撤销清空与手动保存退出确认校验通过。');
 } finally {
   global.wx = originalWx;
   global.Page = originalPage;

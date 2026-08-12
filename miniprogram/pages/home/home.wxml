@@ -1,4 +1,11 @@
 <view class="page {{reducedMotion ? 'page--reduced' : ''}}">
+  <view wx:if="{{!doodleEditorVisible}}" class="doodle-return-notice-anchor">
+    <inline-notice
+      text="{{doodleReturnNoticeText}}"
+      tone="info"
+      visible="{{doodleReturnNoticeVisible}}"
+    ></inline-notice>
+  </view>
   <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
 
   <scroll-view wx:if="{{!doodleEditorVisible}}" class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">

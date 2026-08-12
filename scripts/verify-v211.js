@@ -50,9 +50,9 @@ assert.equal(doodleTemplate.indexOf('class="preview"') < doodleTemplate.indexOf(
 assert.equal(doodleTemplate.includes('figma-toolbar--compact') && doodleTemplate.includes('wx:for="{{eraserSizes}}"') && doodleTemplate.includes('bindtap="onEraserSize"'), true, '绘图页必须提供紧凑工具栏和五档面状橡皮擦尺寸');
 assert.equal(!doodleTemplate.includes('canvas-expand-button') && doodleLogic.includes('beginPinch') && doodleLogic.includes('MAX_CANVAS_SCALE = 1.6') && doodleStyles.includes('width: 89vw'), true, '蛋体必须默认占屏约 50%，并支持双指缩放绘画');
 assert.equal(doodleTemplate.includes('canvas-action-rail') && doodleStyles.includes('width: 112rpx; height: 224rpx;') && doodleStyles.includes('gap: 0;') && doodleStyles.includes('.canvas-action-button + .canvas-action-button { border-top: 1rpx solid #E5E3DF;') && doodleTemplate.indexOf('canvas-action-rail') < doodleTemplate.indexOf('figma-toolbar'), true, '撤销与清空必须作为一个两段胶囊纵向固定在画布右侧');
-assert.equal(doodleTemplate.includes('save-status--{{saveStatus}}') && doodleLogic.includes('AUTO_SAVE_DELAY = 700') && doodleLogic.includes("saveStatusText: '已保存'"), true, '返回旁必须展示真实的自动保存状态');
+assert.equal(doodleTemplate.includes('save-status--{{saveStatus}}') && doodleTemplate.includes('bindtap="onManualSave"') && !doodleLogic.includes('AUTO_SAVE_DELAY') && doodleLogic.includes("saveStatusText: '已保存'"), true, '返回旁必须展示明确的手动保存状态，绘画过程不得自动上传');
 assert.equal(doodleTemplate.includes('<cover-view wx:if="{{colorPickerOpen}}" class="brush-color-popover"') && doodleTemplate.includes('brush-color-grid') && doodleTemplate.includes('brush-size-track') && doodleLogic.includes('selectedBrushColor') && !doodleTemplate.includes('蛋壳颜色'), true, '页面必须使用覆盖 Canvas 的全宽两排十色色块弹窗与五档可视笔宽轨，不得再提供整颗蛋换底色');
-assert.equal(!doodleTemplate.includes('bindtap="onSave"') && !doodleTemplate.includes('保存我的蛋壳'), true, '自动保存启用后不得保留重复的底部手动保存按钮');
+assert.equal(!doodleTemplate.includes('保存我的蛋壳') && doodleTemplate.indexOf('bindtap="onManualSave"') < doodleTemplate.indexOf('class="preview"'), true, '手动保存只能位于左上导航，不得恢复底部保存按钮');
 assert.equal(/亲手画一点|像 Figma|history-count|tool-hint|保存后，首页窝里/.test(`${doodleTemplate}\n${doodleStyles}`), false, '绘图工具盘不得保留解释性冗余文字');
 assert.equal(doodleLogic.includes('ERASER_SIZES') && doodleLogic.includes('selectEraserSize') && doodleLogic.includes('eraserWidthForPixels'), true, '橡皮擦必须使用五档真实像素尺寸，同时保留旧作品宽度重放');
 assert.equal(['onTool', 'onUndo', 'onClear', 'onPattern'].every(handler => doodleLogic.includes(`${handler}(`)), true, '绘图页必须提供画笔、橡皮擦、贴纸、逐步撤销与可撤销清空');
@@ -70,15 +70,16 @@ const activeChatFlow = `${lifeSceneLogic}\n${chatPageLogic}\n${postHatchCompanio
 assert.equal(app.pages.includes('pages/chat/chat'), true, '破壳后居家对话必须使用完整页面');
 assert.equal(/只有我|不要离开|一直都在|我就知道你会来/.test(activeChatFlow), false, '对话不得制造排他或依赖');
 assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && chatPageLogic.includes('postHatch.sendSceneMessage'), true, '生活场景必须直达完整对话页，并进入统一陪伴服务');
-assert.equal(postHatchCompanion.includes('chatSafety.assessInput') && postHatchCompanion.includes('chatSafety.CRISIS_RESPONSE'), true, '用户输入必须经过敏感信息与危机内容检查');
+assert.equal(!postHatchCompanion.includes('chatSafety') && !chatPageLogic.includes('validateChatInput'), true, '破壳后输入校验和危机处理不得在 App 决策，必须交由服务端处理');
 assert.equal(postHatchCompanion.includes('chatService.requestReply'), true, 'live 对话必须经过服务适配层');
-assert.equal(postHatchCompanion.includes("from: item && (item.from === 'user' || item.role === 'user')") && postHatchCompanion.includes("text: String(item && (item.text || item.content)"), true, '对话历史必须按服务适配层的 from / text 契约传递');
-assert.equal(chatPageLogic.includes('postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, priorMessages)'), true, '当前消息已单独传递，不得在 history 中重复');
+assert.equal(postHatchCompanion.includes('function getChatHistory(pet, cursor, limit)') && postHatchCompanion.includes('normalizeChatHistoryMessage'), true, '对话历史必须由服务端读取并经统一适配层展示');
+assert.equal(chatPageLogic.includes('postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, clientMessageId)') && !chatPageLogic.includes('confirmedHistoryBefore'), true, 'App 只能传递当前消息和稳定客户端消息 ID，不得上传页面 history');
 assert.equal(postHatchCompanion.includes('chatService.approvedFallback'), true, '模型不可用时必须使用审核通过的兜底文案');
-assert.equal(chatService.includes("safetyResult !== 'passed'"), true, '模型输出必须经 CTO 内容安全确认后展示');
+assert.equal(chatService.includes('DISPLAYABLE_SAFETY_RESULTS') && !chatService.includes('safeOutput('), true, '模型输出及危机安全结果必须以服务端审核内容为准，App 不得改写');
+assert.equal(!chatService.includes('history:') && !chatService.includes('scene_context:'), true, 'chatReply 最小请求不得上传模型历史或场景上下文');
 const chatSafety = read('miniprogram/services/chat-safety.js');
 assert.equal(chatSafety.includes('SENSITIVE_INFO_PATTERNS'), true, '对话安全必须拦截敏感个人信息');
-assert.equal(chatSafety.includes('当地官方紧急或专业支持'), true, '危机兜底不得临时生成未经核验的具体资源');
+assert.equal(!chatSafety.includes('当地官方紧急或专业支持'), true, 'App 不得内置危机固定模板或临时生成未经核验的具体资源');
 
 const privacy = read('miniprogram/pages/privacy/privacy.wxml');
 assert.equal(privacy.includes('适用版本 v3.7'), true, '隐私说明必须对齐当前版本');

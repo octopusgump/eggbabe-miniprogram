@@ -8,7 +8,6 @@ const canvas2d = require('../../utils/canvas-2d');
 const practice = require('../../services/incubation-practice');
 const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 
-const AUTO_SAVE_DELAY = 700;
 const PAGE_TRANSITION_MS = 320;
 const CANVAS_NOTICE_DURATION = 1800;
 const CANVAS_NOTICE_FADE_MS = 180;
@@ -84,6 +83,9 @@ const doodleDefinition = {
     saving: false,
     saveStatus: 'saved',
     saveStatusText: '已保存',
+    exitConfirmVisible: false,
+    exitConfirmSaving: false,
+    exitConfirmErrorText: '',
     canvasReady: false,
     canvasScale: MIN_CANVAS_SCALE,
     canvasNoticeText: '',
@@ -125,7 +127,6 @@ const doodleDefinition = {
 
   onShow() {
     this.pageActive = true;
-    if (this.editRevision > this.savedRevision) this.scheduleAutoSave();
     if (this.data.toolPanelOpen && this.data.activeTool === 'brush') this.scheduleColorHint();
   },
 
@@ -202,7 +203,7 @@ const doodleDefinition = {
   },
 
   setSaveStatus(status) {
-    const labels = { saved: '已保存', saving: '保存中…', unsaved: '未保存' };
+    const labels = { saved: '已保存', saving: '保存中…', unsaved: '保存', error: '重新保存' };
     this.setData({
       saving: status === 'saving',
       saveStatus: status,
@@ -251,16 +252,6 @@ const doodleDefinition = {
   markDirty() {
     this.editRevision = (this.editRevision || 0) + 1;
     this.setSaveStatus('unsaved');
-    this.scheduleAutoSave();
-  },
-
-  scheduleAutoSave() {
-    clearTimeout(this.autoSaveTimer);
-    if (!this.pageActive || this.editRevision === this.savedRevision) return;
-    this.autoSaveTimer = setTimeout(() => {
-      this.autoSaveTimer = null;
-      this.persistCurrent({ silent: true });
-    }, AUTO_SAVE_DELAY);
   },
 
   renderBase() {
@@ -676,8 +667,6 @@ const doodleDefinition = {
 
   async persistCurrent(options) {
     const settings = options || {};
-    clearTimeout(this.autoSaveTimer);
-    this.autoSaveTimer = null;
     if (this.savePromise) {
       await this.savePromise;
       if (this.editRevision === this.savedRevision) return { ok: true };
@@ -701,57 +690,108 @@ const doodleDefinition = {
         this.setSaveStatus('saved');
       } else {
         this.setSaveStatus('unsaved');
-        this.scheduleAutoSave();
       }
       return { ok: this.editRevision === this.savedRevision };
     }
     this.saveErrorMessage = result.message;
-    this.setSaveStatus('unsaved');
+    this.setSaveStatus('error');
     if (!settings.silent && this.pageActive) {
-      wx.showToast({ title: result.message || '蛋壳没有保存成功，请重试', icon: 'none' });
+      this.showCanvasNotice(result.message || '蛋壳没有保存成功，请重试', 'warning');
     }
     return result;
   },
 
-  async onRetrySave() {
-    if (this.data.saveStatus !== 'unsaved') return;
-    await this.persistCurrent({ silent: false });
+  async onManualSave() {
+    if (this.manualSaveTask || this.data.saveStatus === 'saving') return this.manualSaveTask;
+    if (this.currentStroke) this.finishStroke();
+    if (this.editRevision === this.savedRevision) {
+      this.setSaveStatus('saved');
+      return { ok: true };
+    }
+    this.dismissCanvasNotice();
+    const task = this.persistCurrent({ silent: false });
+    this.manualSaveTask = task;
+    try {
+      const result = await task;
+      if (result && result.ok && this.editRevision === this.savedRevision) {
+        this.savedForReturn = true;
+      }
+      return result;
+    } finally {
+      if (this.manualSaveTask === task) this.manualSaveTask = null;
+    }
+  },
+
+  onContinueEditing() {
+    if (this.backInProgress || this.data.exitConfirmSaving) return;
+    this.setData({ exitConfirmVisible: false, exitConfirmErrorText: '' });
+  },
+
+  onExitConfirmTap() {
+    this.onContinueEditing();
+  },
+
+  onExitConfirmDialogTap() {},
+
+  async leaveEditor(options) {
+    if (this.backInProgress) return;
+    const settings = options || {};
+    const saved = Boolean(settings.saved || this.savedForReturn);
+    this.backInProgress = true;
+    this.setData({ exitConfirmVisible: false });
+    await this.waitForPageExit();
+    if (this.properties && this.properties.embedded) {
+      this.triggerEvent('close', { saved });
+      return;
+    }
+    wx.navigateBack({
+      animationType: 'none',
+      animationDuration: 0,
+      fail: () => {
+        this.backInProgress = false;
+        this.setData({ pageTransitionPhase: 'visible' });
+      }
+    });
+  },
+
+  async onDiscardAndExit() {
+    if (!this.data.exitConfirmVisible || this.backInProgress || this.data.exitConfirmSaving) return;
+    await this.leaveEditor();
+  },
+
+  async onSaveAndExit() {
+    if (!this.data.exitConfirmVisible || this.backInProgress || this.data.exitConfirmSaving) return;
+    this.setData({ exitConfirmSaving: true, exitConfirmErrorText: '' });
+    const result = await this.onManualSave();
+    if (result && result.ok && this.editRevision === this.savedRevision) {
+      await this.leaveEditor({ saved: true });
+      return;
+    }
+    this.setData({
+      exitConfirmSaving: false,
+      exitConfirmErrorText: (result && result.message) || '保存失败，请重试'
+    });
   },
 
   async onBack() {
-    if (this.backInProgress) return;
-    this.backInProgress = true;
-    clearTimeout(this.autoSaveTimer);
-    this.autoSaveTimer = null;
+    if (this.backInProgress || this.data.exitConfirmVisible) return;
     if (this.currentStroke) this.finishStroke();
-    let result = { ok: true };
-    if (this.editRevision !== this.savedRevision || this.savePromise) {
-      result = await this.persistCurrent({ silent: true });
+    if (this.manualSaveTask) {
+      this.backInProgress = true;
+      await this.manualSaveTask;
+      this.backInProgress = false;
     }
-    if (result.ok && this.editRevision === this.savedRevision) {
-      await this.waitForPageExit();
-      if (this.properties && this.properties.embedded) {
-        this.triggerEvent('close');
-        return;
-      }
-      wx.navigateBack({
-        animationType: 'none',
-        animationDuration: 0,
-        fail: () => {
-          this.backInProgress = false;
-          this.setData({ pageTransitionPhase: 'visible' });
-        }
-      });
+    if (this.editRevision !== this.savedRevision) {
+      this.collapseToolPanel();
+      this.dismissCanvasNotice();
+      this.setData({ exitConfirmVisible: true, exitConfirmErrorText: '' });
       return;
     }
-    this.backInProgress = false;
-    wx.showToast({ title: this.saveErrorMessage || '还没有保存成功，请点“未保存”重试', icon: 'none' });
+    await this.leaveEditor();
   },
 
   onHide() {
     this.pageActive = false;
-    clearTimeout(this.autoSaveTimer);
-    this.autoSaveTimer = null;
     this.clearCanvasNoticeTimers();
     this.clearColorHintTimers();
     if (this.data.canvasNoticeText) {
@@ -766,8 +806,6 @@ const doodleDefinition = {
     this.pageActive = false;
     clearTimeout(this.pageTransitionTimer);
     this.pageTransitionTimer = null;
-    clearTimeout(this.autoSaveTimer);
-    this.autoSaveTimer = null;
     this.clearCanvasNoticeTimers();
     this.clearColorHintTimers();
     this.baseLayer = null;
@@ -778,6 +816,7 @@ const doodleDefinition = {
     this.pendingStickerPoint = null;
     this.pinchGesture = null;
     this.suppressDrawingUntilRelease = false;
+    this.manualSaveTask = null;
     this.canvasSetupToken = (this.canvasSetupToken || 0) + 1;
   }
 };

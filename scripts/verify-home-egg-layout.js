@@ -57,7 +57,7 @@ assert.equal(source.includes('HOME_STAGE_TRANSITION_MS = 320') && source.include
 assert.equal(template.includes('<doodle-editor') && template.includes('wx:if="{{doodleEditorVisible}}"') && template.includes('bindclose="onDoodleEditorClose"'), true, '首页必须在当前页内打开并关闭画画编辑器');
 assert.equal(source.includes('suspendHomeForDoodle()') && source.includes('this.stopClock();') && source.includes('this.stopWindowWeatherAnimation();') && source.includes('this.clearTimeSceneTimers();'), true, '内嵌画画编辑器挂载前必须暂停首页时钟、天气动画与场景定时器');
 assert.equal(template.includes('<scroll-view wx:if="{{!doodleEditorVisible}}"') && template.includes('wx:if="{{!doodleEditorVisible && pet && stage !== \'hatched\'}}" type="2d" id="homeEggBaseCanvas"'), true, '画画时必须卸载首页可见场景与屏幕外蛋体 Canvas，避免原生节点并发占用');
-assert.match(source, /onDoodleEditorClose\(\)[\s\S]*?doodleEditorVisible:\s*false,[\s\S]*?homeStagePhase:\s*'hidden',[\s\S]*?homeEggArtPreview:\s*''/, '清空作品返回首页时必须先隐藏舞台并清除旧蛋壳预览，避免旧图案闪现');
+assert.match(source, /onDoodleEditorClose\(event\)[\s\S]*?doodleEditorVisible:\s*false,[\s\S]*?homeStagePhase:\s*'hidden',[\s\S]*?homeEggArtPreview:\s*''/, '清空作品返回首页时必须先隐藏舞台并清除旧蛋壳预览，避免旧图案闪现');
 assert.doesNotMatch(source, /setupHomeEgg\(\)\s*\{[^}]*sceneTestOverride/, '场景测试覆盖只能改变环境，不得阻止已保存蛋壳重新合成');
 assert.doesNotMatch(source, /renderHomeEgg\(\)\s*\{[^}]*sceneTestOverride/, '桌面蛋体渲染不得因场景测试覆盖而丢失已保存笔迹');
 assert.match(source, /onScenePreloadLoad\(event\)[\s\S]*?this\.setupHomeEgg\(\);[\s\S]*?已切换：/, '切换测试场景后必须重新合成自定义蛋壳');

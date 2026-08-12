@@ -5,7 +5,7 @@
     </view>
     <scroll-view wx:if="{{sceneTesterOpen}}" class="scene-tester-menu" scroll-y="true">
       <view wx:for="{{sceneTesterOptions}}" wx:key="key" class="scene-tester-option {{sceneTesterKey === item.key ? 'scene-tester-option--active' : ''}}" data-scene="{{item.key}}" aria-role="button" bindtap="onSceneTesterSelect">
-        <view class="scene-tester-option-copy"><text class="scene-tester-season">{{item.seasonLabel || '自动'}}</text><text>{{item.label}}</text></view>
+        <view class="scene-tester-option-copy"><text>{{item.label}}</text></view>
         <text wx:if="{{sceneTesterKey === item.key}}">✓</text>
       </view>
     </scroll-view>

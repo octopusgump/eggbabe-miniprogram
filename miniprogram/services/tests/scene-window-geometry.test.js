@@ -45,6 +45,8 @@ const lifeScenes = require('../../utils/life-scenes');
 const anchorMeta = postHatchAssets.POST_HATCH.panoramaFallbackMeta;
 const DEVICES = [[375, 667], [390, 844], [430, 932], [768, 1024]];
 
+assert.equal(postHatchAssets.POST_HATCH.sceneAnchorsProvisional, false, '正式动作全景锚点必须完成校准');
+
 // 同一个母图定点在任何机型上都必须落在同一屏；这正是旧的 CSS 百分比做不到的事。
 DEVICES.forEach(([panelWidth, panelHeight]) => {
   const mapped = geometry.mapPanoramaPoints({
@@ -89,6 +91,14 @@ lifeScenes.HOME_STATES.forEach(state => {
       assert.equal(mapped.action.panel, state.action.screen, `${state.key} 的动作锚点必须落在动作声明的第 ${state.action.screen} 屏`);
     });
   });
+});
+
+// 两个角色的正式动作图构图并不相同，不能重新退回共用占位坐标。
+lifeScenes.HOME_STATES.forEach(state => {
+  const definition = lifeScenes.resolveDefinition('home', state.key);
+  const jade = postHatchAssets.resolveStateAnchors({ prototype: '玉兔' }, definition);
+  const koi = postHatchAssets.resolveStateAnchors({ prototype: '锦鲤' }, definition);
+  assert.notDeepEqual(koi, jade, `${state.key} 必须保留锦鲤独立校准坐标`);
 });
 
 // 外出时家里没有人，不得渲染角色与动作提示。

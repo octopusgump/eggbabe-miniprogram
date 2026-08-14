@@ -114,28 +114,34 @@ function resolvePanoramaScene(period, cdnBase) {
 // 用 rpx 控制，运行时靠 translate(-50%,-50%) 居中到这个点上。这样提示永远跟着
 // 图里的物件走，不会因为机型比例不同被 aspectFill 裁到别处去。
 //
-// ⚠️ 当前数值是从旧的屏幕百分比在 4.7 寸（比例最接近母图）上反推出来的占位值，
-// 精度只到"大概那一块"。正式动作图出齐后，请照母图逐个量取中心点替换：每个
-// 状态需要三个点 —— character（ta 的身体中心）、action（该状态唯一动作所对应
-// 的道具中心）、talk（说话触点，一般在 ta 头侧）。校准完把 provisional 改成
-// false，verify 门禁会同时检查锚点所在屏与 life-scenes.js 声明的 screen 一致。
+// 坐标已按玉兔与锦鲤的 48 张正式动作全景逐图识别，并在 day / sunset / night
+// 三个时段复核。每个状态三个点分别是 character（ta 的身体中心）、action（该
+// 状态唯一动作所对应的道具中心）、talk（说话触点，一般在 ta 头侧）。
 // ---------------------------------------------------------------------------
-const SCENE_ANCHORS_PROVISIONAL = true;
+const SCENE_ANCHORS_PROVISIONAL = false;
 const DEFAULT_STATE_ANCHORS = Object.freeze({
-  sleep: Object.freeze({ character: { x: 349, y: 1095 }, action: { x: 708, y: 1046 }, talk: { x: 560, y: 799 } }),
-  lazy: Object.freeze({ character: { x: 349, y: 1095 }, action: { x: 388, y: 1096 }, talk: { x: 560, y: 799 } }),
-  stare: Object.freeze({ character: { x: 1459, y: 1129 }, action: { x: 1413, y: 1046 }, talk: { x: 1519, y: 866 } }),
-  drawing: Object.freeze({ character: { x: 1459, y: 1129 }, action: { x: 1507, y: 1297 }, talk: { x: 1519, y: 866 } }),
-  reading: Object.freeze({ character: { x: 1459, y: 1129 }, action: { x: 1469, y: 1129 }, talk: { x: 1519, y: 866 } }),
-  gaming: Object.freeze({ character: { x: 1459, y: 1129 }, action: { x: 1262, y: 1146 }, talk: { x: 1519, y: 866 } }),
-  music: Object.freeze({ character: { x: 1459, y: 1129 }, action: { x: 1488, y: 1163 }, talk: { x: 1519, y: 866 } }),
-  window: Object.freeze({ character: { x: 2474, y: 543 }, action: { x: 2595, y: 459 }, talk: { x: 2545, y: 605 } })
+  sleep: Object.freeze({ character: { x: 790, y: 875 }, action: { x: 663, y: 344 }, talk: { x: 890, y: 800 } }),
+  lazy: Object.freeze({ character: { x: 760, y: 870 }, action: { x: 570, y: 980 }, talk: { x: 850, y: 800 } }),
+  stare: Object.freeze({ character: { x: 1450, y: 930 }, action: { x: 1450, y: 930 }, talk: { x: 1560, y: 790 } }),
+  drawing: Object.freeze({ character: { x: 1440, y: 1010 }, action: { x: 1510, y: 1245 }, talk: { x: 1560, y: 840 } }),
+  reading: Object.freeze({ character: { x: 1420, y: 930 }, action: { x: 1415, y: 1055 }, talk: { x: 1510, y: 800 } }),
+  gaming: Object.freeze({ character: { x: 1400, y: 990 }, action: { x: 1490, y: 1120 }, talk: { x: 1530, y: 840 } }),
+  music: Object.freeze({ character: { x: 1710, y: 985 }, action: { x: 1590, y: 1050 }, talk: { x: 1810, y: 805 } }),
+  window: Object.freeze({ character: { x: 1940, y: 835 }, action: { x: 2200, y: 450 }, talk: { x: 2050, y: 700 } })
 });
-// 玉兔与锦鲤的坐姿、体型和道具摆位不同时，在这里按状态覆盖对应的点；
-// 留空表示两个角色共用 DEFAULT_STATE_ANCHORS。
+// 玉兔使用上面的正式基准；锦鲤因体型、朝向与道具遮挡不同，逐状态覆盖。
 const CHARACTER_STATE_ANCHORS = Object.freeze({
   'jade-rabbit': Object.freeze({}),
-  'boon-koi': Object.freeze({})
+  'boon-koi': Object.freeze({
+    sleep: Object.freeze({ character: { x: 650, y: 860 }, action: { x: 663, y: 344 }, talk: { x: 560, y: 820 } }),
+    lazy: Object.freeze({ character: { x: 650, y: 810 }, action: { x: 560, y: 975 }, talk: { x: 560, y: 790 } }),
+    stare: Object.freeze({ character: { x: 1590, y: 980 }, action: { x: 1590, y: 980 }, talk: { x: 1490, y: 830 } }),
+    drawing: Object.freeze({ character: { x: 1480, y: 1000 }, action: { x: 1510, y: 1245 }, talk: { x: 1390, y: 855 } }),
+    reading: Object.freeze({ character: { x: 1430, y: 980 }, action: { x: 1410, y: 1060 }, talk: { x: 1330, y: 850 } }),
+    gaming: Object.freeze({ character: { x: 1400, y: 990 }, action: { x: 1500, y: 1120 }, talk: { x: 1530, y: 850 } }),
+    music: Object.freeze({ character: { x: 1780, y: 1000 }, action: { x: 1680, y: 1055 }, talk: { x: 1700, y: 820 } }),
+    window: Object.freeze({ character: { x: 1940, y: 830 }, action: { x: 2200, y: 450 }, talk: { x: 2100, y: 700 } })
+  })
 });
 // 外出时家里没有人，只保留中屏的留言触点，不渲染角色与动作提示。
 const AWAY_ANCHORS = Object.freeze({ character: null, action: null, talk: null });

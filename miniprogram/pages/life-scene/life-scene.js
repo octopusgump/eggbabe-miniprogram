@@ -109,6 +109,10 @@ function previewCompanionSnapshot(snapshot, target) {
   if (!definition) return snapshot;
   const current = snapshot.currentState || {};
   return Object.assign({}, snapshot, {
+    // 仅开发验收器模拟服务端 chat_access；正式运行始终只读取服务端快照。
+    chatAccess: target.key === 'away'
+      ? { status: 'away', reason: 'AWAY', message: '蛋宝宝正在外出，暂时不能聊天。', nextAvailableAt: null }
+      : snapshot.chatAccess,
     currentState: Object.assign({}, definition, {
       slotIndex: current.slotIndex,
       slotStart: current.slotStart,
@@ -196,14 +200,15 @@ function homeFinderIcon(pet) {
   return findHome.egg || '';
 }
 
-function contextActionPresentation(pet, currentState) {
-  const atHome = Boolean(currentState && currentState.atHome);
+function contextActionPresentation(pet, chatAccess) {
+  const access = chatAccess || {};
+  const available = access.status === 'available';
   return {
-    icon: atHome ? homeFinderIcon(pet) : '',
-    label: atHome ? '和蛋宝宝说话' : '',
-    hint: '',
-    disabled: !atHome,
-    badge: ''
+    icon: homeFinderIcon(pet),
+    label: available ? '和蛋宝宝说话' : '蛋宝宝暂时不能聊天',
+    hint: available ? '' : String(access.message || '聊天权限正在同步，请稍后再试。'),
+    disabled: !available,
+    badge: available ? '' : (access.status === 'away' ? '外出中' : '暂不可聊')
   };
 }
 
@@ -434,7 +439,7 @@ Page({
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
       const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
-      const contextAction = contextActionPresentation(this.data.pet, currentState);
+      const contextAction = contextActionPresentation(this.data.pet, snapshot.chatAccess);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
@@ -1050,14 +1055,15 @@ Page({
 
   onContextActionTap() {
     const current = this.data.currentState;
+    const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
     if (!current) return;
     if (!current.atHome) {
       this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info');
       analytics.track('room_element_interaction', { element_id: 'away_status', result: 'shown' });
       return;
     }
-    if (!current.canTalk) {
-      this.showSystemNotice('此刻没有说话入口。', 'warning');
+    if (!chatAccess || chatAccess.status !== 'available') {
+      this.showSystemNotice(chatAccess && chatAccess.message || '聊天权限正在同步，请稍后再试。', 'warning');
       analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'unavailable' });
       return;
     }

@@ -66,7 +66,12 @@ const lifeSceneLogic = read('miniprogram/pages/life-scene/life-scene.js');
 const chatPageLogic = read('miniprogram/pages/chat/chat.js');
 const postHatchCompanion = read('miniprogram/services/post-hatch-companion.js');
 const chatService = read('miniprogram/services/chat-service.js');
+const chatDemoFixture = read('miniprogram/services/chat-demo-fixture.js');
 const activeChatFlow = `${lifeSceneLogic}\n${chatPageLogic}\n${postHatchCompanion}\n${chatService}`;
+const sendSceneMessageFlow = postHatchCompanion.slice(
+  postHatchCompanion.indexOf('function sendSceneMessage'),
+  postHatchCompanion.indexOf('function normalizeChatHistoryMessage')
+);
 assert.equal(app.pages.includes('pages/chat/chat'), true, '破壳后居家对话必须使用完整页面');
 assert.equal(/只有我|不要离开|一直都在|我就知道你会来/.test(activeChatFlow), false, '对话不得制造排他或依赖');
 assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && chatPageLogic.includes('postHatch.sendSceneMessage'), true, '生活场景必须直达完整对话页，并进入统一陪伴服务');
@@ -74,11 +79,15 @@ assert.equal(!postHatchCompanion.includes('chatSafety') && !chatPageLogic.includ
 assert.equal(postHatchCompanion.includes('chatService.requestReply'), true, 'live 对话必须经过服务适配层');
 assert.equal(postHatchCompanion.includes('function getChatHistory(pet, cursor, limit)') && postHatchCompanion.includes('normalizeChatHistoryMessage'), true, '对话历史必须由服务端读取并经统一适配层展示');
 assert.equal(chatPageLogic.includes('postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, clientMessageId)') && !chatPageLogic.includes('confirmedHistoryBefore'), true, 'App 只能传递当前消息和稳定客户端消息 ID，不得上传页面 history');
-assert.equal(postHatchCompanion.includes('chatService.approvedFallback'), true, '模型不可用时必须使用审核通过的兜底文案');
+assert.equal(postHatchCompanion.includes('chatDemoFixture.replyFor'), true, 'develop/demo 只能使用独立、明确标识的验收 fixture');
+assert.equal(chatDemoFixture.includes('仅供 develop/demo 验收') && !chatService.includes('APPROVED_FALLBACKS'), true, '正式 chat service 不得内置本地人设回复或模型故障兜底');
+assert.equal(sendSceneMessageFlow.includes("if (mode === 'live')") && sendSceneMessageFlow.includes("if (mode !== 'demo')") && !sendSceneMessageFlow.includes("mode === 'live' && config.backendEnabled"), true, 'live 必须无条件进入正式 chat service，只有明确 demo 才能使用本地 fixture');
+assert.equal(sendSceneMessageFlow.includes('!current.atHome') && sendSceneMessageFlow.includes('!stableId'), true, '发送前必须保守拒绝外出状态和缺少稳定客户端消息 ID 的请求');
 assert.equal(chatService.includes('DISPLAYABLE_SAFETY_RESULTS') && !chatService.includes('safeOutput('), true, '模型输出及危机安全结果必须以服务端审核内容为准，App 不得改写');
 assert.equal(!chatService.includes('history:') && !chatService.includes('scene_context:'), true, 'chatReply 最小请求不得上传模型历史或场景上下文');
 const chatSafety = read('miniprogram/services/chat-safety.js');
-assert.equal(chatSafety.includes('SENSITIVE_INFO_PATTERNS'), true, '对话安全必须拦截敏感个人信息');
+assert.equal(chatSafety.includes('SENSITIVE_INFO_PATTERNS'), true, '昵称与破壳前旧文本互动仍保留既有本地显示保护');
+assert.equal(!postHatchCompanion.includes('assessInput') && !chatPageLogic.includes('isSafeDisplayText'), true, '破壳后正式聊天不得调用本地敏感词、危机或个人信息判断');
 assert.equal(!chatSafety.includes('当地官方紧急或专业支持'), true, 'App 不得内置危机固定模板或临时生成未经核验的具体资源');
 
 const privacy = read('miniprogram/pages/privacy/privacy.wxml');

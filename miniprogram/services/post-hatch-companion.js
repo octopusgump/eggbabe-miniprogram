@@ -3,13 +3,14 @@ const runtime = require('./runtime-context');
 const timeService = require('./time-service');
 const cloudApi = require('./cloud-api');
 const storage = require('./storage-migration');
-const chatSafety = require('./chat-safety');
 const chatService = require('./chat-service');
+const chatDemoFixture = require('./chat-demo-fixture');
 const lifeScenes = require('../utils/life-scenes');
 const dailyMoodConfig = require('../config/daily-mood');
 
 const STATE_KEY = 'eggbabe_post_hatch_v36';
 const SLOT_MS = 5 * 60 * 60 * 1000;
+const CHAT_MAX_UNICODE_CHARACTERS = 120;
 
 function key() { return runtime.scopedKey(STATE_KEY); }
 function readState() {
@@ -85,6 +86,35 @@ function normalizeMemories(memories) {
 function firstUnreadPostcard(postcards) {
   return (Array.isArray(postcards) ? postcards : []).find(item => item && item.unread) || null;
 }
+function defaultChatAccess(status, definition, fields) {
+  const current = definition || {};
+  const place = [current.majorLabel, current.label].filter(Boolean).join(' · ');
+  const defaults = status === 'available'
+    ? { reason: 'AT_HOME', message: '' }
+    : { reason: status === 'away' ? 'AWAY' : 'UNAVAILABLE', message: place ? `蛋宝宝正在${place}，暂时不能聊天。` : '现在暂时不能聊天，请稍后再试。' };
+  return Object.assign({ status, nextAvailableAt: '' }, defaults, fields || {});
+}
+function demoChatAccess(definition) {
+  return definition && definition.canTalk
+    ? defaultChatAccess('available', definition)
+    : defaultChatAccess('away', definition);
+}
+function normalizeChatAccess(source, definition) {
+  const raw = source && typeof source === 'object' ? source : null;
+  const status = String(raw && raw.status || '').toLowerCase();
+  const unsynced = () => defaultChatAccess('unavailable', null, {
+      reason: 'CHAT_ACCESS_UNSYNCED',
+      message: '聊天权限正在同步，请稍后再试。'
+    });
+  if (!['available', 'away', 'unavailable'].includes(status)) return unsynced();
+  const reason = String(raw.reason || '').trim();
+  const message = typeof raw.message === 'string' ? raw.message : '';
+  if (!reason || (status !== 'available' && !message.trim())) return unsynced();
+  const nextValue = raw.next_available_at !== undefined ? raw.next_available_at : raw.nextAvailableAt;
+  const nextAvailableAt = nextValue === null || nextValue === undefined || nextValue === '' ? '' : String(nextValue);
+  if (nextAvailableAt && !chatService.isAuthoritativeTimestamp(nextAvailableAt)) return unsynced();
+  return { status, reason, message, nextAvailableAt };
+}
 function localSnapshot(pet) {
   const meta = slotMeta(pet);
   if (!meta) return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步此刻状态，请稍后重试' };
@@ -100,6 +130,8 @@ function localSnapshot(pet) {
       actionDone: !!actionRecord,
       actionFeedback: actionRecord ? actionRecord.feedback : ''
     }),
+    // demo 仅为验收模拟服务端合同；正式环境不允许使用这个本地判断放行聊天。
+    chatAccess: demoChatAccess(scene),
     previewImage: scene.previewImage,
     memories,
     newMessage: firstUnreadPostcard(memories.postcards)
@@ -118,7 +150,7 @@ function normalizeLiveSnapshot(result) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
   const state = Object.assign({}, source, definition, {
-    // 动作、所在屏和能否说话全部来自审核过的固定映射，服务端不得随机改写。
+    // 动作和所在屏来自审核过的固定映射；聊天权限只读服务端 chat_access。
     line: String(source.line || definition.line),
     slotIndex: Number(source.slot_index),
     slotStart,
@@ -131,12 +163,14 @@ function normalizeLiveSnapshot(result) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
   const memories = normalizeMemories(result.memories);
+  const chatAccess = normalizeChatAccess(result.chat_access || result.chatAccess, definition);
   return {
     ok: true,
     mode: 'live',
     // 每日心情是独立的纯前端静态 UI，不读取接口中的心情字段。
     mood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
     currentState: state,
+    chatAccess,
     previewImage: state.previewImage,
     memories,
     newMessage: firstUnreadPostcard(memories.postcards)
@@ -173,22 +207,95 @@ function performAction(pet, snapshot) {
   const saved = writeState(state);
   return Promise.resolve(saved.ok ? { ok: true, alreadyDone: false, feedback: record.feedback, keepsake } : saved);
 }
-function sendSceneMessage(pet, snapshot, text, history) {
-  const current = snapshot && snapshot.currentState;
-  const value = String(text || '').trim();
-  if (!current || !current.canTalk) return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: '此刻没有说话入口' });
-  if (!value) return Promise.resolve({ ok: false, code: 'TALK_EMPTY', message: '先说一句话吧' });
-  const assessment = chatSafety.assessInput(value);
-  if (!assessment.allowed) return Promise.resolve({ ok: false, code: 'TALK_UNSAFE', message: assessment.message || '换个说法试试' });
-  if (assessment.crisis) return Promise.resolve({ ok: true, text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    const safeHistory = (Array.isArray(history) ? history : []).slice(-12).map(item => ({
-      from: item && (item.from === 'user' || item.role === 'user') ? 'user' : 'assistant',
-      text: String(item && (item.text || item.content) || '').slice(0, 500)
-    })).filter(item => item.text);
-    return chatService.requestReply({ eggId: pet.id, text: value, history: safeHistory, scene: { major: current.major, small: current.key } });
+function sendSceneMessage(pet, snapshot, text, clientMessageId) {
+  const stableId = String(clientMessageId || '');
+  if (!pet || !pet.id || !stableId) {
+    return Promise.resolve({ ok: false, code: 'CHAT_REQUEST_INVALID', message: '消息请求不完整，请重试' });
   }
-  return Promise.resolve({ ok: true, text: chatService.approvedFallback(snapshot.mood && snapshot.mood.mood), safety: 'approved-fallback' });
+  const current = snapshot && snapshot.currentState;
+  const chatAccess = snapshot && snapshot.chatAccess;
+  if (!current || !current.atHome || !chatAccess || chatAccess.status !== 'available') {
+    return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: chatAccess && chatAccess.message || '此刻没有说话入口' });
+  }
+  const value = String(text || '');
+  const mode = runtime.getMode();
+  if (mode === 'live') {
+    return chatService.requestReply({ eggId: pet.id, text: value, clientMessageId: stableId });
+  }
+  if (mode !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '聊天服务尚未接入' });
+  // develop 的 fixture 模拟服务端合同：页面交互可提前禁用空草稿，但最终拒绝仍在服务端。
+  if (!value.trim()) return Promise.resolve({ ok: false, mode: 'demo', code: 'INPUT_EMPTY', resultType: 'INPUT_REJECTED', message: '请输入想说的话。' });
+  if (Array.from(value).length > CHAT_MAX_UNICODE_CHARACTERS) {
+    return Promise.resolve({ ok: false, mode: 'demo', code: 'INPUT_TOO_LONG', resultType: 'INPUT_REJECTED', message: '最多 120 个字，请精简后再发送。' });
+  }
+  const createdAt = new Date(businessNow()).toISOString();
+  const result = {
+    ok: true,
+    mode: 'demo',
+    resultType: 'REPLY',
+    requestId: stableId,
+    messageId: `demo-reply-${stableId}`,
+    userMessageId: `demo-user-${stableId}`,
+    clientMessageId: stableId,
+    createdAt,
+    userCreatedAt: createdAt,
+    text: chatDemoFixture.replyFor(),
+    safety: 'approved-fallback',
+    fallbackUsed: true
+  };
+  return Promise.resolve(result);
+}
+function normalizeChatHistoryMessage(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const role = String(source.role || '');
+  const id = String(source.message_id || source.id || '');
+  const text = String(source.text || source.content || '');
+  const createdAt = String(source.created_at || source.createdAt || '');
+  const clientMessageId = String(source.client_message_id || source.clientMessageId || '');
+  if (!id || !['user', 'assistant'].includes(role) || !text.trim() || !chatService.isAuthoritativeTimestamp(createdAt)) return null;
+  if (role === 'user' && !clientMessageId) return null;
+  return {
+    id,
+    role,
+    text,
+    createdAt,
+    clientMessageId
+  };
+}
+function getChatHistory(pet, cursor, limit) {
+  if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
+    return cloudApi.getChatHistory(pet.id, cursor, limit).then(result => {
+      if (!result || !result.ok) return result || { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录没有加载好' };
+      if (result.mode !== 'live') return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录环境标识无效，请重试' };
+      if (!Array.isArray(result.messages)) return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录数据不完整，请重试' };
+      const source = result.messages;
+      const pageSize = Math.min(20, Math.max(1, Number(limit) || 20));
+      const messages = source.map(normalizeChatHistoryMessage);
+      const ids = new Set();
+      const hasInvalidMessage = messages.some((item, index) => {
+        if (!item || ids.has(item.id)) return true;
+        ids.add(item.id);
+        if (index === 0) return false;
+        return Date.parse(item.createdAt) < Date.parse(messages[index - 1].createdAt);
+      });
+      const hasMore = result.has_more !== undefined ? result.has_more : result.hasMore;
+      const nextCursorValue = result.next_cursor !== undefined ? result.next_cursor : result.nextCursor;
+      const nextCursor = nextCursorValue === undefined || nextCursorValue === null ? '' : String(nextCursorValue);
+      if (source.length > pageSize || hasInvalidMessage || typeof hasMore !== 'boolean' || (hasMore && !nextCursor)) {
+        return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录数据不完整，请重试' };
+      }
+      return {
+        ok: true,
+        mode: 'live',
+        messages,
+        nextCursor,
+        hasMore
+      };
+    });
+  }
+  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '聊天记录服务尚未接入' });
+  return Promise.resolve({ ok: true, mode: 'demo', messages: [], nextCursor: '', hasMore: false });
 }
 function cardRecommendation(pet) {
   if (!pet || !pet.collectionCard) return null;
@@ -227,4 +334,4 @@ function markPostcardRead(pet, postcardId) {
   return Promise.resolve(saved.ok ? { ok: true, alreadyRead: false } : saved);
 }
 
-module.exports = { SLOT_MS, slotMeta, getSnapshot, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };
+module.exports = { SLOT_MS, slotMeta, getSnapshot, getChatHistory, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot, normalizeChatHistoryMessage, normalizeChatAccess };

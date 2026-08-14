@@ -197,7 +197,7 @@ assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${
 assert.equal(app.pages.includes('pages/chat/chat'), true, '居家对话必须注册完整聊天页');
 assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 PRD 未放行的 AI 布置额度页面不得注册');
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
-assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"'), true, '居家时必须直达完整对话页，外出时保留状态入口');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"') && lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '左下角必须始终显示陪伴状态图标；只有服务端允许聊天时才进入完整对话页');
 assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
@@ -239,7 +239,7 @@ assert.equal(cloudApi.includes('getPostHatchHome') && cloudApi.includes('perform
 assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}\n${postHatchCompanion}\n${cloudApi}`), false, '写信的界面、事件、服务和云接口必须完全移除');
 assert.equal(/getPostHatchDecorations|createRoomDecoration|moveRoomDecoration/.test(cloudApi), false, '服务层不得预留装饰额度或装饰物库接口');
 assert.equal(cloudApi.includes("mode: 'live'") && cloudApi.includes('request_id'), true, '正式请求必须带 live 与唯一请求 ID');
-assert.equal(read('miniprogram/services/chat-service.js').includes("result.mode !== 'live'"), true, '对话适配层必须拒绝非 live 回复');
+assert.equal(read('miniprogram/services/chat-service.js').includes("result && result.ok && result.mode === 'live'"), true, '对话适配层必须只接受 live 成功回复');
 
 const forbiddenEvents = Array.from(analytics.EVENT_ALLOWLIST).filter(name => /(?:^|_)(?:currency|reward|drop|inventory|shop|quest|streak|growth|relationship)(?:_|$)/i.test(name));
 assert.deepEqual(forbiddenEvents, [], '埋点白名单不得包含游戏经济或成长事件');

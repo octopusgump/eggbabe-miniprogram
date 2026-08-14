@@ -55,6 +55,9 @@ const cloudApi = require('../cloud-api');
   assert.equal(timeout.code, 'REQUEST_TIMEOUT', '请求超时必须与普通网络错误区分');
   requestMode = 'success';
 
+  await cloudApi.chatReply({ egg_id: 'egg-chat-timeout' });
+  assert.equal(requestOptions.timeout, 10000, '聊天请求必须使用统一的 10 秒超时配置');
+
   const result = await cloudApi.uploadAvatar('wxfile://tmp/avatar.jpg');
   assert.equal(uploadOptions.url, 'https://api.example.com/uploadAvatar', '头像必须上传到独立后端接口');
   assert.equal(uploadOptions.filePath, 'wxfile://tmp/avatar.jpg', '客户端临时文件必须作为上传文件体传输');

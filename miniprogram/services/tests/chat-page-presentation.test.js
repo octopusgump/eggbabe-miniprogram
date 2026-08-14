@@ -1,0 +1,45 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '../..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const pageJson = JSON.parse(read('pages/chat/chat.json'));
+const wxml = read('pages/chat/chat.wxml');
+const wxss = read('pages/chat/chat.wxss');
+const logic = read('pages/chat/chat.js');
+
+assert.equal(Object.prototype.hasOwnProperty.call(pageJson.usingComponents, 'pet-avatar'), false, '聊天页不得注册会回退为空白蛋形的 pet-avatar 组件');
+assert.equal(wxml.includes('src="{{chatAvatarSrc}}"') && wxml.includes('mode="aspectFill"'), true, '顶部必须始终渲染明确的锦鲤或玉兔图片');
+assert.equal(logic.includes('/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_boon_koi_96_v02.png') && logic.includes('/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_jade_rabbit_96_v02.png'), true, '聊天页与生活空间左下入口必须共用同一对角色头像资源');
+assert.equal(wxml.includes('<pet-avatar wx:else'), false, '聊天页不得回退为空白蛋形头像');
+assert.equal(wxml.includes("{{pet.name || '蛋宝宝'}}"), true, '未命名时顶部必须显示蛋宝宝');
+assert.equal(wxml.includes('{{sceneLabel}}'), true, '顶部必须显示当前居家状态');
+assert.equal(wxml.includes('message-status--pending') && wxml.includes('正在发送') && wxml.includes('typing-bubble__dots') && !wxml.includes('蛋宝宝正在想一想') && !wxml.includes('composer-waiting'), true, '发送中状态必须保留三点等待，但不显示额外等待文案');
+assert.equal(wxml.includes('message-status--failed') && wxml.includes('data-client-message-id="{{item.clientMessageId}}"'), true, '失败状态必须保留原地重试入口');
+assert.equal(wxml.includes('bindfocus="onInputFocus"') && wxml.includes('bindblur="onInputBlur"') && wxml.includes('composer-input--error'), true, '输入框必须支持聚焦与服务端拒绝后的视觉状态');
+assert.equal(wxml.includes('class="chat-header"') && wxml.includes('style="{{chatViewportStyle}}"'), true, '键盘弹出时导航与身份区必须保留在受控聊天页头内');
+assert.equal(wxml.includes('adjust-position="{{false}}"') && wxml.includes('bindkeyboardheightchange="onKeyboardHeightChange"') && !wxml.includes(' auto-height fixed '), true, '输入框不得由原生 fixed/adjust-position 二次顶起，必须交给页面可用视口处理');
+assert.equal(logic.includes('function viewportStyle(windowHeightValue, keyboardHeight)') && logic.includes('onKeyboardHeightChange(event)') && logic.includes('wx.onWindowResize'), true, '聊天页必须按键盘高度和窗口尺寸更新可用视口');
+assert.equal(logic.includes('if (this.data.inputFocused || this.data.keyboardHeight) return;') && logic.includes('resetChatViewport()') && logic.includes('if (!openingKeyboard) return;'), true, '键盘打开不得双重缩短视口，收起或隐藏页面必须清理高度且不扰动历史滚动位置');
+assert.equal(wxml.includes('wx:if="{{error && serverInputError}}" class="composer-error"'), true, 'composer 错误只能用于服务端输入拒绝，网络失败必须留在原消息处重试');
+assert.equal(wxml.includes('history-error') && wxml.includes('bindtap="onRetryHistory"'), true, '历史记录失败必须有独立、可重试的页面提示');
+assert.equal(wxml.includes('message-date') && wxml.includes('message-time') && wxml.includes('已加载至最早聊天记录'), true, '聊天记录必须展示服务端时间线和已加载边界');
+assert.equal(wxml.includes('bindtap="onToggleDateFormat"') && wxml.includes('{{item.dateDisplayLabel}}'), true, '点击日期分隔必须能在完整日期和月日星期之间切换');
+assert.equal(logic.includes('compactDateLabel: `${Number(dateMatch[2])}月${Number(dateMatch[3])}日 · 星期${weekday}`') && logic.includes('dateDisplayLabel: dateLabel ? (compactDate ? compactDateLabel : dateLabel)') && logic.includes('onToggleDateFormat()'), true, '紧凑日期必须由服务端 created_at 计算，并由页面状态直接切换显示');
+assert.equal(wxml.includes('wx:elif="{{chatUnavailable}}"') && wxml.includes('蛋宝宝暂时不能聊天') && wxml.includes('bindtap="onBackToLife"'), true, '直链进入不可聊天状态时必须使用中性标题并能返回生活空间');
+assert.equal(wxml.includes('wx:if="{{snapshot && chatAvailable}}" class="composer"'), true, '不可聊天状态不得渲染输入框和发送按钮');
+assert.equal(wxss.includes('.chat-identity') && wxss.includes('.chat-identity__avatar'), true, '顶部头像与身份信息必须有独立布局样式');
+assert.equal(wxss.includes('.chat-identity__avatar') && wxss.includes('border-radius:50% 50% 50% 50% / 58% 58% 42% 42%'), true, '顶部头像必须使用蛋形轮廓');
+assert.equal(wxss.includes('.chat-identity__avatar-image{width:100%;height:100%;display:block}') && !wxss.includes('transform:scale(1.08)'), true, '聊天顶部必须保留统一头像资源中的安全留白，不得二次放大裁切');
+assert.equal(wxss.includes('.message-status--failed') && wxss.includes('min-height:88rpx'), true, '失败重试状态必须满足最小触控面积');
+assert.equal(wxml.includes('send-button--disabled') && wxml.includes('/assets/icons/send-up.svg') && wxml.includes('canSend'), true, '发送按钮必须在空白草稿时禁用，并使用紧凑 SVG 向上箭头');
+assert.equal(wxss.includes('.send-button') && wxss.includes('width:88rpx') && wxss.includes('height:88rpx') && wxss.includes('border-radius:50%'), true, '发送按钮必须是 44px 的圆形图标触控按钮');
+assert.equal(wxss.includes('.composer-input--focused{border-color:#D8D5CE;box-shadow:none}') && wxss.includes('.composer-input--error') && wxss.includes('#FDECEA'), true, '输入框聚焦必须保持静默，只有服务端输入拒绝才显示错误态');
+assert.equal(wxss.includes('.pressable--pressed') && wxss.includes('#001F00'), true, '可点击聊天控件必须具备按压反馈');
+assert.equal(wxss.includes('.message-date') && wxss.includes('.message-time') && wxss.includes('.history-complete'), true, '聊天记录时间线必须有独立视觉样式');
+assert.equal(wxss.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}') && wxss.includes('.page--reduced .message-status__pending-dot{animation:none}'), true, '减少动态时必须停止全部聊天等待动效');
+assert.equal(/好感度|在线|关系等级|继续聊天/.test(`${wxml}\n${wxss}`), false, '聊天页不得加入关系等级、在线或催促表达');
+assert.equal(wxml.includes('chat-identity__dot'), false, '顶部状态不得使用容易被理解为在线状态的绿点');
+
+console.log('聊天页顶部信息、消息状态与减少动态视觉校验通过。');

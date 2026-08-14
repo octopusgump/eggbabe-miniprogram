@@ -112,10 +112,18 @@ assert.equal(cardContext.data.cardView.illustration_url.startsWith('/assets/'), 
 
   const talk = await postHatch.sendSceneMessage(pet, {
     mood: snapshot.mood,
-    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key))
-  }, '今天陪我待一会儿');
+    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key)),
+    chatAccess: { status: 'available', reason: 'AT_HOME' }
+  }, '今天陪我待一会儿', 'demo-chat-message-1');
   assert.equal(talk.ok, true, '允许说话的小状态必须在完整对话页返回审核过的回应');
   assert.equal(talk.safety, 'approved-fallback', '开发版完整对话页不得伪装成 live');
+  const tooLong = await postHatch.sendSceneMessage(pet, {
+    mood: snapshot.mood,
+    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key)),
+    chatAccess: { status: 'available', reason: 'AT_HOME' }
+  }, '1'.repeat(121), 'demo-too-long');
+  assert.equal(tooLong.ok, false, '开发版 fixture 必须模拟服务端对超过 120 个 Unicode 字符的拒绝');
+  assert.equal(tooLong.code, 'INPUT_TOO_LONG', '开发版超长输入必须走服务端 INPUT_REJECTED 合同，而非显示固定回复');
   assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), true, '开发版必须注册完整聊天页');
   assert.equal(toasts.includes('账号服务尚未接入，请稍后再试'), false, '开发版流程不得显示正式服务器未接入提示');
 

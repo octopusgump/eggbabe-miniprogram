@@ -26,6 +26,7 @@ const pet = {
   const home = await postHatch.getSnapshot(pet);
   assert.equal(home.ok, true, '第一个 5 小时时段必须可加载');
   assert.equal(home.currentState.atHome, true, '故事线第一个时段必须在家');
+  assert.equal(home.chatAccess.status, 'available', 'demo 居家状态必须模拟服务端可聊天合同');
   const firstAction = await postHatch.performAction(pet, home);
   const repeatedAction = await postHatch.performAction(pet, home);
   assert.equal(firstAction.ok && Boolean(firstAction.keepsake), true, '首次原生动作必须生成一次纪念品');
@@ -42,6 +43,7 @@ const pet = {
   assert.equal(away.currentState.atHome, false, '故事线第四个时段必须外出');
   assert.equal(away.currentState.action, null, '外出时不得暴露写信或留言动作');
   assert.equal(away.currentState.canTalk, false, '外出时不开放实时对话');
+  assert.equal(away.chatAccess.status, 'away', 'demo 外出状态必须模拟服务端不可聊天合同');
   assert.equal(typeof postHatch.sendLetter, 'undefined', '陪伴服务不得保留写信接口');
 
   pet.hatchAt = new Date(baseNow - 4 * SLOT_MS).toISOString();
@@ -70,10 +72,31 @@ const pet = {
       slot_start: new Date(baseNow).toISOString(),
       slot_end: new Date(baseNow + SLOT_MS).toISOString(),
       line: '我睡着了。'
+    },
+    chat_access: { status: 'available', reason: 'AT_HOME' }
+  });
+  assert.equal(normalized.chatAccess.status, 'available', 'live 聊天权限必须只读取服务端 chat_access 合同');
+  assert.equal(normalized.currentState.action.id, 'lamp_off', 'live 响应不得随机改写固定对应动作');
+
+  const missingChatAccess = postHatch.normalizeLiveSnapshot({
+    ok: true,
+    mode: 'live',
+    mood: { mood: '平静', line: '我想慢慢待一会儿。' },
+    current_state: {
+      major_scene_id: 'home', small_scene_id: 'sleep', slot_index: 2,
+      slot_start: new Date(baseNow).toISOString(), slot_end: new Date(baseNow + SLOT_MS).toISOString()
     }
   });
-  assert.equal(normalized.currentState.canTalk, true, 'live 响应不得关闭任何居家状态的对话权限');
-  assert.equal(normalized.currentState.action.id, 'lamp_off', 'live 响应不得随机改写固定对应动作');
+  assert.equal(missingChatAccess.chatAccess.status, 'unavailable', '正式接口缺少 chat_access 时必须保守拒绝，不能由 App 自行放行');
+
+  const missingServerMessage = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY' });
+  assert.equal(missingServerMessage.status, 'unavailable', 'away 缺少服务端审核 message 时必须按同步失败处理');
+  assert.equal(missingServerMessage.message, '聊天权限正在同步，请稍后再试。', 'App 不得根据本地场景拼接不可聊天文案');
+  const invalidNextAvailableAt = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY', message: '暂时不能聊天。', next_available_at: '今晚' });
+  assert.equal(invalidNextAvailableAt.status, 'unavailable', '非法 next_available_at 不得被 App 猜测或展示');
+  const serverAwayMessage = '这是服务端审核后的外出说明。';
+  const validAwayAccess = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY', message: serverAwayMessage, next_available_at: null });
+  assert.equal(validAwayAccess.message, serverAwayMessage, '合法服务端不可聊天文案必须原样保留');
 
   Date.now = originalNow;
   console.log('破壳后 5 小时状态、居家固定动作与外出无写信入口校验通过。');

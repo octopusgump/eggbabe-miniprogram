@@ -12,7 +12,14 @@ function normalizeResponse(payload) {
   if (typeof source.success === 'boolean') {
     if (!source.success) {
       const error = source.error && typeof source.error === 'object' ? source.error : {};
-      return errorResult(String(error.code || 'SERVICE_ERROR'), String(error.message || '数据服务暂时不可用'), error.detail);
+      const data = source.data && typeof source.data === 'object' ? source.data : {};
+      return Object.assign(
+        errorResult(String(error.code || 'SERVICE_ERROR'), String(error.message || '数据服务暂时不可用'), error.detail),
+        {
+          resultType: String(data.result_type || data.resultType || ''),
+          requestId: String(source.request_id || data.request_id || '')
+        }
+      );
     }
     const data = source.data && typeof source.data === 'object' ? source.data : {};
     const serverTime = source.server_time || data.server_time || data.serverTs;
@@ -27,7 +34,7 @@ function normalizeResponse(payload) {
   return source;
 }
 
-function call(name, data) {
+function call(name, data, options) {
   if (runtime.getMode() !== 'live') return Promise.resolve({ ok: false, code: 'LIVE_MODE_REQUIRED', message: '开发验收数据不访问正式服务' });
   if (!config.backendEnabled) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONNECTED', message: '正式数据服务尚未接入' });
   if (!config.apiBase || typeof wx === 'undefined' || !wx.request) return Promise.resolve({ ok: false, code: 'BACKEND_NOT_CONFIGURED', message: '正式数据服务尚未配置' });
@@ -42,7 +49,7 @@ function call(name, data) {
     requestTask = wx.request({
       url: `${String(config.apiBase).replace(/\/$/, '')}/${name}`,
       method: 'POST',
-      timeout: Number(config.requestTimeoutMs || 15000),
+      timeout: Number(options && options.timeoutMs || config.requestTimeoutMs || 15000),
       header: { 'content-type': 'application/json' },
       data: payload,
       success: response => {
@@ -81,7 +88,10 @@ function updateEggName(eggId, displayName) {
 function saveEggCreation(eggId, creation) {
   return call('saveEggCreation', { egg_id: eggId, creation, mode: 'live' });
 }
-function chatReply(payload) { return call('chatReply', payload); }
+function chatReply(payload) { return call('chatReply', payload, { timeoutMs: config.chatRequestTimeoutMs }); }
+function getChatHistory(eggId, cursor, limit) {
+  return call('getChatHistory', { egg_id: eggId, cursor: cursor || '', limit: Number(limit) || 20 });
+}
 function recordCompanionInteraction(interactionType, payload) {
   return call('recordCompanionInteraction', { interactionType, payload: payload || {} });
 }
@@ -155,6 +165,7 @@ module.exports = {
   updateEggName,
   saveEggCreation,
   chatReply,
+  getChatHistory,
   recordCompanionInteraction,
   getIncubationPractice,
   getIncubationManual,

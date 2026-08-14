@@ -133,6 +133,7 @@ assert.equal(lifeSceneLogic.includes("key: 'home-talk', label: '在家 · 可对
 assert.equal(lifeSceneLogic.includes("key: 'home-sleep', label: '在家 · 睡觉（可对话）', major: 'home', stateKey: 'sleep', actionDone: true"), true, '睡觉快捷项必须验证闭眼关灯全景仍可对话');
 assert.equal(lifeSceneLogic.includes('}, () => this.refreshEnvironment());'), true, '完成居家动作后必须重新解析动作全景');
 assert.equal(lifeSceneLogic.includes("key: 'away', label: '不在家'"), true, '陪伴状态测试必须覆盖不在家且无写信入口');
+assert.equal(lifeSceneLogic.includes("target.key === 'away'") && lifeSceneLogic.includes("status: 'away', reason: 'AWAY'"), true, '开发验收器选择不在家时必须模拟服务端 away chat_access，不能留下可聊天按钮');
 assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后环境测试入口必须在验收工具展开且全景图就绪后显示');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester"') && lifeSceneWxml.includes('isDemo && acceptanceToolsOpen && currentState'), true, '破壳后必须提供单一验收入口，并等全景图就绪后再展开测试器');
@@ -160,7 +161,7 @@ assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeScene
 assert.equal(chatWxml.includes('class="conversation"') && chatWxml.includes('class="composer"') && chatLogic.includes('postHatch.sendSceneMessage'), true, '完整对话页必须同时包含消息区、输入区并复用统一陪伴服务');
 assert.equal(chatWxml.includes('id="message-typing"') && chatWxml.includes('aria-label="蛋宝宝正在回复"') && chatLogic.includes("this.setScrollTarget('message-typing')"), true, '等待回复时必须显示可访问的三点气泡并自动滚入视野');
 assert.equal(chatStyles.includes('animation:typing .5s ease-in-out infinite') && chatStyles.includes('animation-delay:.08s') && chatStyles.includes('animation-delay:.16s'), true, '正在回复的三点微动效必须按 0.5 秒完整循环依次跳动');
-assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatStyles.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
+assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatStyles.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
 assert.equal(lifeSceneWxml.includes('aria-label="打开我的和设置"') && lifeSceneWxml.includes('bindtap="onOpenMySettings"') && lifeSceneWxml.includes('src="{{mySettingsIcon}}"'), true, '右下角必须使用我的/设置图标并直接打开我的页');
 assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '我的/设置入口不得经过中间弹层');
 assert.equal(/scene-action-unread-dot|contextActionHasNewMessage|toolboxHasNewMessage/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '停用的明信片不得在生活场景显示不可处理的未读提示');
@@ -170,6 +171,11 @@ assert.equal(lifeSceneWxml.includes('wx:if="{{currentState}}" class="scene-conte
 assert.equal(lifeSceneWxml.includes('class="away-status-pill"') && lifeSceneWxml.includes('>外出中</view>'), true, '外出时左下角必须只显示“外出中”');
 assert.equal(/away-status-card|currentState\.(?:majorLabel|label|line)/.test(lifeSceneWxml), false, '外出时不得显示地点、活动、去向或中央叙事卡');
 assert.equal(lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome'), true, '外出时不得触发角色动作状态对白');
+assert.equal(lifeSceneWxml.includes('class="scene-action-icon-image scene-action-icon-image--companion"') && lifeSceneWxml.includes('src="{{contextActionIcon}}" mode="aspectFill"'), true, '左下角玉兔或锦鲤头像必须使用独立样式铺满圆形按钮');
+assert.equal(lifeSceneStyles.includes('.scene-action-icon-image--companion{width:112rpx;height:112rpx;border-radius:50%;filter:none}'), true, '陪伴头像尺寸必须与 112rpx 按钮一致，不得保留外围空白圈');
+assert.equal(lifeSceneWxml.includes('scene-action-unavailable-badge'), true, '居家但聊天不可用时必须显示状态标记');
+assert.equal(lifeSceneStyles.includes('.scene-action-button--unavailable{width:88rpx;height:88rpx') && lifeSceneStyles.includes('.scene-action-button--unavailable .scene-action-icon-image--companion{width:80rpx;height:80rpx;filter:grayscale(1)'), true, '外出或不可聊天时左下角必须缩为低饱和的小状态按钮，不能继续像可聊天入口');
+assert.equal(lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '聊天入口是否可用必须读取服务端 chat_access 合同');
 assert.equal(/resolvePanelSceneSet|panelImages|usingPanoramaFallback|scrollIntoView/.test(lifeSceneLogic), false, '生活空间不得保留三张切图或双重滚动定位逻辑');
 assert.deepEqual(postHatchAssets.POST_HATCH.panoramaFallbackMeta, {
   width: 2823,

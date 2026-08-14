@@ -54,8 +54,7 @@ App({
               id: result.pet._id,
               mode: result.pet.mode || result.mode,
               hatchAt: result.pet.hatch_at || '',
-              collectionCard: result.hatchCard || null,
-              messages: result.messages || []
+              collectionCard: result.hatchCard || null
             }), 'live');
             timeService.sync().then(timeResult => {
               if (!timeResult.ok || typeof getCurrentPages === 'undefined') return;

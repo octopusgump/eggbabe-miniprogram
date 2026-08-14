@@ -5,6 +5,7 @@
 .title { margin-top: 18rpx; color: #17311F; font-size: 40rpx; font-weight: 600; }
 .desc { margin-top: 14rpx; color: #777B75; font-size: 24rpx; }
 .options { margin-top: 38rpx; display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; }
+.options--error .option { border-color: #C94A40; }
 .option { height: 112rpx; padding: 22rpx; box-sizing: border-box; border: 2rpx solid #E1DFD8; border-radius: 999rpx; display: flex; align-items: center; gap: 12rpx; background: #FFF; }
 .option--selected { border-color: #91A65A; background: #F3F7EB; }
 .option-label { flex: 1; color: #374039; font-size: 25rpx; line-height: 1.45; }
@@ -29,6 +30,7 @@
 .answer-value { margin-top: 10rpx; color: #2E4232; font-size: 30rpx; font-weight: 600; }
 .answer-response { margin-top: 16rpx; color: #647064; font-size: 23rpx; line-height: 1.55; }
 .error { margin-top: 18rpx; color: #A34B44; font-size: 22rpx; }
+.form-error { display: block; margin-top: 18rpx; color: #B84940; font-size: 22rpx; }
 .spacer { flex: 1; min-height: 28rpx; }
 .primary { height: 96rpx; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 28rpx; line-height: normal; }
 .primary[disabled] { background: #AEB9AE; color: rgba(255,255,255,.86); }

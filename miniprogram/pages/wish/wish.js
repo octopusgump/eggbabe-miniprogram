@@ -8,6 +8,7 @@ Page({
     question: null,
     selected: '',
     storedOption: null,
+    selectionError: '',
     error: '',
     successLine: ''
   },
@@ -40,12 +41,12 @@ Page({
 
   onSelect(event) {
     if (this.data.storedOption || this.data.submitting) return;
-    this.setData({ selected: event.currentTarget.dataset.id });
+    this.setData({ selected: event.currentTarget.dataset.id, selectionError: '' });
   },
 
   onSubmit() {
     if (!this.data.selected || this.data.submitting) {
-      if (!this.data.selected) wx.showToast({ title: '先选一个愿望吧', icon: 'none' });
+      if (!this.data.selected) this.setData({ selectionError: '先选一个愿望吧' });
       return;
     }
     this.submitAnswer();
@@ -55,7 +56,7 @@ Page({
     const question = this.data.question;
     const selectedOption = question && practice.optionById(question.options, this.data.selected);
     if (!question || !selectedOption) return;
-    this.setData({ submitting: true, error: '' });
+    this.setData({ submitting: true, error: '', selectionError: '' });
     const result = await practice.submit('wish_pool', {
       questionId: question.id,
       optionId: selectedOption.id

@@ -1,5 +1,12 @@
 <view class="page">
   <nav-bar title="帮助中心"></nav-bar>
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
 
   <view class="search-bar">
     <view class="search-input">
@@ -121,11 +128,14 @@
 
   </scroll-view>
 
-  <view class="cs-bar">
-    <text class="cs-hint">没找到答案？</text>
-    <view class="cs-link" bindtap="onContactCS">
-      <text class="cs-link-text">联系客服</text>
-      <view class="cs-arrow"></view>
+  <view class="support-bar">
+    <text class="support-hint">没找到答案？</text>
+    <view class="support-link" aria-role="button" aria-label="复制邮件支持邮箱 {{supportEmail}}" bindtap="onCopySupportEmail">
+      <view class="support-copy">
+        <text class="support-label">邮件支持</text>
+        <text class="support-email">{{supportEmail}}</text>
+      </view>
+      <text class="support-action">复制</text>
     </view>
   </view>
 

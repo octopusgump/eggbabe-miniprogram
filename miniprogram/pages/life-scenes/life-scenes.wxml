@@ -69,7 +69,7 @@
         <view wx:else class="empty-memory"><view class="empty-mark">信</view><text class="empty-title">还没有远方的来信</text><text class="empty-copy">ta 外出时可以写一封信；下一次进入后，回信会安静地放在这里。</text></view>
       </block>
       <block wx:else>
-        <view wx:if="{{cardRecommendation}}" class="recommend-card" hover-class="recommend-card--pressed" aria-role="button" bindtap="onOpenCard">
+        <view wx:if="{{cardRecommendation}}" class="recommend-card motion-card" hover-class="recommend-card--pressed" aria-role="button" bindtap="onOpenCard">
           <text class="recommend-kicker">今天想再看一次</text>
           <view class="collection-card-preview">
             <view class="collection-card-preview__header"><text class="collection-card-preview__name">{{cardPreview.name}}</text><text class="collection-card-preview__brand">eggbabe</text></view>

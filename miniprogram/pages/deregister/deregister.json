@@ -2,6 +2,7 @@
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
     "card": "../../components/card/card",
-    "app-button": "../../components/button/button"
+    "app-button": "../../components/button/button",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

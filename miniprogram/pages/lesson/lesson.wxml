@@ -21,7 +21,7 @@
         <text class="answer-response">{{animationLine || '我还记得这件小事。'}}</text>
       </view>
 
-      <view wx:else class="options">
+      <view wx:else class="options {{selectionError ? 'options--error' : ''}}">
         <view
           wx:for="{{options}}"
           wx:key="id"
@@ -36,9 +36,10 @@
         </view>
       </view>
 
+      <text wx:if="{{selectionError}}" class="form-error" aria-role="alert" aria-label="{{selectionError}}">{{selectionError}}</text>
       <text wx:if="{{error}}" class="error">{{error}}</text>
       <view class="spacer"></view>
-      <button wx:if="{{!storedOption}}" class="primary" hover-class="button-press" disabled="{{!selected || submitting}}" bindtap="onSubmit">
+      <button wx:if="{{!storedOption}}" class="primary" hover-class="button-press" disabled="{{submitting}}" bindtap="onSubmit">
         <text class="button-label">{{submitting ? '我在认真听…' : '把这件小事教给我'}}</text>
       </button>
     </block>

@@ -5,6 +5,17 @@
   background: #FFFFFF;
 }
 
+.system-notice-anchor {
+  position: fixed;
+  z-index: 120;
+  top: calc(148rpx + env(safe-area-inset-top));
+  left: 72rpx;
+  right: 72rpx;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .search-bar {
   padding: 24rpx 40rpx;
   background: #FFFFFF;
@@ -71,7 +82,7 @@
   height: 24rpx;
 }
 
-.cs-bar {
+.support-bar {
   border-top: 1rpx solid #E5E3DF;
   padding: 26rpx 40rpx calc(26rpx + env(safe-area-inset-bottom));
   background: #FFFFFF;
@@ -81,29 +92,41 @@
   flex-shrink: 0;
 }
 
-.cs-hint {
+.support-hint {
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 28rpx;
   color: #8C8C88;
 }
 
-.cs-link {
+.support-link {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 20rpx;
 }
 
-.cs-link-text {
+.support-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4rpx;
+}
+
+.support-label,
+.support-action {
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
-  font-size: 28rpx;
+  font-size: 24rpx;
   font-weight: 600;
   color: #002900; /* --ink */
 }
 
-.cs-arrow {
-  width: 14rpx;
-  height: 14rpx;
-  border-top: 3rpx solid #002900;
-  border-right: 3rpx solid #002900;
-  transform: rotate(45deg);
+.support-email {
+  font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 22rpx;
+  color: #737771;
+}
+
+.support-action {
+  padding: 12rpx 18rpx;
+  border-radius: 18rpx;
+  background: #E5EBE5;
 }

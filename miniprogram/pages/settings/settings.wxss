@@ -31,6 +31,36 @@
   box-shadow: 0rpx 2rpx 4rpx rgba(0, 41, 0, 0.06), 0rpx 4rpx 8rpx rgba(0, 41, 0, 0.04);
 }
 
+.empty-panel {
+  margin: 0 40rpx;
+  padding: 40rpx 32rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E3DF;
+  border-radius: 32rpx;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.empty-title,
+.empty-desc {
+  display: block;
+  font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+}
+
+.empty-title {
+  color: #1A1A1A;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.empty-desc {
+  margin-top: 12rpx;
+  color: #8C8C88;
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
 .hint-box {
   margin: 24rpx 40rpx 0;
   padding: 24rpx 28rpx;

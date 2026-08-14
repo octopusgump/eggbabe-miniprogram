@@ -7,13 +7,13 @@
       <text class="kicker">A LITTLE WISH</text>
       <text class="title">{{question.text}}</text>
 
-      <view wx:if="{{storedOption}}" class="answer-card">
+      <view wx:if="{{storedOption}}" class="answer-card motion-card">
         <text class="answer-intro">今天你许过愿啦 ——</text>
         <text class="answer-value">{{storedOption.label}}</text>
         <text class="answer-response">{{successLine || '我把它好好放在心里。'}}</text>
       </view>
 
-      <view wx:else class="options">
+      <view wx:else class="options {{selectionError ? 'options--error' : ''}}">
         <view
           wx:for="{{question.options}}"
           wx:key="id"
@@ -28,9 +28,10 @@
         </view>
       </view>
 
+      <text wx:if="{{selectionError}}" class="form-error" aria-role="alert" aria-label="{{selectionError}}">{{selectionError}}</text>
       <text wx:if="{{error}}" class="error">{{error}}</text>
       <view class="spacer"></view>
-      <button wx:if="{{!storedOption}}" class="primary" hover-class="button-press" disabled="{{!selected || submitting}}" bindtap="onSubmit">
+      <button wx:if="{{!storedOption}}" class="primary" hover-class="button-press" disabled="{{submitting}}" bindtap="onSubmit">
         <text class="button-label">{{submitting ? '正在告诉我…' : '把愿望告诉我'}}</text>
       </button>
     </block>

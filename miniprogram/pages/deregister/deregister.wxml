@@ -1,6 +1,14 @@
 <view class="page">
   <nav-bar title="注销账号"></nav-bar>
 
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
+
   <scroll-view scroll-y class="content">
 
     <view wx:if="{{pending}}" class="pending-block">

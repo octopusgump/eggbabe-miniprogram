@@ -1,4 +1,5 @@
 .page { height: 100vh; background: #F6F5EF; }
+.system-notice-anchor { position: fixed; z-index: 120; top: calc(148rpx + env(safe-area-inset-top)); left: 72rpx; right: 72rpx; display: flex; justify-content: center; pointer-events: none; }
 .content { height: calc(100vh - 176rpx); padding: 28rpx 40rpx 60rpx; box-sizing: border-box; }
 .new-banner { margin-bottom: 18rpx; padding: 18rpx; border-radius: 18rpx; background: #EAF1DA; color: #496044; font-size: 22rpx; text-align: center; }
 .card { overflow: hidden; border-radius: 34rpx; background: #FFFDF7; box-shadow: 0 20rpx 60rpx rgba(44,55,45,.12); }

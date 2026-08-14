@@ -24,6 +24,5 @@ module.exports = {
   birthCardH5Url: '',
   birthCardApiBase: '',
   miniProgramCodeUrl: '',
-  customerService: { corpId: '', url: '' },
   subscriptionTemplateIds: { hatchDay: '', hatchSoon: '' }
 };

@@ -1,5 +1,6 @@
 {
   "usingComponents": {
-    "btn": "../../components/button/button"
+    "btn": "../../components/button/button",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

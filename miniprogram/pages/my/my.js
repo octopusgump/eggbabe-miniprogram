@@ -1,8 +1,7 @@
 const petStore = require('../../utils/pet-store');
-const releaseSurface = require('../../utils/release-surface');
 
 Page({
-  data: { userName: '微信用户', eggCount: 0, deferredContentAvailable: releaseSurface.deferredContentAvailable() },
+  data: { userName: '微信用户', eggCount: 0 },
 
   onShow() {
     if (this.getTabBar && this.getTabBar()) this.getTabBar().setData({ selected: 1, hidden: true });
@@ -17,7 +16,6 @@ Page({
   onTapUserCard() {
     wx.navigateTo({ url: '/pages/profile/profile' });
   },
-  onNavAlbum() { wx.navigateTo({ url: '/pages/album/album' }); },
   onNavCodes() { wx.navigateTo({ url: '/pages/invite-codes/invite-codes' }); },
   onNavSettings() { wx.navigateTo({ url: '/pages/settings/settings' }); },
   onNavAccount() { wx.navigateTo({ url: '/pages/account/account' }); },

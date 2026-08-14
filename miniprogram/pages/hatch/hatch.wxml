@@ -1,6 +1,14 @@
 <view class="page">
   <!-- 破壳仪式：情感时刻，全程 520ms cubic-bezier(0.34,1.56,0.64,1)，尊重 prefers-reduced-motion -->
 
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
+
   <view wx:if="{{phase === 'blocked'}}" class="stage">
     <view class="egg-pulse" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
     <text class="headline">我还在准备破壳。</text>
@@ -33,7 +41,7 @@
       <view class="particle" wx:for="{{particles}}" wx:key="i"
             style="--tx: {{item.tx}}; --ty: {{item.ty}}; background: {{item.color}};"></view>
       <view class="crack-flash"></view>
-      <view class="reveal-card" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
+      <view class="reveal-card motion-card" style="background: linear-gradient(160deg, #FFFDF0, {{pet.shell.color}}, #F4B9AE);"></view>
     </view>
     <text class="gen-text">正在准备这一蛋一份的收藏卡…</text>
   </view>

@@ -5,23 +5,22 @@
 
     <text class="section-label">通知设置</text>
 
-    <view class="panel">
+    <view wx:if="{{hatchReminderAvailable}}" class="panel">
       <switch-row
         title="破壳提醒"
         desc="破壳日与即将破壳时提醒你"
         checked="{{notifs.hatch}}"
-        bind:change="onToggleHatch"
-      ></switch-row>
-      <switch-row
-        title="节令上新"
-        desc="节气、节日或限定内容开放时提醒你"
-        checked="{{notifs.seasonal}}"
         show-border="{{false}}"
-        bind:change="onToggleSeasonal"
+        bind:change="onToggleHatch"
       ></switch-row>
     </view>
 
-    <view class="hint-box">
+    <view wx:else class="empty-panel">
+      <text class="empty-title">当前没有可管理的提醒</text>
+      <text class="empty-desc">后续有可用的陪伴提醒时，会在这里显示。</text>
+    </view>
+
+    <view wx:if="{{hatchReminderAvailable}}" class="hint-box">
       <text class="hint-text">当前预览版会在本机保存你的通知设置。正式消息推送仍需接入微信订阅消息并由服务端发送。</text>
     </view>
 

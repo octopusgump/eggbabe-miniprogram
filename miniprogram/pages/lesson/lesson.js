@@ -10,6 +10,7 @@ Page({
     storedOption: null,
     animation: '',
     animationLine: '',
+    selectionError: '',
     error: ''
   },
 
@@ -34,17 +35,17 @@ Page({
 
   onSelect(event) {
     if (this.data.storedOption || this.data.submitting) return;
-    this.setData({ selected: event.currentTarget.dataset.id });
+    this.setData({ selected: event.currentTarget.dataset.id, selectionError: '' });
   },
 
   async onSubmit() {
     if (!this.data.selected || this.data.submitting) {
-      if (!this.data.selected) wx.showToast({ title: '先选一件小事吧', icon: 'none' });
+      if (!this.data.selected) this.setData({ selectionError: '先选一件小事吧' });
       return;
     }
     const selectedOption = practice.optionById(this.data.options, this.data.selected);
     if (!selectedOption) return;
-    this.setData({ submitting: true, error: '' });
+    this.setData({ submitting: true, error: '', selectionError: '' });
     const result = await practice.submit('edu_class', {
       questionId: 'EDU-DAILY',
       optionId: selectedOption.id

@@ -1,8 +1,15 @@
 <view class="page">
   <nav-bar title="收藏卡"></nav-bar>
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
   <scroll-view class="content" scroll-y>
     <view wx:if="{{isNew}}" class="new-banner">我的收藏卡已经准备好啦</view>
-    <view wx:if="{{cardView}}" class="card">
+    <view wx:if="{{cardView}}" class="card motion-card">
       <view class="card-title-section">
         <view class="card-avatar"><pet-avatar pet-type="{{cardView.prototype_name}}" size="{{44}}"></pet-avatar></view>
         <view class="title-copy">

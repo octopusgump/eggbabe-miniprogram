@@ -7,10 +7,9 @@ const runtime = require('../../services/runtime-context');
 const canvas2d = require('../../utils/canvas-2d');
 const practice = require('../../services/incubation-practice');
 const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
-const CANVAS_NOTICE_DURATION = 1800;
-const CANVAS_NOTICE_FADE_MS = 180;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -212,36 +211,25 @@ const doodleDefinition = {
   },
 
   clearCanvasNoticeTimers() {
-    clearTimeout(this.canvasNoticeTimer);
-    clearTimeout(this.canvasNoticeCleanupTimer);
-    this.canvasNoticeTimer = null;
-    this.canvasNoticeCleanupTimer = null;
+    if (this.canvasNoticeController) this.canvasNoticeController.clearTimers();
   },
 
   dismissCanvasNotice() {
-    this.clearCanvasNoticeTimers();
-    if (!this.data.canvasNoticeText) return;
-    this.setData({ canvasNoticeVisible: false });
-    this.canvasNoticeCleanupTimer = setTimeout(() => {
-      this.canvasNoticeCleanupTimer = null;
-      if (!this.data.canvasNoticeVisible) this.setData({ canvasNoticeText: '' });
-    }, CANVAS_NOTICE_FADE_MS);
+    if (this.canvasNoticeController) this.canvasNoticeController.dismiss();
   },
 
   showCanvasNotice(text, tone) {
-    const message = String(text || '').trim();
-    if (!message) return;
-    const safeTone = tone === 'warning' ? 'warning' : 'info';
-    this.clearCanvasNoticeTimers();
-    this.setData({
-      canvasNoticeText: message,
-      canvasNoticeTone: safeTone,
-      canvasNoticeVisible: false
-    }, () => {
-      if (this.pageActive === false) return;
-      this.setData({ canvasNoticeVisible: true });
-      this.canvasNoticeTimer = setTimeout(() => this.dismissCanvasNotice(), CANVAS_NOTICE_DURATION);
-    });
+    if (!this.canvasNoticeController) {
+      this.canvasNoticeController = createInlineNoticeController(this, {
+        textKey: 'canvasNoticeText',
+        toneKey: 'canvasNoticeTone',
+        visibleKey: 'canvasNoticeVisible',
+        timerKey: 'canvasNoticeTimer',
+        cleanupTimerKey: 'canvasNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
+    }
+    return this.canvasNoticeController.show(text, tone);
   },
 
   pushHistory() {

@@ -19,13 +19,13 @@ function imageInfo(file) {
   const hasAlpha = (output.match(/hasAlpha:\s*(\w+)/) || [])[1] === 'yes';
   return { width, height, hasAlpha };
 }
-
 characters.forEach(character => {
   const bedroom = path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/60-action-scenes', character, 'home-bedroom');
   const expected = actions.flatMap(action => periods.map(period => `home_bedroom_${action}_${period}_v01.webp`)).sort();
   const available = new Set(fs.readdirSync(bedroom).filter(file => file.endsWith('.webp')));
   const missing = expected.filter(file => !available.has(file));
   assert.deepEqual(missing, [], `${character} 必须包含 24 张 canonical 正式动作 WebP`);
+  assert.deepEqual(Array.from(available).sort(), expected, `${character} 根目录必须恰好包含 24 张 canonical 正式动作 WebP`);
 
   expected.forEach(file => {
     const absolute = path.join(bedroom, file);
@@ -50,7 +50,6 @@ characters.forEach(character => {
 
 assert.equal(canonicalHashes.size, 48, '48 张 canonical 正式动作图的 SHA-256 必须全部唯一');
 assert.equal(configuredPaths.size, 48, '运行时配置必须恰好登记 48 张正式动作图');
-
 assert.deepEqual(Object.keys(postHatch.panoramaSceneSets), periods, '破壳后空房全景必须且只能保留三个时段键');
 
 const manifest = JSON.parse(childProcess.execFileSync(process.execPath, ['scripts/print-environment-cdn-manifest.js'], { cwd: root, encoding: 'utf8' }));

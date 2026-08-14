@@ -6,5 +6,5 @@
 - 文件名为 `home_bedroom_{nap|lazy|stare|read|game|window|draw|music}_{day|sunset|night}_v01.webp`。
 - `nap` 是睡觉资源沿用的历史文件名；产品“小憩”使用独立内部键 `lazy`，不得复用睡觉图片。
 - 破壳后只按 `day`、`sunset`、`night` 三个时段选择图片，不使用季节、天气或关灯覆盖图。
-- 当前运行时不登记季节、天气或关灯扩展图；目录中的历史扩展文件仍待独立删除审核。
+- 当前版本不维护季节或天气扩展矩阵；历史扩展图已移出本资源树。
 - 运行时只允许通过 `config/post-hatch-assets.js` 的 `resolveActionPanorama` 解析。

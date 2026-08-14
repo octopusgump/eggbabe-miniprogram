@@ -8,5 +8,5 @@
 - 睡觉使用内部键 `sleep`，正式文件为兼容既有 CDN 路径继续沿用 `home_bedroom_nap_*` 文件名；不得将它与小憩重复计数。
 - 只能由 `config/post-hatch-assets.js` 的 `resolveActionPanorama` 解析；不得作为 `10-background`、`30-character` 或三张切图使用。
 - 两个角色在对应居家状态和有效时段下，均读取各自根目录的正式基础图。
-- 当前运行时不登记历史扩展图；这些文件仍保留待独立删除审核，不属于 48 张正式资源。
+- 历史扩展图已移出本资源树，本目录不再维护扩展矩阵。
 - 该目录由 `project.config.json` 排除出主包，运行时通过 `environmentCdnBase` 加载。

@@ -12,13 +12,14 @@ function local(runtimePath) {
 
 function entry(kind, sceneKey, runtimePath) {
   const file = local(runtimePath);
+  const exists = Boolean(runtimePath) && fs.existsSync(file) && fs.statSync(file).isFile();
   return {
     kind,
     scene_key: sceneKey,
     local_path: file,
     cdn_path: runtimePath,
-    exists: fs.existsSync(file),
-    sha256: fs.existsSync(file) ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') : ''
+    exists,
+    sha256: exists ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') : ''
   };
 }
 
@@ -27,16 +28,18 @@ const assets = [];
   assets.push(entry('pre_hatch_center', scene.key, scene.background));
   assets.push(entry('pre_hatch_egg', scene.key, scene.egg));
   assets.push(entry('pre_hatch_nest', scene.key, scene.nest));
-  const panorama = postHatch.panoramaSceneSets[scene.key];
-  assets.push(entry('post_hatch_panorama', scene.key, panorama && panorama.panorama || ''));
 });
+Object.entries(postHatch.panoramaSceneSets || {}).forEach(([period, panorama]) => {
+  assets.push(entry('post_hatch_panorama', period, panorama && panorama.panorama || ''));
+});
+const actionPaths = new Set();
 (Object.entries(postHatch.actionPanoramaScenesByCharacter || {})).forEach(([characterKey, scenes]) => {
   Object.entries(scenes || {}).forEach(([stateKey, scene]) => {
-    Object.entries(scene.panoramaBySceneKey || {}).forEach(([sceneKey, runtimePath]) => {
-      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${sceneKey}`, runtimePath));
-    });
-    Object.entries(scene.panoramaAfterActionBySceneKey || {}).forEach(([sceneKey, runtimePath]) => {
-      if (runtimePath) assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${sceneKey}:after-action`, runtimePath));
+    Object.entries(scene.panoramaByPeriod || {}).forEach(([period, runtimePath]) => {
+      if (runtimePath && !actionPaths.has(runtimePath)) {
+        actionPaths.add(runtimePath);
+        assets.push(entry('post_hatch_action_panorama', `${characterKey}:${stateKey}:${period}`, runtimePath));
+      }
     });
   });
 });

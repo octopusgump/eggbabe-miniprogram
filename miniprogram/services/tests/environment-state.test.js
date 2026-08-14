@@ -6,6 +6,10 @@ function at(hour, minute, day) {
   return new Date(2026, 7, day || 4, hour, minute || 0, 0, 0).getTime();
 }
 
+function atPrecise(hour, minute, second, millisecond) {
+  return new Date(2026, 7, 4, hour, minute, second, millisecond).getTime();
+}
+
 const egg = {
   eggId: 'egg-test-1',
   environmentSeed: 'seed-test-1',
@@ -18,6 +22,13 @@ assert.equal(environment.periodFromLocalTime(at(16, 59)), 'day');
 assert.equal(environment.periodFromLocalTime(at(17, 0)), 'sunset');
 assert.equal(environment.periodFromLocalTime(at(18, 59)), 'sunset');
 assert.equal(environment.periodFromLocalTime(at(19, 0)), 'night');
+assert.equal(environment.periodFromLocalTime(atPrecise(5, 59, 59, 999)), 'night');
+assert.equal(environment.periodFromLocalTime(atPrecise(6, 0, 0, 0)), 'day');
+assert.equal(environment.periodFromLocalTime(atPrecise(16, 59, 59, 999)), 'day');
+assert.equal(environment.periodFromLocalTime(atPrecise(17, 0, 0, 0)), 'sunset');
+assert.equal(environment.periodFromLocalTime(atPrecise(18, 59, 59, 999)), 'sunset');
+assert.equal(environment.periodFromLocalTime(atPrecise(19, 0, 0, 0)), 'night');
+assert.equal(environment.millisecondsUntilNextEnvironmentBoundary(atPrecise(5, 59, 59, 750)), 250, '毫秒级边界不得被跳到下一个时段');
 
 assert.equal(environment.seasonBeforeHatch(egg.companionStartedAt, at(12, 0, 1)), 'spring');
 assert.equal(environment.seasonBeforeHatch(egg.companionStartedAt, at(12, 0, 2)), 'summer');

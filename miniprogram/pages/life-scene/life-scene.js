@@ -3,7 +3,6 @@ const analytics = require('../../services/analytics');
 const timeService = require('../../services/time-service');
 const postHatch = require('../../services/post-hatch-companion');
 const assets = require('../../config/post-hatch-assets');
-const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const config = require('../../config/v2');
 const demoExperience = require('../../services/demo-experience');
 const environmentService = require('../../services/incubation-environment');
@@ -22,7 +21,8 @@ const AUTO_SCENE_OPTION = Object.freeze({
   key: 'auto',
   label: '实时环境'
 });
-const SCENE_TESTER_OPTIONS = Object.freeze([AUTO_SCENE_OPTION].concat(preHatchAssets.sceneTesterOptions || []));
+const POST_HATCH_PERIOD_OPTIONS = assets.POST_HATCH.periodSceneOptions || [];
+const SCENE_TESTER_OPTIONS = Object.freeze([AUTO_SCENE_OPTION].concat(POST_HATCH_PERIOD_OPTIONS));
 const AUTO_COMPANION_STATE_OPTION = Object.freeze({ key: 'auto', label: '跟随时间' });
 const COMPANION_STATE_TEST_OPTIONS = Object.freeze([
   AUTO_COMPANION_STATE_OPTION,
@@ -76,7 +76,7 @@ function environmentForPet(pet) {
 
 function scenePreviewTarget(key) {
   if (!key || key === 'auto') return null;
-  return (preHatchAssets.sceneTesterOptions || []).find(item => item.key === key) || null;
+  return POST_HATCH_PERIOD_OPTIONS.find(item => item.key === key) || null;
 }
 
 function companionStatePreviewTarget(key) {
@@ -127,14 +127,10 @@ function previewCompanionSnapshot(snapshot, target) {
 function previewEnvironment(base, target) {
   if (!target) return base;
   return Object.assign({}, base, {
-    season: target.season,
-    weather: target.weather,
     period: target.period,
     lightPhase: target.lightPhase,
-    sceneKey: target.key,
     valid: true,
-    className: target.className,
-    windowImage: environmentService.windowAssetPath(target.weather, target.period)
+    windowImage: environmentService.windowAssetPath('', base.weather, target.period)
   });
 }
 
@@ -149,8 +145,8 @@ function prototypeTesterPresentation(pet) {
   return demoExperience.PREVIEW_PROTOTYPES.find(item => item.key === prototype || item.cardCode === prototype) || demoExperience.PREVIEW_PROTOTYPES[0];
 }
 
-function panoramaPresentation(sceneKey, panelWidth, panelHeight, cdnBase, actionScene) {
-  const sceneSet = actionScene || assets.resolvePanoramaScene(sceneKey, cdnBase);
+function panoramaPresentation(period, panelWidth, panelHeight, cdnBase, actionScene) {
+  const sceneSet = actionScene || assets.resolvePanoramaScene(period, cdnBase);
   const fallbackMeta = assets.POST_HATCH.panoramaFallbackMeta || {};
   const imageMeta = sceneSet && sceneSet.windowMeta || fallbackMeta;
   return {
@@ -378,7 +374,7 @@ Page({
     const panelWidth = Number(info.windowWidth || 375);
     const panelHeight = Number(info.windowHeight || 667);
     const app = typeof getApp === 'function' ? getApp() : null;
-    const panorama = panoramaPresentation(dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
+    const panorama = panoramaPresentation(dailyWindowEnvironment.period, panelWidth, panelHeight, app && app.globalData && app.globalData.environmentCdnBase);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
       panelWidth,
@@ -437,7 +433,7 @@ Page({
       const app = typeof getApp === 'function' ? getApp() : null;
       const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
-      const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+      const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
       const contextAction = contextActionPresentation(this.data.pet, snapshot.chatAccess);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
@@ -551,7 +547,7 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, environment, cdnBase);
-    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+    const panorama = panoramaPresentation(environment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
     const stateOptions = companionStateTesterOptions(this.data.pet, environment);
     const selectedStateOption = stateOptions.find(item => item.key === this.data.companionStateTesterKey);
@@ -677,7 +673,7 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, this.data.dailyWindowEnvironment, cdnBase);
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     if (panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage) {
       this.setData({ panelSceneSetId: panorama.sceneSetId, windowHotspots: panorama.windowHotspots, sceneBackgroundError: false, sceneTransitionError: false });
       this.queuePanoramaTransition(panorama.panoramaImage);
@@ -899,7 +895,7 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, this.data.dailyWindowEnvironment, cdnBase);
-    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.sceneKey, panelWidth, panelHeight, cdnBase, actionScene);
+    const panorama = panoramaPresentation(this.data.dailyWindowEnvironment && this.data.dailyWindowEnvironment.period, panelWidth, panelHeight, cdnBase, actionScene);
     const changed = panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage;
     if (this.needsInitialViewport) this.initialViewportTarget = Math.max(0, Math.min(2, screen)) * panelWidth;
     // 屏幕尺寸变了，母图锚点要按新的 aspectFill 结果重新换算。
@@ -1181,7 +1177,7 @@ Page({
     const app = typeof getApp === 'function' ? getApp() : null;
     const cdnBase = app && app.globalData && app.globalData.environmentCdnBase;
     const actionScene = assets.resolveActionPanorama(this.data.pet, this.data.currentState, environment, cdnBase);
-    const panorama = panoramaPresentation(environment.sceneKey, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
+    const panorama = panoramaPresentation(environment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
     this.setData({
       dailyWindowEnvironment: environment,
       panelSceneSetId: panorama.sceneSetId,

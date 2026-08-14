@@ -113,14 +113,14 @@ function nextEnvironmentBoundary(value) {
   const date = new Date(timestamp);
   const candidates = [0, 6, 17, 19].map(hour => new Date(
     date.getFullYear(), date.getMonth(), date.getDate(), hour, 0, 0, 0
-  ).getTime()).filter(candidate => candidate > timestamp + 1000);
+  ).getTime()).filter(candidate => candidate > timestamp);
   if (candidates.length) return Math.min.apply(null, candidates);
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0).getTime();
 }
 
 function millisecondsUntilNextEnvironmentBoundary(value) {
   const timestamp = timestampOf(value);
-  return Math.max(1000, nextEnvironmentBoundary(timestamp) - timestamp);
+  return Math.max(1, nextEnvironmentBoundary(timestamp) - timestamp);
 }
 
 function resolve(options) {

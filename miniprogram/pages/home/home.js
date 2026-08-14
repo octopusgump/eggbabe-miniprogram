@@ -476,7 +476,7 @@ Page({
     const environment = previewEnvironment(resolvedEnvironment, previewTarget);
     const app = typeof getApp === 'function' ? getApp() : null;
     const panorama = hatched
-      ? sceneConfig.assets.resolvePanoramaScene(environment.sceneKey, app && app.globalData && app.globalData.environmentCdnBase)
+      ? sceneConfig.assets.resolvePanoramaScene(environment.period, app && app.globalData && app.globalData.environmentCdnBase)
       : null;
     this.sceneTestOverride = previewTarget;
     this.sceneLayerEggActive = !hatched && !hasCustomizedShell(pet);

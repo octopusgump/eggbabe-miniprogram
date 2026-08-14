@@ -128,7 +128,7 @@ function demoHatchCard(pet) {
     source_batch: 'DEMO-ONLY',
     illustration_key: `${prototype.cardSeries}-001-DEMO`,
     illustration_url: `/assets/cards/${prototype.cardSeries}/${prototype.cardFile}`,
-    mini_program_code_url: '/assets/tab/egg.png'
+    mini_program_code_url: '/assets/tab/egg_p8_v01.png'
   };
 }
 

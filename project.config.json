@@ -71,14 +71,6 @@
         "type": "folder"
       },
       {
-        "value": "assets/scenes/lifecycle/post-hatch/10-background/left-living/scene-sets/_candidates",
-        "type": "folder"
-      },
-      {
-        "value": "assets/scenes/lifecycle/post-hatch/10-background/right-decor/scene-sets/_candidates",
-        "type": "folder"
-      },
-      {
         "value": "assets/scenes/lifecycle/pre-hatch/90-reference-composites",
         "type": "folder"
       },
@@ -593,6 +585,90 @@
       {
         "value": "pages/nickname",
         "type": "folder"
+      },
+      {
+        "value": "assets/icons/send-up.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/icons/send.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/icons/send.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_draw.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_draw.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_learn.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_learn.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_quiet.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_quiet.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_secret.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_secret.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_talk.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_talk.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_touch.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_touch.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_window.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_window.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_wish.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_wish.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/tab/egg-active.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/tab/egg.png",
+        "type": "file"
       }
     ],
     "include": []

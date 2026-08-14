@@ -213,7 +213,7 @@ assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ u
 assert.doesNotMatch(lifeSceneTemplate, /src="[^"]*\/assets\//, '生活空间模板不得写死资源路径');
 const toolboxItemIcons = require('../miniprogram/config/post-hatch-assets').POST_HATCH.sceneActions.toolboxItems;
 assert.equal(
-  toolboxItemIcons.my.endsWith('/ui_3d_tabbar_interaction_gear_flat_96_v04.png')
+  toolboxItemIcons.my.endsWith('/ui_3d_tabbar_interaction_gear_flat_96_v04_p8_v01.png')
     && ['card', 'postcards', 'keepsakes'].every(key => toolboxItemIcons[key])
     && Object.values(toolboxItemIcons).some(icon => icon.includes('ui_3d_toolbox_settings_gear_96_v03.webp')) === false,
   true,

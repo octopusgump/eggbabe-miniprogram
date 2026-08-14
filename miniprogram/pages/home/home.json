@@ -2,6 +2,8 @@
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
     "daily-window-detail": "../../components/daily-window-detail/daily-window-detail",
+    "pet-mood-tab": "../../components/pet-mood-tab/pet-mood-tab",
+    "scene-feedback-stack": "../../components/scene-feedback-stack/scene-feedback-stack",
     "doodle-editor": "../../components/doodle-editor/doodle-editor",
     "inline-notice": "../../components/inline-notice/inline-notice"
   }

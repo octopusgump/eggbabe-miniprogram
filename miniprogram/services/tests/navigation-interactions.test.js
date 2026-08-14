@@ -119,6 +119,7 @@ try {
   homeContext.runSceneEffect = (sceneEffect, eggMotion) => homeContext.setData({ sceneEffect, eggMotion });
   homeContext.clearEffectTimers = () => {};
   homeContext.showFeedback = message => { homeContext.lastFeedback = message; };
+  homeContext.showSystemNotice = (message, tone) => { homeContext.lastSystemNotice = { message, tone }; };
   let homeSuspensions = 0;
   homeContext.suspendHomeForDoodle = () => { homeSuspensions += 1; };
 
@@ -189,9 +190,9 @@ try {
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'learn' } } });
   runTimers();
   assert.deepEqual(routes.splice(0), [], '未解锁入口不得导航');
-  assert.equal(homeContext.lastFeedback, '蛋宝宝还没到早教的年龄。', '未解锁入口必须保留既定的年龄语义反馈');
+  assert.deepEqual(homeContext.lastSystemNotice, { message: '蛋宝宝还没到早教的年龄。', tone: 'info' }, '未解锁入口必须使用黑底系统卡保留既定的年龄语义反馈');
   // design.md §6：状态反馈不得出现诱导回访表达。
-  assert.doesNotMatch(homeContext.lastFeedback, /明天|再来|试试吧|每天|别忘了/, '锁定态反馈不得出现催回访文案');
+  assert.doesNotMatch(homeContext.lastSystemNotice.message, /明天|再来|试试吧|每天|别忘了/, '锁定态反馈不得出现催回访文案');
 
   homeContext.data.learnUnlocked = true;
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'draw' } } });
@@ -204,7 +205,7 @@ try {
   home.onCompanionTap.call(homeContext, { currentTarget: { dataset: { key: 'wish' } } });
   runTimers();
   assert.equal(homeContext.companionNavigationPending, false, 'navigateTo 失败必须释放导航锁');
-  assert.equal(homeContext.lastFeedback, '页面暂时没有打开，请再试一次。', 'navigateTo 失败必须给出轻量反馈');
+  assert.deepEqual(homeContext.lastSystemNotice, { message: '页面暂时没有打开，请再试一次。', tone: 'warning' }, 'navigateTo 失败必须给出黑底注意态反馈');
   routes.splice(0);
   navigateMode = 'success';
 

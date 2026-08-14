@@ -96,7 +96,7 @@ assert.equal(imported.ok, true, '应能建立隔离验收蛋');
   assert.equal(privacy.includes('不用于用户画像或蛋宝宝性格生成'), true, '隐私说明必须声明许愿答案不用于画像或人格');
   assert.equal(account.includes('清除本地数据') && account.includes('canClearLocalData'), true, '开发验收账号页必须提供本地数据重置入口');
   assert.equal(accountLogic.includes("runtime.getMode() === 'demo'"), true, '本地数据重置入口必须限制在隔离 demo 环境');
-  assert.equal(accountLogic.includes('petStore.clearUser()') && accountLogic.includes("wx.reLaunch({ url: '/pages/welcome/welcome' })"), true, '重置后必须回到欢迎页重新体验');
+  assert.equal(accountLogic.includes('accountSession.clearLocalAccountState()') && accountLogic.includes("url: '/pages/welcome/welcome'"), true, '重置后必须清除统一账号状态并回到欢迎页重新体验');
   console.log('孵化修炼手册 V3.5 修炼值、解锁、幂等与首页约束校验通过。');
 })().catch(error => {
   console.error(error);

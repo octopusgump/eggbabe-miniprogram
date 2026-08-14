@@ -16,6 +16,9 @@ const postHatch = require('../../services/post-hatch-companion');
 const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const demoExperience = require('../../services/demo-experience');
 const windowWeatherCanvas = require('../../utils/window-weather-canvas');
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
+const { createSceneFeedbackController } = require('../../utils/scene-feedback-controller');
+const dailyMoodConfig = require('../../config/daily-mood');
 
 const SCENE_PREVIEW_STORAGE_KEY = 'eggbabe_scene_preview';
 const COMPANION_HINT_STORAGE_KEY = 'eggbabe_companion_icon_hints_seen_v1';
@@ -153,16 +156,26 @@ Page({
     stageText: '',
     expectedHatchLabel: '',
     actionLabel: '',
-    dailyStatus: null,
+    dailyMood: dailyMoodConfig.mockDailyMood('pre-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
+    moodPreviewOptions: dailyMoodConfig.MOOD_PREVIEW_OPTIONS,
+    moodTesterOpen: false,
+    moodTesterKey: dailyMoodConfig.DEFAULT_MOOD_TYPE,
+    moodTesterLabel: dailyMoodConfig.mockDailyMood('pre-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE).moodLabel,
     postHatchSnapshot: null,
     postHatchLoading: false,
     postHatchError: '',
-    feedback: '',
+    sceneFeedbackText: '',
+    sceneFeedbackVariant: 'dialogue',
+    sceneFeedbackTone: 'info',
+    sceneFeedbackVisible: false,
+    sceneFeedbackSystemBehind: false,
+    sceneFeedbackPromoting: false,
     eggMotion: '',
     sceneEffect: '',
     homeStagePhase: 'hidden',
     doodleEditorVisible: false,
     doodleReturnNoticeText: '',
+    doodleReturnNoticeTone: 'info',
     doodleReturnNoticeVisible: false,
     hasScenes: false,
     syncPending: 0,
@@ -200,8 +213,10 @@ Page({
     lampOn: false,
     clockMode: 'analog',
     nameTopPx: 88,
-    clockTopPx: 132,
-    clockLeftPx: 18,
+    acceptanceTesterTopPx: 88,
+    sceneTesterTopPx: 132,
+    stageTesterTopPx: 176,
+    moodTesterTopPx: 220,
     clockTimeText: '--:--',
     clockDateText: '',
     clockHourStyle: 'transform:rotate(0deg);',
@@ -212,12 +227,12 @@ Page({
     eggShellOverlays: preHatchAssets.eggShellOverlays,
     reducedMotion: false,
     isDemo: config.localDemoEnabled,
+    acceptanceToolsOpen: false,
     stageTesterOpen: false,
     stageTesterBusy: false,
     stageTesterKey: 'day1',
     stageTesterLabel: '第 1 天',
     stageTesterOptions: demoExperience.PREVIEW_STAGES,
-    sceneTesterTopPx: 88,
     sceneTesterOpen: false,
     sceneTesterBusy: false,
     sceneTesterError: '',
@@ -478,7 +493,7 @@ Page({
       stageText: presentation.homeText,
       expectedHatchLabel: hatched || stage === 'ready' ? '' : this.formatExpectedHatch(pet.hatchAt),
       actionLabel: hatched ? '' : presentation.actionLabel,
-      dailyStatus: null,
+      dailyMood: dailyMoodConfig.mockDailyMood('pre-hatch', this.data.moodTesterKey),
       postHatchSnapshot: null,
       postHatchLoading: hatched,
       postHatchError: '',
@@ -590,7 +605,6 @@ Page({
         postHatchLoading: false,
         postHatchError: '',
         postHatchSnapshot: result,
-        dailyStatus: result.mood,
         stageText: `${current.majorLabel} · ${current.label}`,
         sceneImage: result.previewImage || sceneConfig.assets.POST_HATCH.panoramaFallback
       });
@@ -619,7 +633,7 @@ Page({
           animationType: 'none',
           animationDuration: 0,
           fail: () => {
-            if (this.pageActive) wx.showToast({ title: '生活空间没有打开，请重试', icon: 'none' });
+            if (this.pageActive) this.showDoodleReturnNotice('生活空间没有打开，请重试', 'warning');
           }
         });
       }
@@ -684,18 +698,18 @@ Page({
       const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
       const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
       const statusBarHeight = Number(windowInfo.statusBarHeight || 20);
-      const safeLeft = windowInfo.safeArea ? Number(windowInfo.safeArea.left || 0) : 0;
       const nameTopPx = menuRect && Number(menuRect.bottom)
         ? Number(menuRect.bottom) + 8
         : statusBarHeight + 42;
       this.setData({
         nameTopPx: Math.round(nameTopPx),
-        clockTopPx: Math.round(nameTopPx + 44),
-        clockLeftPx: Math.round(safeLeft + 18),
-        sceneTesterTopPx: Math.round(nameTopPx)
+        acceptanceTesterTopPx: Math.round(nameTopPx),
+        sceneTesterTopPx: Math.round(nameTopPx + 44),
+        stageTesterTopPx: Math.round(nameTopPx + 88),
+        moodTesterTopPx: Math.round(nameTopPx + 132)
       });
     } catch (error) {
-      this.setData({ nameTopPx: 88, clockTopPx: 132, clockLeftPx: 18, sceneTesterTopPx: 88 });
+      this.setData({ nameTopPx: 88, acceptanceTesterTopPx: 88, sceneTesterTopPx: 132, stageTesterTopPx: 176, moodTesterTopPx: 220 });
     }
   },
 
@@ -741,7 +755,44 @@ Page({
     if (!this.data.isDemo || this.data.stageTesterBusy) return;
     this.setData({
       stageTesterOpen: !this.data.stageTesterOpen,
+      sceneTesterOpen: false,
+      moodTesterOpen: false
+    });
+  },
+
+  onAcceptanceToolsToggle() {
+    if (!this.data.isDemo) return;
+    const acceptanceToolsOpen = !this.data.acceptanceToolsOpen;
+    this.setData({
+      acceptanceToolsOpen,
+      sceneTesterOpen: false,
+      stageTesterOpen: false,
+      moodTesterOpen: false
+    });
+  },
+
+  // DEV-ONLY：仅替换当前页面内存中的 Mock，不写缓存，也不进入正式用户界面。
+  onMoodTesterToggle() {
+    if (!this.data.isDemo) return;
+    this.setData({
+      moodTesterOpen: !this.data.moodTesterOpen,
+      stageTesterOpen: false,
       sceneTesterOpen: false
+    });
+  },
+
+  onMoodTesterSelect(event) {
+    if (!this.data.isDemo) return;
+    const moodType = dailyMoodConfig.normalizeMoodType(event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.mood);
+    const mood = dailyMoodConfig.mockDailyMood('pre-hatch', moodType);
+    this.setData({
+      dailyMood: mood,
+      moodTesterOpen: false,
+      moodTesterKey: moodType,
+      moodTesterLabel: mood.moodLabel
+    }, () => {
+      const moodTab = this.selectComponent && this.selectComponent('#petMoodTab');
+      if (moodTab && moodTab.reveal) moodTab.reveal();
     });
   },
 
@@ -751,6 +802,7 @@ Page({
     this.setData({
       sceneTesterOpen: !this.data.sceneTesterOpen,
       stageTesterOpen: false,
+      moodTesterOpen: false,
       sceneTesterError: ''
     });
   },
@@ -1023,10 +1075,22 @@ Page({
     this.setData({ showNameSheet: true, nameDraft: name, nameCount: Array.from(name).length, nameError: '' });
   },
 
-  showFeedback(text) {
-    this.setData({ feedback: text });
-    clearTimeout(this.feedbackTimer);
-    this.feedbackTimer = setTimeout(() => this.setData({ feedback: '' }), 2200);
+  ensureSceneFeedbackController() {
+    if (!this.sceneFeedbackController) {
+      this.sceneFeedbackController = createSceneFeedbackController(this, {
+        reducedMotion: () => Boolean(this.data.reducedMotion),
+        isActive: () => this.pageActive !== false && !this.data.doodleEditorVisible
+      });
+    }
+    return this.sceneFeedbackController;
+  },
+
+  showFeedback(text, key) {
+    return this.ensureSceneFeedbackController().showDialogue(text, key);
+  },
+
+  showSystemNotice(text, tone, key) {
+    return this.ensureSceneFeedbackController().showSystem(text, tone, key);
   },
 
   clearEffectTimers() {
@@ -1250,7 +1314,7 @@ Page({
     this.clearEffectTimers();
     if (this.pageActive) this.setData({ sceneEffect: '', eggMotion: '' });
     if (this.pageActive && this.data.stage !== 'hatched') this.beginHomeStageEnter();
-    if (message && this.pageActive) this.showFeedback(message);
+    if (message && this.pageActive) this.showSystemNotice(message, 'warning', 'companion-navigation');
   },
 
   startCompanionNavigation(destination) {
@@ -1334,16 +1398,18 @@ Page({
     }, transitionDuration);
   },
 
-  showDoodleReturnNotice() {
-    clearTimeout(this.doodleReturnNoticeTimer);
-    this.setData({
-      doodleReturnNoticeText: '蛋壳已更新',
-      doodleReturnNoticeVisible: true
-    });
-    this.doodleReturnNoticeTimer = setTimeout(() => {
-      this.doodleReturnNoticeTimer = null;
-      this.setData({ doodleReturnNoticeVisible: false });
-    }, 1800);
+  showDoodleReturnNotice(text = '蛋壳已更新', tone = 'info') {
+    if (!this.doodleReturnNoticeController) {
+      this.doodleReturnNoticeController = createInlineNoticeController(this, {
+        textKey: 'doodleReturnNoticeText',
+        toneKey: 'doodleReturnNoticeTone',
+        visibleKey: 'doodleReturnNoticeVisible',
+        timerKey: 'doodleReturnNoticeTimer',
+        cleanupTimerKey: 'doodleReturnNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
+    }
+    this.doodleReturnNoticeController.show(text, tone);
   },
 
   onDoodleEditorClose(event) {
@@ -1372,8 +1438,8 @@ Page({
     if (this.companionNavigationPending) return;
     this.cancelCompanionFirstHint();
     if (key === 'wish' || key === 'learn' || key === 'draw') this.showCompanionHint(key);
-    if (key === 'wish' && !this.data.wishUnlocked) return this.showFeedback('许愿池还在准备中。');
-    if (key === 'learn' && !this.data.learnUnlocked) return this.showFeedback('蛋宝宝还没到早教的年龄。');
+    if (key === 'wish' && !this.data.wishUnlocked) return this.showSystemNotice('许愿池还在准备中。', 'info', 'wish-locked');
+    if (key === 'learn' && !this.data.learnUnlocked) return this.showSystemNotice('蛋宝宝还没到早教的年龄。', 'info', 'learn-locked');
     if (key === 'draw') {
       this.openDoodleEditor();
       return;
@@ -1394,7 +1460,7 @@ Page({
       value: lampOn
     };
     this.setData({ lampOn });
-    this.showFeedback(lampOn ? '台灯亮起来了。' : '台灯关好了。');
+    this.showSystemNotice(lampOn ? '台灯已打开' : '台灯已关闭', 'info', 'lamp-state');
     analytics.track('room_element_interaction', { element_id: 'lamp', result: lampOn ? 'on' : 'off' });
   },
 
@@ -1612,7 +1678,7 @@ Page({
       this.setData({ savingName: false, showNameSheet: !result.ok, nameError: result.ok ? '' : result.message });
       if (result.ok) {
         analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
-        this.showFeedback(progress && !progress.alreadyDone ? '我记住名字啦，也离你近了一点点。' : '我记住自己的名字啦。');
+        this.showSystemNotice('名字已更新', 'info', 'pet-name-updated');
         this.onShow();
       }
       return;
@@ -1635,7 +1701,7 @@ Page({
     await practice.submitOnce('nickname');
     analytics.track('companion_interaction', { interaction_type: 'nickname', result: 'saved' });
     this.setData({ savingName: false, showNameSheet: false });
-    this.showFeedback('我记住自己的名字啦。');
+    this.showSystemNotice('名字已更新', 'info', 'pet-name-updated');
     this.onShow();
   },
 
@@ -1659,9 +1725,8 @@ Page({
     this.doodleOpenTimer = null;
     this.doodleEditorPending = false;
     this.clearCuddleTimers();
-    clearTimeout(this.feedbackTimer);
-    clearTimeout(this.doodleReturnNoticeTimer);
-    this.doodleReturnNoticeTimer = null;
+    if (this.sceneFeedbackController) this.sceneFeedbackController.clear();
+    if (this.doodleReturnNoticeController) this.doodleReturnNoticeController.destroy();
     clearTimeout(this.sceneOpenTimer);
     clearTimeout(this.postHatchSlotTimer);
     this.cancelCompanionFirstHint();
@@ -1677,6 +1742,7 @@ Page({
 
   onHide() {
     this.pageActive = false;
+    if (this.doodleReturnNoticeController) this.doodleReturnNoticeController.destroy();
     this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
     this.pendingSceneTarget = null;
     this.scenePreloadLoaded = null;
@@ -1694,7 +1760,11 @@ Page({
       dailyWindowVisible: false,
       eggMotion: '',
       sceneEffect: '',
-      feedback: '',
+      sceneFeedbackText: '',
+      sceneFeedbackVisible: false,
+      sceneFeedbackSystemBehind: false,
+      sceneFeedbackPromoting: false,
+      doodleReturnNoticeText: '',
       doodleReturnNoticeVisible: false,
       companionHintKey: '',
       companionHintVisible: false,

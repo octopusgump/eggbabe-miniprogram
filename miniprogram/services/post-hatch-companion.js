@@ -6,15 +6,10 @@ const storage = require('./storage-migration');
 const chatSafety = require('./chat-safety');
 const chatService = require('./chat-service');
 const lifeScenes = require('../utils/life-scenes');
+const dailyMoodConfig = require('../config/daily-mood');
 
 const STATE_KEY = 'eggbabe_post_hatch_v36';
 const SLOT_MS = 5 * 60 * 60 * 1000;
-const MOODS = [
-  { mood: '平静', line: '今天想把每件小事都慢慢做好。', face: 'quiet' },
-  { mood: '好奇', line: '我总觉得窗外又多了一种没见过的颜色。', face: 'curious' },
-  { mood: '温暖', line: '今天的光落在身上，很像一条柔软的围巾。', face: 'warm' },
-  { mood: '轻快', line: '我走路的时候，脚步好像会自己哼歌。', face: 'bright' }
-];
 
 function key() { return runtime.scopedKey(STATE_KEY); }
 function readState() {
@@ -55,13 +50,6 @@ function slotMeta(pet) {
   const slotIndex = Math.max(0, Math.floor((now - hatchAt) / SLOT_MS));
   const slotStart = hatchAt + slotIndex * SLOT_MS;
   return { slotIndex, slotStart, slotEnd: slotStart + SLOT_MS };
-}
-function dateKey(timestamp) {
-  return new Date(Number(timestamp || businessNow()) + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-function moodFor(pet, now) {
-  const day = dateKey(now);
-  return Object.assign({ businessDate: day, source: 'approved-fallback' }, MOODS[hash(`${pet.id}:${day}`) % MOODS.length]);
 }
 function normalizeKeepsake(item) {
   const source = item && typeof item === 'object' ? item : {};
@@ -107,7 +95,7 @@ function localSnapshot(pet) {
   return {
     ok: true,
     mode: runtime.getMode(),
-    mood: moodFor(pet, businessNow()),
+    mood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
     currentState: Object.assign({}, scene, meta, {
       actionDone: !!actionRecord,
       actionFeedback: actionRecord ? actionRecord.feedback : ''
@@ -118,7 +106,7 @@ function localSnapshot(pet) {
   };
 }
 function normalizeLiveSnapshot(result) {
-  if (!result || !result.ok || result.mode !== 'live' || !result.current_state || !result.mood || typeof result.mood.mood !== 'string') {
+  if (!result || !result.ok || result.mode !== 'live' || !result.current_state) {
     return { ok: false, code: result && result.code || 'POST_HATCH_INVALID', message: result && result.message || '此刻状态没有加载好，请重试' };
   }
   const source = result.current_state;
@@ -146,7 +134,8 @@ function normalizeLiveSnapshot(result) {
   return {
     ok: true,
     mode: 'live',
-    mood: result.mood,
+    // 每日心情是独立的纯前端静态 UI，不读取接口中的心情字段。
+    mood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
     currentState: state,
     previewImage: state.previewImage,
     memories,
@@ -238,4 +227,4 @@ function markPostcardRead(pet, postcardId) {
   return Promise.resolve(saved.ok ? { ok: true, alreadyRead: false } : saved);
 }
 
-module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };
+module.exports = { SLOT_MS, slotMeta, getSnapshot, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot };

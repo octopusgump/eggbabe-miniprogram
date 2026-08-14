@@ -1,6 +1,7 @@
 {
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
-    "list-row": "../../components/list-row/list-row"
+    "list-row": "../../components/list-row/list-row",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

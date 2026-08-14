@@ -24,11 +24,13 @@ assert.equal(fs.readFileSync(specularOverlay, { encoding: null }).subarray(0, 4)
 assert.equal(template.includes('class="egg-render-cache egg-render-cache--base"'), true, '底层合成 Canvas 必须移到屏幕外');
 assert.equal(template.includes('class="egg-render-cache egg-render-cache--art"'), true, '装饰合成 Canvas 必须移到屏幕外');
 assert.match(styles, /\.egg-render-cache\s*\{[^}]*position:\s*fixed;[^}]*left:\s*-2000px;/s, '合成 Canvas 必须直接固定在屏幕外，不能占据首页布局');
-assert.equal(template.includes(`style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}"`), true, '孵化首页昵称必须使用独立安全区锚点');
-assert.equal(template.includes(`class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}"`), true, '孵化首页提示气泡上沿必须与昵称上沿对齐');
-assert.equal(source.includes('clockTopPx: Math.round(nameTopPx + 44)'), true, '时钟必须位于昵称下方并保留稳定间距，不能与昵称重叠');
-assert.match(styles, /\.pet-view--incubating \.top-row\s*\{[^}]*top:\s*88px;/s, '昵称动态定位前必须提供安全的首屏回退位置');
-assert.match(styles, /\.pet-name-row\s*\{[^}]*border-radius:\s*999rpx;[^}]*background:\s*rgba\(255,252,243,\.82\)/s, '昵称必须使用蛋宝宝奶油色圆角铭牌保证可读性');
+assert.equal(template.includes('class="home-status-stack home-stage') && template.includes('style="top:{{nameTopPx}}px;"'), true, '名字、今日心情与时钟必须使用统一安全区锚点');
+assert.equal(template.includes('<scene-feedback-stack') && template.includes('system-behind="{{sceneFeedbackSystemBehind}}"'), true, '孵化首页对白与系统提示必须共用视口双层反馈组件');
+assert.equal(template.includes('class="feedback-bubble"'), false, '孵化首页不得保留按昵称位置计算的旧气泡');
+assert.equal(source.includes('sceneTesterTopPx: Math.round(nameTopPx + 44)') && source.includes('stageTesterTopPx: Math.round(nameTopPx + 88)') && source.includes('moodTesterTopPx: Math.round(nameTopPx + 132)'), true, '开发验收控件必须继续使用独立且无碰撞的安全区锚点');
+assert.equal(source.includes('clockTopPx') || source.includes('clockLeftPx'), false, '时钟不得再使用独立绝对坐标，必须随组合 Tab 自然流动');
+assert.match(styles, /\.home-status-stack\s*\{[^}]*position:\s*fixed;[^}]*flex-direction:\s*column;[^}]*gap:\s*28rpx;/s, '组合 Tab 与时钟必须使用固定 28rpx 的纵向间距');
+assert.match(styles, /\.room-clock\s*\{[^}]*position:\s*relative;/s, '时钟必须成为状态容器中的相对定位子项');
 assert.match(styles, /\.incubation-nest-image\s*\{[^}]*margin:\s*-20rpx 0 0 -250rpx;/s, '窝垫必须下移到桌面落点，同时保持与蛋体分层');
 assert.match(styles, /\.egg-zone--incubating \.egg\s*\{[^}]*margin-top:\s*-142rpx;/s, '孵化中蛋体必须下沉到窝垫中心，呈现被承托的关系');
 assert.equal(template.includes('incubation-nest-shadow'), false, '窝垫下方不得再叠加代码阴影，地板环境光影必须来自完整背景图');
@@ -51,7 +53,7 @@ assert.equal(/(?:mask-image|background-image)\s*:\s*url\([^)]*\/assets\//.test(s
 assert.match(styles, /\.egg\.egg--wobble \.egg-shell-specular\s*\{[^}]*animation:\s*shell-glint-touch/s, '轻触蛋宝宝时高光必须产生即时位移反馈');
 assert.match(styles, /@keyframes shell-glint-touch\s*\{[^}]*transform:/s, '触摸高光 WebP 必须保留动态位移反馈');
 assert.equal(template.includes('home-stage--{{homeStagePhase}}') && source.includes("homeStagePhase: 'hidden'"), true, '蛋体、场景和首页 UI 必须由同一入场状态控制');
-assert.equal((template.match(/home-stage--\{\{homeStagePhase\}\}/g) || []).length, 3, '蛋体场景、场景验收器与阶段验收器必须同步入场');
+assert.equal((template.match(/home-stage--\{\{homeStagePhase\}\}/g) || []).length, 6, '蛋体场景、每日心情、验收入口与三个验收器必须同步入场');
 assert.match(styles, /\.home-stage--entering\s*\{[^}]*home-stage-fade-in 320ms/s, '首页整体必须使用 320ms 淡入');
 assert.equal(source.includes('HOME_STAGE_TRANSITION_MS = 320') && source.includes('openDoodleEditor()') && !source.includes("route: '/pages/doodle/doodle'"), true, '画画入口必须使用首页内嵌编辑器，从根源避免微信默认右滑路由');
 assert.equal(template.includes('<doodle-editor') && template.includes('wx:if="{{doodleEditorVisible}}"') && template.includes('bindclose="onDoodleEditorClose"'), true, '首页必须在当前页内打开并关闭画画编辑器');

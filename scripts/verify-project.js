@@ -76,6 +76,8 @@ const lifeSceneLogic = fs.readFileSync(path.join(miniprogram, 'pages/life-scene/
 const chatTemplate = fs.readFileSync(path.join(miniprogram, 'pages/chat/chat.wxml'), 'utf8');
 const chatLogic = fs.readFileSync(path.join(miniprogram, 'pages/chat/chat.js'), 'utf8');
 const postHatchService = fs.readFileSync(path.join(miniprogram, 'services/post-hatch-companion.js'), 'utf8');
+const dailyMoodConfig = require(path.join(miniprogram, 'config/daily-mood'));
+const dailyMoodTemplate = fs.readFileSync(path.join(miniprogram, 'components/pet-mood-tab/pet-mood-tab.wxml'), 'utf8');
 const petAvatarTemplate = fs.readFileSync(path.join(miniprogram, 'components/pet-avatar/pet-avatar.wxml'), 'utf8');
 if (lifeScenes.HOME_STATES.length !== 8) errors.push(`居家小状态应为 8 个，实际为 ${lifeScenes.HOME_STATES.length}`);
 if (lifeScenes.AWAY_STATES.length !== 10) errors.push(`旅行、打工、上学小状态应覆盖 10 个，实际为 ${lifeScenes.AWAY_STATES.length}`);
@@ -105,13 +107,16 @@ if (/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-placeholder|�
 if (/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`)) errors.push('破壳后角色与动作道具必须烘焙进正式全景，不得叠加透明角色、接触阴影、CSS 道具或色调层');
 if (!lifeSceneLogic.includes('assets.resolveActionPanorama') || !lifeSceneTemplate.includes('class="scene-character-hotspot') || !lifeSceneTemplate.includes('bindtap="onCharacterTap"')) errors.push('破壳后必须从正式动作全景取图，并保留不改变画面的角色互动热区');
 if (!petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") || /wx:else\s+class="koi"/.test(petAvatarTemplate)) errors.push('玉兔代码 YT 不得错误落入锦鲤兜底渲染');
-if (!lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"') || !lifeSceneTemplate.includes('class="scene-action-dock"') || !lifeSceneTemplate.includes('contextActionIcon') || !lifeSceneTemplate.includes('mySettingsIcon') || !lifeSceneTemplate.includes('aria-label="打开我的和设置"') || !lifeSceneLogic.includes('/pages/chat/chat?state_key=') || !lifeSceneLogic.includes('scene_chat_button') || !lifeSceneLogic.includes('statusBubbleFor')) errors.push('破壳后必须使用居家左下对话入口和右下我的/设置，居家入口直达完整对话页');
+if (!lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"') || !lifeSceneTemplate.includes('class="away-status-pill"') || !lifeSceneTemplate.includes('>外出中</view>') || !lifeSceneTemplate.includes('class="scene-action-dock"') || !lifeSceneTemplate.includes('contextActionIcon') || !lifeSceneTemplate.includes('mySettingsIcon') || !lifeSceneTemplate.includes('aria-label="打开我的和设置"') || !lifeSceneLogic.includes('/pages/chat/chat?state_key=') || !lifeSceneLogic.includes('scene_chat_button') || !lifeSceneLogic.includes('statusBubbleFor')) errors.push('破壳后居家必须显示左下陪伴入口，外出只显示“外出中”，右下我的/设置保持可用');
 if (/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"|scene-action-unread-dot/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`)) errors.push('V3.6 / V3.7 不得暴露百宝箱弹层、复杂内容入口或未读提示');
 if (!lifeSceneLogic.includes('onContextActionTap') || !lifeSceneLogic.includes('openChatPage(current)') || !lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });")) errors.push('居家对话与右下我的/设置必须直接打开目标页面');
 const cloudApiSource = fs.readFileSync(path.join(miniprogram, 'services/cloud-api.js'), 'utf8');
 if (/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}\n${postHatchService}\n${cloudApiSource}`)) errors.push('写信界面、事件、服务或云接口未完全移除');
 if (/scene-talk-nudge|home-locator-focus|onOpenTalkComposer|composerVisible && currentState\.atHome/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`)) errors.push('居家入口不得恢复聚焦光圈、三点提示或场景内对话弹层');
-if (!lifeSceneTemplate.includes('bindtap="onCharacterTap"') || !lifeSceneLogic.includes('今日心情 · ${mood.mood}')) errors.push('今日心情必须改为点击蛋宝宝后出现');
+if (!homeSource.includes('<pet-mood-tab') || !lifeSceneTemplate.includes('<pet-mood-tab') || !dailyMoodTemplate.includes('pet-mood-tab__eyebrow">今日心情：') || !dailyMoodTemplate.includes('pet-mood-tab__mood-label">{{mood.moodLabel}}') || !dailyMoodTemplate.includes('pet-mood-tab__sentence')) errors.push('破壳前后必须使用同一三层名字与每日心情组合 Tab');
+if (dailyMoodConfig.MOOD_TYPES.length !== 8 || dailyMoodConfig.MOOD_PREVIEW_OPTIONS.length !== 8) errors.push('每日心情配置与开发态切换器必须且只能覆盖八种正式枚举');
+if (/result\.mood|moodFor\(|Math\.random/.test(postHatchService)) errors.push('每日心情不得读取接口心情、按日期计算或随机模拟');
+if (/away-status-card|currentState\.(?:majorLabel|label|line)/.test(lifeSceneTemplate) || !lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome')) errors.push('外出界面不得泄露地点、活动、去向或触发不在场角色对白');
 if (/画一件东西/.test(lifeSceneTemplate)) errors.push('破壳后运行时不得混入未确认的 AI 布置入口');
 if (!lifeSceneTemplate.includes('magic-enabled="{{magicWindowEnabled}}"') || lifeSceneTemplate.includes('magic-enabled="{{true}}"') || lifeSceneLogic.includes('TOKYO_MAGIC_WINDOW_PREVIEW')) errors.push('魔法窗必须受正式素材配置门控，不得硬编码预览入口');
 if (/getDecorationState|createDecoration|moveDecoration|remaining_wishes/.test(postHatchService)) errors.push('破壳后服务不得建立装饰额度或装饰物库');

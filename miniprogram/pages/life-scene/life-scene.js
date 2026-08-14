@@ -9,6 +9,9 @@ const demoExperience = require('../../services/demo-experience');
 const environmentService = require('../../services/incubation-environment');
 const windowGeometry = require('../../utils/scene-window-geometry');
 const lifeScenes = require('../../utils/life-scenes');
+const deviceClock = require('../../services/device-clock');
+const { createSceneFeedbackController } = require('../../utils/scene-feedback-controller');
+const dailyMoodConfig = require('../../config/daily-mood');
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
@@ -51,7 +54,9 @@ const STATUS_BUBBLE_POOL = Object.freeze({
 
 function reducedMotionEnabled() {
   try {
-    const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+    const system = wx.getSystemSetting
+      ? wx.getSystemSetting()
+      : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
     return Boolean(system.reducedMotion || system.enableReduceMotion);
   } catch (error) {
     return false;
@@ -195,7 +200,10 @@ function contextActionPresentation(pet, currentState) {
   const atHome = Boolean(currentState && currentState.atHome);
   return {
     icon: atHome ? homeFinderIcon(pet) : '',
-    label: atHome ? '和蛋宝宝说话' : ''
+    label: atHome ? '和蛋宝宝说话' : '',
+    hint: '',
+    disabled: !atHome,
+    badge: ''
   };
 }
 
@@ -241,7 +249,12 @@ Page({
     currentState: null,
     loading: true,
     error: '',
-    feedback: '',
+    sceneFeedbackText: '',
+    sceneFeedbackVariant: 'dialogue',
+    sceneFeedbackTone: 'info',
+    sceneFeedbackVisible: false,
+    sceneFeedbackSystemBehind: false,
+    sceneFeedbackPromoting: false,
     playedActionKind: '',
     actionBusy: false,
     dailyWindowVisible: false,
@@ -262,10 +275,24 @@ Page({
     dailyWindowPeriodLabel: '日间',
     reducedMotion: false,
     characterWarming: false,
-    statusBubble: '',
-    statusBubbleVisible: false,
+    dailyMood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
+    moodPreviewOptions: dailyMoodConfig.MOOD_PREVIEW_OPTIONS,
+    moodTesterOpen: false,
+    moodTesterKey: dailyMoodConfig.DEFAULT_MOOD_TYPE,
+    moodTesterLabel: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE).moodLabel,
+    moodTabTopPx: 70,
+    clockMode: 'analog',
+    clockTimeText: '--:--',
+    clockDateText: '',
+    clockHourStyle: 'transform:rotate(0deg);',
+    clockMinuteStyle: 'transform:rotate(0deg);',
+    clockSecondStyle: 'transform:rotate(0deg);',
+    moodTesterTopPx: 308,
     contextActionIcon: '',
     contextActionLabel: '',
+    contextActionHint: '',
+    contextActionDisabled: true,
+    contextActionBadge: '',
     mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
     characterPanel: -1,
     characterStyle: '',
@@ -291,27 +318,29 @@ Page({
     initialViewportReady: false,
     sceneEntered: false,
     isDemo: config.localDemoEnabled,
+    acceptanceToolsOpen: false,
+    acceptanceTesterTopPx: 88,
     sceneTesterOpen: false,
     sceneTesterBusy: false,
-    sceneTesterTopPx: 88,
+    sceneTesterTopPx: 132,
     sceneTesterKey: 'auto',
     sceneTesterLabel: AUTO_SCENE_OPTION.label,
     sceneTesterOptions: SCENE_TESTER_OPTIONS,
     companionStateTesterOpen: false,
-    companionStateTesterTopPx: 176,
+    companionStateTesterTopPx: 220,
     companionStateTesterKey: 'auto',
     companionStateTesterLabel: AUTO_COMPANION_STATE_OPTION.label,
     companionStateTesterMissing: false,
     companionStateTesterOptions: COMPANION_STATE_TEST_OPTIONS,
     prototypeTesterOpen: false,
     prototypeTesterBusy: false,
-    prototypeTesterTopPx: 220,
+    prototypeTesterTopPx: 264,
     prototypeTesterKey: '玉兔',
     prototypeTesterLabel: '玉兔',
     prototypeTesterOptions: demoExperience.PREVIEW_PROTOTYPES,
     stageTesterOpen: false,
     stageTesterBusy: false,
-    stageTesterTopPx: 132,
+    stageTesterTopPx: 176,
     stageTesterKey: 'hatched',
     stageTesterLabel: '破壳后',
     stageTesterOptions: demoExperience.PREVIEW_STAGES
@@ -361,10 +390,13 @@ Page({
       dailyWindowWeatherLabel: WEATHER_LABELS[dailyWindowEnvironment.weather] || '晴朗',
       dailyWindowPeriodLabel: dailyWindowEnvironment.lightPhase === 'sunset' ? '日落' : (dailyWindowEnvironment.period === 'night' ? '夜晚' : '日间'),
       reducedMotion: reducedMotionEnabled(),
-      sceneTesterTopPx: Math.round(testerTopPx),
-      stageTesterTopPx: Math.round(testerTopPx + 44),
-      companionStateTesterTopPx: Math.round(testerTopPx + 88),
-      prototypeTesterTopPx: Math.round(testerTopPx + 132),
+      acceptanceTesterTopPx: Math.round(testerTopPx),
+      sceneTesterTopPx: Math.round(testerTopPx + 44),
+      stageTesterTopPx: Math.round(testerTopPx + 88),
+      companionStateTesterTopPx: Math.round(testerTopPx + 132),
+      prototypeTesterTopPx: Math.round(testerTopPx + 176),
+      moodTabTopPx: Math.round(testerTopPx),
+      moodTesterTopPx: Math.round(testerTopPx + 220),
       stageTesterKey: stageTester.key,
       stageTesterLabel: stageTester.label,
       prototypeTesterKey: prototypeTester.key,
@@ -383,7 +415,7 @@ Page({
     this.clearPresentationTimers();
     this.setData({
       loading: true, error: '', actionBusy: false,
-      feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false
+      sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: ''
     });
     const request = postHatch.getSnapshot(this.data.pet);
     this.snapshotRequest = request;
@@ -404,7 +436,7 @@ Page({
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
       const contextAction = contextActionPresentation(this.data.pet, currentState);
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
-      const shouldShowStatusBubble = slotKey !== this.lastStatusSlotKey;
+      const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
       const preparingInitialViewport = Boolean(this.needsInitialViewport);
       const initialViewportToken = preparingInitialViewport ? (this.initialViewportToken = (this.initialViewportToken || 0) + 1) : 0;
@@ -421,11 +453,14 @@ Page({
         windowHotspots: panorama.windowHotspots,
         contextActionIcon: contextAction.icon,
         contextActionLabel: contextAction.label,
+        contextActionHint: contextAction.hint,
+        contextActionDisabled: contextAction.disabled,
+        contextActionBadge: contextAction.badge,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
         initialViewportReady: preparingInitialViewport ? false : this.data.initialViewportReady,
         // actionDone 是持久业务状态；反馈和场景动作效果仅属于本次交互，不能跨页面恢复。
-        feedback: '',
+        sceneFeedbackText: '',
         playedActionKind: ''
       }), () => {
         this.scheduleInitialSceneDeadline();
@@ -456,6 +491,44 @@ Page({
 
   clearSlotTimer() { clearTimeout(this.slotTimer); this.slotTimer = null; },
   onRetry() { if (!this.data.loading) this.loadSnapshot(); },
+
+  syncClock() {
+    if (!this.pageActive || !this.data.pet) return;
+    const clock = deviceClock.snapshot(new Date());
+    this.setData({
+      clockTimeText: clock.timeText,
+      clockDateText: clock.dateText,
+      clockHourStyle: `transform:rotate(${clock.hourAngle}deg);`,
+      clockMinuteStyle: `transform:rotate(${clock.minuteAngle}deg);`,
+      clockSecondStyle: `transform:rotate(${clock.secondAngle}deg);`
+    });
+  },
+
+  startClock() {
+    this.stopClock();
+    this.syncClock();
+    if (!this.pageActive || !this.data.pet) return;
+    const delay = deviceClock.millisecondsUntilNextSecond(Date.now());
+    this.clockBoundaryTimer = setTimeout(() => {
+      if (!this.pageActive || !this.data.pet) return;
+      this.syncClock();
+      this.clockTimer = setInterval(() => this.syncClock(), 1000);
+    }, delay);
+  },
+
+  stopClock() {
+    clearTimeout(this.clockBoundaryTimer);
+    clearInterval(this.clockTimer);
+    this.clockBoundaryTimer = null;
+    this.clockTimer = null;
+  },
+
+  onClockTap() {
+    const clockMode = this.data.clockMode === 'analog' ? 'digital' : 'analog';
+    this.syncClock();
+    this.setData({ clockMode });
+    analytics.track('room_element_interaction', { element_id: 'clock', result: clockMode });
+  },
 
   clearEnvironmentTimer() { clearTimeout(this.environmentTimer); this.environmentTimer = null; },
   displayedEnvironment() {
@@ -580,7 +653,9 @@ Page({
     if (!this.pageActive || this.data.sceneEntered || !this.data.currentState || !this.data.sceneBackgroundReady) return;
     clearTimeout(this.sceneEnterTimer);
     this.sceneEnterTimer = setTimeout(() => {
-      if (this.pageActive && this.data.currentState && this.data.sceneBackgroundReady) this.setData({ sceneEntered: true });
+      if (this.pageActive && this.data.currentState && this.data.sceneBackgroundReady) {
+        this.setData({ sceneEntered: true });
+      }
     }, this.data.reducedMotion ? 0 : 24);
   },
 
@@ -606,10 +681,24 @@ Page({
     this.setData({ sceneBackgroundError: false, sceneTransitionError: false, panelSceneSetId: panorama.sceneSetId, panoramaImage: panorama.panoramaImage, windowHotspots: panorama.windowHotspots });
   },
 
-  // DEV-ONLY：与破壳前首页使用同一套 36 个环境 key；release/trial 下不渲染。
+  // DEV-ONLY：破壳后只切换白天／落日／黑夜三个时段；release/trial 下不渲染。
+  onAcceptanceToolsToggle() {
+    if (!this.data.isDemo) return;
+    const acceptanceToolsOpen = !this.data.acceptanceToolsOpen;
+    this.setData({
+      acceptanceToolsOpen,
+      sceneTesterOpen: false,
+      stageTesterOpen: false,
+      companionStateTesterOpen: false,
+      prototypeTesterOpen: false,
+      moodTesterOpen: false
+    });
+  },
+
+  // DEV-ONLY：破壳后只切换白天／落日／黑夜三个时段；release/trial 下不渲染。
   onSceneTesterToggle() {
     if (!this.data.isDemo || this.data.sceneTesterBusy) return;
-    this.setData({ sceneTesterOpen: !this.data.sceneTesterOpen, stageTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false });
+    this.setData({ sceneTesterOpen: !this.data.sceneTesterOpen, stageTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false, moodTesterOpen: false });
   },
 
   onSceneTesterSelect(event) {
@@ -637,7 +726,7 @@ Page({
   // DEV-ONLY：与首页共享 Day 1–Day 7 / 破壳后阶段验收器。
   onStageTesterToggle() {
     if (!this.data.isDemo || this.data.stageTesterBusy) return;
-    this.setData({ stageTesterOpen: !this.data.stageTesterOpen, sceneTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false });
+    this.setData({ stageTesterOpen: !this.data.stageTesterOpen, sceneTesterOpen: false, companionStateTesterOpen: false, prototypeTesterOpen: false, moodTesterOpen: false });
   },
 
   onStageTesterSelect(event) {
@@ -684,7 +773,8 @@ Page({
       companionStateTesterOpen: !this.data.companionStateTesterOpen,
       stageTesterOpen: false,
       sceneTesterOpen: false,
-      prototypeTesterOpen: false
+      prototypeTesterOpen: false,
+      moodTesterOpen: false
     });
   },
 
@@ -695,7 +785,35 @@ Page({
       prototypeTesterOpen: !this.data.prototypeTesterOpen,
       stageTesterOpen: false,
       sceneTesterOpen: false,
-      companionStateTesterOpen: false
+      companionStateTesterOpen: false,
+      moodTesterOpen: false
+    });
+  },
+
+  // DEV-ONLY：只替换当前页内存中的每日心情 Mock，不写入业务状态。
+  onMoodTesterToggle() {
+    if (!this.data.isDemo) return;
+    this.setData({
+      moodTesterOpen: !this.data.moodTesterOpen,
+      sceneTesterOpen: false,
+      stageTesterOpen: false,
+      companionStateTesterOpen: false,
+      prototypeTesterOpen: false
+    });
+  },
+
+  onMoodTesterSelect(event) {
+    if (!this.data.isDemo) return;
+    const moodType = dailyMoodConfig.normalizeMoodType(event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.mood);
+    const mood = dailyMoodConfig.mockDailyMood('post-hatch', moodType);
+    this.setData({
+      dailyMood: mood,
+      moodTesterOpen: false,
+      moodTesterKey: moodType,
+      moodTesterLabel: mood.moodLabel
+    }, () => {
+      const moodTab = this.selectComponent && this.selectComponent('#petMoodTab');
+      if (moodTab && moodTab.reveal) moodTab.reveal();
     });
   },
 
@@ -853,32 +971,30 @@ Page({
   },
 
   showFeedback(text) {
-    clearTimeout(this.feedbackTimer);
-    clearTimeout(this.statusBubbleTimer);
-    clearTimeout(this.statusBubbleClearTimer);
-    this.setData({ feedback: text || '', statusBubble: '', statusBubbleVisible: false });
-    this.feedbackTimer = setTimeout(() => {
-      if (this.pageActive) this.setData({ feedback: '', playedActionKind: '' });
-    }, 2600);
+    return this.ensureSceneFeedbackController().showDialogue(text);
+  },
+
+  showSystemNotice(text, tone) {
+    return this.ensureSceneFeedbackController().showSystem(text, tone);
+  },
+
+  ensureSceneFeedbackController() {
+    if (!this.sceneFeedbackController) {
+      this.sceneFeedbackController = createSceneFeedbackController(this, {
+        reducedMotion: () => Boolean(this.data.reducedMotion),
+        isActive: () => this.pageActive !== false
+      });
+    }
+    return this.sceneFeedbackController;
   },
 
   showStatusBubble(text) {
-    clearTimeout(this.statusBubbleTimer);
-    clearTimeout(this.statusBubbleClearTimer);
-    clearTimeout(this.feedbackTimer);
     if (!text) {
-      this.setData({ statusBubble: '', statusBubbleVisible: false, feedback: '', playedActionKind: '' });
+      if (this.sceneFeedbackController) this.sceneFeedbackController.clear();
       return;
     }
     this.lastStatusBubble = text;
-    this.setData({ statusBubble: text, statusBubbleVisible: true, feedback: '', playedActionKind: '' });
-    this.statusBubbleTimer = setTimeout(() => {
-      if (!this.pageActive) return;
-      this.setData({ statusBubbleVisible: false });
-      this.statusBubbleClearTimer = setTimeout(() => {
-        if (this.pageActive) this.setData({ statusBubble: '' });
-      }, this.data.reducedMotion ? 20 : 220);
-    }, 2600);
+    this.ensureSceneFeedbackController().showDialogue(text, `state:${this.lastStatusSlotKey || text}`);
   },
 
   onCharacterTap() {
@@ -886,16 +1002,10 @@ Page({
       this.cuddleCompleted = false;
       return;
     }
-    const mood = this.data.snapshot && this.data.snapshot.mood;
-    if (!mood) return;
-    const moodText = `今日心情 · ${mood.mood}\n${mood.line}`;
     const current = this.data.currentState;
     if (current && current.action && current.action.kind === 'pet' && !current.actionDone) {
-      this.runSceneAction(false, moodText);
-    } else {
-      this.showFeedback(moodText);
+      this.runSceneAction(false);
     }
-    analytics.track('companion_interaction', { interaction_type: 'mood_peek', result: 'shown' });
   },
 
   onSceneAction() { this.runSceneAction(false); },
@@ -916,13 +1026,12 @@ Page({
       if (openWindowAfter) this.openDailyWindow(windowSelector);
       return;
     }
-    clearTimeout(this.feedbackTimer);
     this.setData({ actionBusy: true });
     postHatch.performAction(this.data.pet, this.data.snapshot).then(result => {
       if (!this.pageActive) return;
       this.setData({ actionBusy: false });
       if (!result.ok) {
-        this.showFeedback(result.message || '这次没有回应，请重试');
+        this.showSystemNotice(result.message || '这次没有回应，请重试', 'warning');
         return;
       }
       const actionDone = true;
@@ -932,7 +1041,7 @@ Page({
     }).catch(() => {
       if (this.pageActive) {
         this.setData({ actionBusy: false });
-        this.showFeedback('这次没有回应，请重试');
+        this.showSystemNotice('这次没有回应，请重试', 'warning');
       }
     });
   },
@@ -941,7 +1050,17 @@ Page({
 
   onContextActionTap() {
     const current = this.data.currentState;
-    if (!current || !current.atHome) return;
+    if (!current) return;
+    if (!current.atHome) {
+      this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info');
+      analytics.track('room_element_interaction', { element_id: 'away_status', result: 'shown' });
+      return;
+    }
+    if (!current.canTalk) {
+      this.showSystemNotice('此刻没有说话入口。', 'warning');
+      analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'unavailable' });
+      return;
+    }
     this.openChatPage(current);
   },
 
@@ -953,7 +1072,7 @@ Page({
       success: () => analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'opened' }),
       fail: () => {
         this.returningFromChild = false;
-        if (this.pageActive) this.showFeedback('对话页面没有打开，请重试');
+        if (this.pageActive) this.showSystemNotice('对话页面没有打开，请重试', 'warning');
       }
     });
   },
@@ -1144,7 +1263,9 @@ Page({
     if (this.data.isExiting) return;
     let reducedMotion = false;
     try {
-      const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+      const system = wx.getSystemSetting
+        ? wx.getSystemSetting()
+        : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
       reducedMotion = !!(system.reducedMotion || system.enableReduceMotion);
     } catch (error) {}
     const duration = reducedMotion ? 20 : 560;
@@ -1168,6 +1289,7 @@ Page({
     const resuming = Boolean(this.hasShownOnce);
     this.hasShownOnce = true;
     this.pageActive = true;
+    this.startClock();
     if (this.data.dailyWindowVisible || this.data.magicWindowVisible) this.setData({ dailyWindowVisible: false, magicWindowVisible: false });
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
@@ -1179,6 +1301,7 @@ Page({
   },
   onHide() {
     this.pageActive = false;
+    this.stopClock();
     this.windowGesture = null;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;
@@ -1198,18 +1321,14 @@ Page({
     this.clearPanoramaTransition();
     this.needsInitialViewport = true;
     this.initialViewportToken = (this.initialViewportToken || 0) + 1;
-    this.setData({ feedback: '', playedActionKind: '', statusBubble: '', statusBubbleVisible: false, dailyWindowVisible: false, magicWindowVisible: false, magicKoiReacting: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+    this.setData({ sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: '', dailyWindowVisible: false, magicWindowVisible: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
   },
   clearPresentationTimers() {
-    clearTimeout(this.feedbackTimer);
-    clearTimeout(this.statusBubbleTimer);
-    clearTimeout(this.statusBubbleClearTimer);
-    this.feedbackTimer = null;
-    this.statusBubbleTimer = null;
-    this.statusBubbleClearTimer = null;
+    if (this.sceneFeedbackController) this.sceneFeedbackController.clear();
   },
   onUnload() {
     this.pageActive = false;
+    this.stopClock();
     this.windowGesture = null;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;

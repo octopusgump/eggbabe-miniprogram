@@ -1,6 +1,8 @@
 {
   "disableSwipeBack": true,
   "usingComponents": {
-    "daily-window-detail": "../../components/daily-window-detail/daily-window-detail"
+    "daily-window-detail": "../../components/daily-window-detail/daily-window-detail",
+    "pet-mood-tab": "../../components/pet-mood-tab/pet-mood-tab",
+    "scene-feedback-stack": "../../components/scene-feedback-stack/scene-feedback-stack"
   }
 }

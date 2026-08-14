@@ -5,6 +5,17 @@
   background: #FFFFFF;
 }
 
+.system-notice-anchor {
+  position: fixed;
+  z-index: 120;
+  top: calc(148rpx + env(safe-area-inset-top));
+  left: 72rpx;
+  right: 72rpx;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .content {
   flex: 1;
   display: flex;

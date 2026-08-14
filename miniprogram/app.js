@@ -11,7 +11,8 @@ App({
     version: config.version,
     backendReady: false,
     environmentCdnBase: '',
-    windowMetrics: null
+    windowMetrics: null,
+    dailyMoodIntroShown: false
   },
 
   onLaunch() {

@@ -16,11 +16,9 @@
 .home-stage--entering { animation: home-stage-fade-in 320ms ease-out both; }
 .home-stage--visible { opacity: 1; }
 .home-stage--exiting { animation: home-stage-fade-out 320ms ease-in both; }
-.top-row { position: relative; z-index: 8; display: flex; align-items: center; justify-content: space-between; }
-.pet-view--incubating .top-row { position: absolute; z-index: 20; top: 88px; left: 34rpx; right: 34rpx; }
 .eyebrow { display: block; color: #829047; font-size: 20rpx; letter-spacing: 2rpx; }
-.pet-name-row { max-width: 440rpx; min-height: 64rpx; display: flex; align-items: center; gap: 14rpx; padding: 0 22rpx; box-sizing: border-box; border: 1rpx solid rgba(239,235,220,.92); border-radius: 999rpx; background: rgba(255,252,243,.82); box-shadow: 0 8rpx 24rpx rgba(61,51,35,.12), inset 0 1rpx 0 rgba(255,255,255,.82); backdrop-filter: blur(10rpx); }
-.pet-name { display: block; min-width: 0; overflow: hidden; color: #294732; font-size: 34rpx; font-weight: 600; line-height: 1.15; letter-spacing: 1rpx; text-overflow: ellipsis; white-space: nowrap; }
+.home-status-stack { position: fixed; z-index: 46; left: 24rpx; display: flex; flex-direction: column; align-items: flex-start; gap: 28rpx; max-width: calc(100vw - 48rpx); pointer-events: none; }
+.home-status-tab { margin-left: 0; pointer-events: auto; }
 .egg-zone { position: relative; height: 820rpx; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20rpx; border-radius: 42rpx; background: #E8E5D8; isolation: isolate; }
 .egg-zone--incubating { width: 100vw; height: 100vh; margin: 0; border-radius: 0; }
 .egg-zone.egg-zone--hatched { height: 600rpx; margin-top: 0; overflow: visible; border-radius: 0; background: transparent; isolation: auto; }
@@ -94,7 +92,7 @@
 .room-light-breathe { position: absolute; z-index: 5; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 72%, rgba(255,242,190,.2), transparent 36%); }
 .room-lamp-hotspot { position: absolute; z-index: 9; left: 0; top: 28%; width: 28%; height: 18%; border-radius: 40%; }
 .room-lamp-hotspot:active { background: rgba(255,244,190,.08); }
-.room-clock { position: absolute; z-index: 18; width: 176rpx; height: 116rpx; display: flex; align-items: center; justify-content: flex-start; box-sizing: border-box; transform-origin: 50% 50%; transition: transform .16s ease; }
+.room-clock { position: relative; z-index: 18; width: 176rpx; height: 116rpx; display: flex; align-items: center; justify-content: flex-start; box-sizing: border-box; transform-origin: 50% 50%; transition: transform .16s ease; pointer-events: auto; }
 .room-clock:active { transform: scale(.98); }
 .clock-face { position: relative; width: 112rpx; height: 112rpx; box-sizing: border-box; border: 5rpx solid rgba(107,86,59,.72); border-radius: 50%; background: rgba(250,246,231,.93); box-shadow: 0 9rpx 22rpx rgba(43,32,21,.18), inset 0 0 0 3rpx rgba(255,255,255,.66); color: #5A513F; }
 .clock-number { position: absolute; color: rgba(82,73,56,.75); font-size: 20rpx; font-weight: 600; line-height: 1; }
@@ -111,6 +109,7 @@
 .clock-time { font-size: 34rpx; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: 1rpx; }
 .clock-date { margin-top: 7rpx; color: rgba(82,73,56,.72); font-size: 20rpx; line-height: 1; }
 .stage-tester { position: fixed; z-index: 88; right: 28rpx; width: 210rpx; }
+.acceptance-tester { z-index: 92; }
 .stage-tester-button { min-height: 64rpx; display: flex; align-items: center; justify-content: center; gap: 9rpx; padding: 0 14rpx; box-sizing: border-box; border: 1rpx solid rgba(225,229,215,.95); border-radius: 999rpx; background: rgba(255,253,247,.92); box-shadow: 0 9rpx 26rpx rgba(44,54,39,.14); color: #3F5543; font-size: 21rpx; font-weight: 600; backdrop-filter: blur(10rpx); }
 .stage-tester-button--open { border-color: rgba(133,157,102,.82); }
 .stage-tester-button--busy { opacity: .66; }
@@ -119,6 +118,8 @@
 .stage-tester-menu { overflow: hidden; margin-top: 10rpx; padding: 7rpx; border: 1rpx solid rgba(225,229,215,.96); border-radius: 22rpx; background: rgba(255,253,247,.97); box-shadow: 0 15rpx 38rpx rgba(44,54,39,.18); backdrop-filter: blur(12rpx); }
 .stage-tester-option { min-height: 58rpx; display: flex; align-items: center; justify-content: space-between; padding: 0 17rpx; border-radius: 999rpx; color: #586458; font-size: 20rpx; }
 .stage-tester-option--active { background: #EEF3E5; color: #36513C; font-weight: 600; }
+.mood-tester { z-index: 87; }
+.mood-tester-menu { max-height: 470rpx; }
 
 .scene-tester { position: fixed; z-index: 90; right: 28rpx; width: 270rpx; }
 .scene-tester-button { min-height: 64rpx; display: flex; align-items: center; justify-content: center; gap: 8rpx; padding: 0 12rpx; box-sizing: border-box; border: 1rpx solid rgba(225,229,215,.95); border-radius: 999rpx; background: rgba(255,253,247,.92); box-shadow: 0 9rpx 26rpx rgba(44,54,39,.14); color: #3F5543; font-size: 20rpx; font-weight: 600; backdrop-filter: blur(10rpx); }
@@ -161,8 +162,6 @@
 .doodle-return-notice-anchor { position: fixed; z-index: 120; top: 180rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .scene-expand-overlay { position: fixed; z-index: 100; overflow: hidden; border-radius: 42rpx; background: #DCE5CE; pointer-events: none; animation: scene-expand-to-screen var(--scene-expand-duration, 560ms) cubic-bezier(.22,.61,.36,1) forwards; }
 .scene-expand-image { display: block; width: 100%; height: 100%; }
-.feedback-bubble { position: absolute; z-index: 8; max-width: 480rpx; padding: 18rpx 26rpx; border-radius: 28rpx 28rpx 28rpx 8rpx; background: rgba(255,255,255,.80); box-shadow: 0 12rpx 36rpx rgba(0,41,0,.10); color: #3D4930; font-size: 25rpx; animation: bubble-in .25s ease-out; }
-.feedback-bubble { top: 122rpx; }
 .tap-particles { position: absolute; z-index: 12; width: 1rpx; height: 1rpx; pointer-events: none; }
 .tap-particle { position: absolute; color: #FFF6A3; font-size: 30rpx; text-shadow: 0 2rpx 8rpx rgba(89,83,35,.25); animation: tap-burst .55s ease-out forwards; }
 .tap-particle--one { --px:-42rpx; --py:-48rpx; }.tap-particle--two { --px:38rpx; --py:-26rpx; animation-delay:.04s }.tap-particle--three { --px:8rpx; --py:46rpx; animation-delay:.08s }
@@ -268,7 +267,6 @@
 @keyframes autumn-room-warmth { 0%,100% { opacity: .28; } 50% { opacity: .78; } }
 @keyframes window-clear-glint { 0% { transform: translateX(-100%); opacity: 0; } 35% { opacity: .55; } 100% { transform: translateX(100%); opacity: 0; } }
 @keyframes draw-star { from { transform: translateY(18rpx) scale(.6); opacity: 0; } 55% { opacity: 1; } to { transform: translateY(-12rpx) scale(1.15); opacity: 0; } }
-@keyframes bubble-in { from { transform: translateY(8rpx); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes tap-burst { from { transform: translate(0,0) scale(.7); opacity: 1; } to { transform: translate(var(--px),var(--py)) scale(1.15); opacity: 0; } }
 @keyframes scene-expand-to-screen {
   from { opacity: 1; }
@@ -304,7 +302,6 @@
 .page--reduced .time-mote,
 .page--reduced .time-night-glint,
 .page--reduced .time-sunset-glint,
-.page--reduced .feedback-bubble,
 .page--reduced .draw-action-spark,
 .page--reduced .window-visual-effects::after { animation: none !important; }
 .page--reduced .incubation-full-scene-image--revealing,
@@ -327,7 +324,7 @@
   .egg-shell-specular, .egg-shell-depth, .egg-aura, .egg-aura::after,
   .window-light, .curtain-light, .room-light-breathe, .season-piece, .season-atmosphere, .scene-color-layer,
   .incubation-scene-loading-glow, .time-beam, .time-mote, .time-night-glint, .time-sunset-glint,
-  .feedback-bubble, .draw-action-spark, .window-visual-effects::after { animation: none !important; }
+  .draw-action-spark, .window-visual-effects::after { animation: none !important; }
   .incubation-full-scene-image--revealing,
   .home-stage--entering, .home-stage--exiting,
   .scene-expand-overlay, .name-sheet { animation-duration: 20ms !important; }

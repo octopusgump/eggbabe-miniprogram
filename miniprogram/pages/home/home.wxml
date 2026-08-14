@@ -2,11 +2,57 @@
   <view wx:if="{{!doodleEditorVisible}}" class="doodle-return-notice-anchor">
     <inline-notice
       text="{{doodleReturnNoticeText}}"
-      tone="info"
+      tone="{{doodleReturnNoticeTone}}"
       visible="{{doodleReturnNoticeVisible}}"
     ></inline-notice>
   </view>
   <nav-bar wx:if="{{!pet}}" title="蛋宝宝" show-back="{{false}}"></nav-bar>
+
+  <scene-feedback-stack
+    wx:if="{{!doodleEditorVisible}}"
+    text="{{sceneFeedbackText}}"
+    variant="{{sceneFeedbackVariant}}"
+    tone="{{sceneFeedbackTone}}"
+    visible="{{sceneFeedbackVisible}}"
+    system-behind="{{sceneFeedbackSystemBehind}}"
+    promoting="{{sceneFeedbackPromoting}}"
+    reduced-motion="{{reducedMotion}}"
+  ></scene-feedback-stack>
+
+  <view wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" class="home-status-stack home-stage home-stage--{{homeStagePhase}}" style="top:{{nameTopPx}}px;">
+    <view class="home-status-tab">
+      <pet-mood-tab
+        id="petMoodTab"
+        pet-name="{{pet.name || '还没有名字'}}"
+        mood="{{dailyMood}}"
+        intro-ready="{{homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed}}"
+        reduced-motion="{{reducedMotion}}"
+        name-interactive="{{true}}"
+        bindnametap="onPetNameTap"
+      ></pet-mood-tab>
+    </view>
+    <view
+      class="room-clock room-clock--{{clockMode}}"
+      aria-role="button"
+      aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
+      catchtap="onClockTap"
+    >
+      <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
+        <text class="clock-number clock-number--twelve">12</text>
+        <text class="clock-number clock-number--three">3</text>
+        <text class="clock-number clock-number--six">6</text>
+        <text class="clock-number clock-number--nine">9</text>
+        <view class="clock-hand clock-hand--hour" style="{{clockHourStyle}}"></view>
+        <view class="clock-hand clock-hand--minute" style="{{clockMinuteStyle}}"></view>
+        <view class="clock-hand clock-hand--second" style="{{clockSecondStyle}}"></view>
+        <view class="clock-pin"></view>
+      </view>
+      <view wx:else class="clock-digital">
+        <text class="clock-time">{{clockTimeText}}</text>
+        <text class="clock-date">{{clockDateText}}</text>
+      </view>
+    </view>
+  </view>
 
   <scroll-view wx:if="{{!doodleEditorVisible}}" class="content {{pet && stage !== 'hatched' ? 'content--incubating' : ''}}" scroll-y="{{!pet}}">
     <view wx:if="{{!pet}}" class="empty-state">
@@ -18,14 +64,6 @@
     </view>
 
     <view wx:elif="{{stage !== 'hatched'}}" class="pet-view pet-view--incubating home-stage home-stage--{{homeStagePhase}}">
-      <view class="top-row" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">
-        <view>
-          <view class="pet-name-row" bindtap="onPetNameTap">
-            <text class="pet-name">{{pet.name || '还没有名字'}}</text>
-          </view>
-        </view>
-      </view>
-
       <view class="egg-zone {{stage !== 'hatched' ? 'egg-zone--incubating' : 'egg-zone--hatched'}} {{environment.className}} {{sceneEffect}} {{lampOn ? 'room-lamp-on' : 'room-lamp-off'}} {{timeSceneIntro ? 'time-intro--' + timeSceneIntro : ''}} {{dailyWindowVisible ? 'scene-paused' : ''}}">
         <view wx:if="{{stage !== 'hatched'}}" class="incubation-scene {{environment.className}}">
           <view wx:if="{{fullSceneImageLoading && !fullSceneImageFailed && !previousFullSceneImage}}" class="incubation-scene-loading"><view class="incubation-scene-loading-glow"></view></view>
@@ -85,31 +123,8 @@
           </view>
           <view class="room-light-breathe"></view>
           <view class="room-lamp-hotspot" aria-role="button" aria-label="{{lampOn ? '关闭台灯' : '打开台灯'}}" catchtap="onLampTap"></view>
-          <view
-            class="room-clock room-clock--{{clockMode}}"
-            style="top:{{clockTopPx}}px;left:{{clockLeftPx}}px;"
-            aria-role="button"
-            aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
-            catchtap="onClockTap"
-          >
-            <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
-              <text class="clock-number clock-number--twelve">12</text>
-              <text class="clock-number clock-number--three">3</text>
-              <text class="clock-number clock-number--six">6</text>
-              <text class="clock-number clock-number--nine">9</text>
-              <view class="clock-hand clock-hand--hour" style="{{clockHourStyle}}"></view>
-              <view class="clock-hand clock-hand--minute" style="{{clockMinuteStyle}}"></view>
-              <view class="clock-hand clock-hand--second" style="{{clockSecondStyle}}"></view>
-              <view class="clock-pin"></view>
-            </view>
-            <view wx:else class="clock-digital">
-              <text class="clock-time">{{clockTimeText}}</text>
-              <text class="clock-date">{{clockDateText}}</text>
-            </view>
-          </view>
         </view>
 
-        <view wx:if="{{feedback}}" class="feedback-bubble" style="{{stage !== 'hatched' ? 'top:' + nameTopPx + 'px;' : ''}}">{{feedback}}</view>
         <view wx:if="{{stage !== 'hatched'}}" class="egg-aura {{eggMotion}}"></view>
 
         <view wx:if="{{stage !== 'hatched' && !fullSceneImageFailed}}" class="egg egg-shell {{eggMotion}}" aria-role="button" aria-label="轻触蛋宝宝" catchtap="onEggTap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd">
@@ -172,8 +187,15 @@
     </view>
   </scroll-view>
 
+  <!-- DEV-ONLY：验收工具默认收起，避免调试控件干扰正式 UI 评审。 -->
+  <view wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== 'hatched'}}" class="stage-tester acceptance-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{acceptanceTesterTopPx}}px;">
+    <view class="stage-tester-button {{acceptanceToolsOpen ? 'stage-tester-button--open' : ''}}" aria-role="button" aria-label="{{acceptanceToolsOpen ? '收起验收工具' : '展开验收工具'}}" catchtap="onAcceptanceToolsToggle">
+      <text class="stage-tester-tag">验收</text><text>工具</text><text class="stage-tester-chevron">{{acceptanceToolsOpen ? '⌃' : '⌄'}}</text>
+    </view>
+  </view>
+
   <!-- DEV-ONLY：季节/时令/天气验收器，正式上线前整体删除。 -->
-  <view wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== 'hatched'}}" class="scene-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{sceneTesterTopPx}}px;">
+  <view wx:if="{{!doodleEditorVisible && isDemo && acceptanceToolsOpen && pet && stage !== 'hatched'}}" class="scene-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{sceneTesterTopPx}}px;">
     <view
       class="scene-tester-button {{sceneTesterOpen ? 'scene-tester-button--open' : ''}} {{sceneTesterBusy ? 'scene-tester-button--busy' : ''}}"
       aria-role="button"
@@ -253,7 +275,7 @@
   ></image>
 
   <!-- DEV-ONLY：阶段验收器，正式上线前整体删除。release/trial 下 isDemo=false，不会渲染。 -->
-  <view wx:if="{{!doodleEditorVisible && isDemo && pet && stage !== 'hatched'}}" class="stage-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{clockTopPx}}px;">
+  <view wx:if="{{!doodleEditorVisible && isDemo && acceptanceToolsOpen && pet && stage !== 'hatched'}}" class="stage-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{stageTesterTopPx}}px;">
     <view
       class="stage-tester-button {{stageTesterOpen ? 'stage-tester-button--open' : ''}} {{stageTesterBusy ? 'stage-tester-button--busy' : ''}}"
       aria-role="button"
@@ -273,6 +295,16 @@
         catchtap="onStageTesterSelect"
       ><text>{{item.label}}</text><text wx:if="{{stageTesterKey === item.key}}">✓</text></view>
     </view>
+  </view>
+
+  <!-- DEV-ONLY：每日心情只在当前页面内存中切换；release/trial 下不渲染。 -->
+  <view wx:if="{{!doodleEditorVisible && isDemo && acceptanceToolsOpen && pet && stage !== 'hatched'}}" class="stage-tester mood-tester home-stage home-stage--{{homeStagePhase}}" style="top:{{moodTesterTopPx}}px;">
+    <view class="stage-tester-button {{moodTesterOpen ? 'stage-tester-button--open' : ''}}" aria-role="button" aria-label="测试每日心情，当前{{moodTesterLabel}}" catchtap="onMoodTesterToggle">
+      <text class="stage-tester-tag">心情</text><text>{{moodTesterLabel}}</text><text class="stage-tester-chevron">⌄</text>
+    </view>
+    <scroll-view wx:if="{{moodTesterOpen}}" class="stage-tester-menu mood-tester-menu" scroll-y="true">
+      <view wx:for="{{moodPreviewOptions}}" wx:key="key" class="stage-tester-option {{moodTesterKey === item.key ? 'stage-tester-option--active' : ''}}" data-mood="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" catchtap="onMoodTesterSelect"><text>{{item.label}}</text><text wx:if="{{moodTesterKey === item.key}}">✓</text></view>
+    </scroll-view>
   </view>
 
   <canvas wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" type="2d" id="homeEggBaseCanvas" class="egg-render-cache egg-render-cache--base"></canvas>

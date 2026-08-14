@@ -39,6 +39,8 @@ const lifeSceneTemplate = read('miniprogram/pages/life-scene/life-scene.wxml');
 const lifeSceneLogic = read('miniprogram/pages/life-scene/life-scene.js');
 const postHatchCompanion = read('miniprogram/services/post-hatch-companion.js');
 const lifeSceneStyles = read('miniprogram/pages/life-scene/life-scene.wxss');
+const sceneFeedbackTemplate = read('miniprogram/components/scene-feedback-stack/scene-feedback-stack.wxml');
+const sceneFeedbackStyles = read('miniprogram/components/scene-feedback-stack/scene-feedback-stack.wxss');
 const petAvatarTemplate = read('miniprogram/components/pet-avatar/pet-avatar.wxml');
 const dailyWindowTemplate = read('miniprogram/components/daily-window-detail/daily-window-detail.wxml');
 const dailyWindowLogic = read('miniprogram/components/daily-window-detail/daily-window-detail.js');
@@ -160,7 +162,8 @@ assert.equal(navBarLogic.includes('pages.length > 1') && navBarLogic.includes('t
 assert.equal(dailyWindowLogic.includes('getMenuButtonBoundingClientRect') && dailyWindowLogic.includes('menuBottom + 14') && dailyWindowTemplate.includes('top:{{topbarTopPx}}px'), true, '日常窗外返回按钮必须放在微信胶囊下方的安全位置');
 assert.equal(/daily-window__subject|daily-window__egg-placeholder|daily-window__character-placeholder/.test(dailyWindowTemplate), false, '日常窗外详情不得显示蛋或角色占位层');
 assert.equal(dailyWindowTemplate.includes('daily-window__feedback-bubble') && dailyWindowStyles.includes('border-radius:28rpx 28rpx 28rpx 8rpx') && dailyWindowStyles.includes('color:#3D4930') && dailyWindowStyles.includes('font-size:25rpx'), true, '窗外底部文字框必须与房间内现有反馈气泡视觉一致');
-assert.equal(dailyWindowStyles.includes('background:rgba(255,255,255,.80)') && homeStyles.includes('background: rgba(255,255,255,.80)') && lifeSceneStyles.includes('background:rgba(255,255,255,.80)'), true, '全小程序陪伴文字提示气泡必须统一使用 80% 白色背景，文字保持不透明');
+assert.equal(dailyWindowStyles.includes('background:rgba(255,255,255,.80)'), true, '窗外独立陪伴文字框必须继续使用既定 80% 白色背景');
+assert.equal(sceneFeedbackTemplate.includes('scene-feedback-stack__back') && sceneFeedbackStyles.includes('background:rgba(255,253,247,.94)') && sceneFeedbackStyles.includes('background:rgba(18,21,18,.72)'), true, '场景页共享反馈组件必须同时提供白底对白与黑底系统卡');
 assert.equal(
   dailyWindowLogic.includes('FEEDBACK_MESSAGES')
     && dailyWindowLogic.includes('nextFeedbackMessage()')
@@ -194,7 +197,7 @@ assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${
 assert.equal(app.pages.includes('pages/chat/chat'), true, '居家对话必须注册完整聊天页');
 assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 PRD 未放行的 AI 布置额度页面不得注册');
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
-assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"'), true, '居家时必须直达完整对话页，外出时不显示沟通入口');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"'), true, '居家时必须直达完整对话页，外出时保留状态入口');
 assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
@@ -202,7 +205,7 @@ assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-plac
 assert.equal(/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`), false, '角色与动作道具必须烘焙进正式全景，不得叠加透明角色、接触阴影、CSS 道具或色调层');
 assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama') && lifeSceneTemplate.includes('class="scene-character-hotspot') && lifeSceneTemplate.includes('bindtap="onCharacterTap"'), true, '生活空间必须使用正式动作全景，并以透明热区保留角色互动');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
-assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState.atHome}}" class="scene-context-entry"') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('mySettingsIcon') && lifeSceneTemplate.includes('aria-label="打开我的和设置"') && lifeSceneLogic.includes('scene_chat_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '必须使用居家左下对话入口和右下我的/设置，居家入口直达完整对话页');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"') && lifeSceneTemplate.includes('class="away-status-pill"') && lifeSceneTemplate.includes('>外出中</view>') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('mySettingsIcon') && lifeSceneTemplate.includes('aria-label="打开我的和设置"') && lifeSceneLogic.includes('scene_chat_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '居家使用左下陪伴入口，外出只显示“外出中”，右下我的/设置保持可用');
 assert.equal(/scene-talk-nudge|home-locator-focus|onOpenTalkComposer|composerVisible && currentState\.atHome/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, '居家入口不得恢复聚焦光圈、三点提示或场景内对话弹层');
 assert.equal(/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"|scene-action-unread-dot/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, 'V3.6 / V3.7 不得暴露百宝箱弹层、复杂内容入口或未读提示');
 assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '右下我的/设置必须直接打开我的页');
@@ -291,6 +294,7 @@ assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋�
   'demo-experience.test.js',
   'demo-network-isolation.test.js',
   'demo-pages.test.js',
+  'daily-mood.test.js',
   'device-clock.test.js',
   'environment-state.test.js',
   'incubation-environment.test.js',

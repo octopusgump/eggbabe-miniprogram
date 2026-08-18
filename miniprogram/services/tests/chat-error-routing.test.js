@@ -3,11 +3,13 @@ const assert = require('assert');
 const originalWx = global.wx;
 const originalPage = global.Page;
 const storage = new Map();
+let navigateBackCount = 0;
 global.wx = {
   getAccountInfoSync() { return { miniProgram: { envVersion: 'develop' } }; },
   getStorageSync(key) { return storage.get(key); },
   setStorageSync(key, value) { storage.set(key, value); },
   removeStorageSync(key) { storage.delete(key); },
+  navigateBack() { navigateBackCount += 1; },
   reLaunch() {}
 };
 
@@ -27,7 +29,7 @@ function contextFor(text) {
     pageActive: true,
     data: Object.assign({}, chatPage.data, {
       pet: { id: 'routing-egg' },
-      snapshot: { currentState: { key: 'reading' }, chatAccess: { status: 'available' } },
+      snapshot: { currentState: { key: 'read' }, chatAccess: { status: 'available' } },
       chatAccess: { status: 'available', reason: 'AT_HOME', message: '' },
       chatAvailable: true,
       messages: [],
@@ -63,6 +65,7 @@ function flush() { return new Promise(resolve => setImmediate(resolve)); }
     assert.equal(unavailable.data.messages.length, 0, '权限变化必须移除未确认气泡');
     assert.equal(unavailable.data.chatAvailable, false, '权限变化必须立即关闭输入位');
     assert.equal(unavailable.data.chatAccess.status, 'unavailable', 'App 不得把所有 TALK_NOT_AVAILABLE 猜成 away');
+    assert.equal(navigateBackCount, 1, '聊天中权限变化时必须直接返回生活空间，不再展示不可聊天内容区');
 
     results.set('触发限流', { ok: false, code: 'RATE_LIMITED', message: '现在发送得有点快，请稍后再试。' });
     const limited = contextFor('触发限流');

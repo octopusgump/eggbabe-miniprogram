@@ -19,7 +19,7 @@ require('../../pages/chat/chat');
 
 const context = Object.assign({}, page, {
   data: Object.assign({}, page.data, {
-    snapshot: { currentState: { key: 'reading' } },
+    snapshot: { currentState: { key: 'read' } },
     chatAvailable: true,
     messages: [{ id: 'opening', role: 'assistant', text: '我在看书。', status: 'sent' }]
   }),
@@ -46,8 +46,16 @@ try {
   page.onKeyboardHeightChange.call(context, { detail: { height: 0 } });
   assert.equal(context.data.chatViewportStyle, 'height:812px;', '键盘收起时必须恢复完整窗口高度');
 
+  page.onInputBlur.call(context);
+  page.onInputFocus.call(context);
+  page.onKeyboardHeightChange.call(context, { detail: { height: 336 } });
+  currentWindowHeight = 476;
   page.onHide.call(context);
   assert.equal(context.data.keyboardHeight, 0, '页面隐藏时不得保留陈旧键盘高度');
+  assert.equal(context.data.chatViewportStyle, 'height:812px;', '页面隐藏时不得把键盘压缩后的窗口保存为新基准');
+  currentWindowHeight = 812;
+  page.updateChatViewport.call(context, 0);
+  assert.equal(context.data.chatViewportStyle, 'height:812px;', '再次进入时必须恢复完整高度');
   page.onUnload.call(context);
   assert.equal(releasedResizeListener, resizeListener, '页面卸载时必须释放窗口尺寸监听');
   console.log('聊天键盘可用视口、滚动锚点与生命周期清理校验通过。');

@@ -55,7 +55,7 @@ function contextFor(draft) {
     pageActive: true,
     data: Object.assign({}, chatPage.data, {
       pet: { id: 'egg-input-validation' },
-      snapshot: { currentState: { key: 'reading' }, chatAccess: { status: 'available' } },
+      snapshot: { currentState: { key: 'read' }, chatAccess: { status: 'available' } },
       chatAvailable: true,
       messages: [{ id: 'opening', role: 'assistant', text: '我在看书。', status: 'sent' }],
       draft,
@@ -111,7 +111,7 @@ function contextFor(draft) {
       crisisPayload = payload;
       return Promise.resolve({ ok: true, text: '由服务端审核后的回复。', safety: 'passed' });
     };
-    const homeSnapshot = { currentState: { atHome: true, canTalk: true, major: 'home', key: 'reading' }, chatAccess: { status: 'available' } };
+    const homeSnapshot = { currentState: { atHome: true, canTalk: true, major: 'home', key: 'read' }, chatAccess: { status: 'available' } };
     const crisis = await originalSendSceneMessage({ id: 'egg-crisis' }, homeSnapshot, '怎么自杀', 'chat-crisis-input-1');
     assert.equal(crisisPayload.text, '怎么自杀', '危机表达必须完整交给服务端判断');
     assert.equal(crisis.text, '由服务端审核后的回复。', 'App 只能展示服务端返回的审核结果');
@@ -119,13 +119,23 @@ function contextFor(draft) {
     assert.equal(crisisPayload.text, '你'.repeat(121), '超长内容不得由 App 截断或拦截，必须交给服务端校验');
     assert.equal(overLimit.text, '由服务端审核后的回复。', 'App 只展示服务端响应');
 
-    const away = await originalSendSceneMessage(
+    const availableAway = await originalSendSceneMessage(
       { id: 'egg-away' },
       { currentState: { atHome: false, major: 'travel', key: 'away' }, chatAccess: { status: 'available' } },
-      '外出时不能发送',
+      'chat_access 允许时必须发送',
       'chat-away-input-1'
     );
-    assert.equal(away.code, 'TALK_NOT_AVAILABLE', '即使 chat_access 错误标记 available，外出状态也必须保守拒绝聊天');
+    assert.equal(crisisPayload.text, 'chat_access 允许时必须发送', 'App 不得使用 atHome 覆盖服务端 chat_access');
+    assert.equal(availableAway.ok, true, 'chat_access=available 必须进入聊天服务适配层');
+
+    const unavailable = await originalSendSceneMessage(
+      { id: 'egg-unavailable' },
+      { currentState: { atHome: true, major: 'home', key: 'read' }, chatAccess: { status: 'unavailable', message: '稍后再来' } },
+      '不应发送',
+      'chat-unavailable-input-1'
+    );
+    assert.equal(unavailable.code, 'TALK_NOT_AVAILABLE', 'chat_access=unavailable 必须在 App 适配层停止发送');
+    assert.equal(unavailable.message, '稍后再来', 'App 必须原样保留服务端权限文案');
 
     chatService.requestReply = originalRequestReply;
     config.backendEnabled = false;

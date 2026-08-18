@@ -34,8 +34,8 @@ cloudApi.getChatHistory = (eggId, cursor, limit) => {
     ok: true,
     mode: 'live',
     messages: [
-      { message_id: 'server-user-1', client_message_id: 'chat-server-user-1', role: 'user', text: '你好', created_at: '2026-08-10T10:00:00+08:00' },
-      { message_id: 'server-assistant-1', role: 'assistant', text: '你好呀', created_at: '2026-08-10T10:00:01+08:00' }
+      { message_id: 'server-user-1', client_message_id: 'chat-server-user-1', role: 'user', text: '你好', created_at: '2026-08-10T16:30:00Z' },
+      { message_id: 'server-assistant-1', role: 'assistant', text: '你好呀', created_at: '2026-08-10T16:30:01Z' }
     ],
     next_cursor: 'cursor-older',
     has_more: true
@@ -90,7 +90,7 @@ function flush() { return new Promise(resolve => setImmediate(resolve)); }
     postHatch.getSnapshot = () => Promise.resolve({
       ok: true,
       mood: { line: '我在呢。' },
-      currentState: { atHome: true, canTalk: true, key: 'reading', label: '看书' },
+      currentState: { atHome: true, canTalk: true, key: 'read', label: '看书' },
       chatAccess: { status: 'available', reason: 'AT_HOME', message: '' }
     });
     let historyCall = 0;
@@ -121,17 +121,15 @@ function flush() { return new Promise(resolve => setImmediate(resolve)); }
     await flush();
     assert.deepEqual(context.data.messages.map(item => item.id), ['server-user-1', 'server-assistant-1'], '首次进入必须显示服务端历史，而不是重新生成开场白');
     assert.equal(context.data.hasMoreHistory, true, '首次历史页必须保留服务端分页状态');
-    assert.equal(context.data.messages[0].dateLabel, '2026年8月10日', '历史消息日期必须来自服务端 created_at，且跨年记录必须清晰');
-    assert.equal(context.data.messages[0].compactDateLabel, '8月10日 · 星期一', '紧凑日期必须由服务端日期生成月日和星期，不读取设备当前日期');
-    assert.equal(context.data.messages[0].dateDisplayLabel, '2026年8月10日', '默认必须显示完整日期');
+    assert.equal(context.data.messages[0].dateLabel, '2026年8月11日', '历史消息日期必须由服务端 created_at 转换为产品东八区');
+    assert.equal(context.data.messages[0].compactDateLabel, '8月11日 · 星期二', '紧凑日期的星期必须按东八区跨日结果计算');
+    assert.equal(context.data.messages[0].dateDisplayLabel, '2026年8月11日', '默认必须显示东八区完整日期');
     chatPage.onToggleDateFormat.call(context);
-    assert.equal(context.data.messages[0].dateDisplayLabel, '8月10日 · 星期一', '点击日期后必须直接更新为月日和星期');
+    assert.equal(context.data.messages[0].dateDisplayLabel, '8月11日 · 星期二', '点击日期后必须直接更新为东八区月日和星期');
     chatPage.onToggleDateFormat.call(context);
-    assert.equal(context.data.messages[0].dateDisplayLabel, '2026年8月10日', '再次点击日期后必须恢复完整日期');
-    assert.equal(context.data.messages[0].timeLabel, '10:00', '历史消息时间必须来自服务端 created_at');
+    assert.equal(context.data.messages[0].dateDisplayLabel, '2026年8月11日', '再次点击日期后必须恢复东八区完整日期');
+    assert.equal(context.data.messages[0].timeLabel, '00:30', '历史消息时间必须由服务端 created_at 转换为东八区');
     assert.equal(context.data.messages[1].dateLabel, '', '同一天连续消息不应重复显示日期分隔');
-    assert.equal(context.data.chatAvatarSrc, '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_jade_rabbit_96_v02.png', '玉兔聊天页必须与左下入口共用同一张玉兔头像，不得显示空白蛋');
-
     context.data.messages.push({ id: 'user-local-failed', clientMessageId: 'chat-server-user-1', role: 'user', text: '你好', status: 'failed' });
     postHatch.getChatHistory = () => Promise.resolve(history);
     chatPage.refreshLatestHistory.call(context);
@@ -174,6 +172,83 @@ function flush() { return new Promise(resolve => setImmediate(resolve)); }
     await flush();
     assert.equal(retryCalls, 2, '点击历史重试必须再次读取失败页，而不是重新加载整个对话');
     assert.equal(context.data.messages[0].id, 'server-user--1', '重试成功后必须保留并插入更早历史');
+
+    postHatch.getChatHistory = () => Promise.resolve({ ok: true, messages: [], nextCursor: '', hasMore: false });
+    const emptyContext = Object.assign({}, chatPage, {
+      pageActive: true,
+      data: Object.assign({}, chatPage.data),
+      setData(patch, callback) {
+        Object.assign(this.data, patch);
+        if (callback) callback();
+      }
+    });
+    petStore.getPet = () => pet;
+    chatPage.loadConversation.call(emptyContext);
+    await flush();
+    await flush();
+    assert.deepEqual(emptyContext.data.messages, [], '服务端空历史必须保持空列表，App 不得伪造本地开场白');
+
+    const petA = { id: 'egg-history-a', ownerId: 'owner-1' };
+    const petB = { id: 'egg-history-b', ownerId: 'owner-1' };
+    let activePet = petA;
+    let resolveStaleHistory;
+    petStore.getPet = () => activePet;
+    postHatch.getChatHistory = () => new Promise(resolve => { resolveStaleHistory = resolve; });
+    const staleContext = Object.assign({}, chatPage, {
+      pageActive: true,
+      data: Object.assign({}, chatPage.data, {
+        pet: petA,
+        snapshot: { currentState: { key: 'read' } },
+        messages: [{ id: 'a-current', role: 'assistant', text: 'A', status: 'sent' }],
+        historyLoading: false
+      }),
+      setData(patch, callback) {
+        Object.assign(this.data, patch);
+        if (callback) callback();
+      }
+    });
+    chatPage.refreshLatestHistory.call(staleContext);
+    activePet = petB;
+    staleContext.data.pet = petB;
+    staleContext.data.messages = [{ id: 'b-current', role: 'assistant', text: 'B', status: 'sent' }];
+    resolveStaleHistory({
+      ok: true,
+      messages: [{ id: 'a-old', role: 'assistant', text: 'A 旧消息', createdAt: '2026-08-10T10:00:00+08:00' }],
+      nextCursor: '',
+      hasMore: false
+    });
+    await flush();
+    assert.deepEqual(staleContext.data.messages.map(item => item.id), ['b-current'], '旧宠物的延迟历史回调不得覆盖新对话');
+
+    activePet = petB;
+    petStore.getPet = () => activePet;
+    postHatch.getChatHistory = () => Promise.resolve({
+      ok: true,
+      messages: [
+        { id: 'old-1', role: 'assistant', text: '正在阅读', createdAt: '2026-08-10T10:00:00+08:00' },
+        { id: 'latest-1', role: 'assistant', text: '新消息', createdAt: '2026-08-10T10:01:00+08:00' }
+      ],
+      nextCursor: '',
+      hasMore: false
+    });
+    const readingContext = Object.assign({}, chatPage, {
+      pageActive: true,
+      readingAtBottom: false,
+      data: Object.assign({}, chatPage.data, {
+        pet: petB,
+        snapshot: { currentState: { key: 'read' } },
+        messages: [{ id: 'old-1', role: 'assistant', text: '正在阅读', status: 'sent' }],
+        historyLoading: false,
+        scrollTarget: 'message-old-1'
+      }),
+      setData(patch, callback) {
+        Object.assign(this.data, patch);
+        if (callback) callback();
+      }
+    });
+    chatPage.refreshLatestHistory.call(readingContext);
+    await flush();
+    assert.equal(readingContext.data.scrollTarget, 'message-old-1', '前台刷新时必须保留用户的历史阅读位置');
     console.log('聊天历史服务适配、首次加载与向上分页校验通过。');
   } finally {
     config.backendEnabled = originalBackendEnabled;

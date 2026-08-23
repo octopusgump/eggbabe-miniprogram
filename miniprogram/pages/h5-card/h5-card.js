@@ -2,19 +2,16 @@ const config = require('../../config/v2');
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const h5Bridge = require('../../services/birth-card-h5');
-const releaseSurface = require('../../utils/release-surface');
 
 Page({
   data: { src: '', savingPoster: false },
 
   onLoad() {
-    if (!releaseSurface.guardDeferredContent()) return;
     this.initialShowPending = true;
     this.refreshSource(false);
   },
 
   onShow() {
-    if (!releaseSurface.deferredContentAvailable()) return;
     if (this.initialShowPending) {
       this.initialShowPending = false;
       return;

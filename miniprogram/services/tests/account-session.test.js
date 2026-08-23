@@ -33,6 +33,8 @@ runtime.setSessionId(previousSessionId);
 petStore.saveUser({ id: 'user-old', publicId: 'OLD-USER', nickname: '旧用户' });
 petStore.savePet({ id: 'egg-old', ownerId: 'user-old', mode: 'demo', messages: [{ text: '旧账号对话' }] });
 storageMigration.set('eggbabe_deregister_request_v1_user-old', { mode: 'live', endAt: Date.now() });
+storageMigration.set(runtime.scopedKey('compliance_age_range'), 'AGE_15_35');
+storageMigration.set(runtime.scopedKey('compliance_ai_notice_date'), '2026-08-23');
 
 // 设备级体验偏好不属于账号数据，退出时必须保留。
 storageMigration.set('eggbabe_profile_icon_hint_seen_v1', true);
@@ -58,6 +60,8 @@ accountSession.ACCOUNT_SCOPED_KEYS.forEach(key => {
   assert.equal(storage.has(runtime.scopedKey(key)), false, `退出后必须删除账号级数据：${key}`);
 });
 assert.equal(storage.has('eggbabe_deregister_request_v1_user-old'), false, '退出后必须删除当前账号的注销申请缓存');
+assert.equal(storage.has(runtime.scopedKey('compliance_age_range')), false, '清空账号数据后必须删除年龄区间，下一次进入对话重新选择');
+assert.equal(storage.has(runtime.scopedKey('compliance_ai_notice_date')), false, '清空账号数据后必须允许重新验收每日 AI 身份提示');
 assert.equal(storage.get('eggbabe_profile_icon_hint_seen_v1'), true, '退出不得清除设备级“我的”提示');
 assert.equal(storage.get('eggbabe_doodle_color_hint_seen_v1'), true, '退出不得清除设备级画画提示');
 assert.equal(storage.get('eggbabe_scene_preview'), 'summer-clear-day', '退出不得清除开发预览选择');

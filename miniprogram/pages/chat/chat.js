@@ -3,6 +3,8 @@ const lifeScenes = require('../../utils/life-scenes');
 const postHatch = require('../../services/post-hatch-companion');
 const analytics = require('../../services/analytics');
 const config = require('../../config/v2');
+const compliance = require('../../services/compliance-service');
+const chatCompliance = require('../../services/chat-compliance');
 
 let clientMessageSequence = 0;
 const BUSINESS_TIMEZONE_OFFSET_MS = 8 * 60 * 60 * 1000;
@@ -177,6 +179,8 @@ Page({
     fatalErrorAction: 'reload',
     fatalErrorActionLabel: '重新加载',
     reducedMotion: false,
+    aiNoticeVisible: false,
+    healthReminderVisible: false,
     isDemo: config.localDemoEnabled
   },
 
@@ -185,6 +189,8 @@ Page({
     this.requestedStateKey = String(params.state_key || '');
     this.preview = params.preview === '1' && config.localDemoEnabled;
     this.conversationEpoch = 0;
+    this.successfulSessionMessageCount = 0;
+    this.healthReminderShown = false;
     this.readingAtBottom = true;
     this.chatWindowHeight = windowHeight();
     this.updateChatViewport(0);
@@ -206,6 +212,10 @@ Page({
     if (currentWindowHeight) this.chatWindowHeight = currentWindowHeight;
     this.updateChatViewport(0);
     this.setData({ reducedMotion: reducedMotionEnabled() });
+    this.ensureAgeBeforeConversation();
+  },
+
+  continueConversationOnShow() {
     if (this.data.snapshot) {
       const latestPet = petStore.getPet();
       if (!latestPet || conversationKeyFor(latestPet) !== conversationKeyFor(this.data.pet)) {
@@ -220,16 +230,35 @@ Page({
     this.loadConversation();
   },
 
+  ensureAgeBeforeConversation() {
+    if (this.ageGateChecking) return;
+    this.ageGateChecking = true;
+    compliance.getAgeRange().then(result => {
+      this.ageGateChecking = false;
+      if (!this.pageActive) return;
+      if (!result || !result.ok || !compliance.normalizeAgeRange(result.ageRange)) {
+        wx.navigateTo({ url: '/pages/age-range/age-range?source=chat' });
+        return;
+      }
+      this.continueConversationOnShow();
+    }).catch(() => {
+      this.ageGateChecking = false;
+      if (this.pageActive) wx.navigateTo({ url: '/pages/age-range/age-range?source=chat' });
+    });
+  },
+
   onHide() {
     this.pageActive = false;
     this.invalidateConversationRequests();
     this.cancelActiveChatRequest();
+    this.clearAiNoticeTimer();
     this.setData({ inputFocused: false, inputFocus: false, historyLoading: false }, () => this.resetChatViewport());
   },
   onUnload() {
     this.pageActive = false;
     this.invalidateConversationRequests();
     this.cancelActiveChatRequest();
+    this.clearAiNoticeTimer();
     this.setData({ inputFocused: false, inputFocus: false, historyLoading: false });
     this.resetChatViewport();
     if (this.windowResizeHandler && wx.offWindowResize) wx.offWindowResize(this.windowResizeHandler);
@@ -312,7 +341,10 @@ Page({
           historyRetryCursor: '',
           historyHasRecords: historyMessages.length > 0,
           inputFocus: true
-        }, () => this.scrollToLatest());
+        }, () => {
+          this.scrollToLatest();
+          this.showDailyAiNoticeIfNeeded();
+        });
         analytics.track('chat_open', { scene_id: currentState.key, entry: 'life_scene' });
       }).catch(() => {
         if (this.isCurrentConversationRequest(conversationKey, requestEpoch)) this.setData({ loading: false, error: '', historyError: '聊天记录没有加载好，请重试', historyRetryCursor: '' });
@@ -354,6 +386,22 @@ Page({
     wx.navigateBack({
       fail: () => wx.switchTab({ url: '/pages/home/home' })
     });
+  },
+
+  showDailyAiNoticeIfNeeded() {
+    if (!compliance.takeDailyAiNotice()) return;
+    this.clearAiNoticeTimer();
+    this.setData({ aiNoticeVisible: true });
+    this.aiNoticeTimer = setTimeout(() => {
+      this.aiNoticeTimer = null;
+      if (this.pageActive) this.setData({ aiNoticeVisible: false });
+    }, 5000);
+  },
+
+  clearAiNoticeTimer() {
+    clearTimeout(this.aiNoticeTimer);
+    this.aiNoticeTimer = null;
+    if (this.data.aiNoticeVisible) this.setData({ aiNoticeVisible: false });
   },
 
   refreshLatestHistory() {
@@ -527,7 +575,10 @@ Page({
     if (this.preview) {
       const previewReply = message(`assistant-${Date.now()}`, 'assistant', '我在呢。这是测试回复，不会写进陪伴记录。');
       const messages = updateMessage(this.data.messages, clientMessageId, { status: 'sent' }).concat(previewReply);
-      this.setData({ messages, busy: false }, () => this.scrollToLatest());
+      this.setData({ messages, busy: false }, () => {
+        this.scrollToLatest();
+        this.recordSuccessfulConversationMessages(2);
+      });
       return;
     }
     const request = postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, clientMessageId);
@@ -615,7 +666,10 @@ Page({
       const messages = confirmedMessages.some(item => item && item.id === replyId)
         ? confirmedMessages
         : confirmedMessages.concat(reply);
-      this.setData({ messages: decorateTimeline(messages, this.data.dateCompact), busy: false }, () => this.scrollToLatest());
+      this.setData({ messages: decorateTimeline(messages, this.data.dateCompact), busy: false }, () => {
+        this.scrollToLatest();
+        this.recordSuccessfulConversationMessages(2);
+      });
       analytics.track('chat_message_sent', { msg_len: Array.from(text).length, scene_id: this.data.snapshot.currentState.key });
     }).catch(() => {
       if (!this.isActiveChatRequest(clientMessageId, requestToken)) return;
@@ -656,6 +710,17 @@ Page({
       error: ''
     });
   },
+
+  recordSuccessfulConversationMessages(count) {
+    const next = chatCompliance.advanceSuccessfulMessageCount(this.successfulSessionMessageCount, count, this.healthReminderShown);
+    this.successfulSessionMessageCount = next.count;
+    if (!next.shouldRemind) return;
+    this.healthReminderShown = true;
+    this.setData({ healthReminderVisible: true });
+  },
+
+  onAcknowledgeHealthReminder() { this.setData({ healthReminderVisible: false }); },
+  noop() {},
 
   shouldFollowLatest() {
     if (typeof this.readingAtBottom === 'boolean') return this.readingAtBottom;

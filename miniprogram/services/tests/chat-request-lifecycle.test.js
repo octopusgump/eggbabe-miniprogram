@@ -2,7 +2,9 @@ const assert = require('assert');
 
 const originalWx = global.wx;
 const originalPage = global.Page;
-const storage = new Map();
+const storage = new Map([
+  ['eggbabe_demo_compliance_age_range_v2', 'AGE_15_35']
+]);
 
 global.wx = {
   getAccountInfoSync() { return { miniProgram: { envVersion: 'develop' } }; },

@@ -24,5 +24,17 @@
       <text class="hint-text">当前预览版会在本机保存你的通知设置。正式消息推送仍需接入微信订阅消息并由服务端发送。</text>
     </view>
 
+    <text class="section-label">账号与帮助</text>
+    <view class="panel settings-list">
+      <view class="settings-row" aria-role="button" bindtap="onAgeRange"><view><text class="settings-row__title">年龄区间</text><text class="settings-row__desc">{{ageRangeLoading ? '读取中…' : ageRangeLabel}}</text></view><text class="settings-row__chevron">›</text></view>
+      <view class="settings-row" aria-role="button" bindtap="onFeedback"><text class="settings-row__title">用户反馈</text><text class="settings-row__chevron">›</text></view>
+    </view>
+
+    <text class="section-label">协议与政策</text>
+    <view class="panel settings-list">
+      <view class="settings-row" aria-role="button" data-type="service" bindtap="onPolicy"><text class="settings-row__title">用户服务协议</text><text class="settings-row__chevron">›</text></view>
+      <view class="settings-row" aria-role="button" data-type="privacy" bindtap="onPolicy"><text class="settings-row__title">隐私政策</text><text class="settings-row__chevron">›</text></view>
+    </view>
+
   </scroll-view>
 </view>

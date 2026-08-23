@@ -1,6 +1,7 @@
 <view class="page {{reducedMotion ? 'page--reduced' : ''}}" style="{{chatViewportStyle}}">
   <view class="chat-header">
     <nav-bar title="{{title}}" fallback-url="/pages/home/home"></nav-bar>
+    <view wx:if="{{aiNoticeVisible}}" class="ai-daily-notice" aria-live="polite">温馨提示：蛋宝宝是 AI 虚拟宠物，不是真人。</view>
   </view>
 
   <scroll-view class="conversation" scroll-y enhanced enable-flex show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}" bindscroll="onConversationScroll" bindscrolltolower="onConversationScrollToLower" bindscrolltoupper="onLoadMoreHistory">
@@ -12,6 +13,7 @@
       <view wx:if="{{historyHasRecords && !hasMoreHistory && !historyLoading && !historyError}}" class="history-complete">已加载至最早聊天记录</view>
       <block wx:for="{{messages}}" wx:key="id">
         <view wx:if="{{item.dateDisplayLabel}}" class="message-date" aria-role="button" aria-label="{{dateCompact ? '显示完整日期' : '显示月日和星期'}}" hover-class="message-date--pressed" hover-stay-time="80" bindtap="onToggleDateFormat">{{item.dateDisplayLabel}}</view>
+        <view wx:if="{{item.dateDisplayLabel}}" class="ai-content-timeline-label">AI 虚拟宠物 · 内容由 AI 生成</view>
         <view id="message-{{item.id}}" class="message-row message-row--{{item.role}}">
           <view class="message-stack message-stack--{{item.role}}">
             <view class="message-bubble message-bubble--{{item.role}}"><text>{{item.text}}</text></view>
@@ -32,6 +34,15 @@
     <view class="composer-row">
       <textarea class="composer-input {{inputFocused ? 'composer-input--focused' : ''}} {{serverInputError ? 'composer-input--error' : ''}}" value="{{draft}}" maxlength="-1" auto-height focus="{{inputFocus}}" adjust-position="{{false}}" cursor-color="#002900" cursor-spacing="24" confirm-type="send" placeholder="在这里说一句…" placeholder-style="color:#8C8C88" bindinput="onInput" bindfocus="onInputFocus" bindblur="onInputBlur" bindkeyboardheightchange="onKeyboardHeightChange" bindconfirm="onSend"></textarea>
       <view class="send-button {{busy ? 'send-button--busy' : ''}} {{!canSend ? 'send-button--disabled' : ''}}" aria-role="button" aria-disabled="{{busy || !canSend}}" aria-label="{{busy ? '正在等待回复' : (canSend ? '发送消息' : '请输入消息后发送')}}" hover-class="{{busy || !canSend ? '' : 'pressable--pressed'}}" hover-stay-time="80" bindtap="onSend"><image class="send-button__icon" src="/assets/icons/send.svg" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view wx:if="{{healthReminderVisible}}" class="health-mask" catchtap="noop" catchtouchmove="noop">
+    <view class="health-dialog" catchtap="noop" role="dialog" aria-modal="true">
+      <text class="health-message">长时间 AI 陪伴易产生依赖，请多参与线下户外活动。</text>
+      <view class="health-actions">
+        <view class="health-button" aria-role="button" bindtap="onAcknowledgeHealthReminder">我知道了</view>
+      </view>
     </view>
   </view>
 </view>

@@ -286,9 +286,6 @@ const h5Data = h5Bridge.toH5Card(petStore.getPet());
 assert.equal(h5Data.identity_code, card.identity_code, 'H5 桥接必须传递身份编号');
 assert.equal(h5Data.display_name, '我的蛋宝宝', '未命名回退必须固定');
 assert.equal(h5Bridge.buildH5Url('https://eggbabe.com/card', h5Data, 'https://api.eggbabe.com').includes('card_data='), false, 'live H5 不得注入客户端业务结果');
-petStore.clearUser();
-assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋缓存');
-
 [
   'build-environment.test.js',
   'demo-experience.test.js',

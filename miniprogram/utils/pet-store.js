@@ -61,18 +61,6 @@ function getIdentityId() {
   return identity && identity.mode === mode ? identity.id || '' : '';
 }
 
-function clearUser() {
-  try {
-    storage.remove(scopedKey('eggbabe_incubation_practice_v35'));
-    storage.remove(scopedKey('eggbabe_incubation_practice_v13'));
-    storage.remove(scopedKey(USER_KEY));
-    storage.remove(scopedKey(PET_KEY));
-    storage.remove(scopedKey(IDENTITY_KEY));
-    greetingShownThisSession = false;
-  }
-  catch (error) {}
-}
-
 function normalizeLifecycle(value, hasCard) {
   if (hasCard) return 'HATCHED';
   const stage = String(value || '').toUpperCase();
@@ -390,7 +378,6 @@ function applyDemoHatchCard(card) {
 module.exports = {
   getUser,
   saveUser,
-  clearUser,
   getIdentityId,
   getPet,
   savePet,

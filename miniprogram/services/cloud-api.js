@@ -121,11 +121,12 @@ function performPostHatchAction(eggId, slotIndex, actionId, requestId) {
 function getPostHatchMemories(eggId) {
   return call('getPostHatchMemories', { egg_id: eggId });
 }
-function manageDeletion(action, payload) { return call('manageDeletion', Object.assign({ action }, payload || {})); }
 function getAgeRange() { return call('getAgeRange'); }
 function saveAgeRange(payload) { return call('saveAgeRange', payload); }
 function submitFeedback(payload) { return call('submitFeedback', payload); }
 function getComplianceConfig() { return call('getComplianceConfig'); }
+function requestChatHistoryExport(payload) { return call('requestChatHistoryExport', payload); }
+function deleteAllChatHistory(payload) { return call('deleteAllChatHistory', payload); }
 function trackEvents(events) { return call('trackEvents', { events }); }
 function serverTime() { return call('serverTime'); }
 function uploadAvatar(localPath) {
@@ -178,11 +179,12 @@ module.exports = {
   getPostHatchHome,
   performPostHatchAction,
   getPostHatchMemories,
-  manageDeletion,
   getAgeRange,
   saveAgeRange,
   submitFeedback,
   getComplianceConfig,
+  requestChatHistoryExport,
+  deleteAllChatHistory,
   trackEvents,
   serverTime,
   uploadAvatar

@@ -31,7 +31,7 @@ assert.equal(ageLogic.includes("wx.showToast({ title: '已保存'"), false, '年
 const service = read('services/compliance-service.js');
 assert.equal(service.includes("source: 'SELF_DECLARED'") && service.includes('cloudApi().saveAgeRange'), true, '年龄必须通过账号服务适配层保存并声明自行选择来源');
 assert.equal(service.includes('VALID_AGE_VALUES.has') && service.includes("return VALID_AGE_VALUES.has(normalized) ? normalized : ''"), true, '空值或未知年龄枚举必须归一为未设置');
-assert.equal(service.includes("manageDeletion('CLEAR_CHAT_HISTORY'") || service.includes('clearChatHistory'), false, '已取消清空聊天记录功能后不得保留删除适配入口');
+assert.equal(service.includes("manageDeletion('CLEAR_CHAT_HISTORY'") || service.includes('clearChatHistory'), false, '合规服务不得恢复旧聊天清空或注销适配入口；删除能力只由对话记录服务承接');
 
 const settings = `${read('pages/settings/settings.js')}\n${read('pages/settings/settings.wxml')}`;
 for (const label of ['用户服务协议', '隐私政策', '用户反馈', '年龄区间']) {

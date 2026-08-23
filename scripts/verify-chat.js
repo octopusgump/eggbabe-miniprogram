@@ -6,6 +6,7 @@ const checks = [
   'miniprogram/services/tests/cloud-api.test.js',
   'miniprogram/services/tests/chat-input-validation.test.js',
   'miniprogram/services/tests/chat-history.test.js',
+  'miniprogram/services/tests/chat-records.test.js',
   'miniprogram/services/tests/chat-message-id.test.js',
   'miniprogram/services/tests/chat-page-presentation.test.js',
   'miniprogram/services/tests/nav-bar-title-action.test.js',

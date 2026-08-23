@@ -48,12 +48,12 @@
 
     <view id="s5" class="section">
       <text class="h2">五、你的权利</text>
-      <text class="p">你可以在“我的”中查询或更正昵称和头像，管理必要授权，申请访问、更正、删除个人信息或注销账号。无法在页面完成时，可发送邮件至 hello@eggbabe.com 提交申请。</text>
+      <text class="p">你可以在“我的”中查询或更正昵称和头像，并在“对话记录”中申请导出或删除聊天记录。其他访问、更正或删除个人信息的申请，可发送邮件至 hello@eggbabe.com 提交。</text>
     </view>
 
     <view id="s6" class="section">
-      <text class="h2">六、注销与删除</text>
-      <text class="p">注销申请提交后进入 15 天冷静期，冷静期内可取消。冷静期结束后，我们按正式政策和适用法律处理账号、对话、创作和绑定数据；售后、审计或法定义务要求保留的最小记录将另行说明并限制用途。</text>
+      <text class="h2">六、删除与例外保留</text>
+      <text class="p">聊天记录删除由服务端执行，服务端明确确认后页面才会显示删除成功。售后、审计或法定义务要求保留的最小记录，将按正式政策另行说明并限制用途。</text>
     </view>
 
     <view id="s7" class="section">

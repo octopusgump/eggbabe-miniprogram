@@ -14,6 +14,7 @@
     "pages/life-scenes/life-scenes",
     "pages/life-scene/life-scene",
     "pages/chat/chat",
+    "pages/chat-records/chat-records",
     "pages/journey-scene/journey-scene",
     "pages/my/my",
     "pages/profile/profile",
@@ -22,9 +23,7 @@
     "pages/feedback/feedback",
     "pages/terms/terms",
     "pages/policy/policy",
-    "pages/account/account",
     "pages/help/help",
-    "pages/deregister/deregister",
     "pages/privacy/privacy"
   ],
   "tabBar": {

@@ -11,8 +11,8 @@ module.exports = {
   localDemoEnabled: policy.localDemoEnabled,
   defaultMode: policy.mode,
   backendEnabled: policy.mode === 'live' && Boolean(apiBase),
-  // V3.6 / V3.7 正式版只上线对话与我的/设置。已完成的收藏卡、明信片、
-  // 纪念物和旅途回放代码保留供 develop 验收，trial / release 不开放。
+  // 收藏卡现已从“我的”正式开放；明信片、纪念物和旅途回放仍只保留
+  // develop 验收代码，trial / release 不开放。
   deferredContentEnabled: false,
   deferredContentDeveloperPreviewEnabled: true,
   apiBase,

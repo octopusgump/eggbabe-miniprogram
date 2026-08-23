@@ -2,7 +2,6 @@ const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
 const analytics = require('../../services/analytics');
-const releaseSurface = require('../../utils/release-surface');
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 function dateLabel(value) {
@@ -37,7 +36,6 @@ Page({
 
   onLoad(query) {
     this.pageActive = true;
-    if (!releaseSurface.guardDeferredContent()) return;
     const pet = petStore.getPet();
     if (!pet || !pet.collectionCard) {
       wx.showToast({ title: '还没有收藏卡', icon: 'none' });

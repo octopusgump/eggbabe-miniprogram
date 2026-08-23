@@ -10,18 +10,22 @@ const config = read('pages/settings/settings.json');
 const myLogic = read('pages/my/my.js');
 const myTemplate = read('pages/my/my.wxml');
 
-for (const removedAlbumLabel of ['我的卡册', '我的收藏卡']) {
-  assert.equal(myTemplate.includes(removedAlbumLabel), false, `当前版本所有环境都不得在我的页展示：${removedAlbumLabel}`);
-}
-assert.equal(myLogic.includes('onNavAlbum'), false, '我的页不得保留收藏卡导航事件');
+assert.equal(myTemplate.includes('我的卡册'), false, '我的页不得恢复旧名称“我的卡册”');
+assert.equal(myTemplate.includes('label="我的收藏卡"') && myLogic.includes("'/pages/album/album'") && myLogic.includes('onNavAlbum'), true, '我的页最上方必须提供“我的收藏卡”入口');
 assert.equal(myTemplate.includes('隐私协议'), false, '隐私政策统一收进系统设置，我的页不得保留重复入口');
 assert.equal(myLogic.includes('onNavPrivacy'), false, '我的页不得保留重复的隐私政策导航事件');
-assert.equal(myTemplate.indexOf('蛋宝宝与记录') < myTemplate.indexOf('label="我的激活码"') && myTemplate.indexOf('label="我的激活码"') < myTemplate.indexOf('label="对话记录"'), true, '我的页必须先展示蛋宝宝与记录分组');
+assert.equal(myTemplate.includes('蛋宝宝与记录') || myTemplate.includes('设置与支持') || myTemplate.includes('section-label'), false, '我的页不得保留分类标题');
+const menuLabels = ['我的收藏卡', '我的激活码', '对话记录', '系统设置', '帮助中心'];
+const menuLabelIndices = menuLabels.map(label => myTemplate.indexOf(`label="${label}"`));
+assert.equal(menuLabelIndices.every(index => index >= 0), true, '五个入口必须全部显示');
+assert.deepEqual(menuLabelIndices, menuLabelIndices.slice().sort((a, b) => a - b), '五个入口必须按指定顺序纵向排列');
+assert.equal((myTemplate.match(/class="menu-panel"/g) || []).length, 1, '五个入口必须收进同一张连续卡片');
+assert.equal(myTemplate.includes('menu-waterfall') || myTemplate.includes('menu-card'), false, '入口之间不得保留独立卡片间隙');
+assert.equal((myTemplate.match(/show-border="\{\{false\}\}"/g) || []).length, 1, '只有最后一行不显示分隔线');
 assert.equal(myLogic.includes("'/pages/chat-records/chat-records'") && myLogic.includes('onNavChatRecords'), true, '对话记录入口必须进入独立页面');
 for (const removedAccountFeature of ['label="账号"', 'onNavAccount', '退出登录', '清除本地数据', '注销账号']) {
   assert.equal(`${myLogic}\n${myTemplate}`.includes(removedAccountFeature), false, `我的页不得恢复旧账号功能：${removedAccountFeature}`);
 }
-assert.equal(myTemplate.indexOf('设置与支持') < myTemplate.indexOf('label="系统设置"') && myTemplate.indexOf('label="系统设置"') < myTemplate.indexOf('label="帮助中心"'), true, '我的页必须将设置与支持集中到第二组');
 assert.equal(template.includes('节令上新'), false, '当前版本不得展示尚未上线的节令通知');
 assert.equal(logic.includes('requestSeasonalUpdates'), false, '设置页不得调用不存在的节令订阅方法');
 for (const removedNotificationSetting of ['通知设置', '破壳提醒', '当前没有可管理的提醒', 'hatchReminderAvailable', 'onToggleHatch', 'subscriptionMessages', 'eggbabe_notification_preferences_v1']) {

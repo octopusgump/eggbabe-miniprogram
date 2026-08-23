@@ -16,6 +16,7 @@ Page({
   onTapUserCard() {
     wx.navigateTo({ url: '/pages/profile/profile' });
   },
+  onNavAlbum() { wx.navigateTo({ url: '/pages/album/album' }); },
   onNavCodes() { wx.navigateTo({ url: '/pages/invite-codes/invite-codes' }); },
   onNavSettings() { wx.navigateTo({ url: '/pages/settings/settings' }); },
   onNavChatRecords() { wx.navigateTo({ url: '/pages/chat-records/chat-records' }); },

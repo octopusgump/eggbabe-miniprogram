@@ -21,14 +21,14 @@
 ## Git 分支、版本与上传规则
 
 - “破壳前”和“破壳后”是同一小程序内的用户生命周期状态，不得再将它们维护成彼此割裂的长期产品分支。
-- 长期分支只保留：`main`（当前稳定版本）、`release/v3.6`（以破壳前体验为主要交付范围的历史冻结版本）、`release/v3.7`（同时包含破壳前与破壳后流程的当前完整版本）。
-- `release/v3.6` 原则上只接受必要维护；新的每日心情、聊天、高清动作图、破壳后场景与完整生命周期功能进入 `release/v3.7`。
+- 长期分支只保留 `main`，作为当前稳定版本和新任务的唯一默认基线。
+- 历史发布快照通过已有版本 Tag 与 `archive/*` Tag 保存，不重新创建长期 `release/*` 分支；新功能使用短期任务分支，验证通过后合入 `main` 并按授权清理。
 - 生命周期资产继续通过 `miniprogram/assets/scenes/lifecycle/pre-hatch/` 与 `miniprogram/assets/scenes/lifecycle/post-hatch/` 区分；共用能力放在现有共享组件、配置或服务中，不通过新增长期分支区分。
 - 每次执行 `git commit`、`git push` 或任何通过 Git 上传代码／图片之前，必须重新完整阅读本文件及上级 `../AGENTS.md`，不得只依赖记忆。
 - 上传前必须检查 `git status --short --branch`、当前分支及 upstream，并核对暂存区文件；工作区存在混合修改时只按明确路径暂存，禁止默认使用 `git add .` 或 `git add -A`。
 - 图片上传必须确认生命周期目录、运行时引用和目标分支；完成后报告分支名、提交哈希、文件路径、数量、尺寸、格式及验证结果。
 - 长期分支重命名或删除前，必须确认独有提交已归并或建立归档 Tag，并获得用户明确授权；不得把仍有独有提交的分支直接删除。
-- 整理完成后，不得继续向旧名称 `V3.7`、`release/miniprogram-mvp-v3.6-20260802`、`release/v3.6-pre-hatch` 或 `release/v3.7-post-hatch` 推送新提交。
+- 整理完成后，不得继续向已删除的 `V3.7`、`release/miniprogram-mvp-v3.6-20260802`、`release/v3.6-pre-hatch`、`release/v3.7-post-hatch`、`release/v3.6` 或 `release/v3.7` 推送新提交。
 
 ## 修改与验证
 

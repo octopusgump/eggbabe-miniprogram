@@ -1,0 +1,15 @@
+<web-view wx:if="{{webviewVisible && url}}" src="{{url}}" binderror="onWebviewError"></web-view>
+<view wx:else class="page">
+  <nav-bar title="{{title}}"></nav-bar>
+  <view class="content">
+    <view wx:if="{{loading}}" class="state">正在加载协议信息…</view>
+    <view wx:else class="document-card">
+      <text class="document-title">{{title}}</text>
+      <text class="meta">版本号：{{version || '未配置'}}</text>
+      <text class="meta">生效日期：{{effectiveDate || '未配置'}}</text>
+      <text wx:if="{{error}}" class="error" aria-live="polite">{{error}}</text>
+      <view wx:if="{{error}}" class="action" aria-role="button" bindtap="onRetry">重试</view>
+      <view wx:else class="action" aria-role="button" bindtap="onOpenDocument">查看正文</view>
+    </view>
+  </view>
+</view>

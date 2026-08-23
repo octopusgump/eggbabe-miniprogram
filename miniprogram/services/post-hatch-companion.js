@@ -212,9 +212,8 @@ function sendSceneMessage(pet, snapshot, text, clientMessageId) {
   if (!pet || !pet.id || !stableId) {
     return Promise.resolve({ ok: false, code: 'CHAT_REQUEST_INVALID', message: '消息请求不完整，请重试' });
   }
-  const current = snapshot && snapshot.currentState;
   const chatAccess = snapshot && snapshot.chatAccess;
-  if (!current || !current.atHome || !chatAccess || chatAccess.status !== 'available') {
+  if (!chatAccess || chatAccess.status !== 'available') {
     return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: chatAccess && chatAccess.message || '此刻没有说话入口' });
   }
   const value = String(text || '');

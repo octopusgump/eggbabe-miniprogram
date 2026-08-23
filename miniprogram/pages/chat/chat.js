@@ -3,8 +3,11 @@ const lifeScenes = require('../../utils/life-scenes');
 const postHatch = require('../../services/post-hatch-companion');
 const analytics = require('../../services/analytics');
 const config = require('../../config/v2');
+const compliance = require('../../services/compliance-service');
+const chatCompliance = require('../../services/chat-compliance');
 
 let clientMessageSequence = 0;
+const BUSINESS_TIMEZONE_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 function windowHeight() {
   try {
@@ -19,16 +22,6 @@ function windowHeight() {
 function viewportStyle(windowHeightValue, keyboardHeight) {
   const availableHeight = Math.round(Number(windowHeightValue) || 0) - Math.max(0, Math.round(Number(keyboardHeight) || 0));
   return availableHeight > 0 ? `height:${availableHeight}px;` : '';
-}
-
-function chatAvatarSourceFor(pet) {
-  const source = pet || {};
-  const prototype = petStore.normalizePrototype(
-    source.prototype || source.prototypeName || source.prototype_name || source.petType || source.pet_type
-  );
-  return prototype === '锦鲤'
-    ? '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_boon_koi_96_v02.png'
-    : '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_jade_rabbit_96_v02.png';
 }
 
 function createClientMessageId() {
@@ -46,20 +39,25 @@ function updateMessage(messages, clientMessageId, fields) {
   ));
 }
 
+function padTwoDigits(value) {
+  return String(value).padStart(2, '0');
+}
+
 function timestampParts(value) {
-  const source = String(value || '');
-  const dateMatch = source.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  const timeMatch = source.match(/T(\d{2}):(\d{2})/);
-  if (!dateMatch) return { dateKey: '', dateLabel: '', compactDateLabel: '', timeLabel: '' };
-  const dateKey = dateMatch[0];
-  const weekday = ['日', '一', '二', '三', '四', '五', '六'][new Date(Date.UTC(
-    Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3])
-  )).getUTCDay()];
+  const timestamp = Date.parse(String(value || ''));
+  if (!Number.isFinite(timestamp)) return { dateKey: '', dateLabel: '', compactDateLabel: '', timeLabel: '' };
+  // 产品时间统一使用东八区，不受设备时区或运行环境 Intl 支持差异影响。
+  const businessDate = new Date(timestamp + BUSINESS_TIMEZONE_OFFSET_MS);
+  const year = businessDate.getUTCFullYear();
+  const month = businessDate.getUTCMonth() + 1;
+  const day = businessDate.getUTCDate();
+  const weekday = ['日', '一', '二', '三', '四', '五', '六'][businessDate.getUTCDay()];
+  const dateKey = `${year}-${padTwoDigits(month)}-${padTwoDigits(day)}`;
   return {
     dateKey,
-    dateLabel: `${dateMatch[1]}年${Number(dateMatch[2])}月${Number(dateMatch[3])}日`,
-    compactDateLabel: `${Number(dateMatch[2])}月${Number(dateMatch[3])}日 · 星期${weekday}`,
-    timeLabel: timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : ''
+    dateLabel: `${year}年${month}月${day}日`,
+    compactDateLabel: `${month}月${day}日 · 星期${weekday}`,
+    timeLabel: `${padTwoDigits(businessDate.getUTCHours())}:${padTwoDigits(businessDate.getUTCMinutes())}`
   };
 }
 
@@ -87,12 +85,12 @@ function historyMessage(item) {
   });
 }
 
-function mergeLatestHistory(remoteMessages, currentMessages, openingMessage) {
+function mergeLatestHistory(remoteMessages, currentMessages) {
   const remoteClientMessageIds = new Set(remoteMessages.map(item => item && item.clientMessageId).filter(Boolean));
   const unresolved = (Array.isArray(currentMessages) ? currentMessages : []).filter(item => (
     item && ['pending', 'failed'].includes(item.status) && !remoteClientMessageIds.has(item.clientMessageId)
   ));
-  return (remoteMessages.length ? remoteMessages : [openingMessage]).concat(unresolved);
+  return remoteMessages.concat(unresolved);
 }
 
 function isServerInputRejection(result) {
@@ -140,13 +138,6 @@ function conversationKeyFor(pet) {
   return pet ? `${String(pet.ownerId || '')}:${String(pet.id || '')}` : '';
 }
 
-function sceneLabelFor(currentState) {
-  if (!currentState) return '';
-  return currentState.atHome
-    ? `在家 · ${currentState.label}`
-    : [currentState.majorLabel, currentState.label].filter(Boolean).join(' · ');
-}
-
 function reducedMotionEnabled() {
   try {
     const system = wx.getSystemSetting
@@ -161,14 +152,10 @@ function reducedMotionEnabled() {
 Page({
   data: {
     pet: null,
-    chatAvatarSrc: '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_jade_rabbit_96_v02.png',
     snapshot: null,
     chatAccess: null,
     chatAvailable: false,
-    chatUnavailable: false,
-    chatUnavailableMessage: '',
     title: '和蛋宝宝说说话',
-    sceneLabel: '',
     messages: [],
     draft: '',
     canSend: false,
@@ -192,6 +179,8 @@ Page({
     fatalErrorAction: 'reload',
     fatalErrorActionLabel: '重新加载',
     reducedMotion: false,
+    aiNoticeVisible: false,
+    healthReminderVisible: false,
     isDemo: config.localDemoEnabled
   },
 
@@ -199,7 +188,12 @@ Page({
     const params = query || {};
     this.requestedStateKey = String(params.state_key || '');
     this.preview = params.preview === '1' && config.localDemoEnabled;
-    this.updateChatViewport();
+    this.conversationEpoch = 0;
+    this.successfulSessionMessageCount = 0;
+    this.healthReminderShown = false;
+    this.readingAtBottom = true;
+    this.chatWindowHeight = windowHeight();
+    this.updateChatViewport(0);
     this.windowResizeHandler = event => {
       const resizedHeight = Number(event && event.size && event.size.windowHeight);
       if (!Number.isFinite(resizedHeight) || resizedHeight <= 0) return;
@@ -214,8 +208,14 @@ Page({
 
   onShow() {
     this.pageActive = true;
+    const currentWindowHeight = windowHeight();
+    if (currentWindowHeight) this.chatWindowHeight = currentWindowHeight;
     this.updateChatViewport(0);
     this.setData({ reducedMotion: reducedMotionEnabled() });
+    this.ensureAgeBeforeConversation();
+  },
+
+  continueConversationOnShow() {
     if (this.data.snapshot) {
       const latestPet = petStore.getPet();
       if (!latestPet || conversationKeyFor(latestPet) !== conversationKeyFor(this.data.pet)) {
@@ -230,16 +230,38 @@ Page({
     this.loadConversation();
   },
 
+  ensureAgeBeforeConversation() {
+    if (this.ageGateChecking) return;
+    this.ageGateChecking = true;
+    compliance.getAgeRange().then(result => {
+      this.ageGateChecking = false;
+      if (!this.pageActive) return;
+      if (!result || !result.ok || !compliance.normalizeAgeRange(result.ageRange)) {
+        wx.navigateTo({ url: '/pages/age-range/age-range?source=chat' });
+        return;
+      }
+      this.continueConversationOnShow();
+    }).catch(() => {
+      this.ageGateChecking = false;
+      if (this.pageActive) wx.navigateTo({ url: '/pages/age-range/age-range?source=chat' });
+    });
+  },
+
   onHide() {
-    this.cancelActiveChatRequest();
-    this.resetChatViewport();
     this.pageActive = false;
+    this.invalidateConversationRequests();
+    this.cancelActiveChatRequest();
+    this.clearAiNoticeTimer();
+    this.setData({ inputFocused: false, inputFocus: false, historyLoading: false }, () => this.resetChatViewport());
   },
   onUnload() {
+    this.pageActive = false;
+    this.invalidateConversationRequests();
     this.cancelActiveChatRequest();
+    this.clearAiNoticeTimer();
+    this.setData({ inputFocused: false, inputFocus: false, historyLoading: false });
     this.resetChatViewport();
     if (this.windowResizeHandler && wx.offWindowResize) wx.offWindowResize(this.windowResizeHandler);
-    this.pageActive = false;
   },
 
   loadConversation() {
@@ -249,10 +271,10 @@ Page({
       return;
     }
     const conversationKey = conversationKeyFor(pet);
+    const requestEpoch = this.invalidateConversationRequests();
     this.conversationKey = conversationKey;
     this.setData({
       pet,
-      chatAvatarSrc: chatAvatarSourceFor(pet),
       snapshot: null,
       loading: true,
       error: '',
@@ -261,11 +283,15 @@ Page({
       fatalErrorActionLabel: '重新加载',
       chatAccess: null,
       chatAvailable: false,
-      chatUnavailable: false,
-      chatUnavailableMessage: ''
+      historyCursor: '',
+      hasMoreHistory: false,
+      historyLoading: false,
+      historyError: '',
+      historyRetryCursor: '',
+      historyHasRecords: false
     });
     postHatch.getSnapshot(pet).then(result => {
-      if (!this.pageActive || this.conversationKey !== conversationKey) return;
+      if (!this.isCurrentConversationRequest(conversationKey, requestEpoch)) return;
       if (!result || !result.ok) {
         this.setData({ loading: false, error: result && result.message || '对话没有加载好，请重试' });
         return;
@@ -286,35 +312,27 @@ Page({
         this.setData({
           snapshot,
           title: `和${pet.name || '蛋宝宝'}说说话`,
-          sceneLabel: sceneLabelFor(currentState),
           chatAccess,
           chatAvailable: false,
-          chatUnavailable: true,
-          chatUnavailableMessage: chatAccess.message || '现在暂时不能聊天，请稍后再试。',
           messages: [],
           loading: false,
           error: '',
           inputFocus: false
-        });
+        }, () => this.onBackToLife());
         return;
       }
       postHatch.getChatHistory(pet, '', 20).then(historyResult => {
-        if (!this.pageActive || this.conversationKey !== conversationKey) return;
-        const openingText = currentState.line || '我在呢。';
+        if (!this.isCurrentConversationRequest(conversationKey, requestEpoch)) return;
         const historyAvailable = Boolean(historyResult && historyResult.ok);
         const historyMessages = historyAvailable
           ? historyResult.messages.map(historyMessage)
           : [];
-        const messages = historyAvailable ? (historyMessages.length ? historyMessages : [message('opening', 'assistant', openingText)]) : [];
         this.setData({
           snapshot,
           title: `和${pet.name || '蛋宝宝'}说说话`,
-          sceneLabel: sceneLabelFor(currentState),
           chatAccess,
           chatAvailable: true,
-          chatUnavailable: false,
-          chatUnavailableMessage: '',
-          messages: decorateTimeline(messages, this.data.dateCompact),
+          messages: decorateTimeline(historyMessages, this.data.dateCompact),
           historyCursor: historyResult && historyResult.ok ? historyResult.nextCursor : '',
           hasMoreHistory: Boolean(historyResult && historyResult.ok && historyResult.hasMore),
           loading: false,
@@ -323,14 +341,31 @@ Page({
           historyRetryCursor: '',
           historyHasRecords: historyMessages.length > 0,
           inputFocus: true
-        }, () => this.scrollToLatest());
+        }, () => {
+          this.scrollToLatest();
+          this.showDailyAiNoticeIfNeeded();
+        });
         analytics.track('chat_open', { scene_id: currentState.key, entry: 'life_scene' });
       }).catch(() => {
-        if (this.pageActive) this.setData({ loading: false, error: '', historyError: '聊天记录没有加载好，请重试', historyRetryCursor: '' });
+        if (this.isCurrentConversationRequest(conversationKey, requestEpoch)) this.setData({ loading: false, error: '', historyError: '聊天记录没有加载好，请重试', historyRetryCursor: '' });
       });
     }).catch(() => {
-      if (this.pageActive) this.setData({ loading: false, error: '对话没有加载好，请重试' });
+      if (this.isCurrentConversationRequest(conversationKey, requestEpoch)) this.setData({ loading: false, error: '对话没有加载好，请重试' });
     });
+  },
+
+  invalidateConversationRequests() {
+    this.conversationEpoch = (Number(this.conversationEpoch) || 0) + 1;
+    return this.conversationEpoch;
+  },
+
+  isCurrentConversationRequest(conversationKey, requestEpoch) {
+    return Boolean(
+      this.pageActive
+      && this.conversationKey === conversationKey
+      && (Number(this.conversationEpoch) || 0) === requestEpoch
+      && conversationKeyFor(this.data.pet) === conversationKey
+    );
   },
 
   onRetry() { this.loadConversation(); },
@@ -353,6 +388,22 @@ Page({
     });
   },
 
+  showDailyAiNoticeIfNeeded() {
+    if (!compliance.takeDailyAiNotice()) return;
+    this.clearAiNoticeTimer();
+    this.setData({ aiNoticeVisible: true });
+    this.aiNoticeTimer = setTimeout(() => {
+      this.aiNoticeTimer = null;
+      if (this.pageActive) this.setData({ aiNoticeVisible: false });
+    }, 5000);
+  },
+
+  clearAiNoticeTimer() {
+    clearTimeout(this.aiNoticeTimer);
+    this.aiNoticeTimer = null;
+    if (this.data.aiNoticeVisible) this.setData({ aiNoticeVisible: false });
+  },
+
   refreshLatestHistory() {
     if (this.data.historyLoading || !this.data.pet) return;
     const latestPet = petStore.getPet();
@@ -362,21 +413,19 @@ Page({
       return;
     }
     const pet = this.data.pet;
-    const snapshot = this.data.snapshot;
-    const currentState = snapshot && snapshot.currentState || {};
+    const conversationKey = conversationKeyFor(pet);
+    if (!this.conversationKey) this.conversationKey = conversationKey;
+    const requestEpoch = Number(this.conversationEpoch) || 0;
+    const shouldFollowLatest = this.shouldFollowLatest();
     this.setData({ historyLoading: true, historyError: '' });
     postHatch.getChatHistory(pet, '', 20).then(result => {
-      if (!this.pageActive) return;
+      if (!this.isCurrentConversationRequest(conversationKey, requestEpoch)) return;
       if (!result || !result.ok) {
         this.setData({ historyLoading: false, historyError: result && result.message || '聊天记录没有加载好，请重试' });
         return;
       }
       const remoteMessages = result.messages.map(historyMessage);
-      const messages = mergeLatestHistory(
-        remoteMessages,
-        this.data.messages,
-        message('opening', 'assistant', currentState.line || '我在呢。')
-      );
+      const messages = mergeLatestHistory(remoteMessages, this.data.messages);
       this.setData({
         messages: decorateTimeline(messages, this.data.dateCompact),
         historyCursor: result.nextCursor,
@@ -385,9 +434,11 @@ Page({
         historyError: '',
         historyRetryCursor: '',
         historyHasRecords: remoteMessages.length > 0
-      }, () => this.scrollToLatest());
+      }, () => {
+        if (shouldFollowLatest) this.scrollToLatest();
+      });
     }).catch(() => {
-      if (this.pageActive) this.setData({ historyLoading: false, historyError: '聊天记录没有加载好，请重试' });
+      if (this.isCurrentConversationRequest(conversationKey, requestEpoch)) this.setData({ historyLoading: false, historyError: '聊天记录没有加载好，请重试' });
     });
   },
 
@@ -409,13 +460,19 @@ Page({
 
   onLoadMoreHistory() {
     if (this.data.historyLoading || !this.data.hasMoreHistory || !this.data.historyCursor || !this.data.pet) return;
+    this.readingAtBottom = false;
     const anchor = this.data.messages && this.data.messages[0];
     const anchorId = anchor && anchor.id;
     this.setData({ historyLoading: true });
     const requestedCursor = this.data.historyCursor;
-    postHatch.getChatHistory(this.data.pet, requestedCursor, 20).then(result => {
-      if (!this.pageActive || !result || !result.ok) {
-        if (this.pageActive) this.setData({ historyLoading: false, historyError: result && result.message || '更多聊天记录没有加载好，请重试', historyRetryCursor: this.data.historyCursor });
+    const pet = this.data.pet;
+    const conversationKey = conversationKeyFor(pet);
+    if (!this.conversationKey) this.conversationKey = conversationKey;
+    const requestEpoch = Number(this.conversationEpoch) || 0;
+    postHatch.getChatHistory(pet, requestedCursor, 20).then(result => {
+      if (!this.isCurrentConversationRequest(conversationKey, requestEpoch)) return;
+      if (!result || !result.ok) {
+        this.setData({ historyLoading: false, historyError: result && result.message || '更多聊天记录没有加载好，请重试', historyRetryCursor: requestedCursor });
         return;
       }
       if (result.hasMore && (!result.nextCursor || result.nextCursor === requestedCursor)) {
@@ -437,7 +494,7 @@ Page({
         if (anchorId) this.setScrollTarget(`message-${anchorId}`);
       });
     }).catch(() => {
-      if (this.pageActive) this.setData({ historyLoading: false, historyError: '更多聊天记录没有加载好，请重试', historyRetryCursor: this.data.historyCursor });
+      if (this.isCurrentConversationRequest(conversationKey, requestEpoch)) this.setData({ historyLoading: false, historyError: '更多聊天记录没有加载好，请重试', historyRetryCursor: requestedCursor });
     });
   },
 
@@ -447,18 +504,19 @@ Page({
   },
 
   onInputFocus() {
-    const currentWindowHeight = windowHeight();
-    if (currentWindowHeight) this.chatWindowHeight = currentWindowHeight;
     this.setData({ inputFocused: true });
   },
 
   onInputBlur() {
-    this.setData({ inputFocused: false, inputFocus: false }, () => this.resetChatViewport());
+    this.setData({ inputFocused: false, inputFocus: false }, () => {
+      // 键盘仍在收起动画时等待高度回调，避免页面先于键盘突然拉伸。
+      if (!this.data.keyboardHeight) this.resetChatViewport();
+    });
   },
 
   updateChatViewport(keyboardHeight, afterUpdate) {
     const currentWindowHeight = this.chatWindowHeight || windowHeight();
-    if (currentWindowHeight) this.chatWindowHeight = currentWindowHeight;
+    if (!this.chatWindowHeight && currentWindowHeight) this.chatWindowHeight = currentWindowHeight;
     const nextKeyboardHeight = keyboardHeight === undefined ? this.data.keyboardHeight : keyboardHeight;
     this.setData({
       keyboardHeight: Math.max(0, Number(nextKeyboardHeight) || 0),
@@ -467,14 +525,17 @@ Page({
   },
 
   resetChatViewport() {
-    this.chatWindowHeight = windowHeight() || this.chatWindowHeight;
     this.updateChatViewport(0);
   },
 
   onKeyboardHeightChange(event) {
     const keyboardHeight = Math.max(0, Number(event && event.detail && event.detail.height) || 0);
     const openingKeyboard = keyboardHeight > 0 && !this.data.keyboardHeight;
-    if (!keyboardHeight) this.chatWindowHeight = windowHeight() || this.chatWindowHeight;
+    if (!keyboardHeight) {
+      const measuredHeight = windowHeight();
+      // 某些机型先回报高度 0，再恢复完整窗口；不得用尚未恢复的小窗口覆盖基准。
+      if (measuredHeight >= (this.chatWindowHeight || 0)) this.chatWindowHeight = measuredHeight;
+    }
     this.updateChatViewport(keyboardHeight, () => {
       // 键盘首次出现时，只把当前对话的末尾（或等待气泡）放入可见区；
       // 收起键盘时不改写用户可能正在阅读的历史滚动位置。
@@ -514,7 +575,10 @@ Page({
     if (this.preview) {
       const previewReply = message(`assistant-${Date.now()}`, 'assistant', '我在呢。这是测试回复，不会写进陪伴记录。');
       const messages = updateMessage(this.data.messages, clientMessageId, { status: 'sent' }).concat(previewReply);
-      this.setData({ messages, busy: false }, () => this.scrollToLatest());
+      this.setData({ messages, busy: false }, () => {
+        this.scrollToLatest();
+        this.recordSuccessfulConversationMessages(2);
+      });
       return;
     }
     const request = postHatch.sendSceneMessage(this.data.pet, this.data.snapshot, text, clientMessageId);
@@ -530,8 +594,7 @@ Page({
         if (isTalkUnavailable(result)) {
           const chatAccess = Object.assign({}, this.data.chatAccess || {}, {
             status: 'unavailable',
-            reason: 'TALK_NOT_AVAILABLE',
-            message: result && result.message || '蛋宝宝暂时不能聊天，请稍后再试。'
+            reason: 'TALK_NOT_AVAILABLE'
           });
           this.setData({
             messages: this.data.messages.filter(item => item && item.clientMessageId !== clientMessageId),
@@ -540,23 +603,19 @@ Page({
             busy: false,
             chatAccess,
             chatAvailable: false,
-            chatUnavailable: true,
-            chatUnavailableMessage: chatAccess.message,
             inputFocus: false
-          });
+          }, () => this.onBackToLife());
           return;
         }
         const fatalRoute = fatalChatRoute(result);
         if (fatalRoute) {
           this.setData({
             snapshot: null,
-            sceneLabel: '',
             messages: [],
             draft: text,
             canSend: false,
             busy: false,
             chatAvailable: false,
-            chatUnavailable: false,
             error: result && result.message || fatalRoute.fallback,
             fatalErrorAction: fatalRoute.action,
             fatalErrorActionLabel: fatalRoute.label,
@@ -607,7 +666,10 @@ Page({
       const messages = confirmedMessages.some(item => item && item.id === replyId)
         ? confirmedMessages
         : confirmedMessages.concat(reply);
-      this.setData({ messages: decorateTimeline(messages, this.data.dateCompact), busy: false }, () => this.scrollToLatest());
+      this.setData({ messages: decorateTimeline(messages, this.data.dateCompact), busy: false }, () => {
+        this.scrollToLatest();
+        this.recordSuccessfulConversationMessages(2);
+      });
       analytics.track('chat_message_sent', { msg_len: Array.from(text).length, scene_id: this.data.snapshot.currentState.key });
     }).catch(() => {
       if (!this.isActiveChatRequest(clientMessageId, requestToken)) return;
@@ -649,13 +711,50 @@ Page({
     });
   },
 
+  recordSuccessfulConversationMessages(count) {
+    const next = chatCompliance.advanceSuccessfulMessageCount(this.successfulSessionMessageCount, count, this.healthReminderShown);
+    this.successfulSessionMessageCount = next.count;
+    if (!next.shouldRemind) return;
+    this.healthReminderShown = true;
+    this.setData({ healthReminderVisible: true });
+  },
+
+  onAcknowledgeHealthReminder() { this.setData({ healthReminderVisible: false }); },
+  noop() {},
+
+  shouldFollowLatest() {
+    if (typeof this.readingAtBottom === 'boolean') return this.readingAtBottom;
+    const target = String(this.data.scrollTarget || '');
+    if (!target) return true;
+    return target === 'message-typing';
+  },
+
+  onConversationScroll(event) {
+    const detail = event && event.detail || {};
+    const scrollTop = Number(detail.scrollTop);
+    const scrollHeight = Number(detail.scrollHeight);
+    const viewportHeight = Number(detail.clientHeight || detail.scrollViewHeight || 0);
+    if (Number.isFinite(scrollTop) && Number.isFinite(scrollHeight) && viewportHeight > 0) {
+      this.readingAtBottom = scrollHeight - scrollTop - viewportHeight <= 48;
+    } else if (Number.isFinite(scrollTop) && Number.isFinite(this.lastConversationScrollTop) && scrollTop < this.lastConversationScrollTop) {
+      this.readingAtBottom = false;
+    }
+    if (Number.isFinite(scrollTop)) this.lastConversationScrollTop = scrollTop;
+  },
+
+  onConversationScrollToLower() {
+    this.readingAtBottom = true;
+  },
+
   scrollToLatest() {
+    this.readingAtBottom = true;
     const items = this.data.messages || [];
     const latest = items[items.length - 1];
     if (latest) this.setScrollTarget(`message-${latest.id}`);
   },
 
   scrollToTyping() {
+    this.readingAtBottom = true;
     this.setScrollTarget('message-typing');
   },
 

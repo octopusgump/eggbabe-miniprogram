@@ -82,7 +82,7 @@ assert.equal(chatPageLogic.includes('postHatch.sendSceneMessage(this.data.pet, t
 assert.equal(postHatchCompanion.includes('chatDemoFixture.replyFor'), true, 'develop/demo 只能使用独立、明确标识的验收 fixture');
 assert.equal(chatDemoFixture.includes('仅供 develop/demo 验收') && !chatService.includes('APPROVED_FALLBACKS'), true, '正式 chat service 不得内置本地人设回复或模型故障兜底');
 assert.equal(sendSceneMessageFlow.includes("if (mode === 'live')") && sendSceneMessageFlow.includes("if (mode !== 'demo')") && !sendSceneMessageFlow.includes("mode === 'live' && config.backendEnabled"), true, 'live 必须无条件进入正式 chat service，只有明确 demo 才能使用本地 fixture');
-assert.equal(sendSceneMessageFlow.includes('!current.atHome') && sendSceneMessageFlow.includes('!stableId'), true, '发送前必须保守拒绝外出状态和缺少稳定客户端消息 ID 的请求');
+assert.equal(sendSceneMessageFlow.includes("chatAccess.status !== 'available'") && !sendSceneMessageFlow.includes('current.atHome') && sendSceneMessageFlow.includes('!stableId'), true, '发送适配层只能使用 chat_access 和稳定客户端消息 ID 决定是否发送，不得用 atHome 二次裁决');
 assert.equal(chatService.includes('DISPLAYABLE_SAFETY_RESULTS') && !chatService.includes('safeOutput('), true, '模型输出及危机安全结果必须以服务端审核内容为准，App 不得改写');
 assert.equal(!chatService.includes('history:') && !chatService.includes('scene_context:'), true, 'chatReply 最小请求不得上传模型历史或场景上下文');
 const chatSafety = read('miniprogram/services/chat-safety.js');

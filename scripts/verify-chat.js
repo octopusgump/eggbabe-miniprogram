@@ -8,6 +8,7 @@ const checks = [
   'miniprogram/services/tests/chat-history.test.js',
   'miniprogram/services/tests/chat-message-id.test.js',
   'miniprogram/services/tests/chat-page-presentation.test.js',
+  'miniprogram/services/tests/nav-bar-title-action.test.js',
   'miniprogram/services/tests/chat-keyboard-layout.test.js',
   'miniprogram/services/tests/chat-request-lifecycle.test.js',
   'miniprogram/services/tests/chat-retry.test.js',

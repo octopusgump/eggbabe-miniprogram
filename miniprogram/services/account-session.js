@@ -3,6 +3,7 @@ const runtime = require('./runtime-context');
 const storage = require('./storage-migration');
 const syncQueue = require('./sync-queue');
 const petStore = require('../utils/pet-store');
+const compliance = require('./compliance-service');
 
 const ACCOUNT_SCOPED_KEYS = Object.freeze([
   'eggbabe_sync_queue_v2',
@@ -13,7 +14,8 @@ const ACCOUNT_SCOPED_KEYS = Object.freeze([
   'eggbabe_ordinary_pet_v228',
   'eggbabe_ordinary_identity_v228',
   'eggbabe_post_hatch_v36',
-  'eggbabe_subscription_permissions_v216'
+  'eggbabe_subscription_permissions_v216',
+  ...compliance.ACCOUNT_SCOPED_STORAGE_KEYS
 ]);
 const DEREGISTER_KEY = 'eggbabe_deregister_request_v1';
 

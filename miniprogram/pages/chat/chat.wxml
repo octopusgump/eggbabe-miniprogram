@@ -1,32 +1,19 @@
 <view class="page {{reducedMotion ? 'page--reduced' : ''}}" style="{{chatViewportStyle}}">
   <view class="chat-header">
     <nav-bar title="{{title}}" fallback-url="/pages/home/home"></nav-bar>
-    <view wx:if="{{pet && sceneLabel}}" class="chat-identity">
-      <view class="chat-identity__avatar" aria-hidden="true">
-        <image class="chat-identity__avatar-image" src="{{chatAvatarSrc}}" mode="aspectFill" />
-      </view>
-      <view class="chat-identity__copy">
-        <text class="chat-identity__name">{{pet.name || '蛋宝宝'}}</text>
-        <view class="chat-identity__state"><text>{{sceneLabel}}</text></view>
-      </view>
-    </view>
+    <view wx:if="{{aiNoticeVisible}}" class="ai-daily-notice" aria-live="polite">温馨提示：蛋宝宝是 AI 虚拟宠物，不是真人。</view>
   </view>
 
-  <scroll-view class="conversation" scroll-y enhanced enable-flex show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}" bindscrolltoupper="onLoadMoreHistory">
+  <scroll-view class="conversation" scroll-y enhanced enable-flex show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}" bindscroll="onConversationScroll" bindscrolltolower="onConversationScrollToLower" bindscrolltoupper="onLoadMoreHistory">
     <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在打开对话…</text></view>
     <view wx:elif="{{error && !snapshot}}" class="page-state"><text>{{error}}</text><view class="retry" aria-role="button" aria-label="{{fatalErrorActionLabel}}" hover-class="pressable--pressed" hover-stay-time="80" bindtap="onFatalErrorAction">{{fatalErrorActionLabel}}</view></view>
-    <view wx:elif="{{chatUnavailable}}" class="page-state page-state--unavailable">
-      <view class="chat-unavailable-icon">暂不可聊</view>
-      <text class="chat-unavailable-title">蛋宝宝暂时不能聊天</text>
-      <text class="chat-unavailable-message">{{chatUnavailableMessage}}</text>
-      <view class="retry" aria-role="button" aria-label="返回生活空间" bindtap="onBackToLife">返回生活空间</view>
-    </view>
     <view wx:else class="message-list">
       <view wx:if="{{historyLoading}}" class="history-loading" aria-live="polite">正在加载聊天记录…</view>
       <view wx:if="{{historyError}}" class="history-error" aria-live="polite"><text>{{historyError}}</text><view class="history-error__retry" aria-role="button" aria-label="重新加载聊天记录" hover-class="pressable--pressed" hover-stay-time="80" bindtap="onRetryHistory">重新加载</view></view>
       <view wx:if="{{historyHasRecords && !hasMoreHistory && !historyLoading && !historyError}}" class="history-complete">已加载至最早聊天记录</view>
       <block wx:for="{{messages}}" wx:key="id">
         <view wx:if="{{item.dateDisplayLabel}}" class="message-date" aria-role="button" aria-label="{{dateCompact ? '显示完整日期' : '显示月日和星期'}}" hover-class="message-date--pressed" hover-stay-time="80" bindtap="onToggleDateFormat">{{item.dateDisplayLabel}}</view>
+        <view wx:if="{{item.dateDisplayLabel}}" class="ai-content-timeline-label">AI 虚拟宠物 · 内容由 AI 生成</view>
         <view id="message-{{item.id}}" class="message-row message-row--{{item.role}}">
           <view class="message-stack message-stack--{{item.role}}">
             <view class="message-bubble message-bubble--{{item.role}}"><text>{{item.text}}</text></view>
@@ -46,7 +33,16 @@
     <text wx:if="{{composerNotice}}" class="composer-notice" aria-live="polite">{{composerNotice}}</text>
     <view class="composer-row">
       <textarea class="composer-input {{inputFocused ? 'composer-input--focused' : ''}} {{serverInputError ? 'composer-input--error' : ''}}" value="{{draft}}" maxlength="-1" auto-height focus="{{inputFocus}}" adjust-position="{{false}}" cursor-color="#002900" cursor-spacing="24" confirm-type="send" placeholder="在这里说一句…" placeholder-style="color:#8C8C88" bindinput="onInput" bindfocus="onInputFocus" bindblur="onInputBlur" bindkeyboardheightchange="onKeyboardHeightChange" bindconfirm="onSend"></textarea>
-      <view class="send-button {{busy ? 'send-button--busy' : ''}} {{!canSend ? 'send-button--disabled' : ''}}" aria-role="button" aria-disabled="{{busy || !canSend}}" aria-label="{{busy ? '正在等待回复' : (canSend ? '发送消息' : '请输入消息后发送')}}" hover-class="{{busy || !canSend ? '' : 'pressable--pressed'}}" hover-stay-time="80" bindtap="onSend"><image class="send-button__icon" src="/assets/icons/send-up.svg" mode="aspectFit" /></view>
+      <view class="send-button {{busy ? 'send-button--busy' : ''}} {{!canSend ? 'send-button--disabled' : ''}}" aria-role="button" aria-disabled="{{busy || !canSend}}" aria-label="{{busy ? '正在等待回复' : (canSend ? '发送消息' : '请输入消息后发送')}}" hover-class="{{busy || !canSend ? '' : 'pressable--pressed'}}" hover-stay-time="80" bindtap="onSend"><image class="send-button__icon" src="/assets/icons/send.svg" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view wx:if="{{healthReminderVisible}}" class="health-mask" catchtap="noop" catchtouchmove="noop">
+    <view class="health-dialog" catchtap="noop" role="dialog" aria-modal="true">
+      <text class="health-message">长时间 AI 陪伴易产生依赖，请多参与线下户外活动。</text>
+      <view class="health-actions">
+        <view class="health-button" aria-role="button" bindtap="onAcknowledgeHealthReminder">我知道了</view>
+      </view>
     </view>
   </view>
 </view>

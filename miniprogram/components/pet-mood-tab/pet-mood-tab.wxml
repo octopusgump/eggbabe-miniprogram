@@ -13,5 +13,6 @@
   </view>
   <view class="pet-mood-tab__sentence {{contentVisible ? 'pet-mood-tab__sentence--visible' : ''}}" aria-hidden="{{!contentVisible}}">
     <text class="pet-mood-tab__text">{{mood.text}}</text>
+    <text class="pet-mood-tab__ai-label">内容由 AI 生成</text>
   </view>
 </view>

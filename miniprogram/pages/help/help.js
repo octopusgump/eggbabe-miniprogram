@@ -1,5 +1,6 @@
 const SUPPORT_EMAIL = 'hello@eggbabe.com';
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
+const compliance = require('../../services/compliance-service');
 
 Page({
   data: {
@@ -10,6 +11,9 @@ Page({
     cats: { device: true, account: true, chat: true, other: true },
     searchQuery: '',
     searchResults: [],
+    support: { psychologicalHotline: '', police: '', medicalEmergency: '' },
+    supportLoading: true,
+    supportError: '',
 
     deviceFaqs: [
       {
@@ -84,6 +88,25 @@ Page({
     ]
   },
 
+  onLoad() { this.loadSupportConfig(); },
+
+  loadSupportConfig() {
+    if (this.supportRequestActive) return;
+    this.supportRequestActive = true;
+    this.setData({ supportLoading: true, supportError: '' });
+    compliance.getComplianceConfig().then(result => {
+      this.supportRequestActive = false;
+      this.setData({
+        supportLoading: false,
+        support: result && result.config ? result.config.support : this.data.support,
+        supportError: result && result.ok ? '' : result && result.message || '服务信息没有加载好，请重试'
+      });
+    }).catch(() => {
+      this.supportRequestActive = false;
+      this.setData({ supportLoading: false, supportError: '服务信息没有加载好，请重试' });
+    });
+  },
+
   onShow() { this.pageActive = true; },
 
   showSystemNotice(text, tone) {
@@ -134,6 +157,9 @@ Page({
       })
     });
   },
+
+  onFeedback() { wx.navigateTo({ url: '/pages/feedback/feedback' }); },
+  onRetrySupport() { this.loadSupportConfig(); },
 
   onHide() {
     this.pageActive = false;

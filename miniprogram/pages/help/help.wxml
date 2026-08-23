@@ -17,6 +17,27 @@
 
   <scroll-view scroll-y class="faq-scroll">
 
+    <view wx:if="{{!searchQuery}}" class="help-first-screen">
+      <text class="help-heading">遇到问题</text>
+      <view class="help-action" aria-role="button" bindtap="onFeedback"><text>用户反馈</text><text>›</text></view>
+      <view class="support-config" aria-role="button" aria-label="复制客服邮箱 {{supportEmail}}" bindtap="onCopySupportEmail">
+        <view>
+          <text class="support-config__label">客服邮箱</text>
+          <text class="support-config__value">{{supportEmail}}</text>
+        </view>
+        <text class="support-config__copy">复制</text>
+      </view>
+      <text class="help-heading help-heading--reality">需要现实帮助</text>
+      <view class="reality-card">
+        <text wx:if="{{supportLoading}}">正在加载求助信息…</text>
+        <block wx:else>
+          <text>心理援助热线：{{support.psychologicalHotline}}</text>
+          <text>紧急危险：{{support.police}} / {{support.medicalEmergency}}</text>
+        </block>
+        <view wx:if="{{supportError}}" class="support-retry" aria-role="button" bindtap="onRetrySupport">{{supportError}} · 重试</view>
+      </view>
+    </view>
+
     <view wx:if="{{searchQuery}}" class="search-results">
       <view wx:if="{{searchResults.length}}">
         <view wx:for="{{searchResults}}" wx:key="q" class="search-result">

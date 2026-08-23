@@ -5,17 +5,16 @@
    - 返回箭头默认调用 wx.navigateBack()；如需自定义返回行为（例如
      从底部弹层返回而非真正 navigateBack），监听 bind:back 自行处理。
 */
-const config = require('../../config/v2');
-
 Component({
   properties: {
     title: { type: String, value: '' },
+    titleInteractive: { type: Boolean, value: false },
+    titleAriaLabel: { type: String, value: '' },
     showBack: { type: Boolean, value: true },
     fallbackUrl: { type: String, value: '' }
   },
   data: {
-    statusBarHeight: 20,
-    isDemo: config.localDemoEnabled
+    statusBarHeight: 20
   },
   lifetimes: {
     attached() {
@@ -24,6 +23,10 @@ Component({
     }
   },
   methods: {
+    onTitleTap() {
+      if (!this.properties.titleInteractive) return;
+      this.triggerEvent('titletap');
+    },
     onBack() {
       this.triggerEvent('back');
       const pages = getCurrentPages();

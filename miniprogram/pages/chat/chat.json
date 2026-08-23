@@ -1,7 +1,6 @@
 {
+  "disableScroll": true,
   "usingComponents": {
-    "nav-bar": "../../components/nav-bar/nav-bar",
-    "egg-avatar": "../../components/egg-avatar/egg-avatar",
-    "mood-badge": "../../components/mood-badge/mood-badge"
+    "nav-bar": "../../components/nav-bar/nav-bar"
   }
 }

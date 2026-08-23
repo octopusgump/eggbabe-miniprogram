@@ -2,6 +2,8 @@
 
 日期：2026-08-02
 
+> 状态说明：下方“首次批次”内容保留为历史记录；当前正式使用的是文末“收藏物风格重制批次”。旧绿色版本已从正式资源目录删除。
+
 ## 批次范围
 
 本批次制作 5 个功能入口的透明 3D UI：
@@ -114,3 +116,168 @@ WebP 参数：质量 92，Alpha 质量 100。
 - 时间表图标已注册为 `PRE_HATCH.interactionIcons.schedule`，路径为 `runtime/ui_3d_schedule_calendar_clock_256_v01.webp`。
 - 当前项目没有时间表页面、路由或既有入口；未将该图标错误绑定到“回忆”页面，也未新增无行为按钮。
 - 原有 SVG 和 `assets/tab/me*.png` 均保留，未覆盖或删除，可随时回退。
+
+---
+
+## 收藏物风格重制批次（当前正式版本）
+
+日期：2026-08-02
+
+### 重制范围
+
+本轮共完成 8 个透明 3D UI：早教班、画画、许愿池、我的、时间表、画笔、橡皮擦、贴纸。用户先确认“早教班”和“许愿池”后，再继续完成其余 6 项，并授权替换页面引用、删除旧绿色版本。
+
+### 执行方式与视觉标准
+
+- 生成模式：Codex 内置 ImageGen；每个物品独立生成，没有切换到 CLI 或网页端代操作。
+- 强制参考：用户提供的 30 件收藏物联系表，以及已确认的早教班／许愿池候选图。
+- 造型原则：单个直观微缩物件、前左 3/4 视角、真实木材／纸张／织物／石材／金属／珐琅质感、圆润边缘、右上柔光。
+- 配色原则：以暖象牙白、朱红、蜂蜜黄和钴蓝为主，不再使用旧批次的苔藓绿主体。
+- 无角色、手、场景、Logo、水印、标签、字母、数字或可辨认文字。
+- 原始生成图使用纯色键背景；绿色键使用 `#00ff00`，许愿池使用洋红键 `#ff00ff`。去色键后统一重排为 1024×1024 透明画布，主体最大边 840px。
+
+### 最终造型
+
+1. 早教班：朱红布面打开式绘本，象牙白厚页，凸起蜂蜜黄太阳与钴蓝月牙。
+2. 画画：蜂蜜色木质调色盘、五色颜料团与短木柄画笔。
+3. 许愿池：奶油石材台座喷泉、蓝色珐琅水面、中央涌泉与一枚旧金铜钱。
+4. 我的：蛋形旧黄铜头像徽章、象牙白陶瓷内嵌、钴蓝无五官头像、朱红挂环。
+5. 时间表：象牙白翻页日历、朱红装订环、三条钴蓝日程条和蜂蜜黄无数字时钟。
+6. 画笔：短木柄、旧铜笔箍、柔软刷毛与钴蓝颜料。
+7. 橡皮擦：暖白橡皮、朱红纸套与轻微石墨使用痕迹。
+8. 贴纸：象牙白贴纸卡，太阳、月牙、红星三枚厚质贴纸，红星一角揭起。
+
+### 正式文件
+
+主功能 PNG（1024×1024 RGBA）：
+
+- `png/ui_3d_early_learning_picture_book_v02.png`
+- `png/ui_3d_drawing_palette_v02.png`
+- `png/ui_3d_wishing_fountain_v02.png`
+- `png/ui_3d_profile_egg_cameo_v04.png`
+- `png/ui_3d_schedule_flip_calendar_v02.png`
+
+主功能 WebP（1024×1024，Alpha，质量 92／Alpha 100）：
+
+- `webp/ui_3d_early_learning_picture_book_v02.webp`
+- `webp/ui_3d_drawing_palette_v02.webp`
+- `webp/ui_3d_wishing_fountain_v02.webp`
+- `webp/ui_3d_profile_egg_cameo_v04.webp`
+- `webp/ui_3d_schedule_flip_calendar_v02.webp`
+
+主功能运行时 WebP（256×256，Alpha，质量 90／Alpha 100）：
+
+- `runtime/ui_3d_early_learning_picture_book_256_v02.webp`
+- `runtime/ui_3d_drawing_palette_256_v02.webp`
+- `runtime/ui_3d_wishing_fountain_256_v02.webp`
+- `runtime/ui_3d_profile_egg_cameo_256_v04.webp`
+- `runtime/ui_3d_schedule_flip_calendar_256_v02.webp`
+
+“我的”Tab 运行时 PNG：
+
+- `runtime/ui_3d_profile_egg_cameo_96_v04.png`
+
+画板工具文件位于相邻目录 `../3d-toolbar/`：
+
+- `png/ui_3d_toolbar_brush_v02.png`、`webp/ui_3d_toolbar_brush_v02.webp`、`runtime/ui_3d_toolbar_brush_96_v02.png`、`runtime/ui_3d_toolbar_brush_96_v02.webp`
+- `png/ui_3d_toolbar_eraser_v02.png`、`webp/ui_3d_toolbar_eraser_v02.webp`、`runtime/ui_3d_toolbar_eraser_96_v02.png`、`runtime/ui_3d_toolbar_eraser_96_v02.webp`
+- `png/ui_3d_toolbar_sticker_v02.png`、`webp/ui_3d_toolbar_sticker_v02.webp`、`runtime/ui_3d_toolbar_sticker_96_v02.png`、`runtime/ui_3d_toolbar_sticker_96_v02.webp`
+
+### 接入与清理
+
+- `config/pre-hatch-assets.js` 已将画画、许愿池、早教班、时间表切换到新版 256px WebP。
+- `app.json`、`custom-tab-bar/index.js` 与 `pages/life-scene/life-scene.wxml` 已切换到“我的”v04 PNG。
+- `pages/doodle/doodle.wxml` 已将画笔、橡皮擦、贴纸的旧 CSS 符号替换为新版 3D PNG；选中态由绿色改为暖杏色。
+- 已删除正式资源目录中旧批次的绿色主入口 PNG／WebP／运行时文件，以及未采用的旧版 3D 画板工具草稿。撤销、清空按钮的现有功能与文字符号保持不变。
+
+### QA 与预览
+
+- 8/8 PNG 母版均为 1024×1024 RGBA，四角透明，主体 Alpha 包围盒非空。
+- 8/8 WebP 母版均为 1024×1024 并保留 Alpha。
+- 主功能运行时资源为 256×256；画板工具与 Tab 运行时 PNG 为 96×96。
+- 整批透明联系表：`01_MiniProgram_MVP/tmp/imagegen/ui-3d-actions-redesign-v02/previews/ui_3d_redesign_full_contact_sheet_v02.png`（1760×1000 PNG）。
+
+---
+
+## TabBar 扁平交互齿轮（当前“我的”Tab 正式版本）
+
+日期：2026-08-03
+
+### 设计与生成
+
+- 用户确认后，将“我的”Tab 改为正面八齿交互齿轮。
+- 轮廓参考用户截图，颜色与材质参考项目现有 3D 齿轮；主体使用项目钴蓝 `#015BC9`，中央为暖米白薄圆环与透明镂空。
+- 中央圆环采用低浮雕结构，降低厚度、深孔和高光，使整体更扁平并保持 48–96px 可辨识度。
+- 使用 Codex 内置 ImageGen 生成纯绿色键图，本地去色键、透明重排和 PNG 压缩；未使用 CLI。
+
+### 正式文件
+
+- `runtime/ui_3d_tabbar_interaction_gear_flat_96_v04.png` — 96×96 RGBA PNG，9,927 bytes。
+
+1024×1024 透明候选母版保留在：
+
+- `01_MiniProgram_MVP/tmp/imagegen/ui-3d-tabbar-interaction-gear-v04/candidates/ui_3d_tabbar_interaction_gear_flat_v04.png`
+
+### 接入
+
+- `app.json` 中“我的”Tab 的 `iconPath` 与 `selectedIconPath` 已切换到 v04 压缩 PNG。
+- `custom-tab-bar/index.js` 中对应普通态与选中态已同步切换。
+- 百宝箱内“我的 / 设置”仍使用米白齿轮 v03，不随 TabBar 图标改变。
+- 所有历史版本保留，未覆盖或删除。
+
+---
+
+## 许愿池与早教班极简重制（许愿池 v03 历史版本／早教班当前版本）
+
+日期：2026-08-03
+
+### 重制目标
+
+- 优先解决首页小尺寸入口需要思考后才能识别的问题。
+- 每枚图标压缩为一个主体和一个核心识别特征，移除装饰性细节。
+
+### 最终造型
+
+1. 许愿池：暖米白宽水盆、短底座、钴蓝水面和单股中央水流；移除铜钱、花瓣盆沿、雕花底座和多层喷泉结构。
+2. 早教班：朱红封面的暖米白打开式儿童绘本，跨页只保留一个大型蜂蜜黄太阳；移除月亮与其他页面元素。
+
+### 正式文件
+
+1024×1024 Alpha WebP：
+
+- `webp/ui_3d_wishing_fountain_simple_v03.webp`
+- `webp/ui_3d_early_learning_picture_book_simple_v03.webp`
+
+256×256 运行时 Alpha WebP：
+
+- `runtime/ui_3d_wishing_fountain_simple_256_v03.webp`
+- `runtime/ui_3d_early_learning_picture_book_simple_256_v03.webp`
+
+### 接入
+
+- `config/pre-hatch-assets.js` 中 `wish` 与 `learn` 已切换到上述 v03 运行时 WebP。
+- 旧 v02 正式文件完整保留，没有覆盖或删除。
+- 使用 Codex 内置 ImageGen 生成纯绿色键图，本地去色键并输出 WebP；PNG 仅作为 `tmp/imagegen/ui-3d-actions-simplified-v03/` 内的处理文件。
+
+---
+
+## 双层许愿池重制（当前正式版本）
+
+日期：2026-08-04
+
+### 设计
+
+- 根据用户提供的传统双层喷泉截图，重新确立“大下盆＋中央立柱＋小上盆”的明确喷泉轮廓。
+- 保留项目钴蓝与暖米白两色，加入两股粗短水流，确保缩小后仍能一眼识别为喷泉。
+- 移除雕花、石纹、铜钱、细水帘和喷溅颗粒，继续保持圆润、温暖的微缩 3D 风格。
+
+### 正式文件
+
+- `webp/ui_3d_wishing_fountain_two_tier_simple_v04.webp` — 1024×1024 Alpha WebP。
+- `runtime/ui_3d_wishing_fountain_two_tier_simple_256_v04.webp` — 256×256 Alpha WebP。
+
+### 接入
+
+- `config/pre-hatch-assets.js` 中 `wish` 已切换到 v04 运行时 WebP。
+- 早教班继续使用 `ui_3d_early_learning_picture_book_simple_256_v03.webp`。
+- 许愿池 v02、v03 文件均完整保留，没有覆盖或删除。

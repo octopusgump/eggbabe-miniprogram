@@ -17,7 +17,9 @@ const FEEDBACK_MESSAGES = [
 
 function reducedMotionEnabled() {
   try {
-    const system = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+    const system = wx.getSystemSetting
+      ? wx.getSystemSetting()
+      : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
     return Boolean(system.reducedMotion || system.enableReduceMotion);
   } catch (error) {
     return false;

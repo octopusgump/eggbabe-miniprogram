@@ -1,0 +1,17 @@
+<view class="scene-feedback-stack {{reducedMotion ? 'scene-feedback-stack--reduced' : ''}}">
+  <view wx:if="{{text}}" class="scene-feedback-stack__cards">
+    <view
+      wx:if="{{systemBehind}}"
+      class="scene-feedback-stack__back {{promoting ? 'scene-feedback-stack__back--promoting' : ''}}"
+      aria-hidden="true"
+    ></view>
+    <view
+      class="scene-feedback-stack__front scene-feedback-stack__front--{{variant}} scene-feedback-stack__front--{{tone}} {{visible ? 'scene-feedback-stack__front--visible' : ''}}"
+      aria-role="status"
+      aria-label="{{visible ? text : ''}}"
+      aria-hidden="{{!visible}}"
+    >
+      <text class="scene-feedback-stack__text">{{text}}</text>
+    </view>
+  </view>
+</view>

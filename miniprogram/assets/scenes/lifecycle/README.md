@@ -1,5 +1,7 @@
 # 场景素材分层总表
 
+> **历史生产归档，不是当前运行规范。** 当前破壳前环境使用 36 张完整房间背景 + 各 36 张透明蛋体／窝垫；当前破壳后使用 36 张连续空房全景与已审核的完整动作全景，不再采用“三屏独立背景 + 透明角色姿态”方案。运行时路径与可用范围只以 `miniprogram/config/pre-hatch-assets.js`、`miniprogram/config/post-hatch-assets.js` 和 `docs/eggbabe-DESIGN.md` 为准。下文保留用于追溯 2026-08-01 的生产过程。
+
 这里是后续 Nano Banana Pro 正式素材的投放目录。图片已按破壳前后和图层层级归档；破壳后运行时素材路径统一在 `miniprogram/config/post-hatch-assets.js` 管理。
 
 ## 层级规则

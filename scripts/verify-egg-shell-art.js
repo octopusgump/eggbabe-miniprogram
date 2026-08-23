@@ -4,6 +4,12 @@ const path = require('path');
 const shellArt = require('../miniprogram/services/egg-shell-art');
 
 assert.equal(shellArt.COLORS.length >= 6 && shellArt.COLORS.length <= 8, true, '蛋壳颜色必须为 6–8 种');
+assert.equal(shellArt.BRUSH_COLORS.length, 10, '画笔必须提供精选 10 色');
+assert.deepEqual(shellArt.BRUSH_COLORS.slice(0, 5).map(item => item.value), ['#526B4D', '#D98652', '#5F8FA8', '#C97682', '#8573A3'], '第一排必须保留五种品牌色，并以森林绿为默认色');
+assert.deepEqual(shellArt.BRUSH_COLORS.slice(5).map(item => item.value), ['#AFC29A', '#E6CE73', '#9EC7D8', '#7B3E52', '#B9ABD2'], '第二排必须提供与品牌色对应的五种色阶变化');
+assert.equal(['#526B4D', '#D98652', '#5F8FA8', '#C97682', '#8573A3'].every(value => shellArt.BRUSH_COLORS.some(item => item.value === value)), true, '原有五种品牌色必须全部保留');
+assert.deepEqual(shellArt.BRUSH_SIZES.map(item => item.pixels), [2, 5, 8, 12, 18], '画笔必须使用五档可视笔宽轨，默认档包含 5px');
+assert.deepEqual(shellArt.ERASER_SIZES.map(item => item.pixels), [6, 10, 15, 22, 30], '橡皮擦必须使用五档可视尺寸，默认档保持 15px');
 assert.deepEqual(shellArt.PATTERNS.map(item => item.type), ['star', 'heart', 'leaf'], '首版图样只保留星星、爱心、叶子');
 
 const blank = shellArt.defaultShellArt();
@@ -42,9 +48,16 @@ assert.equal(remoteAttempt.operations[1].width, shellArt.ERASER_MAX_WIDTH, '异�
 const thinBrush = shellArt.createStroke('brush', [{ x: 0.5, y: 0.5 }], 1, shellArt.BRUSH_SIZES[0].width);
 const thickBrush = shellArt.createStroke('brush', [{ x: 0.5, y: 0.5 }], 2, shellArt.BRUSH_SIZES[3].width);
 assert.equal(thinBrush.width < thickBrush.width, true, '画笔必须支持多档粗细');
+const berryBrush = shellArt.createStroke('brush', [{ x: 0.5, y: 0.5 }], 2, shellArt.BRUSH_SIZES[1].width, '#C97682');
+assert.equal(berryBrush.color, '#C97682', '每一笔必须独立保存当时选中的画笔颜色');
+assert.equal(shellArt.normalizeShellArt({ operations: [berryBrush] }).operations[0].color, '#C97682', '重新打开作品时不得丢失笔迹颜色');
+const inkBrush = shellArt.createStroke('brush', [{ x: 0.4, y: 0.6 }], 3, shellArt.BRUSH_SIZES[1].width, '#3F4547');
+assert.equal(shellArt.normalizeShellArt({ operations: [inkBrush] }).operations[0].color, '#3F4547', '从面板移出的旧颜色仍必须逐笔保存并可在重新打开后恢复');
+assert.equal(shellArt.brushWidthForPixels(5, 320) * 320, 5, '默认画笔在当前 Canvas 上必须保持 5px 逻辑笔宽');
 const smallEraser = shellArt.createStroke('eraser', [{ x: 0.5, y: 0.5 }], 3, shellArt.eraserWidthForPixels(4));
 const largeEraser = shellArt.createStroke('eraser', [{ x: 0.5, y: 0.5 }], 4, shellArt.eraserWidthForPixels(30));
 assert.equal(smallEraser.width < largeEraser.width, true, '橡皮擦必须支持多档大小');
+assert.equal(shellArt.eraserWidthForPixels(15, 320) * 320, 15, '橡皮擦档位数值必须与当前 Canvas 的实际擦除像素一致');
 
 const withOperations = shellArt.normalizeShellArt({
   colorToken: 'lavender',
@@ -102,7 +115,6 @@ assert.equal(artLog.composites.includes('destination-out'), true, '橡皮擦必�
 assert.equal(artLog.composites.includes('destination-in'), true, '装饰必须裁切在蛋体 Alpha 内');
 
 const doodleStyles = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/doodle/doodle.wxss'), 'utf8');
-assert.match(doodleStyles, /\.egg-canvas-stack\s*\{[^}]*width:\s*300rpx;[^}]*height:\s*300rpx;/s, '普通绘图预览必须保持母版 1:1 比例，不能横向压缩蛋宝宝面容');
-assert.match(doodleStyles, /\.page--expanded \.egg-canvas-stack\s*\{[^}]*width:\s*62vh;[^}]*max-width:\s*86vw;[^}]*height:\s*62vh;[^}]*max-height:\s*86vw;/s, '放大绘图预览同样必须保持 1:1 比例');
+assert.match(doodleStyles, /\.egg-canvas-stack\s*\{[^}]*width:\s*89vw;[^}]*height:\s*89vw;/s, '透明母版画布必须保持 1:1，并让实际蛋体约占屏幕宽度 50%');
 
 console.log('蛋壳绘图校验通过：像素画笔、可变尺寸橡皮擦、固定像素贴纸和安全边界正常。');

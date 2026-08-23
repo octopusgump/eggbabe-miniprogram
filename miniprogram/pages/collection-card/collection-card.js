@@ -2,6 +2,8 @@ const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const h5Bridge = require('../../services/birth-card-h5');
 const analytics = require('../../services/analytics');
+const releaseSurface = require('../../utils/release-surface');
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 function dateLabel(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
@@ -24,10 +26,18 @@ Page({
     hatchedAtLabel: '',
     isNew: false,
     savingImage: false,
-    posterReady: false
+    posterReady: false,
+    illustrationSrc: '',
+    illustrationLoading: true,
+    illustrationError: false,
+    systemNoticeText: '',
+    systemNoticeTone: 'info',
+    systemNoticeVisible: false
   },
 
   onLoad(query) {
+    this.pageActive = true;
+    if (!releaseSurface.guardDeferredContent()) return;
     const pet = petStore.getPet();
     if (!pet || !pet.collectionCard) {
       wx.showToast({ title: '还没有收藏卡', icon: 'none' });
@@ -47,8 +57,42 @@ Page({
     this.setData({
       pet,
       cardView,
+      illustrationSrc: cardView.illustration_url,
+      illustrationLoading: true,
+      illustrationError: false,
       hatchedAtLabel: dateLabel(cardView.hatched_at),
       isNew: query.new === '1'
+    });
+  },
+
+  onShow() { this.pageActive = true; },
+
+  showSystemNotice(text, tone) {
+    if (!this.systemNoticeController) {
+      this.systemNoticeController = createInlineNoticeController(this, {
+        textKey: 'systemNoticeText',
+        toneKey: 'systemNoticeTone',
+        visibleKey: 'systemNoticeVisible',
+        timerKey: 'systemNoticeTimer',
+        cleanupTimerKey: 'systemNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
+    }
+    return this.systemNoticeController.show(text, tone);
+  },
+
+  onIllustrationLoad() {
+    this.setData({ illustrationLoading: false, illustrationError: false });
+  },
+
+  onIllustrationError() {
+    this.setData({ illustrationLoading: false, illustrationError: true });
+  },
+
+  onRetryIllustration() {
+    if (this.data.illustrationLoading || !this.data.cardView) return;
+    this.setData({ illustrationSrc: '', illustrationLoading: true, illustrationError: false }, () => {
+      this.setData({ illustrationSrc: this.data.cardView.illustration_url });
     });
   },
 
@@ -73,7 +117,7 @@ Page({
     context.setFillStyle('#FFFDF7');
     context.fillRect(0, 0, 600, 1067);
     context.setTextAlign('center');
-    context.setFillStyle('#3F5A47');
+    context.setFillStyle('#002900');
     context.setFontSize(18);
     context.fillText('eggbabe', 300, 54);
     context.setFillStyle('#2D352F');
@@ -137,7 +181,7 @@ Page({
       }),
       fail: () => {
         this.setData({ savingImage: false });
-        wx.showToast({ title: '收藏卡图片生成失败，请重试', icon: 'none' });
+        this.showSystemNotice('收藏卡图片生成失败，请重试', 'warning');
       }
     }, this);
     if (this.data.posterReady) exportPoster();
@@ -147,10 +191,10 @@ Page({
         return;
       }
       this.setData({ savingImage: false });
-      wx.showToast({
-        title: error.message === 'MINI_CODE_REQUIRED' ? '分享图缺少小程序码，请稍后重试' : '固定插画加载失败，请稍后重试',
-        icon: 'none'
-      });
+      this.showSystemNotice(
+        error.message === 'MINI_CODE_REQUIRED' ? '分享图缺少小程序码，请稍后重试' : '固定插画加载失败，请稍后重试',
+        'warning'
+      );
     });
   },
 
@@ -173,5 +217,16 @@ Page({
   onShareAppMessage() {
     analytics.track('card_share', { card_id: this.data.cardView.card_id });
     return { title: `${this.data.cardView.display_name}的 eggbabe 收藏卡`, path: '/pages/welcome/welcome' };
+  },
+
+  onHide() {
+    this.pageActive = false;
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
+    this.setData({ systemNoticeText: '', systemNoticeVisible: false });
+  },
+
+  onUnload() {
+    this.pageActive = false;
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
   }
 });

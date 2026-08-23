@@ -70,7 +70,11 @@ welcome.onAuthorize.call(welcomeContext);
 assert.equal(routes.pop(), '/pages/home/home', '开发版授权后必须进入首页');
 
 const addDevice = loadPage('../../pages/add-device/add-device');
-const addContext = contextFor(addDevice, { code: 'DEMO-YT-001', canSubmit: true });
+const addContext = contextFor(addDevice);
+addDevice.onCodeInput.call(addContext, { detail: { value: 'egg-d1' } });
+assert.equal(addContext.data.code, 'EGGD1', '激活码输入必须过滤符号并自动转为大写');
+assert.equal(addContext.data.codeCells.length, 5, '激活码输入必须始终渲染五个格子');
+assert.equal(addContext.data.canSubmit, true, '仅完整输入五位激活码后才可提交');
 addDevice.onValidate.call(addContext);
 assert.equal(addContext.data.success.prototype, '玉兔', '开发版绑定页必须显示固定 demo 原型');
 assert.equal(routes.pop(), '/pages/home/home', '开发版绑定成功后必须返回首页');
@@ -102,16 +106,25 @@ assert.equal(cardContext.data.cardView.illustration_url.startsWith('/assets/'), 
   const snapshot = await postHatch.getSnapshot(pet);
   assert.equal(snapshot.ok, true, '开发版破壳后必须加载隔离的 5 小时状态快照');
   assert.equal(['home', 'travel', 'work', 'school'].includes(snapshot.currentState.major), true, '当前状态必须属于四个 PRD 大场景之一');
-  assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action.kind === 'letter', true, '每个小状态只能暴露一个原生动作或写信入口');
-  assert.equal(lifeScenes.HOME_STATES.length, 7, '开发版必须包含七个居家小状态');
+  assert.equal(snapshot.currentState.atHome ? Boolean(snapshot.currentState.action) : snapshot.currentState.action === null, true, '居家状态暴露一个原生动作，外出状态不得暴露写信动作');
+  assert.equal(lifeScenes.HOME_STATES.length, 8, '开发版必须包含八个居家小状态');
+  assert.equal(lifeScenes.HOME_STATES.every(item => lifeScenes.resolveDefinition('home', item.key).canTalk), true, '八个居家小状态必须全部开放对话');
 
   const talk = await postHatch.sendSceneMessage(pet, {
     mood: snapshot.mood,
-    currentState: Object.assign({}, lifeScenes.HOME_STATES.find(item => item.canTalk), { atHome: true, canTalk: true })
-  }, '今天陪我待一会儿');
-  assert.equal(talk.ok, true, '允许说话的小状态必须在场景内返回审核过的回应');
-  assert.equal(talk.safety, 'approved-fallback', '开发版场景内对话不得伪装成 live');
-  assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), false, '开发版不得注册独立聊天页');
+    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key)),
+    chatAccess: { status: 'available', reason: 'AT_HOME' }
+  }, '今天陪我待一会儿', 'demo-chat-message-1');
+  assert.equal(talk.ok, true, '允许说话的小状态必须在完整对话页返回审核过的回应');
+  assert.equal(talk.safety, 'approved-fallback', '开发版完整对话页不得伪装成 live');
+  const tooLong = await postHatch.sendSceneMessage(pet, {
+    mood: snapshot.mood,
+    currentState: Object.assign({}, lifeScenes.resolveDefinition('home', lifeScenes.HOME_STATES[0].key)),
+    chatAccess: { status: 'available', reason: 'AT_HOME' }
+  }, '1'.repeat(121), 'demo-too-long');
+  assert.equal(tooLong.ok, false, '开发版 fixture 必须模拟服务端对超过 120 个 Unicode 字符的拒绝');
+  assert.equal(tooLong.code, 'INPUT_TOO_LONG', '开发版超长输入必须走服务端 INPUT_REJECTED 合同，而非显示固定回复');
+  assert.equal(JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../../app.json'), 'utf8')).pages.includes('pages/chat/chat'), true, '开发版必须注册完整聊天页');
   assert.equal(toasts.includes('账号服务尚未接入，请稍后再试'), false, '开发版流程不得显示正式服务器未接入提示');
 
   global.setTimeout = originalSetTimeout;

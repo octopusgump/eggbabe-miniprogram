@@ -1,5 +1,12 @@
 <view class="page">
   <nav-bar title="账号"></nav-bar>
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
 
   <view class="content">
 

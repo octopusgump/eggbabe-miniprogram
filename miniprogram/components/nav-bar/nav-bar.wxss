@@ -12,6 +12,9 @@
   display: flex;
   align-items: center;
   position: relative;
+  /* 横屏与刘海机型下状态栏高度不覆盖左右安全区，这里单独让开。 */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   border-bottom: 1rpx solid #E5E3DF; /* --hairline */
 }
 
@@ -31,16 +34,62 @@
 
 .nav-side--pressed {
   background: #F3F7E7;
-  transform: scale(.96);
+  transform: scale(.98);
 }
 
-.nav-title {
+.nav-title-slot {
   flex: 1;
+  min-width: 0;
+  height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title-text {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   text-align: center;
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 30rpx; /* 15px */
   font-weight: 600;
   color: #002900; /* --ink */
+}
+
+.nav-title-action {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  transition: transform 180ms ease-out, background 180ms ease-out;
+}
+
+.nav-title-action .nav-title-text {
+  flex: 0 1 auto;
+}
+
+.nav-title-action--pressed {
+  background: #F3F7E7;
+  transform: scale(.98);
+}
+
+.nav-title-chevron {
+  width: 12rpx;
+  height: 12rpx;
+  flex: none;
+  margin-top: -6rpx;
+  border-right: 3rpx solid #7C877C;
+  border-bottom: 3rpx solid #7C877C;
+  transform: rotate(45deg);
 }
 
 .chevron {
@@ -55,9 +104,7 @@
   margin-left: 8rpx;
 }
 
-.demo-chip { padding: 5rpx 10rpx; border-radius: 999rpx; background: #EEF2E3; color: #687548; font-size: 16rpx; font-weight: 600; letter-spacing: 1rpx; }
-
 @media (prefers-reduced-motion: reduce) {
-  .nav-side--back { transition: none; }
-  .nav-side--pressed { transform: none; }
+  .nav-side--back, .nav-title-action { transition: none; }
+  .nav-side--pressed, .nav-title-action--pressed { transform: none; }
 }

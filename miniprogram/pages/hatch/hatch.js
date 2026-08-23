@@ -5,6 +5,7 @@ const config = require('../../config/v2');
 const runtime = require('../../services/runtime-context');
 const demoExperience = require('../../services/demo-experience');
 const practice = require('../../services/incubation-practice');
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const REVIEW_LABELS = {
   nickname: '你给了我一个名字',
@@ -24,6 +25,9 @@ Page({
     pet: null,
     gateMessage: '',
     resultError: '',
+    systemNoticeText: '',
+    systemNoticeTone: 'info',
+    systemNoticeVisible: false,
     reviewItems: [],
     particles: [
       { tx: '-140rpx', ty: '-110rpx', color: '#EDE78E' },
@@ -36,9 +40,10 @@ Page({
   },
 
   async onLoad() {
+    this.pageActive = true;
     const pet = petStore.getPet();
     if (pet && pet.collectionCard) {
-      wx.redirectTo({ url: '/pages/collection-card/collection-card' });
+      wx.switchTab({ url: '/pages/home/home' });
       return;
     }
     if (!pet || petStore.getStage(pet) !== 'ready') {
@@ -67,16 +72,32 @@ Page({
     analytics.track('hatch_receive_start');
   },
 
+  onShow() { this.pageActive = true; },
+
+  showSystemNotice(text, tone) {
+    if (!this.systemNoticeController) {
+      this.systemNoticeController = createInlineNoticeController(this, {
+        textKey: 'systemNoticeText',
+        toneKey: 'systemNoticeTone',
+        visibleKey: 'systemNoticeVisible',
+        timerKey: 'systemNoticeTimer',
+        cleanupTimerKey: 'systemNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
+    }
+    return this.systemNoticeController.show(text, tone);
+  },
+
   async onReveal() {
     if (this.data.phase !== 'confirm' || !this.data.pet) return;
     const reviewResult = await practice.submitOnce('review');
     if (!reviewResult.ok && reviewResult.code !== 'already_done') {
-      wx.showToast({ title: reviewResult.message || '回顾状态没有保存，请重试', icon: 'none' });
+      this.showSystemNotice(reviewResult.message || '回顾状态没有保存，请重试', 'warning');
       return;
     }
     const gateState = await practice.getHatchGateState();
     if (!gateState.ok || !gateState.canHatch) {
-      wx.showToast({ title: '破壳准备还没有全部完成', icon: 'none' });
+      this.showSystemNotice('破壳准备还没有全部完成', 'warning');
       return;
     }
     this.setData({ phase: 'reveal', resultError: '' });
@@ -119,10 +140,12 @@ Page({
         }
       }
       analytics.track('hatch_card_ready', { card_id: result.card.card_id || result.card.id });
-      wx.redirectTo({ url: '/pages/collection-card/collection-card?new=1' });
+      wx.switchTab({ url: '/pages/home/home' });
   },
 
   onUnload() {
+    this.pageActive = false;
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
     clearTimeout(this.backTimer);
     clearTimeout(this.revealTimer);
   }

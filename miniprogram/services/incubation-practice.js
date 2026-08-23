@@ -3,6 +3,7 @@ const runtime = require('./runtime-context');
 const storage = require('./storage-migration');
 const timeService = require('./time-service');
 const petStore = require('../utils/pet-store');
+const demoExperience = require('./demo-experience');
 
 const RECORD_KEY = 'eggbabe_incubation_practice_v35';
 const DAILY_MODULES = new Set(['touch', 'wish_pool', 'doodle', 'edu_class', 'pre_hatch_talk']);
@@ -223,18 +224,24 @@ function estimatedHatchAt(pet, active) {
   const created = Date.parse((pet && pet.createdAt) || '');
   if (!Number.isFinite(created)) return (pet && pet.hatchAt) || '';
   const passiveDaysNeeded = Math.max(0, Math.ceil((100 - active) / 10));
-  return new Date(created + passiveDaysNeeded * 86400000).toISOString();
+  // 主动互动可以补足进度，但不能把理论破壳日提前到第 7 天之前。
+  return new Date(Math.max(
+    created + passiveDaysNeeded * 86400000,
+    created + 7 * 86400000
+  )).toISOString();
 }
 
-function applyDemoSnapshot(pet, state, serverDate) {
-  const active = activePoints(state.records, pet.id);
+function applyDemoSnapshot(pet, state, serverDate, contentDay) {
+  const previewPoints = Math.max(0, Number(pet.demoPreviewInteractionPoints) || 0);
+  const active = Math.min(100, activePoints(state.records, pet.id) + previewPoints);
   const passive = passivePoints(pet, Date.now());
   const total = Math.min(100, active + passive);
   const hatchAt = estimatedHatchAt(pet, active);
+  const hatchable = total >= 100 && Number(contentDay) >= 7;
   pet.hatchAt = hatchAt;
-  if (total >= 100 && petStore.getStage(pet) !== 'hatched') pet.lifecycleStage = 'HATCHABLE';
+  if (petStore.getStage(pet) !== 'hatched') pet.lifecycleStage = hatchable ? 'HATCHABLE' : 'RESTING';
   petStore.savePet(pet);
-  return { active, passive, total, hatchAt };
+  return { active, passive, total, hatchAt, hatchable };
 }
 
 function normalizeResponse(response, fallback) {
@@ -268,7 +275,7 @@ function applyLiveLifecycle(response) {
 }
 
 async function getManualState() {
-  const pet = petStore.getPet();
+  let pet = petStore.getPet();
   if (!pet) return { ok: false, code: 'EGG_REQUIRED', message: '还没有蛋宝宝' };
   if (runtime.getMode() === 'live') {
     const response = await cloudApi.getIncubationManual(pet.id);
@@ -286,12 +293,13 @@ async function getManualState() {
       gates: response.gates || {}
     };
   }
+  pet = demoExperience.normalizeDemoTimeline(pet);
   const serverDate = dateKey();
   const state = readDemoState();
   state.loginDates = Array.from(new Set(state.loginDates.concat(serverDate))).sort();
   writeDemoState(state);
   const contentDay = contentDayFor(pet, serverDate, state.loginDates);
-  const snapshot = applyDemoSnapshot(pet, state, serverDate);
+  const snapshot = applyDemoSnapshot(pet, state, serverDate, contentDay);
   const gift = findRecord(state.records, pet.id, 'birth_gift', '', true);
   const review = findRecord(state.records, pet.id, 'review', '', true);
   return {
@@ -308,7 +316,7 @@ async function getManualState() {
       total: snapshot.total
     },
     gates: {
-      incubation_ready: snapshot.total >= 100 || petStore.getStage(pet) === 'ready',
+      incubation_ready: snapshot.hatchable,
       nickname_ready: !!String(pet.name || '').trim(),
       birth_gift_ready: !!gift,
       review_ready: !!review
@@ -382,7 +390,7 @@ async function submit(module, input) {
   };
   state.records = state.records.concat(record);
   writeDemoState(state);
-  const snapshot = applyDemoSnapshot(pet, state, manual.serverDate);
+  const snapshot = applyDemoSnapshot(pet, state, manual.serverDate, manual.contentDay);
   return normalizeResponse({
     ok: true,
     code: 'recorded',
@@ -425,7 +433,7 @@ async function submitOnce(module, input) {
   };
   state.records = state.records.concat(record);
   writeDemoState(state);
-  const snapshot = applyDemoSnapshot(pet, state, manual.serverDate);
+  const snapshot = applyDemoSnapshot(pet, state, manual.serverDate, manual.contentDay);
   return normalizeResponse({
     ok: true,
     code: 'recorded',

@@ -5,6 +5,7 @@ const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
 const config = require('../../config/v2');
 const petStore = require('../../utils/pet-store');
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 function deregisterKey() {
   const user = petStore.getUser();
@@ -12,9 +13,18 @@ function deregisterKey() {
 }
 
 Page({
-  data: { pending: false, endDate: '' },
+  data: {
+    pending: false,
+    endDate: '',
+    systemNoticeText: '',
+    systemNoticeTone: 'info',
+    systemNoticeVisible: false
+  },
+
+  onLoad() { this.pageActive = true; },
 
   onShow() {
+    this.pageActive = true;
     if (config.backendEnabled) {
       cloudApi.manageDeletion('query').then(result => {
         if (result.ok && result.mode === 'live' && result.request) {
@@ -37,11 +47,22 @@ Page({
     });
   },
 
-  onConfirmDeregister() {
-    if (this.data.pending) {
-      wx.showToast({ title: '注销申请已提交，可取消注销', icon: 'none' });
-      return;
+  showSystemNotice(text, tone) {
+    if (!this.systemNoticeController) {
+      this.systemNoticeController = createInlineNoticeController(this, {
+        textKey: 'systemNoticeText',
+        toneKey: 'systemNoticeTone',
+        visibleKey: 'systemNoticeVisible',
+        timerKey: 'systemNoticeTimer',
+        cleanupTimerKey: 'systemNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
     }
+    return this.systemNoticeController.show(text, tone);
+  },
+
+  onConfirmDeregister() {
+    if (this.data.pending) return;
     wx.showModal({
       title: '再次确认',
       content: '提交后进入 15 天冷静期，数据不会立即删除。确定继续吗？',
@@ -49,16 +70,23 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         if (!config.backendEnabled) {
-          wx.showToast({ title: '账户服务尚未接入，请稍后再试', icon: 'none' });
+          this.showSystemNotice('账户服务尚未接入，请稍后再试', 'warning');
           return;
         }
         cloudApi.manageDeletion('request').then(result => {
-          if (!result.ok || result.mode !== 'live' || !result.request) return wx.showToast({ title: result.message || '提交失败，请重试', icon: 'none' });
+          if (!result.ok || result.mode !== 'live' || !result.request) {
+            this.showSystemNotice(result.message || '提交失败，请重试', 'warning');
+            return;
+          }
           const request = Object.assign({}, result.request, { mode: 'live' });
           const saved = safeStorage.set(deregisterKey(), request, 'account_delete_request');
-          if (!saved.ok) return wx.showToast({ title: saved.message, icon: 'none' });
-          analytics.track('account_delete_request'); this.onShow(); wx.showToast({ title: '注销申请已提交', icon: 'success' });
-        });
+          if (!saved.ok) {
+            this.showSystemNotice(saved.message, 'warning');
+            return;
+          }
+          analytics.track('account_delete_request');
+          this.showRequest(request);
+        }).catch(() => this.showSystemNotice('提交失败，请重试', 'warning'));
       }
     });
   },
@@ -70,17 +98,38 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         if (!config.backendEnabled) {
-          wx.showToast({ title: '账户服务尚未接入，请稍后再试', icon: 'none' });
+          this.showSystemNotice('账户服务尚未接入，请稍后再试', 'warning');
           return;
         }
         cloudApi.manageDeletion('cancel').then(result => {
-          if (!result.ok || result.mode !== 'live') return wx.showToast({ title: result.message || '取消失败，请重试', icon: 'none' });
-          safeStorage.remove(deregisterKey(), 'account_delete_cancel'); analytics.track('account_delete_cancel'); this.onShow(); wx.showToast({ title: '已取消注销', icon: 'success' });
-        });
+          if (!result.ok || result.mode !== 'live') {
+            this.showSystemNotice(result.message || '取消失败，请重试', 'warning');
+            return;
+          }
+          safeStorage.remove(deregisterKey(), 'account_delete_cancel');
+          analytics.track('account_delete_cancel');
+          this.setData({ pending: false, endDate: '' });
+          this.showSystemNotice('已取消注销', 'info');
+        }).catch(() => this.showSystemNotice('取消失败，请重试', 'warning'));
       }
     });
   },
 
   onBackAccount() { wx.navigateBack(); },
-  onCancel() { wx.navigateBack(); }
+  onCancel() { wx.navigateBack(); },
+
+  clearSystemNotice() {
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
+    this.setData({ systemNoticeText: '', systemNoticeVisible: false });
+  },
+
+  onHide() {
+    this.pageActive = false;
+    this.clearSystemNotice();
+  },
+
+  onUnload() {
+    this.pageActive = false;
+    this.clearSystemNotice();
+  }
 });

@@ -3,28 +3,23 @@ const runtime = require('./runtime-context');
 const timeService = require('./time-service');
 const cloudApi = require('./cloud-api');
 const storage = require('./storage-migration');
-const chatSafety = require('./chat-safety');
 const chatService = require('./chat-service');
+const chatDemoFixture = require('./chat-demo-fixture');
 const lifeScenes = require('../utils/life-scenes');
+const dailyMoodConfig = require('../config/daily-mood');
 
 const STATE_KEY = 'eggbabe_post_hatch_v36';
 const SLOT_MS = 5 * 60 * 60 * 1000;
-const MOODS = [
-  { mood: '平静', line: '今天想把每件小事都慢慢做好。', face: 'quiet' },
-  { mood: '好奇', line: '我总觉得窗外又多了一种没见过的颜色。', face: 'curious' },
-  { mood: '温暖', line: '今天的光落在身上，很像一条柔软的围巾。', face: 'warm' },
-  { mood: '轻快', line: '我走路的时候，脚步好像会自己哼歌。', face: 'bright' }
-];
+const CHAT_MAX_UNICODE_CHARACTERS = 120;
 
 function key() { return runtime.scopedKey(STATE_KEY); }
 function readState() {
   const value = storage.read(key(), null);
-  if (!value || value.version !== 36) return { version: 36, actions: {}, keepsakes: [], letters: [], postcards: [] };
+  if (!value || value.version !== 36) return { version: 36, actions: {}, keepsakes: [], postcards: [] };
   return {
     version: 36,
     actions: value.actions || {},
     keepsakes: Array.isArray(value.keepsakes) ? value.keepsakes : [],
-    letters: Array.isArray(value.letters) ? value.letters : [],
     postcards: Array.isArray(value.postcards) ? value.postcards : []
   };
 }
@@ -57,13 +52,6 @@ function slotMeta(pet) {
   const slotStart = hatchAt + slotIndex * SLOT_MS;
   return { slotIndex, slotStart, slotEnd: slotStart + SLOT_MS };
 }
-function dateKey(timestamp) {
-  return new Date(Number(timestamp || businessNow()) + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-function moodFor(pet, now) {
-  const day = dateKey(now);
-  return Object.assign({ businessDate: day, source: 'approved-fallback' }, MOODS[hash(`${pet.id}:${day}`) % MOODS.length]);
-}
 function normalizeKeepsake(item) {
   const source = item && typeof item === 'object' ? item : {};
   const id = String(source.id || source.keepsake_id || '');
@@ -74,74 +62,87 @@ function normalizeKeepsake(item) {
     asset: String(source.asset || source.asset_url || lifeScenes.assets.POST_HATCH.keepsakes[id] || '')
   });
 }
+function normalizePostcard(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const readAt = source.readAt || source.read_at || '';
+  const explicitlyUnread = source.unread === true || source.isUnread === true || source.is_unread === true || source.is_read === false || source.read === false;
+  return Object.assign({}, source, {
+    id: String(source.id || source.postcard_id || ''),
+    sceneLabel: String(source.sceneLabel || source.scene_label || ''),
+    line: String(source.line || source.story || ''),
+    asset: String(source.asset || source.asset_url || ''),
+    readAt,
+    unread: !readAt && explicitlyUnread
+  });
+}
 function normalizeMemories(memories) {
   const source = memories && typeof memories === 'object' ? memories : {};
   return {
     keepsakes: (Array.isArray(source.keepsakes) ? source.keepsakes : []).map(normalizeKeepsake),
-    postcards: Array.isArray(source.postcards) ? source.postcards : [],
+    postcards: (Array.isArray(source.postcards) ? source.postcards : []).map(normalizePostcard),
     cardRecommendation: source.cardRecommendation || source.card_recommendation || null
   };
 }
-function deliverReplies(state) {
-  let changed = false;
-  state.letters.forEach(letter => {
-    if (letter.direction !== 'out' || letter.replyDelivered) return;
-    letter.replyDelivered = true;
-    state.postcards.unshift({
-      id: `reply-${letter.id}`,
-      direction: 'in',
-      sceneLabel: letter.sceneLabel,
-      sentAt: letter.sentAt,
-      deliveredAt: businessNow(),
-      line: `我收到你的信了。${letter.sceneLabel}的风很远，你写的字却像在我旁边。`,
-      asset: ''
-    });
-    changed = true;
-  });
-  return changed;
+function firstUnreadPostcard(postcards) {
+  return (Array.isArray(postcards) ? postcards : []).find(item => item && item.unread) || null;
 }
-function deliverAwayKeepsakes(state, scene) {
-  if (!scene.atHome) return false;
-  const pending = state.letters.filter(letter => letter.direction === 'out' && letter.keepsake && !letter.keepsakeDelivered);
-  pending.forEach(letter => {
-    letter.keepsakeDelivered = true;
-    if (!state.keepsakes.some(item => item.id === letter.keepsake.id)) {
-      state.keepsakes.unshift(Object.assign({}, letter.keepsake, { appearedAt: businessNow(), sourceScene: letter.sceneLabel }));
-    }
-  });
-  return pending.length > 0;
+function defaultChatAccess(status, definition, fields) {
+  const current = definition || {};
+  const place = [current.majorLabel, current.label].filter(Boolean).join(' · ');
+  const defaults = status === 'available'
+    ? { reason: 'AT_HOME', message: '' }
+    : { reason: status === 'away' ? 'AWAY' : 'UNAVAILABLE', message: place ? `蛋宝宝正在${place}，暂时不能聊天。` : '现在暂时不能聊天，请稍后再试。' };
+  return Object.assign({ status, nextAvailableAt: '' }, defaults, fields || {});
+}
+function demoChatAccess(definition) {
+  return definition && definition.canTalk
+    ? defaultChatAccess('available', definition)
+    : defaultChatAccess('away', definition);
+}
+function normalizeChatAccess(source, definition) {
+  const raw = source && typeof source === 'object' ? source : null;
+  const status = String(raw && raw.status || '').toLowerCase();
+  const unsynced = () => defaultChatAccess('unavailable', null, {
+      reason: 'CHAT_ACCESS_UNSYNCED',
+      message: '聊天权限正在同步，请稍后再试。'
+    });
+  if (!['available', 'away', 'unavailable'].includes(status)) return unsynced();
+  const reason = String(raw.reason || '').trim();
+  const message = typeof raw.message === 'string' ? raw.message : '';
+  if (!reason || (status !== 'available' && !message.trim())) return unsynced();
+  const nextValue = raw.next_available_at !== undefined ? raw.next_available_at : raw.nextAvailableAt;
+  const nextAvailableAt = nextValue === null || nextValue === undefined || nextValue === '' ? '' : String(nextValue);
+  if (nextAvailableAt && !chatService.isAuthoritativeTimestamp(nextAvailableAt)) return unsynced();
+  return { status, reason, message, nextAvailableAt };
 }
 function localSnapshot(pet) {
   const meta = slotMeta(pet);
   if (!meta) return { ok: false, code: 'SERVER_TIME_REQUIRED', message: '正在同步此刻状态，请稍后重试' };
   const state = readState();
   const scene = lifeScenes.stateForSlot(meta.slotIndex, meta.slotStart);
-  const repliesChanged = deliverReplies(state);
-  const keepsakesChanged = deliverAwayKeepsakes(state, scene);
-  const changed = repliesChanged || keepsakesChanged;
-  if (changed) {
-    const saved = writeState(state);
-    if (!saved.ok) return saved;
-  }
-  const actionRecord = state.actions[String(meta.slotIndex)] || null;
+  const actionRecord = scene.atHome ? state.actions[String(meta.slotIndex)] || null : null;
+  const memories = normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) });
   return {
     ok: true,
     mode: runtime.getMode(),
-    mood: moodFor(pet, businessNow()),
+    mood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
     currentState: Object.assign({}, scene, meta, {
       actionDone: !!actionRecord,
-      actionFeedback: actionRecord ? actionRecord.feedback : '',
-      letterSent: !!(actionRecord && actionRecord.kind === 'letter')
+      actionFeedback: actionRecord ? actionRecord.feedback : ''
     }),
+    // demo 仅为验收模拟服务端合同；正式环境不允许使用这个本地判断放行聊天。
+    chatAccess: demoChatAccess(scene),
     previewImage: scene.previewImage,
-    memories: normalizeMemories({ keepsakes: state.keepsakes, postcards: state.postcards, cardRecommendation: cardRecommendation(pet) })
+    memories,
+    newMessage: firstUnreadPostcard(memories.postcards)
   };
 }
 function normalizeLiveSnapshot(result) {
-  if (!result || !result.ok || result.mode !== 'live' || !result.current_state || !result.mood || typeof result.mood.mood !== 'string') {
+  if (!result || !result.ok || result.mode !== 'live' || !result.current_state) {
     return { ok: false, code: result && result.code || 'POST_HATCH_INVALID', message: result && result.message || '此刻状态没有加载好，请重试' };
   }
   const source = result.current_state;
+  if (result.serverTs) timeService.acceptServerTime(result.serverTs);
   const definition = lifeScenes.resolveDefinition(source.major_scene_id, source.small_scene_id);
   const slotStart = Date.parse(source.slot_start);
   const slotEnd = Date.parse(source.slot_end);
@@ -149,41 +150,49 @@ function normalizeLiveSnapshot(result) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
   const state = Object.assign({}, source, definition, {
-    // 动作、所在屏和能否说话全部来自审核过的固定映射，服务端不得随机改写。
+    // 动作和所在屏来自审核过的固定映射；聊天权限只读服务端 chat_access。
     line: String(source.line || definition.line),
     slotIndex: Number(source.slot_index),
     slotStart,
     slotEnd,
-    actionDone: !!source.action_done,
-    actionFeedback: source.action_feedback || definition.action.feedback,
-    letterSent: !!source.letter_sent,
+    actionDone: definition.atHome && !!source.action_done,
+    actionFeedback: definition.action ? source.action_feedback || definition.action.feedback : '',
     previewImage: lifeScenes.assets.POST_HATCH.panoramaFallback
   });
   if (!Number.isInteger(state.slotIndex)) {
     return { ok: false, code: 'POST_HATCH_INVALID', message: '此刻状态数据不完整，请重试' };
   }
+  const memories = normalizeMemories(result.memories);
+  const chatAccess = normalizeChatAccess(result.chat_access || result.chatAccess, definition);
   return {
     ok: true,
     mode: 'live',
-    mood: result.mood,
+    // 每日心情是独立的纯前端静态 UI，不读取接口中的心情字段。
+    mood: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE),
     currentState: state,
+    chatAccess,
     previewImage: state.previewImage,
-    memories: normalizeMemories(result.memories)
+    memories,
+    newMessage: firstUnreadPostcard(memories.postcards)
   };
 }
 function getSnapshot(pet) {
   if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.getPostHatchHome(pet.id).then(normalizeLiveSnapshot);
+    const request = cloudApi.getPostHatchHome(pet.id);
+    const normalized = request.then(normalizeLiveSnapshot);
+    if (request.abort) normalized.abort = () => request.abort();
+    return normalized;
   }
   if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '破壳后内容服务尚未接入' });
   return Promise.resolve(localSnapshot(pet));
 }
 function performAction(pet, snapshot) {
   const current = snapshot && snapshot.currentState;
-  if (!pet || !current || !current.atHome) return Promise.resolve({ ok: false, code: 'ACTION_NOT_AVAILABLE', message: '此刻没有这个动作' });
+  if (!pet || !current || !current.atHome || !current.action) return Promise.resolve({ ok: false, code: 'ACTION_NOT_AVAILABLE', message: '此刻没有这个动作' });
   if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return cloudApi.performPostHatchAction(pet.id, current.slotIndex, current.action.id);
+    const requestId = `post-hatch-action-${pet.id}-${current.slotIndex}-${current.action.id}`;
+    return cloudApi.performPostHatchAction(pet.id, current.slotIndex, current.action.id, requestId);
   }
   const state = readState();
   const slotKey = String(current.slotIndex);
@@ -198,40 +207,94 @@ function performAction(pet, snapshot) {
   const saved = writeState(state);
   return Promise.resolve(saved.ok ? { ok: true, alreadyDone: false, feedback: record.feedback, keepsake } : saved);
 }
-function sendLetter(pet, snapshot, text) {
-  const current = snapshot && snapshot.currentState;
-  const value = String(text || '').trim();
-  if (!current || current.atHome) return Promise.resolve({ ok: false, code: 'LETTER_NOT_AVAILABLE', message: 'ta 现在就在家里' });
-  if (!value) return Promise.resolve({ ok: false, code: 'LETTER_EMPTY', message: '写一句话再寄出吧' });
-  if (Array.from(value).length > 120) return Promise.resolve({ ok: false, code: 'LETTER_TOO_LONG', message: '这封信最多写 120 个字' });
-  const assessment = chatSafety.assessInput(value);
-  if (!assessment.allowed || assessment.crisis) return Promise.resolve({ ok: false, code: 'LETTER_UNSAFE', message: assessment.message || '换个说法试试' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) return cloudApi.sendPostHatchLetter(pet.id, current.slotIndex, value);
-  const state = readState();
-  const slotKey = String(current.slotIndex);
-  if (state.actions[slotKey]) return Promise.resolve({ ok: true, alreadyDone: true, feedback: state.actions[slotKey].feedback });
-  const letter = {
-    id: `letter-${pet.id}-${current.slotIndex}`,
-    direction: 'out', slotIndex: current.slotIndex, sceneLabel: `${current.majorLabel} · ${current.label}`,
-    text: value, sentAt: businessNow(), replyDelivered: false, keepsakeDelivered: false, keepsake: current.keepsake
-  };
-  state.letters.unshift(letter);
-  state.actions[slotKey] = { kind: 'letter', feedback: current.action.feedback, actedAt: letter.sentAt };
-  const saved = writeState(state);
-  return Promise.resolve(saved.ok ? { ok: true, alreadyDone: false, feedback: current.action.feedback } : saved);
-}
-function sendSceneMessage(pet, snapshot, text) {
-  const current = snapshot && snapshot.currentState;
-  const value = String(text || '').trim();
-  if (!current || !current.canTalk) return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: '此刻没有说话入口' });
-  if (!value) return Promise.resolve({ ok: false, code: 'TALK_EMPTY', message: '先说一句话吧' });
-  const assessment = chatSafety.assessInput(value);
-  if (!assessment.allowed) return Promise.resolve({ ok: false, code: 'TALK_UNSAFE', message: assessment.message || '换个说法试试' });
-  if (assessment.crisis) return Promise.resolve({ ok: true, text: chatSafety.CRISIS_RESPONSE, safety: 'crisis' });
-  if (runtime.getMode() === 'live' && config.backendEnabled) {
-    return chatService.requestReply({ eggId: pet.id, text: value, history: [], scene: { major: current.major, small: current.key } });
+function sendSceneMessage(pet, snapshot, text, clientMessageId) {
+  const stableId = String(clientMessageId || '');
+  if (!pet || !pet.id || !stableId) {
+    return Promise.resolve({ ok: false, code: 'CHAT_REQUEST_INVALID', message: '消息请求不完整，请重试' });
   }
-  return Promise.resolve({ ok: true, text: chatService.approvedFallback(snapshot.mood && snapshot.mood.mood), safety: 'approved-fallback' });
+  const chatAccess = snapshot && snapshot.chatAccess;
+  if (!chatAccess || chatAccess.status !== 'available') {
+    return Promise.resolve({ ok: false, code: 'TALK_NOT_AVAILABLE', message: chatAccess && chatAccess.message || '此刻没有说话入口' });
+  }
+  const value = String(text || '');
+  const mode = runtime.getMode();
+  if (mode === 'live') {
+    return chatService.requestReply({ eggId: pet.id, text: value, clientMessageId: stableId });
+  }
+  if (mode !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '聊天服务尚未接入' });
+  // develop 的 fixture 模拟服务端合同：页面交互可提前禁用空草稿，但最终拒绝仍在服务端。
+  if (!value.trim()) return Promise.resolve({ ok: false, mode: 'demo', code: 'INPUT_EMPTY', resultType: 'INPUT_REJECTED', message: '请输入想说的话。' });
+  if (Array.from(value).length > CHAT_MAX_UNICODE_CHARACTERS) {
+    return Promise.resolve({ ok: false, mode: 'demo', code: 'INPUT_TOO_LONG', resultType: 'INPUT_REJECTED', message: '最多 120 个字，请精简后再发送。' });
+  }
+  const createdAt = new Date(businessNow()).toISOString();
+  const result = {
+    ok: true,
+    mode: 'demo',
+    resultType: 'REPLY',
+    requestId: stableId,
+    messageId: `demo-reply-${stableId}`,
+    userMessageId: `demo-user-${stableId}`,
+    clientMessageId: stableId,
+    createdAt,
+    userCreatedAt: createdAt,
+    text: chatDemoFixture.replyFor(),
+    safety: 'approved-fallback',
+    fallbackUsed: true
+  };
+  return Promise.resolve(result);
+}
+function normalizeChatHistoryMessage(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const role = String(source.role || '');
+  const id = String(source.message_id || source.id || '');
+  const text = String(source.text || source.content || '');
+  const createdAt = String(source.created_at || source.createdAt || '');
+  const clientMessageId = String(source.client_message_id || source.clientMessageId || '');
+  if (!id || !['user', 'assistant'].includes(role) || !text.trim() || !chatService.isAuthoritativeTimestamp(createdAt)) return null;
+  if (role === 'user' && !clientMessageId) return null;
+  return {
+    id,
+    role,
+    text,
+    createdAt,
+    clientMessageId
+  };
+}
+function getChatHistory(pet, cursor, limit) {
+  if (!pet) return Promise.resolve({ ok: false, code: 'PET_REQUIRED', message: '还没有找到蛋宝宝' });
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
+    return cloudApi.getChatHistory(pet.id, cursor, limit).then(result => {
+      if (!result || !result.ok) return result || { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录没有加载好' };
+      if (result.mode !== 'live') return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录环境标识无效，请重试' };
+      if (!Array.isArray(result.messages)) return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录数据不完整，请重试' };
+      const source = result.messages;
+      const pageSize = Math.min(20, Math.max(1, Number(limit) || 20));
+      const messages = source.map(normalizeChatHistoryMessage);
+      const ids = new Set();
+      const hasInvalidMessage = messages.some((item, index) => {
+        if (!item || ids.has(item.id)) return true;
+        ids.add(item.id);
+        if (index === 0) return false;
+        return Date.parse(item.createdAt) < Date.parse(messages[index - 1].createdAt);
+      });
+      const hasMore = result.has_more !== undefined ? result.has_more : result.hasMore;
+      const nextCursorValue = result.next_cursor !== undefined ? result.next_cursor : result.nextCursor;
+      const nextCursor = nextCursorValue === undefined || nextCursorValue === null ? '' : String(nextCursorValue);
+      if (source.length > pageSize || hasInvalidMessage || typeof hasMore !== 'boolean' || (hasMore && !nextCursor)) {
+        return { ok: false, code: 'CHAT_HISTORY_INVALID', message: '聊天记录数据不完整，请重试' };
+      }
+      return {
+        ok: true,
+        mode: 'live',
+        messages,
+        nextCursor,
+        hasMore
+      };
+    });
+  }
+  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '聊天记录服务尚未接入' });
+  return Promise.resolve({ ok: true, mode: 'demo', messages: [], nextCursor: '', hasMore: false });
 }
 function cardRecommendation(pet) {
   if (!pet || !pet.collectionCard) return null;
@@ -254,4 +317,20 @@ function getMemories(pet) {
   })));
 }
 
-module.exports = { SLOT_MS, MOODS, slotMeta, getSnapshot, performAction, sendLetter, sendSceneMessage, getMemories, normalizeLiveSnapshot };
+function markPostcardRead(pet, postcardId) {
+  if (!pet || !postcardId) return Promise.resolve({ ok: false, code: 'POSTCARD_REQUIRED', message: '没有找到这封明信片' });
+  if (runtime.getMode() === 'live' && config.backendEnabled) {
+    return Promise.resolve({ ok: false, code: 'POSTCARD_READ_SYNC_REQUIRED', message: '明信片状态正在同步，请稍后重试' });
+  }
+  if (runtime.getMode() !== 'demo') return Promise.resolve({ ok: false, code: 'BACKEND_REQUIRED', message: '回忆服务尚未接入' });
+  const state = readState();
+  const postcard = state.postcards.find(item => String(item && item.id || '') === String(postcardId));
+  if (!postcard) return Promise.resolve({ ok: false, code: 'POSTCARD_NOT_FOUND', message: '没有找到这封明信片' });
+  if (!postcard.unread && postcard.readAt) return Promise.resolve({ ok: true, alreadyRead: true });
+  postcard.unread = false;
+  postcard.readAt = businessNow();
+  const saved = writeState(state);
+  return Promise.resolve(saved.ok ? { ok: true, alreadyRead: false } : saved);
+}
+
+module.exports = { SLOT_MS, slotMeta, getSnapshot, getChatHistory, performAction, sendSceneMessage, getMemories, markPostcardRead, normalizeLiveSnapshot, normalizeChatHistoryMessage, normalizeChatAccess };

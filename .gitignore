@@ -10,6 +10,9 @@ project.private.config.json
 # 本地生成与转换的中间产物，不进入版本库。
 /tmp/
 
+# 小程序 npm 的本地安装目录由 lockfile 复现；微信开发者工具会构建运行时 miniprogram_npm。
+/miniprogram/node_modules/
+
 # 本机下载的完整字体源包；H5 只提交转换后的运行时 WOFF2。
 h5/birth-card/assets/fonts/Google_Sans/
 h5/birth-card/assets/fonts/Noto_Sans_SC/

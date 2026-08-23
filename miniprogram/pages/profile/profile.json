@@ -1,7 +1,7 @@
 {
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
-    "list-row": "../../components/list-row/list-row",
-    "card": "../../components/card/card"
+    "card": "../../components/card/card",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

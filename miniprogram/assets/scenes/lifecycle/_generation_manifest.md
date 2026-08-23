@@ -1,5 +1,7 @@
 # 蛋宝宝生命周期图片生成清单
 
+> **历史清单（截至 2026-08-02），不得据此判断当前缺图或运行路径。** 当前资产要求见 `docs/eggbabe-DESIGN.md`，实际映射见 `miniprogram/config/pre-hatch-assets.js` 与 `miniprogram/config/post-hatch-assets.js`；本文只保留早期生成记录与提示词。
+
 更新时间：2026-08-02
 依据：主 PRD §11、辅助 PRD §10.11、`lifecycle/README.md` 锁定基准。
 统一交付：WebP；透明素材必须带真实 Alpha；角色固定 `1254 × 1254`；窗外素材固定 `941 × 1672`。
@@ -34,19 +36,17 @@
 | 19 | `pre-hatch/20-room-objects/interactive-props/coffee_machine.webp` | 破壳前 / 互动小物 | 1254×1254 / 43274 | RGBA，四角透明 | 正式·新增 |
 | 20 | `pre-hatch/20-room-objects/interactive-props/drawing_paper_set.webp` | 破壳前 / 互动小物 | 1254×1254 / 47810 | RGBA，四角透明 | 正式·新增 |
 | 21 | `pre-hatch/20-room-objects/interactive-props/scarf.webp` | 破壳前 / 互动小物 | 1254×1254 / 76220 | RGBA，四角透明 | 正式·新增 |
-| 22 | `post-hatch/10-background/left-living/scene-sets/{scene_key}_left_living.webp`（20 张） | 破壳后 / 左屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
-| 23 | `post-hatch/10-background/right-decor/scene-sets/{scene_key}_right_decor.webp`（20 张） | 破壳后 / 右屏状态背景 | 941×1672 | 不透明 WebP | 待生成，清单见三屏规范 |
-| 24 | `post-hatch/30-character/jade-rabbit/sleep.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
+| 22 | `post-hatch/10-background/panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.webp`（20 张） | 破壳后 / 连续房间全景 | 2823×1672 | 不透明 WebP | 正式·单图覆盖三屏 |
+| 23 | 左／中／右独立背景切图 | 破壳后 / 已停用 | — | — | 不再生成或接入运行时 |
+| 24 | `post-hatch/30-character/jade-rabbit/sleep.webp` | 玉兔 / 角色 | 1254×1254 / 82112 | RGBA，四角透明 | 正式·新增 |
 | 25 | `post-hatch/30-character/jade-rabbit/lazy.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 26 | `post-hatch/30-character/jade-rabbit/stare.webp` | 玉兔 / 角色 | 1254×1254 / 93122 | RGBA，四角透明 | 正式·复用基准 |
-| 27 | `post-hatch/30-character/jade-rabbit/tea.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 28 | `post-hatch/30-character/jade-rabbit/drawing.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 29 | `post-hatch/30-character/jade-rabbit/gaming.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 30 | `post-hatch/30-character/jade-rabbit/window_back.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
 | 31 | `post-hatch/30-character/boon-koi/sleep.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
 | 32 | `post-hatch/30-character/boon-koi/lazy.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
 | 33 | `post-hatch/30-character/boon-koi/stare.webp` | 锦鲤 / 角色 | 1254×1254 / 80776 | RGBA，四角透明 | 正式·复用基准 |
-| 34 | `post-hatch/30-character/boon-koi/tea.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
 | 35 | `post-hatch/30-character/boon-koi/drawing.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
 | 36 | `post-hatch/30-character/boon-koi/gaming.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
 | 37 | `post-hatch/30-character/boon-koi/window_back.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
@@ -57,7 +57,6 @@
 | 42 | `post-hatch/20-room-objects/center-desk/paper_front.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
 | 43 | `post-hatch/20-room-objects/center-desk/game_screen_idle.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
 | 44 | `post-hatch/20-room-objects/center-desk/game_screen_active.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
-| 45 | `post-hatch/40-interaction-fx/tea_steam.webp` | 互动反馈 / 前景 FX | — | 待检 | 待生成 |
 | 46 | `post-hatch/50-overlays/magic-window/jade_rabbit_back_silhouette.webp` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
 | 47 | `post-hatch/50-overlays/magic-window/boon_koi_back_silhouette.webp` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
 

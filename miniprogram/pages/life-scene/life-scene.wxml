@@ -1,63 +1,153 @@
 <view class="page {{loading ? 'page--loading' : ''}} {{reducedMotion ? 'page--reduced' : ''}}">
-  <view class="topbar" style="padding-top:{{statusBarHeight}}px;">
-    <view class="round-btn" aria-role="button" aria-label="返回" bindtap="onBack"><view class="back-icon"></view></view>
+  <!-- DEV-ONLY：默认只显示一个验收入口，正式版本 isDemo=false 时不会渲染。 -->
+  <view wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester" style="top:{{acceptanceTesterTopPx}}px;">
+    <view class="stage-tester-button {{acceptanceToolsOpen ? 'stage-tester-button--open' : ''}}" aria-role="button" aria-label="{{acceptanceToolsOpen ? '收起验收工具' : '展开验收工具'}}" catchtap="onAcceptanceToolsToggle">
+      <text class="stage-tester-tag">验收</text><text>工具</text><text class="stage-tester-chevron">{{acceptanceToolsOpen ? '⌃' : '⌄'}}</text>
+    </view>
   </view>
-  <text wx:if="{{isDemo}}" class="demo-scene-badge" style="top:{{demoBadgeTop}}px;">DEMO</text>
 
-  <view wx:if="{{loading}}" class="state-layer">
-    <view class="loading-orbit"></view><text>正在看看 ta 此刻在哪里…</text>
+  <view wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="scene-tester scene-tester--post-hatch" style="top:{{sceneTesterTopPx}}px;">
+    <view class="scene-tester-button {{sceneTesterOpen ? 'scene-tester-button--open' : ''}} {{sceneTesterBusy ? 'scene-tester-button--busy' : ''}}" aria-role="button" aria-label="测试场景，当前{{sceneTesterLabel}}" bindtap="onSceneTesterToggle">
+      <text class="scene-tester-tag">场景</text><text class="scene-tester-current">{{sceneTesterBusy ? '切换中…' : sceneTesterLabel}}</text><text class="scene-tester-chevron">⌄</text>
+    </view>
+    <scroll-view wx:if="{{sceneTesterOpen}}" class="scene-tester-menu" scroll-y="true">
+      <view wx:for="{{sceneTesterOptions}}" wx:key="key" class="scene-tester-option {{sceneTesterKey === item.key ? 'scene-tester-option--active' : ''}}" data-scene="{{item.key}}" aria-role="button" bindtap="onSceneTesterSelect">
+        <view class="scene-tester-option-copy"><text>{{item.label}}</text></view>
+        <text wx:if="{{sceneTesterKey === item.key}}">✓</text>
+      </view>
+    </scroll-view>
   </view>
-  <view wx:elif="{{error}}" class="state-layer state-layer--error">
+
+  <!-- DEV-ONLY：与破壳前首页共享阶段验收器；release/trial 下 isDemo=false，不会渲染。 -->
+  <view wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="stage-tester" style="top:{{stageTesterTopPx}}px;">
+    <view class="stage-tester-button {{stageTesterOpen ? 'stage-tester-button--open' : ''}} {{stageTesterBusy ? 'stage-tester-button--busy' : ''}}" aria-role="button" aria-label="测试阶段，当前{{stageTesterLabel}}" catchtap="onStageTesterToggle">
+      <text class="stage-tester-tag">测试</text><text>{{stageTesterBusy ? '切换中…' : stageTesterLabel}}</text><text class="stage-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{stageTesterOpen}}" class="stage-tester-menu">
+      <view wx:for="{{stageTesterOptions}}" wx:key="key" class="stage-tester-option {{stageTesterKey === item.key ? 'stage-tester-option--active' : ''}}" data-stage="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" catchtap="onStageTesterSelect"><text>{{item.label}}</text><text wx:if="{{stageTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="companion-state-tester" style="top:{{companionStateTesterTopPx}}px;">
+    <view class="companion-state-tester-button {{companionStateTesterOpen ? 'companion-state-tester-button--open' : ''}}" aria-role="button" aria-label="测试陪伴状态，当前{{companionStateTesterLabel}}" bindtap="onCompanionStateTesterToggle">
+      <text class="companion-state-tester-tag">状态</text><text class="companion-state-tester-current">{{companionStateTesterLabel}}</text><text class="companion-state-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{companionStateTesterOpen}}" class="companion-state-tester-menu">
+      <view wx:for="{{companionStateTesterOptions}}" wx:key="key" class="companion-state-tester-option {{companionStateTesterKey === item.key ? 'companion-state-tester-option--active' : ''}} {{!item.available ? 'companion-state-tester-option--missing' : ''}}" data-companion-state="{{item.key}}" aria-role="button" aria-disabled="{{!item.available}}" bindtap="onCompanionStateTesterSelect"><text>{{item.label}}</text><text wx:if="{{!item.available}}" class="companion-state-tester-missing">缺图片</text><text wx:elif="{{companionStateTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="prototype-tester" style="top:{{prototypeTesterTopPx}}px;">
+    <view class="prototype-tester-button {{prototypeTesterOpen ? 'prototype-tester-button--open' : ''}} {{prototypeTesterBusy ? 'prototype-tester-button--busy' : ''}}" aria-role="button" aria-label="测试角色，当前{{prototypeTesterLabel}}" bindtap="onPrototypeTesterToggle">
+      <text class="prototype-tester-tag">角色</text><text>{{prototypeTesterBusy ? '切换中…' : prototypeTesterLabel}}</text><text class="prototype-tester-chevron">⌄</text>
+    </view>
+    <view wx:if="{{prototypeTesterOpen}}" class="prototype-tester-menu">
+      <view wx:for="{{prototypeTesterOptions}}" wx:key="key" class="prototype-tester-option {{prototypeTesterKey === item.key ? 'prototype-tester-option--active' : ''}}" data-prototype="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" bindtap="onPrototypeTesterSelect"><text>{{item.label}}</text><text wx:if="{{prototypeTesterKey === item.key}}">✓</text></view>
+    </view>
+  </view>
+
+  <!-- DEV-ONLY：心情 Mock 只在当前页内存中切换；release/trial 下不渲染。 -->
+  <view wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="mood-tester" style="top:{{moodTesterTopPx}}px;">
+    <view class="mood-tester-button {{moodTesterOpen ? 'mood-tester-button--open' : ''}}" aria-role="button" aria-label="测试每日心情，当前{{moodTesterLabel}}" bindtap="onMoodTesterToggle">
+      <text class="mood-tester-tag">心情</text><text>{{moodTesterLabel}}</text><text class="mood-tester-chevron">⌄</text>
+    </view>
+    <scroll-view wx:if="{{moodTesterOpen}}" class="mood-tester-menu" scroll-y="true">
+      <view wx:for="{{moodPreviewOptions}}" wx:key="key" class="mood-tester-option {{moodTesterKey === item.key ? 'mood-tester-option--active' : ''}}" data-mood="{{item.key}}" aria-role="button" aria-label="切换到{{item.label}}" bindtap="onMoodTesterSelect"><text>{{item.label}}</text><text wx:if="{{moodTesterKey === item.key}}">✓</text></view>
+    </scroll-view>
+  </view>
+  <view wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer">
+    <view class="loading-orbit"></view><text>{{loading ? '正在确认 ta 此刻状态…' : '正在加载房间…'}}</text>
+  </view>
+  <view wx:if="{{!loading && error}}" class="state-layer state-layer--error">
     <text class="state-error-title">暂时没看见 ta 此刻的状态</text><text>{{error}}</text>
     <view class="state-action" bindtap="onRetry">重新看看</view><view class="state-secondary" bindtap="onBack">返回主页</view>
   </view>
 
-  <block wx:elif="{{currentState}}">
-    <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" scroll-into-view="{{scrollIntoView}}" bindscroll="onScroll">
+  <scene-feedback-stack
+    text="{{sceneFeedbackText}}"
+    variant="{{sceneFeedbackVariant}}"
+    tone="{{sceneFeedbackTone}}"
+    visible="{{sceneFeedbackVisible}}"
+    system-behind="{{sceneFeedbackSystemBehind}}"
+    promoting="{{sceneFeedbackPromoting}}"
+    reduced-motion="{{reducedMotion}}"
+  ></scene-feedback-stack>
+
+  <view wx:if="{{pet}}" class="life-status-stack" style="top:{{moodTabTopPx}}px;">
+    <view class="pet-mood-anchor">
+      <pet-mood-tab
+        id="petMoodTab"
+        pet-name="{{pet.name || '蛋宝宝'}}"
+        mood="{{dailyMood}}"
+        intro-ready="{{sceneEntered && initialViewportReady && sceneBackgroundReady && !error}}"
+        reduced-motion="{{reducedMotion}}"
+      ></pet-mood-tab>
+    </view>
+    <view
+      class="room-clock room-clock--{{clockMode}}"
+      aria-role="button"
+      aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
+      catchtap="onClockTap"
+    >
+      <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
+        <text class="clock-number clock-number--twelve">12</text>
+        <text class="clock-number clock-number--three">3</text>
+        <text class="clock-number clock-number--six">6</text>
+        <text class="clock-number clock-number--nine">9</text>
+        <view class="clock-hand clock-hand--hour" style="{{clockHourStyle}}"></view>
+        <view class="clock-hand clock-hand--minute" style="{{clockMinuteStyle}}"></view>
+        <view class="clock-hand clock-hand--second" style="{{clockSecondStyle}}"></view>
+        <view class="clock-pin"></view>
+      </view>
+      <view wx:else class="clock-digital">
+        <text class="clock-time">{{clockTimeText}}</text>
+        <text class="clock-date">{{clockDateText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <block wx:if="{{currentState && !error}}">
+    <view class="scene-stage {{sceneEntered && initialViewportReady ? 'scene-stage--entered' : ''}}">
+    <scroll-view class="world-scroll" scroll-x enhanced paging-enabled show-scrollbar="{{false}}" scroll-left="{{scrollLeft}}" bindscroll="onScroll">
       <view class="world-track">
+        <image wx:if="{{previousPanoramaImage}}" class="world-panorama-bg world-panorama-bg--previous {{sceneCrossfadeActive ? 'world-panorama-bg--previous-fading' : ''}}" src="{{previousPanoramaImage}}" data-panorama-url="{{previousPanoramaImage}}" mode="aspectFill" bindanimationend="onPreviousPanoramaAnimationEnd"></image>
+        <image class="world-panorama-bg" src="{{panoramaImage}}" mode="aspectFill" bindload="onSceneBackgroundLoad" binderror="onSceneBackgroundError"></image>
+        <image wx:if="{{pendingPanoramaImage}}" class="world-panorama-preload" src="{{pendingPanoramaImage}}" data-panorama-url="{{pendingPanoramaImage}}" mode="aspectFill" bindload="onPendingPanoramaLoad" binderror="onPendingPanoramaError"></image>
         <view id="world-panel-0" class="world-panel world-panel--living">
-          <image wx:if="{{panelImages[0]}}" class="panel-bg" src="{{panelImages[0]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--left" src="{{panoramaFallback}}" mode="aspectFill"></image>
-          <view class="panel-tone" style="{{playedActionKind === 'lamp' ? 'background:rgba(23,29,38,.5);' : ''}}"></view><view class="bed-placeholder"><view class="bed-pillow"></view><view class="bed-blanket" style="{{playedActionKind === 'blanket' ? 'height:74%;transform:translateY(-18rpx);' : ''}}"></view></view><view class="lamp-placeholder" style="{{playedActionKind === 'lamp' ? 'box-shadow:0 -58rpx 0 22rpx #8D7D68;opacity:.58;' : ''}}"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 0}}" class="scene-character scene-character--living {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{174}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
-          <view wx:if="{{currentState.atHome && currentState.action.screen === 0}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view wx:for="{{windowHotspots[0]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-0 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
+          <view wx:if="{{characterPanel === 0}}" class="scene-character-hotspot" style="{{characterStyle}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
+          <view wx:if="{{currentState.action && actionPanel === 0 && !currentState.actionDone}}" class="action-glow action-glow--{{currentState.action.kind}}" style="{{actionStyle}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
         <view id="world-panel-1" class="world-panel world-panel--desk">
-          <image wx:if="{{panelImages[1]}}" class="panel-bg" src="{{panelImages[1]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--center" src="{{panoramaFallback}}" mode="aspectFill"></image>
-          <view class="panel-tone"></view>
-          <view wx:if="{{currentState.action.kind === 'cup'}}" style="position:absolute;z-index:4;right:16%;bottom:29%;width:54rpx;height:48rpx;border:7rpx solid #F4EEE2;border-radius:8rpx 8rpx 18rpx 18rpx;background:#A8BEA0;transform:{{playedActionKind === 'cup' ? 'translateX(-34rpx)' : 'none'}};transition:transform .35s ease;"></view>
-          <view wx:if="{{currentState.action.kind === 'paper'}}" style="position:absolute;z-index:4;left:39%;bottom:20%;width:132rpx;height:86rpx;border-radius:8rpx;background:{{playedActionKind === 'paper' ? '#FFF9D8' : '#F6F4EB'}};box-shadow:0 8rpx 20rpx rgba(56,45,35,.16);transform:{{playedActionKind === 'paper' ? 'rotate(-8deg) scale(1.08)' : 'rotate(5deg)'}};transition:transform .35s ease;"></view>
-          <view wx:if="{{currentState.action.kind === 'screen'}}" style="position:absolute;z-index:4;left:24%;bottom:27%;width:116rpx;height:74rpx;border:10rpx solid #534C45;border-radius:14rpx;background:{{playedActionKind === 'screen' ? '#D9F0AD' : '#879586'}};box-shadow:{{playedActionKind === 'screen' ? '0 0 34rpx rgba(220,244,159,.8)' : 'none'}};transition:all .25s ease;"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 1}}" class="scene-character scene-character--desk {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{186}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
-          <view wx:if="{{currentState.atHome && currentState.action.screen === 1}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
-          <view wx:if="{{!currentState.atHome}}" class="away-note"><text class="away-kicker">{{currentState.majorLabel}} · {{currentState.label}}</text><text class="away-line">{{currentState.line}}</text></view>
+          <view wx:for="{{windowHotspots[1]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-1 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
+          <view wx:if="{{characterPanel === 1}}" class="scene-character-hotspot" style="{{characterStyle}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
+          <view wx:if="{{currentState.action && actionPanel === 1 && !currentState.actionDone}}" class="action-glow action-glow--{{currentState.action.kind}}" style="{{actionStyle}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
         <view id="world-panel-2" class="world-panel world-panel--decor">
-          <image wx:if="{{panelImages[2]}}" class="panel-bg" src="{{panelImages[2]}}" mode="aspectFill"></image>
-          <image wx:else class="panel-bg panel-bg--panorama panel-bg--right" src="{{panoramaFallback}}" mode="aspectFill"></image>
-          <view class="panel-tone"></view><view class="decor-placeholder"><text>这里留着一块安静的空地。</text></view>
-          <view class="daily-window-hotspot" style="position:absolute;z-index:7;right:4%;top:8%;width:42%;height:42%;" aria-role="button" aria-label="查看窗外景色" catchtap="onDailyWindowTap"></view>
-          <pet-avatar wx:if="{{currentState.atHome && currentState.screen === 2}}" class="scene-character scene-character--window {{characterWarming ? 'scene-character--warming' : ''}}" pet-type="{{pet.prototype}}" size="{{168}}" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></pet-avatar>
-          <view wx:if="{{currentState.atHome && currentState.action.screen === 2}}" class="action-glow action-glow--{{currentState.action.kind}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
+          <view wx:if="{{characterPanel === 2}}" class="scene-character-hotspot" style="{{characterStyle}}" aria-role="button" aria-label="轻触蛋宝宝" bindtap="onCharacterTap" bindtouchstart="onCharacterTouchStart" bindtouchend="onCharacterTouchEnd" bindtouchcancel="onCharacterTouchEnd"></view>
+          <view wx:for="{{windowHotspots[2]}}" wx:key="id" class="daily-window-hotspot daily-window-hotspot--panel-2 daily-window-hotspot--{{item.id}}" style="{{item.style}}" data-window-panel="{{item.panel}}" data-window-hotspot="{{item.id}}" aria-role="button" aria-label="查看窗外景色" bindtouchstart="onDailyWindowTouchStart" bindtouchmove="onDailyWindowTouchMove" bindtouchend="onDailyWindowTouchEnd" bindtouchcancel="onDailyWindowTouchCancel"></view>
+          <view wx:if="{{currentState.action && actionPanel === 2 && !currentState.actionDone && currentState.action.kind !== 'window'}}" class="action-glow action-glow--{{currentState.action.kind}}" style="{{actionStyle}}" aria-role="button" aria-label="回应 ta 此刻的动作" bindtap="onSceneAction"></view>
         </view>
       </view>
     </scroll-view>
 
+    <view wx:if="{{sceneBackgroundError || sceneTransitionError}}" class="scene-background-error" bindtap="onRetrySceneBackground">{{sceneTransitionError ? '房间背景更新失败 · 轻触重试' : '房间背景没有加载好 · 轻触重试'}}</view>
+
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
-    <view wx:if="{{feedback}}" class="feedback-bubble">{{feedback}}</view>
-
-    <view wx:if="{{currentState.atHome && currentState.canTalk && currentScreen === currentState.screen}}" class="scene-composer">
-      <text wx:if="{{talkReply}}" class="inline-reply">{{talkReply}}</text><text wx:if="{{talkError}}" class="composer-error">{{talkError}}</text>
-      <view class="composer-row"><input class="composer-input" value="{{talkDraft}}" maxlength="120" placeholder="在这里说一句…" bindinput="onTalkInput" bindconfirm="onSendTalk" confirm-type="send" /><view class="composer-send {{talkBusy ? 'composer-send--busy' : ''}}" bindtap="onSendTalk">{{talkBusy ? '…' : '说'}}</view></view>
-    </view>
-    <view wx:elif="{{!currentState.atHome}}" class="scene-composer">
-      <text wx:if="{{letterError}}" class="composer-error">{{letterError}}</text>
-      <view wx:if="{{currentState.letterSent}}" class="letter-sent">信已经在路上了</view>
-      <view wx:else class="composer-row"><input class="composer-input" value="{{letterDraft}}" maxlength="120" placeholder="给远方的 ta 写一句…" bindinput="onLetterInput" bindconfirm="onSendLetter" confirm-type="send" /><view class="composer-send {{letterBusy ? 'composer-send--busy' : ''}}" bindtap="onSendLetter">{{letterBusy ? '…' : '寄'}}</view></view>
+    <view wx:if="{{currentState}}" class="scene-context-entry">
+      <view wx:if="{{currentState.atHome}}" class="scene-action-button {{contextActionDisabled ? 'scene-action-button--unavailable' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextActionLabel}}" bindtap="onContextActionTap">
+        <image class="scene-action-icon-image scene-action-icon-image--companion" src="{{contextActionIcon}}" mode="aspectFill"></image>
+        <view wx:if="{{contextActionBadge}}" class="scene-action-unavailable-badge">{{contextActionBadge}}</view>
+      </view>
+      <view wx:else class="away-status-pill" aria-role="button" aria-label="蛋宝宝外出中，轻触查看提示" bindtap="onContextActionTap">外出中</view>
     </view>
 
-    <view class="memory-entry" style="top:{{memoryEntryTop}}px;" aria-role="button" aria-label="看看回忆" bindtap="onOpenMemories">看看回忆</view>
+    <view class="scene-action-dock">
+      <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开我的和设置" bindtap="onOpenMySettings">
+        <image class="scene-action-icon-image" src="{{mySettingsIcon}}" mode="aspectFit"></image>
+      </view>
+    </view>
+    </view>
   </block>
 
   <daily-window-detail
@@ -71,7 +161,7 @@
     weather-label="{{dailyWindowWeatherLabel}}"
     period-label="{{dailyWindowPeriodLabel}}"
     origin-style="{{dailyWindowOriginStyle}}"
-    magic-enabled="{{true}}"
+    magic-enabled="{{magicWindowEnabled}}"
     bindclose="onDailyWindowClosed"
     bindretry="onDailyWindowRetry"
     bindmagic="onOpenMagicWindow"
@@ -111,19 +201,19 @@
 
     <view wx:if="{{magicWindowLoading && !magicWindowFailed}}" class="magic-window__state">
       <view class="magic-window__loader"></view>
-      <text>正在推开东京的窗…</text>
+      <text>正在推开{{magicWindowLabel}}的窗…</text>
     </view>
     <view wx:elif="{{magicWindowFailed}}" class="magic-window__state magic-window__state--error">
-      <text class="magic-window__state-title">东京窗景没有加载好</text>
+      <text class="magic-window__state-title">{{magicWindowLabel}}窗景没有加载好</text>
       <view class="magic-window__retry" aria-role="button" bindtap="onMagicWindowRetry">重新看看</view>
     </view>
 
     <view class="magic-window__topbar" style="padding-top:{{statusBarHeight}}px;">
       <view class="magic-window__back" aria-role="button" aria-label="返回上海窗外" bindtap="onCloseMagicWindow"><view class="magic-window__back-icon"></view></view>
-      <view class="magic-window__meta"><text>东京 · 雨后</text></view>
+      <view class="magic-window__meta"><text>{{magicWindowLabel}}</text></view>
     </view>
   </view>
 
   <view wx:if="{{isExiting}}" class="scene-exit-backdrop"></view>
-  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}"><image class="scene-exit-image" src="{{panoramaFallback}}" mode="aspectFill"></image></view>
+  <view wx:if="{{isExiting}}" class="scene-exit-overlay" style="{{exitTransitionStyle}}"><image class="scene-exit-image" src="{{panoramaImage}}" mode="aspectFill"></image></view>
 </view>

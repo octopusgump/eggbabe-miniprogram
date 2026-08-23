@@ -7,18 +7,53 @@ const timeService = require('../../services/time-service');
 const subscriptionMessages = require('../../services/subscription-messages');
 const demoExperience = require('../../services/demo-experience');
 
-Page({
-  data: { code: '', error: '', canSubmit: false, success: null, submitting: false, isDemo: config.localDemoEnabled },
+const ACTIVATION_CODE_LENGTH = 5;
 
-  onLoad() {
-    if (runtime.getMode() === 'demo') {
-      this.setData({ code: demoExperience.DEMO_CODE, canSubmit: true });
-    }
+function activationCodeCells(code) {
+  const value = String(code || '');
+  return Array.from({ length: ACTIVATION_CODE_LENGTH }, (_, index) => ({
+    value: value[index] || '',
+    active: value.length < ACTIVATION_CODE_LENGTH && index === value.length
+  }));
+}
+
+Page({
+  data: {
+    code: '',
+    codeCells: activationCodeCells(''),
+    codeFocused: false,
+    error: '',
+    canSubmit: false,
+    success: null,
+    submitting: false,
+    isDemo: config.localDemoEnabled
   },
 
+  onLoad() {},
+
   onCodeInput(e) {
-    const code = e.detail.value;
-    this.setData({ code, error: '', canSubmit: code.trim().length > 0 });
+    const code = String(e.detail.value || '')
+      .replace(/[^a-z0-9]/gi, '')
+      .toUpperCase()
+      .slice(0, ACTIVATION_CODE_LENGTH);
+    this.setData({
+      code,
+      codeCells: activationCodeCells(code),
+      error: '',
+      canSubmit: code.length === ACTIVATION_CODE_LENGTH
+    });
+  },
+
+  onCodeFocus() {
+    this.setData({ codeFocused: true });
+  },
+
+  onCodeBlur() {
+    this.setData({ codeFocused: false });
+  },
+
+  onCodeTap() {
+    this.setData({ codeFocused: true });
   },
 
   onValidate() {

@@ -1,8 +1,10 @@
 {
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
-    "pet-avatar": "../../components/pet-avatar/pet-avatar",
-    "mood-badge": "../../components/mood-badge/mood-badge",
-    "daily-window-detail": "../../components/daily-window-detail/daily-window-detail"
+    "daily-window-detail": "../../components/daily-window-detail/daily-window-detail",
+    "pet-mood-tab": "../../components/pet-mood-tab/pet-mood-tab",
+    "scene-feedback-stack": "../../components/scene-feedback-stack/scene-feedback-stack",
+    "doodle-editor": "../../components/doodle-editor/doodle-editor",
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

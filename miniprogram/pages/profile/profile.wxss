@@ -1,4 +1,5 @@
 .page { display: flex; flex-direction: column; height: 100vh; background: #FFFFFF; }
+.system-notice-anchor { position: fixed; z-index: 120; top: calc(148rpx + env(safe-area-inset-top)); left: 72rpx; right: 72rpx; display: flex; justify-content: center; pointer-events: none; }
 .content { flex: 1; background: #FAFAF8; }
 .avatar-section { background: #FFFFFF; display: flex; flex-direction: column; align-items: center; padding: 56rpx 0 40rpx; border-bottom: 1rpx solid #E5E3DF; }
 .avatar-btn { position: relative; width: 144rpx; height: 144rpx; margin: 0 0 26rpx; padding: 0; overflow: visible; border-radius: 50%; background: transparent; }

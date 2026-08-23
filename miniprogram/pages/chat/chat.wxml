@@ -1,45 +1,48 @@
-<view class="page">
-  <nav-bar title="{{card.name}}" bind:back="noop">
-    <!-- 右侧「⋯」菜单：如 nav-bar 支持右插槽则放这里；否则页面自绘 -->
-  </nav-bar>
-
-  <!-- 心情状态条 -->
-  <view class="mood-bar">
-    <mood-badge mood="{{dailyStatus.mood}}"></mood-badge>
-    <text class="mood-line">{{dailyStatus.line}}</text>
+<view class="page {{reducedMotion ? 'page--reduced' : ''}}" style="{{chatViewportStyle}}">
+  <view class="chat-header">
+    <nav-bar title="{{title}}" fallback-url="/pages/home/home"></nav-bar>
+    <view wx:if="{{aiNoticeVisible}}" class="ai-daily-notice" aria-live="polite">温馨提示：蛋宝宝是 AI 虚拟宠物，不是真人。</view>
   </view>
 
-  <!-- 消息区 -->
-  <scroll-view class="messages" scroll-y scroll-into-view="{{scrollAnchor}}" scroll-with-animation>
-    <view class="tip">仅展示最近的对话 · 只保留最近几个月的记录</view>
-
-    <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
-      <!-- 用户气泡（右） -->
-      <view wx:if="{{item.from === 'user'}}" class="row row--user">
-        <view class="bubble bubble--user">{{item.text}}</view>
-      </view>
-      <!-- 蛋宝宝气泡（左） -->
-      <view wx:else class="row row--egg">
-        <egg-avatar size="{{28}}" gradient-from="#EDE78E" gradient-to="#F4B9AE"></egg-avatar>
-        <view class="bubble bubble--egg">{{item.text}}</view>
-      </view>
-    </view>
-
-    <!-- 正在输入 -->
-    <view wx:if="{{typing}}" class="row row--egg">
-      <egg-avatar size="{{28}}" gradient-from="#EDE78E" gradient-to="#F4B9AE"></egg-avatar>
-      <view class="bubble bubble--egg typing">
-        <view class="dot"></view><view class="dot"></view><view class="dot"></view>
-      </view>
+  <scroll-view class="conversation" scroll-y enhanced enable-flex show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}" bindscroll="onConversationScroll" bindscrolltolower="onConversationScrollToLower" bindscrolltoupper="onLoadMoreHistory">
+    <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在打开对话…</text></view>
+    <view wx:elif="{{error && !snapshot}}" class="page-state"><text>{{error}}</text><view class="retry" aria-role="button" aria-label="{{fatalErrorActionLabel}}" hover-class="pressable--pressed" hover-stay-time="80" bindtap="onFatalErrorAction">{{fatalErrorActionLabel}}</view></view>
+    <view wx:else class="message-list">
+      <view wx:if="{{historyLoading}}" class="history-loading" aria-live="polite">正在加载聊天记录…</view>
+      <view wx:if="{{historyError}}" class="history-error" aria-live="polite"><text>{{historyError}}</text><view class="history-error__retry" aria-role="button" aria-label="重新加载聊天记录" hover-class="pressable--pressed" hover-stay-time="80" bindtap="onRetryHistory">重新加载</view></view>
+      <view wx:if="{{historyHasRecords && !hasMoreHistory && !historyLoading && !historyError}}" class="history-complete">已加载至最早聊天记录</view>
+      <block wx:for="{{messages}}" wx:key="id">
+        <view wx:if="{{item.dateDisplayLabel}}" class="message-date" aria-role="button" aria-label="{{dateCompact ? '显示完整日期' : '显示月日和星期'}}" hover-class="message-date--pressed" hover-stay-time="80" bindtap="onToggleDateFormat">{{item.dateDisplayLabel}}</view>
+        <view wx:if="{{item.dateDisplayLabel}}" class="ai-content-timeline-label">AI 虚拟宠物 · 内容由 AI 生成</view>
+        <view id="message-{{item.id}}" class="message-row message-row--{{item.role}}">
+          <view class="message-stack message-stack--{{item.role}}">
+            <view class="message-bubble message-bubble--{{item.role}}"><text>{{item.text}}</text></view>
+            <view wx:if="{{item.timeLabel}}" class="message-time">{{item.timeLabel}}</view>
+            <view wx:if="{{item.role === 'user' && item.status === 'pending'}}" class="message-status message-status--pending" aria-live="polite"><view class="message-status__pending-dot"></view><text>正在发送</text></view>
+            <view wx:elif="{{item.role === 'user' && item.status === 'failed'}}" class="message-status message-status--failed" aria-role="button" aria-label="发送失败，点击重试" hover-class="pressable--pressed" hover-stay-time="80" data-client-message-id="{{item.clientMessageId}}" bindtap="onRetryMessage">发送失败 · 点击重试</view>
+          </view>
+        </view>
+      </block>
+      <view wx:if="{{busy}}" id="message-typing" class="message-row message-row--assistant" aria-live="polite" aria-label="蛋宝宝正在回复"><view class="typing-bubble"><view class="typing-bubble__dots" aria-hidden="true"><view></view><view></view><view></view></view></view></view>
+      <view class="thread-spacer"></view>
     </view>
   </scroll-view>
 
-  <!-- 输入栏 -->
-  <view class="composer">
-    <input class="composer__input" value="{{draft}}" placeholder="说点什么…"
-           confirm-type="send" bindinput="onInput" bindconfirm="onSend" />
-    <view class="composer__send" hover-class="composer__send--pressed" bindtap="onSend">
-      <view class="composer__send-arrow"></view>
+  <view wx:if="{{snapshot && chatAvailable}}" class="composer">
+    <text wx:if="{{error && serverInputError}}" class="composer-error" aria-live="polite">{{error}}</text>
+    <text wx:if="{{composerNotice}}" class="composer-notice" aria-live="polite">{{composerNotice}}</text>
+    <view class="composer-row">
+      <textarea class="composer-input {{inputFocused ? 'composer-input--focused' : ''}} {{serverInputError ? 'composer-input--error' : ''}}" value="{{draft}}" maxlength="-1" auto-height focus="{{inputFocus}}" adjust-position="{{false}}" cursor-color="#002900" cursor-spacing="24" confirm-type="send" placeholder="在这里说一句…" placeholder-style="color:#8C8C88" bindinput="onInput" bindfocus="onInputFocus" bindblur="onInputBlur" bindkeyboardheightchange="onKeyboardHeightChange" bindconfirm="onSend"></textarea>
+      <view class="send-button {{busy ? 'send-button--busy' : ''}} {{!canSend ? 'send-button--disabled' : ''}}" aria-role="button" aria-disabled="{{busy || !canSend}}" aria-label="{{busy ? '正在等待回复' : (canSend ? '发送消息' : '请输入消息后发送')}}" hover-class="{{busy || !canSend ? '' : 'pressable--pressed'}}" hover-stay-time="80" bindtap="onSend"><image class="send-button__icon" src="/assets/icons/send.svg" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view wx:if="{{healthReminderVisible}}" class="health-mask" catchtap="noop" catchtouchmove="noop">
+    <view class="health-dialog" catchtap="noop" role="dialog" aria-modal="true">
+      <text class="health-message">长时间 AI 陪伴易产生依赖，请多参与线下户外活动。</text>
+      <view class="health-actions">
+        <view class="health-button" aria-role="button" bindtap="onAcknowledgeHealthReminder">我知道了</view>
+      </view>
     </view>
   </view>
 </view>

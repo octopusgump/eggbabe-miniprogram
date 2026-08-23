@@ -1,0 +1,13 @@
+@import "../privacy/privacy.wxss";
+
+.draft-banner {
+  display: block;
+  margin-bottom: 40rpx;
+  padding: 24rpx 28rpx;
+  border: 1rpx solid #E5D9B8;
+  border-radius: 20rpx;
+  background: #FFF9E8;
+  color: #6A5622;
+  font-size: 24rpx;
+  line-height: 1.65;
+}

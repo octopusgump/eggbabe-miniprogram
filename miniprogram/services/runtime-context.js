@@ -37,10 +37,33 @@ function getSessionId() {
   return sessionId;
 }
 
+function setSessionId(value) {
+  const sessionId = String(value || '').trim();
+  if (!sessionId) return { ok: false, code: 'SESSION_ID_REQUIRED' };
+  return write(scopedKey(SESSION_KEY), sessionId);
+}
+
+function resetSessionId() {
+  const key = scopedKey(SESSION_KEY);
+  const previousSessionId = read(key, '');
+  try {
+    storage.remove(key);
+  } catch (error) {
+    return { ok: false, code: 'SESSION_CLEAR_FAILED', message: '本地会话清除失败，请重试' };
+  }
+  const candidate = `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  const sessionId = candidate === previousSessionId ? `${candidate}-renewed` : candidate;
+  const saved = write(key, sessionId);
+  if (!saved.ok || read(key, '') !== sessionId) {
+    return { ok: false, code: 'SESSION_RESET_FAILED', message: '本地会话重置失败，请重试' };
+  }
+  return { ok: true, previousSessionId, sessionId };
+}
+
 function scopedKey(key, mode) {
   const requested = mode || activeMode;
   const safeMode = requested === 'demo' && config.localDemoEnabled ? 'demo' : 'live';
   return `eggbabe_${safeMode}_${key}_v2`;
 }
 
-module.exports = { getMode, setMode, getSessionId, scopedKey };
+module.exports = { getMode, setMode, getSessionId, setSessionId, resetSessionId, scopedKey };

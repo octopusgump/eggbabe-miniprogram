@@ -1,0 +1,35 @@
+<view class="page {{reducedMotion ? 'page--reduced' : ''}}">
+  <swiper wx:if="{{ready}}" class="journey-stage" current="{{current}}" circular="{{false}}" duration="{{reducedMotion ? 0 : 300}}" bindchange="onSlideChange">
+    <swiper-item wx:for="{{slides}}" wx:key="id">
+      <view class="journey-scene">
+        <image class="journey-scene__backdrop" src="{{item.asset}}" mode="aspectFill" aria-hidden="true"></image>
+        <view class="journey-scene__veil" aria-hidden="true"></view>
+        <image class="journey-scene__image" src="{{item.asset}}" mode="aspectFit" aria-label="{{item.sceneLabel}}，{{item.actionLabel}}" data-index="{{index}}" binderror="onImageError"></image>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view wx:if="{{ready}}" class="journey-topbar" style="padding-top:{{statusBarHeight}}px;">
+    <view class="journey-back" hover-class="journey-back--pressed" aria-role="button" aria-label="返回明信片" bindtap="onBack"><view class="journey-back__icon"></view></view>
+    <text class="journey-title">{{title}}</text>
+    <view class="journey-topbar__side"></view>
+  </view>
+
+  <view wx:if="{{ready}}" class="journey-caption">
+    <text class="journey-caption__scene">{{slides[current].sceneLabel}}</text>
+    <text class="journey-caption__action">{{slides[current].actionLabel}}</text>
+    <text class="journey-caption__line">{{slides[current].line}}</text>
+  </view>
+
+  <view wx:if="{{loading && !error}}" class="journey-state journey-state--loading" aria-live="polite">
+    <view class="journey-loader" aria-hidden="true"></view>
+    <text>正在展开这段旅程…</text>
+  </view>
+
+  <view wx:if="{{error}}" class="journey-state" aria-live="assertive">
+    <text class="journey-state__title">旅途回放没有加载好</text>
+    <text>{{error}}</text>
+    <view wx:if="{{slides.length}}" class="journey-state__retry" aria-role="button" aria-label="重新加载这张旅途画面" bindtap="onRetrySlide">重新看看</view>
+    <view class="journey-state__back" aria-role="button" aria-label="返回明信片" bindtap="onBack">返回明信片</view>
+  </view>
+</view>

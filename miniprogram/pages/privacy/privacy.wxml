@@ -2,7 +2,7 @@
   <nav-bar title="隐私协议"></nav-bar>
   <scroll-view scroll-y class="content" scroll-into-view="{{scrollTarget}}" scroll-with-animation="{{true}}">
     <text class="doc-title">蛋宝宝隐私政策</text>
-    <text class="doc-meta">更新日期：2026年8月1日 · 适用版本 v3.6</text>
+    <text class="doc-meta">更新日期：2026年8月9日 · 适用版本 v3.7</text>
     <text class="doc-intro">本政策说明上海爱予慧科技有限责任公司如何在 eggbabe 普通小程序中处理个人信息。我们会处理实体蛋绑定、孵化互动、安全对话、收藏卡和账户服务所必需的信息。正式发布文本须以法务审核并部署在 eggbabe.com 的版本为准。</text>
 
     <view class="toc">
@@ -48,7 +48,7 @@
 
     <view id="s5" class="section">
       <text class="h2">五、你的权利</text>
-      <text class="p">你可以在“我的”中查询或更正昵称和头像，管理必要授权，申请访问、更正、删除个人信息或注销账号。无法在页面完成时，可通过帮助中心联系客服。</text>
+      <text class="p">你可以在“我的”中查询或更正昵称和头像，管理必要授权，申请访问、更正、删除个人信息或注销账号。无法在页面完成时，可发送邮件至 hello@eggbabe.com 提交申请。</text>
     </view>
 
     <view id="s6" class="section">
@@ -73,7 +73,7 @@
 
     <view id="s10" class="section section-last">
       <text class="h2">十、联系我们</text>
-      <text class="p">如对个人信息处理有疑问、意见或投诉，请通过小程序“帮助中心”中的客服入口联系上海爱予慧科技有限责任公司。正式联系方式、处理时限和注册地址以 eggbabe.com 上的正式政策为准。</text>
+      <text class="p">如对个人信息处理有疑问、意见、投诉或权利申请，请发送邮件至 hello@eggbabe.com 联系上海爱予慧科技有限责任公司。我们可能在处理前核验申请人与相关账号的关系。</text>
     </view>
 
     <view class="footer-line"></view>

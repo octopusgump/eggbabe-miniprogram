@@ -1,10 +1,19 @@
-const config = require('../../config/v2');
+const SUPPORT_EMAIL = 'hello@eggbabe.com';
+const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
+const compliance = require('../../services/compliance-service');
 
 Page({
   data: {
+    supportEmail: SUPPORT_EMAIL,
+    systemNoticeText: '',
+    systemNoticeTone: 'info',
+    systemNoticeVisible: false,
     cats: { device: true, account: true, chat: true, other: true },
     searchQuery: '',
     searchResults: [],
+    support: { psychologicalHotline: '', police: '', medicalEmergency: '' },
+    supportLoading: true,
+    supportError: '',
 
     deviceFaqs: [
       {
@@ -24,7 +33,7 @@ Page({
       },
       {
         q: '装置没有按时打开怎么办？',
-        a: '请先保留装置与激活码信息，再点击本页底部「联系客服」。客服核实后会处理提前打开、未打开、机械故障或激活码与原型不符等问题，并在需要时恢复同一张收藏卡。',
+        a: `请保留装置照片、激活码信息和问题发生时间，并发送邮件至 ${SUPPORT_EMAIL}。邮件中请说明提前打开、未打开、机械故障或激活码与原型不符等具体情况。`,
         open: false
       }
     ],
@@ -67,16 +76,51 @@ Page({
 
     otherFaqs: [
       {
-        q: '如何联系客服？',
-        a: '点击本页底部「联系客服」，会跳转至企业微信客服，工作日 9:00–21:00 有专人回复。',
+        q: '如何联系邮件支持？',
+        a: `发送邮件至 ${SUPPORT_EMAIL}，并在邮件中说明蛋宝宝 ID、问题发生时间和具体情况。点击本页底部邮箱可以复制地址。`,
         open: false
       },
       {
         q: '隐私数据如何处理？',
-        a: '你的数据仅用于提供蛋宝宝服务，具体收集与使用范围见「我的」→「隐私协议」。你可随时在账号页申请注销以删除全部数据。',
+        a: '你的数据仅用于提供蛋宝宝服务，具体收集与使用范围见「我的」→「隐私协议」。你可以在账号页申请注销，具体删除和例外保留规则以隐私政策为准。',
         open: false
       }
     ]
+  },
+
+  onLoad() { this.loadSupportConfig(); },
+
+  loadSupportConfig() {
+    if (this.supportRequestActive) return;
+    this.supportRequestActive = true;
+    this.setData({ supportLoading: true, supportError: '' });
+    compliance.getComplianceConfig().then(result => {
+      this.supportRequestActive = false;
+      this.setData({
+        supportLoading: false,
+        support: result && result.config ? result.config.support : this.data.support,
+        supportError: result && result.ok ? '' : result && result.message || '服务信息没有加载好，请重试'
+      });
+    }).catch(() => {
+      this.supportRequestActive = false;
+      this.setData({ supportLoading: false, supportError: '服务信息没有加载好，请重试' });
+    });
+  },
+
+  onShow() { this.pageActive = true; },
+
+  showSystemNotice(text, tone) {
+    if (!this.systemNoticeController) {
+      this.systemNoticeController = createInlineNoticeController(this, {
+        textKey: 'systemNoticeText',
+        toneKey: 'systemNoticeTone',
+        visibleKey: 'systemNoticeVisible',
+        timerKey: 'systemNoticeTimer',
+        cleanupTimerKey: 'systemNoticeCleanupTimer',
+        isActive: () => this.pageActive !== false
+      });
+    }
+    return this.systemNoticeController.show(text, tone);
   },
 
   onToggleCat(e) {
@@ -102,18 +146,29 @@ Page({
     this.setData({ searchQuery, searchResults });
   },
 
-  onContactCS() {
-    const customerService = config.customerService || {};
-    if (!customerService.corpId || !customerService.url) {
-      wx.showToast({ title: '客服参数待运营配置', icon: 'none' });
-      return;
-    }
-    wx.openCustomerServiceChat({
-      extInfo: { url: customerService.url },
-      corpId: customerService.corpId,
-      fail: () => {
-        wx.showToast({ title: '暂时无法打开客服，请稍后再试', icon: 'none' });
-      }
+  onCopySupportEmail() {
+    wx.setClipboardData({
+      data: SUPPORT_EMAIL,
+      success: () => this.showSystemNotice('邮箱已复制', 'info'),
+      fail: () => wx.showModal({
+        title: '邮件支持',
+        content: SUPPORT_EMAIL,
+        showCancel: false
+      })
     });
+  },
+
+  onFeedback() { wx.navigateTo({ url: '/pages/feedback/feedback' }); },
+  onRetrySupport() { this.loadSupportConfig(); },
+
+  onHide() {
+    this.pageActive = false;
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
+    this.setData({ systemNoticeText: '', systemNoticeVisible: false });
+  },
+
+  onUnload() {
+    this.pageActive = false;
+    if (this.systemNoticeController) this.systemNoticeController.destroy();
   }
 });

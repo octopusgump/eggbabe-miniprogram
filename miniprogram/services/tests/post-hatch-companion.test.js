@@ -26,6 +26,7 @@ const pet = {
   const home = await postHatch.getSnapshot(pet);
   assert.equal(home.ok, true, '第一个 5 小时时段必须可加载');
   assert.equal(home.currentState.atHome, true, '故事线第一个时段必须在家');
+  assert.equal(home.chatAccess.status, 'available', 'demo 居家状态必须模拟服务端可聊天合同');
   const firstAction = await postHatch.performAction(pet, home);
   const repeatedAction = await postHatch.performAction(pet, home);
   assert.equal(firstAction.ok && Boolean(firstAction.keepsake), true, '首次原生动作必须生成一次纪念品');
@@ -40,28 +41,20 @@ const pet = {
   pet.hatchAt = new Date(baseNow - 3 * SLOT_MS).toISOString();
   const away = await postHatch.getSnapshot(pet);
   assert.equal(away.currentState.atHome, false, '故事线第四个时段必须外出');
-  assert.equal(away.currentState.action.kind, 'letter', '外出时唯一入口必须为写信');
+  assert.equal(away.currentState.action, null, '外出时不得暴露写信或留言动作');
+  assert.equal(away.currentState.canTalk, false, '外出时不开放实时对话');
+  assert.equal(away.chatAccess.status, 'away', 'demo 外出状态必须模拟服务端不可聊天合同');
+  assert.equal(typeof postHatch.sendLetter, 'undefined', '陪伴服务不得保留写信接口');
 
   pet.hatchAt = new Date(baseNow - 4 * SLOT_MS).toISOString();
-  const returnedWithoutLetter = await postHatch.getSnapshot(pet);
-  assert.equal(returnedWithoutLetter.memories.keepsakes.some(item => item.id === 'dali-cloud'), false, '未完成外出对应动作不得补发纪念物');
-  pet.hatchAt = new Date(baseNow - 3 * SLOT_MS).toISOString();
-  const letter = await postHatch.sendLetter(pet, away, '等你回来，再告诉我风是什么味道。');
-  const repeatedLetter = await postHatch.sendLetter(pet, away, '重复寄出');
-  assert.equal(letter.ok, true, '外出时必须可寄信');
-  assert.equal(repeatedLetter.alreadyDone, true, '同一时段重复寄信必须幂等');
-  assert.equal((await postHatch.getSnapshot(pet)).memories.postcards.length, 1, '寄信后的下一次进入必须收到一次反馈');
-
-  Date.now = () => baseNow + SLOT_MS;
   const returned = await postHatch.getSnapshot(pet);
-  assert.equal(returned.currentState.atHome, true, '下一个故事时段必须回家');
-  assert.equal(returned.memories.postcards.length, 1, '重复进入不得重复交付同一封回信');
-  assert.equal(returned.memories.keepsakes.some(item => item.id === 'dali-cloud'), true, '外出纪念品必须在回家时带回');
+  assert.equal(returned.currentState.atHome, true, '后续故事时段必须回家');
+  assert.equal(returned.memories.postcards.length, 0, '不得因本地写信逻辑派生回信');
+  assert.equal(returned.memories.keepsakes.some(item => item.id === 'dali-cloud'), false, '不得因已移除的写信动作派生纪念物');
 
-  const expectedTalk = { sleep: false, lazy: false, stare: true, tea: true, drawing: true, gaming: false, window: true };
   lifeScenes.HOME_STATES.forEach(state => {
     const fixed = lifeScenes.resolveDefinition('home', state.key);
-    assert.equal(fixed.canTalk, expectedTalk[state.key], `${state.label}的说话权限必须使用固定映射`);
+    assert.equal(fixed.canTalk, true, `${state.label}必须开放场景内对话`);
     assert.equal(Boolean(fixed.action && fixed.action.id), true, `${state.label}必须有一个固定对应动作`);
   });
 
@@ -72,20 +65,41 @@ const pet = {
     current_state: {
       major_scene_id: 'home',
       small_scene_id: 'sleep',
-      can_talk: true,
+      can_talk: false,
       action_id: 'random_action',
       action_kind: 'random',
       slot_index: 2,
       slot_start: new Date(baseNow).toISOString(),
       slot_end: new Date(baseNow + SLOT_MS).toISOString(),
       line: '我睡着了。'
-    }
+    },
+    chat_access: { status: 'available', reason: 'AT_HOME' }
   });
-  assert.equal(normalized.currentState.canTalk, false, 'live 响应不得随机改写睡觉状态的说话权限');
+  assert.equal(normalized.chatAccess.status, 'available', 'live 聊天权限必须只读取服务端 chat_access 合同');
   assert.equal(normalized.currentState.action.id, 'lamp_off', 'live 响应不得随机改写固定对应动作');
 
+  const missingChatAccess = postHatch.normalizeLiveSnapshot({
+    ok: true,
+    mode: 'live',
+    mood: { mood: '平静', line: '我想慢慢待一会儿。' },
+    current_state: {
+      major_scene_id: 'home', small_scene_id: 'sleep', slot_index: 2,
+      slot_start: new Date(baseNow).toISOString(), slot_end: new Date(baseNow + SLOT_MS).toISOString()
+    }
+  });
+  assert.equal(missingChatAccess.chatAccess.status, 'unavailable', '正式接口缺少 chat_access 时必须保守拒绝，不能由 App 自行放行');
+
+  const missingServerMessage = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY' });
+  assert.equal(missingServerMessage.status, 'unavailable', 'away 缺少服务端审核 message 时必须按同步失败处理');
+  assert.equal(missingServerMessage.message, '聊天权限正在同步，请稍后再试。', 'App 不得根据本地场景拼接不可聊天文案');
+  const invalidNextAvailableAt = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY', message: '暂时不能聊天。', next_available_at: '今晚' });
+  assert.equal(invalidNextAvailableAt.status, 'unavailable', '非法 next_available_at 不得被 App 猜测或展示');
+  const serverAwayMessage = '这是服务端审核后的外出说明。';
+  const validAwayAccess = postHatch.normalizeChatAccess({ status: 'away', reason: 'AWAY', message: serverAwayMessage, next_available_at: null });
+  assert.equal(validAwayAccess.message, serverAwayMessage, '合法服务端不可聊天文案必须原样保留');
+
   Date.now = originalNow;
-  console.log('破壳后 5 小时状态、固定动作映射、来信与纪念物校验通过。');
+  console.log('破壳后 5 小时状态、居家固定动作与外出无写信入口校验通过。');
 })().catch(error => {
   Date.now = originalNow;
   console.error(error);

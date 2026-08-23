@@ -1,4 +1,5 @@
 .page { height: 100vh; background: #F6F5EF; }
+.system-notice-anchor { position: fixed; z-index: 120; top: calc(148rpx + env(safe-area-inset-top)); left: 72rpx; right: 72rpx; display: flex; justify-content: center; pointer-events: none; }
 .content { height: calc(100vh - 176rpx); padding: 28rpx 40rpx 60rpx; box-sizing: border-box; }
 .new-banner { margin-bottom: 18rpx; padding: 18rpx; border-radius: 18rpx; background: #EAF1DA; color: #496044; font-size: 22rpx; text-align: center; }
 .card { overflow: hidden; border-radius: 34rpx; background: #FFFDF7; box-shadow: 0 20rpx 60rpx rgba(44,55,45,.12); }
@@ -6,19 +7,25 @@
 .card-avatar { flex: 0 0 auto; }
 .title-copy { min-width: 0; flex: 1; }
 .name, .prototype { display: block; }
-.name { color: #26372C; font-size: 31rpx; font-weight: 650; }
-.prototype { margin-top: 5rpx; color: #7C827B; font-size: 19rpx; }
-.brand { color: #637261; font-size: 18rpx; letter-spacing: 2rpx; }
-.card-illustration-section { aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #FFFBEF, #EEF3E4); }
+.name { color: #1A1A1A; font-size: 31rpx; font-weight: 600; }
+.prototype { margin-top: 5rpx; color: #8C8C88; font-size: 20rpx; }
+.brand { color: #5C5C5C; font-size: 20rpx; letter-spacing: 2rpx; }
+.card-illustration-section { position: relative; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #FFFBEF, #EEF3E4); }
 .card-illustration { width: 100%; height: 100%; }
+.card-image-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20rpx; background: #FAFAF8; color: #5C5C5C; font-size: 22rpx; }
+.card-image-state--error { background: #FDECEA; color: #D9463C; }
+.card-image-loader { width: 46rpx; height: 46rpx; border: 4rpx solid #E5E3DF; border-top-color: #002900; border-radius: 50%; animation: card-image-spin .8s linear infinite; }
+.card-image-retry { min-width: 170rpx; height: 80rpx; display: flex; align-items: center; justify-content: center; padding: 0 24rpx; border: 1rpx solid #D9463C; border-radius: 999rpx; background: #FFF; color: #D9463C; font-size: 22rpx; }
+@keyframes card-image-spin { to { transform: rotate(360deg); } }
 .card-data-section { padding: 26rpx 30rpx 32rpx; }
 .data-row { min-height: 56rpx; display: flex; align-items: center; justify-content: space-between; gap: 24rpx; border-bottom: 1rpx solid #ECEBE4; }
 .data-label { color: #8A8E88; font-size: 20rpx; }
 .data-value { color: #303B33; font-size: 21rpx; text-align: right; }
-.card-note { display: block; margin-top: 24rpx; color: #737B73; font-size: 19rpx; line-height: 1.6; text-align: center; }
+.card-note { display: block; margin-top: 24rpx; color: #5C5C5C; font-size: 20rpx; line-height: 1.6; text-align: center; }
 .actions { width: 100%; display: flex; align-items: stretch; gap: 0; margin-top: 24rpx; overflow: hidden; border: 1rpx solid #C9D5C4; border-radius: 999rpx; }
 .save-image-button, .share-button { height: 96rpx; flex: 1; margin: 0; padding: 0; border-radius: 0; font-size: 25rpx; }
-.save-image-button { background: #3F5A47; color: #FFF; }
-.share-button { border-left: 1rpx solid #C9D5C4; background: #FFF; color: #3F5A47; }
+.save-image-button { background: #002900; color: #FFF; }
+.share-button { border-left: 1rpx solid #E5E3DF; background: #FFF; color: #002900; }
 .save-image-button::after, .share-button::after { border: 0; }
 .card-poster-canvas { position: fixed; left: -2000px; top: 0; width: 600px; height: 1067px; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .card-image-loader { animation: none; } }

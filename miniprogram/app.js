@@ -10,8 +10,9 @@ App({
   globalData: {
     version: config.version,
     backendReady: false,
-    incubationEnvironment: null,
-    windowMetrics: null
+    environmentCdnBase: '',
+    windowMetrics: null,
+    dailyMoodIntroShown: false
   },
 
   onLaunch() {
@@ -27,12 +28,6 @@ App({
     // develop 使用隔离 demo；trial / release 固定 live。
     // demo 没有用户界面开关，也不会进入正式存储与接口。
     runtime.setMode(config.defaultMode);
-    timeService.sync().then(result => {
-      if (!result.ok || typeof getCurrentPages === 'undefined') return;
-      const pages = getCurrentPages();
-      const current = pages[pages.length - 1];
-      if (current && current.onShow) current.onShow();
-    });
     analytics.track('app_open', { enter_scene: 'direct' });
     syncQueue.flush();
     wx.login({
@@ -42,8 +37,12 @@ App({
         if (code && config.backendEnabled && runtime.getMode() === 'live') {
           cloudApi.bootstrap(code).then(result => {
             if (!result.ok || result.mode !== 'live' || !result.user) return;
+            const sessionId = result.session_id || result.sessionId;
+            if (sessionId) runtime.setSessionId(sessionId);
+            if (result.serverTs) timeService.acceptServerTime(result.serverTs);
             this.globalData.backendReady = true;
-            this.globalData.incubationEnvironment = result.incubationEnvironment || null;
+            // 仅接收备案 CDN 根路径；不接收、也不使用服务端天气结果。
+            this.globalData.environmentCdnBase = String(result.environment_cdn_base || result.environmentCdnBase || '').replace(/\/$/, '');
             petStore.saveUser({
               id: result.user.id || result.user._id,
               publicId: result.user.public_id || result.user.publicId || '',
@@ -55,9 +54,14 @@ App({
               id: result.pet._id,
               mode: result.pet.mode || result.mode,
               hatchAt: result.pet.hatch_at || '',
-              collectionCard: result.hatchCard || null,
-              messages: result.messages || []
+              collectionCard: result.hatchCard || null
             }), 'live');
+            timeService.sync().then(timeResult => {
+              if (!timeResult.ok || typeof getCurrentPages === 'undefined') return;
+              const pages = getCurrentPages();
+              const current = pages[pages.length - 1];
+              if (current && current.onShow) current.onShow();
+            });
           });
         }
       },

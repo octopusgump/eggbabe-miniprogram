@@ -10,6 +10,7 @@ const syncQueue = require('../services/sync-queue');
 const storage = require('../services/storage-migration');
 const chatSafety = require('../services/chat-safety');
 const shellArtService = require('../services/egg-shell-art');
+const environmentState = require('../services/environment-state');
 
 let greetingShownThisSession = false;
 
@@ -90,27 +91,53 @@ function normalizeLifecycle(value, hasCard) {
     : 'RESTING';
 }
 
+function normalizePrototype(value) {
+  const source = String(value || '').trim();
+  const key = source.toUpperCase().replace(/[\s_]+/g, '-');
+  if (source.includes('锦鲤') || key === 'KOI' || key.includes('BOON-KOI')) return '锦鲤';
+  if (source.includes('玉兔') || key === 'YT' || key.includes('JADE-RABBIT') || key.includes('MOON-RABBIT')) return '玉兔';
+  // 普通版当前只有玉兔和锦鲤两个正式原型；缺失或未知值使用产品默认原型玉兔。
+  return '玉兔';
+}
+
+function normalizeEnvironmentFields(pet) {
+  const source = pet || {};
+  return Object.assign({}, source, {
+    // 旧本地存储无需迁移任务：首次读取即获得确定性默认值，下一次保存时回写。
+    companionStartedAt: source.companionStartedAt || source.createdAt || '',
+    environmentSeed: source.environmentSeed || source.id || '',
+    environmentVersion: source.environmentVersion || environmentState.ENVIRONMENT_VERSION
+  });
+}
+
 function getPet() {
   const mode = runtime.getMode();
   const user = getUser();
   const pet = read(PET_KEY);
   if (!user || !pet || pet.mode !== mode || !pet.ownerId || pet.ownerId !== user.id) return null;
+  // 聊天正文只能由服务端历史接口返回。读取旧缓存时立即移除历史版本遗留的正文。
+  if (Object.prototype.hasOwnProperty.call(pet, 'messages')) {
+    delete pet.messages;
+    write(PET_KEY, pet);
+  }
+  pet.prototype = normalizePrototype(pet.prototype || pet.prototypeName || pet.prototype_name || pet.petType || pet.pet_type);
   pet.shell = shellArtService.normalizeShellArt(pet.shell);
   pet.lifecycleStage = normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard);
-  return pet;
+  return normalizeEnvironmentFields(pet);
 }
 
 function savePet(pet) {
   const mode = runtime.getMode();
-  const normalized = Object.assign({}, pet, {
+  const normalized = normalizeEnvironmentFields(Object.assign({}, pet, {
     mode,
     lifecycleStage: normalizeLifecycle(pet.lifecycleStage || pet.stage, pet.collectionCard)
-  });
+  }));
   delete normalized.progress;
   delete normalized.progressEarned;
   delete normalized.tasks;
   delete normalized.preferences;
   delete normalized.lastInteractionAt;
+  delete normalized.messages;
   const result = write(PET_KEY, normalized);
   return result.ok ? normalized : null;
 }
@@ -138,10 +165,13 @@ function importCloudPet(record, mode) {
     id,
     mode: 'live',
     ownerId: source.user_id || source.ownerId || ((getUser() && getUser().id) || ''),
-    prototype: source.prototype || '玉兔',
+    prototype: normalizePrototype(source.prototype || source.prototype_name || source.prototypeName || source.pet_type || source.petType),
     style: source.style || '',
     name: source.display_name || source.name || '',
     createdAt: source.created_at || source.createdAt || '',
+    companionStartedAt: source.companion_started_at || source.companionStartedAt || source.created_at || source.createdAt || '',
+    environmentSeed: source.environment_seed || source.environmentSeed || id,
+    environmentVersion: source.environment_version || source.environmentVersion || environmentState.ENVIRONMENT_VERSION,
     hatchAt: source.hatch_at || source.hatchAt || '',
     originalHatchAt: source.original_hatch_at || source.originalHatchAt || source.hatch_at || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycle_stage || source.lifecycleStage || source.stage, source.collection_card || source.collectionCard),
@@ -151,7 +181,6 @@ function importCloudPet(record, mode) {
     qualitativeStatus: source.qualitative_status || source.qualitativeStatus || source.dailyStatus || null,
     collectionCard: source.collection_card || source.collectionCard || null,
     inviteCodes: source.invite_codes || source.inviteCodes || [],
-    messages: source.messages || [],
     nicknamePromptDismissed: !!source.nicknamePromptDismissed
   };
   return savePet(pet) ? { ok: true, pet } : { ok: false, message: '云端数据缓存失败，请重试' };
@@ -165,19 +194,25 @@ function importDemoPet(record) {
     id: source.id,
     mode: 'demo',
     ownerId: source.ownerId,
-    prototype: source.prototype || '玉兔',
+    prototype: normalizePrototype(source.prototype || source.prototype_name || source.prototypeName || source.pet_type || source.petType),
     style: source.style || '',
     name: source.name || '',
     createdAt: source.createdAt || '',
+    companionStartedAt: source.companionStartedAt || source.createdAt || '',
+    environmentSeed: source.environmentSeed || source.id,
+    environmentVersion: source.environmentVersion || environmentState.ENVIRONMENT_VERSION,
     hatchAt: source.hatchAt || '',
     originalHatchAt: source.originalHatchAt || source.hatchAt || '',
     lifecycleStage: normalizeLifecycle(source.lifecycleStage, source.collectionCard),
     serverBacked: false,
+    demoTimelineVersion: Number(source.demoTimelineVersion) || 0,
+    demoPreviewDay: Number(source.demoPreviewDay) || 0,
+    demoPreviewStage: source.demoPreviewStage || '',
+    demoPreviewInteractionPoints: Number(source.demoPreviewInteractionPoints) || 0,
     shell: shellArtService.normalizeShellArt(source.shell),
     qualitativeStatus: source.qualitativeStatus || null,
     collectionCard: source.collectionCard || null,
     inviteCodes: [],
-    messages: source.messages || [],
     nicknamePromptDismissed: !!source.nicknamePromptDismissed
   };
   return savePet(pet) ? { ok: true, pet } : { ok: false, message: 'demo 实体蛋保存失败，请重试' };
@@ -265,7 +300,7 @@ function completeTalk(value) {
   if (!text) return { ok: false, message: '先跟我说一句话吧' };
   if (Array.from(text).length > 50) return { ok: false, message: '最多说 50 个字' };
   const assessment = chatSafety.assessInput(text);
-  if (!assessment.allowed || assessment.crisis) return { ok: false, message: assessment.message || '换个说法试试' };
+  if (!assessment.allowed || !chatSafety.isSafeDisplayText(text)) return { ok: false, message: assessment.message || '换个说法试试' };
   return recordCompanionInteraction('talk', { text_length: Array.from(text).length });
 }
 
@@ -352,20 +387,6 @@ function applyDemoHatchCard(card) {
   return savePet(pet) ? { ok: true, card, pet } : { ok: false, message: 'demo 收藏卡保存失败，请重试' };
 }
 
-function applyConfirmedConversation(messages) {
-  const pet = getPet();
-  if (!pet) return { ok: false, message: '还没有蛋宝宝' };
-  const source = Array.isArray(messages) ? messages : [];
-  const mode = runtime.getMode();
-  if (source.some(message => !message || message.mode !== mode)) return { ok: false, message: '对话数据无效' };
-  pet.messages = source.map(message => {
-    const safeMessage = Object.assign({}, message);
-    delete safeMessage.preference;
-    return safeMessage;
-  }).slice(-40);
-  return savePet(pet) ? { ok: true } : { ok: false, message: '消息保存失败，请重试' };
-}
-
 module.exports = {
   getUser,
   saveUser,
@@ -396,5 +417,5 @@ module.exports = {
   createCollectionCard,
   applyCloudHatchCard,
   applyDemoHatchCard,
-  applyConfirmedConversation
+  normalizePrototype
 };

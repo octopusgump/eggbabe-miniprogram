@@ -14,10 +14,11 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 0.18s ease-out;
+  transition: transform 0.16s ease-out, opacity 0.16s ease-out;
 }
 
 .btn--pressed {
+  opacity: 0.9;
   transform: scale(0.98);
 }
 
@@ -53,4 +54,9 @@
 
 .btn--disabled {
   opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+  .btn--pressed { transform: none; }
 }

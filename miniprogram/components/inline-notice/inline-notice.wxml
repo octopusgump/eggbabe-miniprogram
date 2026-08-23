@@ -1,0 +1,8 @@
+<view
+  wx:if="{{text}}"
+  class="inline-notice inline-notice--{{tone}} {{visible ? 'inline-notice--visible' : ''}}"
+  aria-role="status"
+  aria-label="{{text}}"
+>
+  <text class="inline-notice__text">{{text}}</text>
+</view>

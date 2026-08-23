@@ -5,6 +5,17 @@
   background: #FFFFFF;
 }
 
+.system-notice-anchor {
+  position: fixed;
+  z-index: 20;
+  top: calc(148rpx + env(safe-area-inset-top));
+  left: 72rpx;
+  right: 72rpx;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .pending-block {
   display: flex;
   flex-direction: column;
@@ -57,7 +68,7 @@
 
 .warn-mark {
   font-size: 48rpx;
-  font-weight: 700;
+  font-weight: 600;
   color: #D9463C;
   line-height: 1;
 }
@@ -109,7 +120,7 @@
 
 .x-mark {
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 600;
   color: #D9463C;
   line-height: 1;
 }

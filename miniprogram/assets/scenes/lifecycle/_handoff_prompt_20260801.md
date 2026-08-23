@@ -16,13 +16,13 @@
 /Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/miniprogram/assets/scenes/lifecycle
 
 主 PRD：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/PRD归档/蛋宝宝_日常陪伴系统_结构说明_v0.3.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/reference/蛋宝宝_日常陪伴系统_结构说明_v0.3.md
 
 辅助 PRD：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/PRD归档/蛋宝宝小程序_V3_6_PRD.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/蛋宝宝小程序_V3_6_PRD.md
 
 视觉风格指南：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ai-skills/eggbabe/蛋宝宝_CG魔幻冒险视觉风格指南.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/reference/design/蛋宝宝_CG魔幻冒险视觉风格指南.md
 
 原始任务说明：
 /Users/octopusgump/.codex/attachments/76b60f29-52ae-4da0-993d-7185ff278b89/pasted-text.txt
@@ -110,7 +110,6 @@ C. 玉兔剩余姿态，6 张
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -126,7 +125,6 @@ D. 锦鲤剩余姿态，6 张
 
 - sleep.webp
 - lazy.webp
-- tea.webp
 - drawing.webp
 - gaming.webp
 - window_back.webp
@@ -153,7 +151,6 @@ E. 破壳后互动反馈，8 张
 
 前景效果：post-hatch/40-interaction-fx/
 
-- tea_steam.webp
 
 两张被子必须相同画布和锚点；lamp_dark_overlay 是透明深蓝夜色层；paper_front 只有无文字涂鸦；游戏画面只能是无品牌、无文字的抽象彩色微光；蒸汽必须真实透明。
 

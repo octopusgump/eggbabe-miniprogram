@@ -3,15 +3,21 @@ const SHELL_VERSION = 3;
 const BASE_VERSION = 'v3.6-layered-fabric';
 const COLOR_ALPHA = 0.32;
 const MAX_OPERATIONS = 240;
-const BRUSH_SIZES = [
-  { label: '2 px', width: 0.014 },
-  { label: '4 px', width: 0.028 },
-  { label: '7 px', width: 0.05 },
-  { label: '11 px', width: 0.08 }
-];
+const BRUSH_REFERENCE_PX = 180;
+const BRUSH_MIN_WIDTH = 0.004;
+const BRUSH_MAX_WIDTH = 0.3;
+const BRUSH_SIZES = [2, 5, 8, 12, 18].map(pixels => ({
+  label: `${pixels} px`,
+  pixels,
+  width: pixels / BRUSH_REFERENCE_PX
+}));
 const ERASER_MIN_PX = 4;
 const ERASER_MAX_PX = 30;
 const ERASER_DEFAULT_PX = 15;
+const ERASER_SIZES = [6, 10, 15, 22, 30].map(pixels => ({
+  label: `${pixels} px`,
+  pixels
+}));
 const ERASER_REFERENCE_PX = 150;
 const ERASER_MIN_WIDTH = 0.008;
 const ERASER_MAX_WIDTH = 0.3;
@@ -27,6 +33,20 @@ const COLORS = [
   { token: 'lavender', name: '浅藤紫', value: '#CEC5DD' },
   { token: 'warm-gray', name: '暖云灰', value: '#D4D0C7' }
 ];
+
+const BRUSH_COLORS = [
+  { token: 'forest', name: '森林绿', value: '#526B4D' },
+  { token: 'apricot-orange', name: '杏子橙', value: '#D98652' },
+  { token: 'lake-blue', name: '湖水蓝', value: '#5F8FA8' },
+  { token: 'berry-pink', name: '莓果粉', value: '#C97682' },
+  { token: 'grape-purple', name: '葡萄紫', value: '#8573A3' },
+  { token: 'mist-sage', name: '雾松绿', value: '#AFC29A' },
+  { token: 'butter-yellow', name: '奶油黄', value: '#E6CE73' },
+  { token: 'sky-blue', name: '晴空蓝', value: '#9EC7D8' },
+  { token: 'wine-red', name: '葡萄酒红', value: '#7B3E52' },
+  { token: 'lavender', name: '浅藤紫', value: '#B9ABD2' },
+];
+const DEFAULT_BRUSH_COLOR = BRUSH_COLORS[0].value;
 
 const PATTERNS = [
   { type: 'star', name: '星星', symbol: '✦' },
@@ -79,12 +99,26 @@ function eraserWidthForPixels(pixels, canvasSize) {
   return clamp(clamp(pixels, ERASER_MIN_PX, ERASER_MAX_PX) / reference, ERASER_MIN_WIDTH, ERASER_MAX_WIDTH);
 }
 
+function brushWidthForPixels(pixels, canvasSize) {
+  const reference = Math.max(1, Number(canvasSize) || BRUSH_REFERENCE_PX);
+  const safePixels = BRUSH_SIZES.some(item => item.pixels === Number(pixels))
+    ? Number(pixels)
+    : BRUSH_SIZES[1].pixels;
+  return clamp(safePixels / reference, BRUSH_MIN_WIDTH, BRUSH_MAX_WIDTH);
+}
+
 function colorByValue(value) {
   return COLORS.find(item => item.value.toLowerCase() === String(value || '').toLowerCase());
 }
 
 function colorByToken(token) {
   return COLORS.find(item => item.token === token);
+}
+
+function normalizeBrushColor(value) {
+  const source = String(value || '').trim();
+  if (/^#[0-9a-f]{6}$/i.test(source)) return source.toUpperCase();
+  return DEFAULT_BRUSH_COLOR;
 }
 
 function defaultShellArt() {
@@ -127,10 +161,10 @@ function normalizeOperation(operation, index) {
       id: String(source.id || `stroke-${index}`),
       type: 'stroke',
       tool: source.tool,
-      color: '#536447',
+      color: normalizeBrushColor(source.color),
       width: source.tool === 'eraser'
         ? clamp(source.width || DEFAULT_ERASER_WIDTH, ERASER_MIN_WIDTH, ERASER_MAX_WIDTH)
-        : clamp(source.width || DEFAULT_BRUSH_WIDTH, BRUSH_SIZES[0].width, BRUSH_SIZES[BRUSH_SIZES.length - 1].width),
+        : clamp(source.width || DEFAULT_BRUSH_WIDTH, BRUSH_MIN_WIDTH, BRUSH_MAX_WIDTH),
       points
     };
   }
@@ -187,14 +221,15 @@ function createSticker(pattern, sequence, point) {
   };
 }
 
-function createStroke(tool, points, sequence, width) {
+function createStroke(tool, points, sequence, width, color) {
   const safeTool = tool === 'eraser' ? 'eraser' : 'brush';
   return normalizeOperation({
     id: `stroke-${Math.max(0, Number(sequence) || 0) + 1}`,
     type: 'stroke',
     tool: safeTool,
     points,
-    width: width || (safeTool === 'eraser' ? DEFAULT_ERASER_WIDTH : DEFAULT_BRUSH_WIDTH)
+    width: width || (safeTool === 'eraser' ? DEFAULT_ERASER_WIDTH : DEFAULT_BRUSH_WIDTH),
+    color: safeTool === 'brush' ? normalizeBrushColor(color) : DEFAULT_BRUSH_COLOR
   }, sequence);
 }
 
@@ -376,15 +411,19 @@ module.exports = {
   BASE_ASSET,
   BASE_VERSION,
   COLORS,
+  BRUSH_COLORS,
+  DEFAULT_BRUSH_COLOR,
   PATTERNS,
   MAX_OPERATIONS,
   BRUSH_SIZES,
   ERASER_MIN_PX,
   ERASER_MAX_PX,
   ERASER_DEFAULT_PX,
+  ERASER_SIZES,
   ERASER_MAX_WIDTH,
   DEFAULT_BRUSH_WIDTH,
   DEFAULT_ERASER_WIDTH,
+  brushWidthForPixels,
   eraserWidthForPixels,
   defaultShellArt,
   normalizeShellArt,

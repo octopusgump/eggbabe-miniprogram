@@ -1,8 +1,15 @@
 <view class="page">
   <nav-bar title="收藏卡"></nav-bar>
+  <view class="system-notice-anchor">
+    <inline-notice
+      text="{{systemNoticeText}}"
+      tone="{{systemNoticeTone}}"
+      visible="{{systemNoticeVisible}}"
+    ></inline-notice>
+  </view>
   <scroll-view class="content" scroll-y>
     <view wx:if="{{isNew}}" class="new-banner">我的收藏卡已经准备好啦</view>
-    <view wx:if="{{cardView}}" class="card">
+    <view wx:if="{{cardView}}" class="card motion-card">
       <view class="card-title-section">
         <view class="card-avatar"><pet-avatar pet-type="{{cardView.prototype_name}}" size="{{44}}"></pet-avatar></view>
         <view class="title-copy">
@@ -12,7 +19,9 @@
         <text class="brand">eggbabe</text>
       </view>
       <view class="card-illustration-section">
-        <image class="card-illustration" src="{{cardView.illustration_url}}" mode="aspectFit"></image>
+        <image wx:if="{{illustrationSrc && !illustrationError}}" class="card-illustration" src="{{illustrationSrc}}" mode="aspectFit" bindload="onIllustrationLoad" binderror="onIllustrationError"></image>
+        <view wx:if="{{illustrationLoading}}" class="card-image-state"><view class="card-image-loader"></view><text>正在加载收藏卡插画…</text></view>
+        <view wx:if="{{illustrationError}}" class="card-image-state card-image-state--error"><text>收藏卡插画没有加载好</text><view class="card-image-retry" aria-role="button" aria-label="重新加载收藏卡插画" bindtap="onRetryIllustration">重新加载</view></view>
       </view>
       <view class="card-data-section">
         <view class="data-row"><text class="data-label">破壳日期</text><text class="data-value">{{hatchedAtLabel}}</text></view>
@@ -22,8 +31,8 @@
       </view>
     </view>
     <view class="actions">
-      <button class="save-image-button" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">{{savingImage ? '正在保存…' : '保存图片'}}</text></button>
-      <button class="share-button" open-type="share"><text class="button-label">分享给好友</text></button>
+      <button class="save-image-button" hover-class="button-press" disabled="{{savingImage}}" bindtap="onSaveImage"><text class="button-label">{{savingImage ? '正在保存…' : '保存图片'}}</text></button>
+      <button class="share-button" hover-class="button-press" open-type="share"><text class="button-label">分享给好友</text></button>
     </view>
     <canvas canvas-id="cardPosterCanvas" class="card-poster-canvas"></canvas>
   </scroll-view>

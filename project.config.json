@@ -33,7 +33,644 @@
   "libVersion": "3.15.2",
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/archived",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/90-reference-composites",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/60-action-scenes",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/30-character/boon-koi/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/20-room-objects/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/10-background/kitchen/candidates",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/90-reference-composites",
+        "type": "folder"
+      },
+      {
+        "value": "pages/egg-rotation-sample",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/magic-window",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/png",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-actions/png",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-actions/webp",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-scene-actions/png",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-scene-actions/webp",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-toolbar/png",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-toolbar/webp",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-toolbox/png",
+        "type": "folder"
+      },
+      {
+        "value": "assets/ui/3d-toolbox/webp",
+        "type": "folder"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_left_living_with_jade_rabbit_reference.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/incubation_room_empty_day_reference.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/room_base_candidate_v2.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_base_chroma_reference.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_fish_wooden_plaque_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_fortune_bead_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_lotus_lantern_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_paper_pinwheel_four_view_3d.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_paper_pinwheel_four_view_3d_v2.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_boon_koi_water_ripple_jade_pendant_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_helmet_four_view_3d.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_helmet_single_3d_preview_v01.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_herb_pouch_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_mini_jade_pestle_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_moon_phase_cards_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_jade_rabbit_osmanthus_branch_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a01_prayer_stick_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a02_copper_coin_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a03_peace_amulet_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a04_sachet_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a05_red_string_bracelet_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-a06_small_brass_bell_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k01_lotus_leaf_bookmark_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k02_polaroid_stone_bridge_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k04_origami_paper_boat_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k05_coffee_cup_sleeve_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k06_fish_shaped_bobber_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k07_dried_paint_palette_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-k08_burnt_candle_stub_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r01_yellow_rubber_duck_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r02_bicycle_bell_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r04_traditional_shuttlecock_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r05_old_newspaper_corner_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v2.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v3.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r06_incense_and_holder_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d_v2.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_k-r08_blue_paw_print_card_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_retained_sugar_painting_ladle_four_view_3d.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/README.md",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/README.md",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_clear_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_clear_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_clear_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_rain_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_clear_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_cloudy_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_rain_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_clear_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_clear_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_clear_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_cloudy_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_storm_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_clear_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_clear_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_cloudy_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_post_snow_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_snow_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_snow_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_clear_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_clear_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_clear_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_rain_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_clear_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_cloudy_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_rain_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_clear_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_clear_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_clear_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_cloudy_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_storm_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_clear_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_clear_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_cloudy_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_post_snow_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_snow_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_snow_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_clear_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_clear_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_clear_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_clear_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_rain_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_rain_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/spring_rain_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/spring_rain_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_storm_day_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_storm_day_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/summer_storm_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/summer_storm_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_rain_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_rain_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/autumn_rain_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/autumn_rain_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_clear_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_clear_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_cloudy_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_cloudy_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_cloudy_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_cloudy_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_snow_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_snow_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_post_snow_sunset_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_post_snow_sunset_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather/winter_post_snow_night_egg_right45.webp",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather/winter_post_snow_night_nest_pad.webp",
+        "type": "file"
+      },
+      {
+        "value": "pages/nickname",
+        "type": "folder"
+      },
+      {
+        "value": "assets/icons/send-up.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/icons/send.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/icons/send.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_draw.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_draw.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_learn.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_learn.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_quiet.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_quiet.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_secret.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_secret.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_talk.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_talk.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_touch.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_touch.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_window.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_window.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_wish.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/scenes/lifecycle/pre-hatch/50-overlays/interaction-icons/interaction_wish.svg",
+        "type": "file"
+      },
+      {
+        "value": "assets/tab/egg-active.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/tab/egg.png",
+        "type": "file"
+      }
+    ],
     "include": []
   },
   "editorSetting": {}

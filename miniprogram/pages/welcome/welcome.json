@@ -1,3 +1,6 @@
 {
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "inline-notice": "../../components/inline-notice/inline-notice"
+  }
 }

@@ -3,7 +3,6 @@
     "pages/welcome/welcome",
     "pages/home/home",
     "pages/add-device/add-device",
-    "pages/nickname/nickname",
     "pages/wish/wish",
     "pages/lesson/lesson",
     "pages/doodle/doodle",
@@ -14,10 +13,15 @@
     "pages/invite-codes/invite-codes",
     "pages/life-scenes/life-scenes",
     "pages/life-scene/life-scene",
-    "pages/egg-rotation-sample/egg-rotation-sample",
+    "pages/chat/chat",
+    "pages/journey-scene/journey-scene",
     "pages/my/my",
     "pages/profile/profile",
     "pages/settings/settings",
+    "pages/age-range/age-range",
+    "pages/feedback/feedback",
+    "pages/terms/terms",
+    "pages/policy/policy",
     "pages/account/account",
     "pages/help/help",
     "pages/deregister/deregister",
@@ -30,8 +34,8 @@
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/home", "text": "蛋宝宝", "iconPath": "assets/tab/egg.png", "selectedIconPath": "assets/tab/egg-active.png" },
-      { "pagePath": "pages/my/my", "text": "我的", "iconPath": "assets/ui/3d-actions/runtime/ui_3d_profile_egg_cameo_96_v03.png", "selectedIconPath": "assets/ui/3d-actions/runtime/ui_3d_profile_egg_cameo_96_v03.png" }
+      { "pagePath": "pages/home/home", "text": "蛋宝宝", "iconPath": "assets/tab/egg_p8_v01.png", "selectedIconPath": "assets/tab/egg-active_p8_v01.png" },
+      { "pagePath": "pages/my/my", "text": "我的", "iconPath": "assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04_p8_v01.png", "selectedIconPath": "assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04_p8_v01.png" }
     ]
   },
   "window": {
@@ -40,5 +44,6 @@
     "backgroundTextStyle": "dark"
   },
   "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json"
 }

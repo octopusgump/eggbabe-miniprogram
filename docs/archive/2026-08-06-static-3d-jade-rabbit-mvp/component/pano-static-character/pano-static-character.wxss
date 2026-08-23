@@ -1,0 +1,4 @@
+.pano-static-character{position:relative;display:block;overflow:visible;opacity:0;transform:translateY(8rpx) scale(.985);transition:opacity .26s ease-out,transform .26s ease-out;pointer-events:none}
+.pano-static-character--visible{opacity:1;transform:translateY(0) scale(1)}
+.pano-static-character__canvas{position:absolute;z-index:1;inset:0;display:block;pointer-events:none}
+.pano-static-character__contact-shadow{position:absolute;z-index:0;left:25%;right:19%;bottom:7%;height:12%;border-radius:50%;background:rgba(59,39,24,.68);filter:blur(8rpx);transform:rotate(-4deg) scaleY(.42);pointer-events:none}

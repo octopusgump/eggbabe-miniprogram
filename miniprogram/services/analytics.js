@@ -24,7 +24,6 @@ const EVENT_ALLOWLIST = new Set([
   'scene_exit',
   'chat_open',
   'chat_message_sent',
-  'chat_reply_result',
   'account_delete_request',
   'account_delete_cancel',
   'data_write_fail',

@@ -10,11 +10,15 @@ Page({
     storedOption: null,
     animation: '',
     animationLine: '',
+    selectionError: '',
     error: ''
   },
 
   async onLoad() {
+    this.pageAlive = true;
+    const requestToken = this.loadRequestToken = (this.loadRequestToken || 0) + 1;
     const state = await practice.getState('edu_class');
+    if (!this.pageAlive || requestToken !== this.loadRequestToken) return;
     if (!state.ok) {
       this.setData({ loading: false, error: state.message || '教室还在准备中' });
       return;
@@ -31,17 +35,17 @@ Page({
 
   onSelect(event) {
     if (this.data.storedOption || this.data.submitting) return;
-    this.setData({ selected: event.currentTarget.dataset.id });
+    this.setData({ selected: event.currentTarget.dataset.id, selectionError: '' });
   },
 
   async onSubmit() {
     if (!this.data.selected || this.data.submitting) {
-      if (!this.data.selected) wx.showToast({ title: '先选一件小事吧', icon: 'none' });
+      if (!this.data.selected) this.setData({ selectionError: '先选一件小事吧' });
       return;
     }
     const selectedOption = practice.optionById(this.data.options, this.data.selected);
     if (!selectedOption) return;
-    this.setData({ submitting: true, error: '' });
+    this.setData({ submitting: true, error: '', selectionError: '' });
     const result = await practice.submit('edu_class', {
       questionId: 'EDU-DAILY',
       optionId: selectedOption.id
@@ -71,6 +75,14 @@ Page({
   },
 
   onUnload() {
+    this.pageAlive = false;
+    this.loadRequestToken = (this.loadRequestToken || 0) + 1;
     clearTimeout(this.animationTimer);
+    this.animationTimer = null;
+  },
+
+  onHide() {
+    clearTimeout(this.animationTimer);
+    this.animationTimer = null;
   }
 });

@@ -197,7 +197,7 @@ assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${
 assert.equal(app.pages.includes('pages/chat/chat'), true, '居家对话必须注册完整聊天页');
 assert.equal(app.pages.includes('pages/decor-studio/decor-studio'), false, '主 PRD 未放行的 AI 布置额度页面不得注册');
 assert.equal(lifeSceneTemplate.includes('world-panel--living') && lifeSceneTemplate.includes('world-panel--desk') && lifeSceneTemplate.includes('world-panel--decor'), true, '破壳后必须使用三屏连续生活空间');
-assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"') && lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '左下角必须始终显示陪伴状态图标；只有服务端允许聊天时才进入完整对话页');
+assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeSceneTemplate.includes('wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry"') && lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '左下角仅在居家时显示陪伴入口；只有服务端允许聊天时才进入完整对话页');
 assert.equal(lifeSceneLogic.includes('onCharacterTouchStart') && lifeSceneLogic.includes('clearCuddleTimers'), true, '破壳后三屏必须保留长按贴贴并清理定时器');
 assert.equal(/memory-entry|memory-rail|state-pill|scene-copy/.test(lifeSceneTemplate), false, '全屏生活空间不得恢复旧回忆条或常驻状态卡');
 assert.equal(/demo-scene-badge|>DEMO</.test(lifeSceneTemplate), false, '破壳后正式页面不得显示 DEMO 调试标识');
@@ -205,7 +205,7 @@ assert.equal(/bed-placeholder|bed-pillow|bed-blanket|lamp-placeholder|decor-plac
 assert.equal(/sceneCharacterImage|scene-character__pose-image|scene-character__floor-shadow|class="panel-tone"|class="scene-prop/.test(`${lifeSceneLogic}\n${lifeSceneTemplate}`), false, '角色与动作道具必须烘焙进正式全景，不得叠加透明角色、接触阴影、CSS 道具或色调层');
 assert.equal(lifeSceneLogic.includes('assets.resolveActionPanorama') && lifeSceneTemplate.includes('class="scene-character-hotspot') && lifeSceneTemplate.includes('bindtap="onCharacterTap"'), true, '生活空间必须使用正式动作全景，并以透明热区保留角色互动');
 assert.equal(petAvatarTemplate.includes("petType === '玉兔' || petType === 'YT'") && /wx:else\s+class="koi"/.test(petAvatarTemplate) === false, true, 'YT 原型不得错误渲染成锦鲤');
-assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState}}" class="scene-context-entry"') && lifeSceneTemplate.includes('class="away-status-pill"') && lifeSceneTemplate.includes('>外出中</view>') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('mySettingsIcon') && lifeSceneTemplate.includes('aria-label="打开我的和设置"') && lifeSceneLogic.includes('scene_chat_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '居家使用左下陪伴入口，外出只显示“外出中”，右下我的/设置保持可用');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry"') && !lifeSceneTemplate.includes('class="away-status-') && !lifeSceneTemplate.includes('外出中') && lifeSceneTemplate.includes('class="scene-action-dock"') && lifeSceneTemplate.includes('contextActionIcon') && lifeSceneTemplate.includes('mySettingsIcon') && lifeSceneTemplate.includes('aria-label="打开我的和设置"') && lifeSceneLogic.includes('scene_chat_button') && lifeSceneLogic.includes('statusBubbleFor'), true, '居家使用左下陪伴入口，外出时左下留空，右下我的/设置保持可用');
 assert.equal(/scene-talk-nudge|home-locator-focus|onOpenTalkComposer|composerVisible && currentState\.atHome/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, '居家入口不得恢复聚焦光圈、三点提示或场景内对话弹层');
 assert.equal(/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"|scene-action-unread-dot/.test(`${lifeSceneTemplate}\n${lifeSceneLogic}`), false, 'V3.6 / V3.7 不得暴露百宝箱弹层、复杂内容入口或未读提示');
 assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '右下我的/设置必须直接打开我的页');
@@ -286,9 +286,6 @@ const h5Data = h5Bridge.toH5Card(petStore.getPet());
 assert.equal(h5Data.identity_code, card.identity_code, 'H5 桥接必须传递身份编号');
 assert.equal(h5Data.display_name, '我的蛋宝宝', '未命名回退必须固定');
 assert.equal(h5Bridge.buildH5Url('https://eggbabe.com/card', h5Data, 'https://api.eggbabe.com').includes('card_data='), false, 'live H5 不得注入客户端业务结果');
-petStore.clearUser();
-assert.equal(petStore.getPet(), null, '退出登录必须清除本机实体蛋缓存');
-
 [
   'build-environment.test.js',
   'demo-experience.test.js',

@@ -8,6 +8,7 @@ const chatCompliance = require('../../services/chat-compliance');
 
 let clientMessageSequence = 0;
 const BUSINESS_TIMEZONE_OFFSET_MS = 8 * 60 * 60 * 1000;
+const AI_COPY_ATTRIBUTION = '——以上内容由 AI 生成（蛋宝宝 eggbabe）';
 
 function windowHeight() {
   try {
@@ -31,6 +32,12 @@ function createClientMessageId() {
 
 function message(id, role, text, fields) {
   return Object.assign({ id, role, text: String(text || ''), status: 'sent' }, fields || {});
+}
+
+function clipboardTextForMessage(item) {
+  const source = item && typeof item === 'object' ? item : {};
+  const text = String(source.text || '');
+  return source.role === 'assistant' ? `${text}\n\n${AI_COPY_ATTRIBUTION}` : text;
 }
 
 function updateMessage(messages, clientMessageId, fields) {
@@ -721,6 +728,19 @@ Page({
 
   onAcknowledgeHealthReminder() { this.setData({ healthReminderVisible: false }); },
   noop() {},
+
+  onMessageLongPress(event) {
+    const messageId = String(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.messageId || '');
+    const target = (this.data.messages || []).find(item => item && String(item.id) === messageId);
+    if (!target || !String(target.text || '')) return;
+    wx.showActionSheet({
+      itemList: ['复制'],
+      success: result => {
+        if (!result || result.tapIndex !== 0) return;
+        wx.setClipboardData({ data: clipboardTextForMessage(target) });
+      }
+    });
+  },
 
   shouldFollowLatest() {
     if (typeof this.readingAtBottom === 'boolean') return this.readingAtBottom;

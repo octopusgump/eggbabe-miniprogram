@@ -134,12 +134,11 @@
     <view wx:if="{{sceneBackgroundError || sceneTransitionError}}" class="scene-background-error" bindtap="onRetrySceneBackground">{{sceneTransitionError ? '房间背景更新失败 · 轻触重试' : '房间背景没有加载好 · 轻触重试'}}</view>
 
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
-    <view wx:if="{{currentState}}" class="scene-context-entry">
-      <view wx:if="{{currentState.atHome}}" class="scene-action-button {{contextActionDisabled ? 'scene-action-button--unavailable' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextActionLabel}}" bindtap="onContextActionTap">
+    <view wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry">
+      <view class="scene-action-button {{contextActionDisabled ? 'scene-action-button--unavailable' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextActionLabel}}" bindtap="onContextActionTap">
         <image class="scene-action-icon-image scene-action-icon-image--companion" src="{{contextActionIcon}}" mode="aspectFill"></image>
         <view wx:if="{{contextActionBadge}}" class="scene-action-unavailable-badge">{{contextActionBadge}}</view>
       </view>
-      <view wx:else class="away-status-pill" aria-role="button" aria-label="蛋宝宝外出中，轻触查看提示" bindtap="onContextActionTap">外出中</view>
     </view>
 
     <view class="scene-action-dock">

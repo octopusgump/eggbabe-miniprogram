@@ -38,7 +38,6 @@ const lifeSceneTemplate = fs.readFileSync(path.join(root, 'pages/life-scene/life
 const lifeSceneStyles = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.wxss'), 'utf8');
 const lifeSceneLogic = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.js'), 'utf8');
 const appLogic = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-const accountLogic = fs.readFileSync(path.join(root, 'pages/account/account.js'), 'utf8');
 
 assert.equal(componentTemplate.includes('{{petName}}') && componentTemplate.includes('今日心情') && componentTemplate.includes('{{mood.moodLabel}}') && componentTemplate.includes('{{mood.icon}}') && componentTemplate.includes('{{mood.text}}'), true, '组合 Tab 展开态必须呈现名字、正式心情、通用图标和一句话');
 assert.equal(componentTemplate.indexOf('pet-mood-tab__name') < componentTemplate.indexOf('pet-mood-tab__mood-summary') && componentTemplate.indexOf('pet-mood-tab__mood-summary') < componentTemplate.indexOf('pet-mood-tab__sentence'), true, '组合 Tab 必须按名字、今日心情、完整句子排列');
@@ -59,8 +58,8 @@ assert.equal(homeTemplate.includes("homeStagePhase === 'visible' && !fullSceneIm
 assert.equal(homeTemplate.includes('isDemo && pet && stage !== \'hatched\'') && lifeSceneTemplate.includes('class="mood-tester"'), true, '八种心情切换器必须限制在开发态');
 assert.equal(homeTemplate.includes('acceptanceToolsOpen') && homeTemplate.includes('onAcceptanceToolsToggle'), true, '首页开发态验收器必须默认收进单一入口');
 assert.equal(lifeSceneTemplate.includes('isDemo && acceptanceToolsOpen && currentState') && lifeSceneTemplate.includes('onAcceptanceToolsToggle'), true, '破壳后开发态验收器也必须默认收进单一入口');
-assert.equal(appLogic.includes('dailyMoodIntroShown: false') && accountLogic.includes('dailyMoodIntroShown = false'), true, '每次新登录会话必须重新获得一次 9 秒心情展示');
-assert.equal(lifeSceneTemplate.includes('class="away-status-pill"') && lifeSceneTemplate.includes('>外出中</view>'), true, '外出时左下角必须只显示“外出中”');
+assert.equal(appLogic.includes('dailyMoodIntroShown: false'), true, '每次新启动会话必须获得一次 9 秒心情展示');
+assert.equal(lifeSceneTemplate.includes('wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry"') && !lifeSceneTemplate.includes('class="away-status-'), true, '外出时左下角必须留空，不显示状态按钮');
 assert.equal(/currentState\.(?:majorLabel|label|line)/.test(lifeSceneTemplate), false, '外出界面不得泄露地点、活动或去向');
 assert.equal(lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome'), true, '不在场角色不得显示动作或活动对白');
 assert.equal(lifeSceneLogic.includes('if (!current.atHome)') && lifeSceneLogic.includes('蛋宝宝正在外出，稍后再来看看吧。'), true, '外出提示必须保持通用且不能触发对话');

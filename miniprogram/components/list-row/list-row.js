@@ -8,7 +8,7 @@ Component({
     value: { type: String, value: '' },
     showChevron: { type: Boolean, value: true },
     showBorder: { type: Boolean, value: true },
-    labelColor: { type: String, value: '#1A1A1A' } // --text，账号页的「注销账号」会传 --error
+    labelColor: { type: String, value: '#1A1A1A' }
   },
   methods: {
     onTap() {

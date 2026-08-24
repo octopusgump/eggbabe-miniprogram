@@ -21,14 +21,52 @@
 ## Git 分支、版本与上传规则
 
 - “破壳前”和“破壳后”是同一小程序内的用户生命周期状态，不得再将它们维护成彼此割裂的长期产品分支。
-- 长期分支只保留：`main`（当前稳定版本）、`release/v3.6`（以破壳前体验为主要交付范围的历史冻结版本）、`release/v3.7`（同时包含破壳前与破壳后流程的当前完整版本）。
-- `release/v3.6` 原则上只接受必要维护；新的每日心情、聊天、高清动作图、破壳后场景与完整生命周期功能进入 `release/v3.7`。
+- 长期分支只保留 `main`，作为当前稳定版本和新任务的唯一默认基线。
+- 历史发布快照通过已有版本 Tag 与 `archive/*` Tag 保存，不重新创建长期 `release/*` 分支；新功能使用短期任务分支，验证通过后合入 `main` 并按授权清理。
 - 生命周期资产继续通过 `miniprogram/assets/scenes/lifecycle/pre-hatch/` 与 `miniprogram/assets/scenes/lifecycle/post-hatch/` 区分；共用能力放在现有共享组件、配置或服务中，不通过新增长期分支区分。
 - 每次执行 `git commit`、`git push` 或任何通过 Git 上传代码／图片之前，必须重新完整阅读本文件及上级 `../AGENTS.md`，不得只依赖记忆。
 - 上传前必须检查 `git status --short --branch`、当前分支及 upstream，并核对暂存区文件；工作区存在混合修改时只按明确路径暂存，禁止默认使用 `git add .` 或 `git add -A`。
 - 图片上传必须确认生命周期目录、运行时引用和目标分支；完成后报告分支名、提交哈希、文件路径、数量、尺寸、格式及验证结果。
 - 长期分支重命名或删除前，必须确认独有提交已归并或建立归档 Tag，并获得用户明确授权；不得把仍有独有提交的分支直接删除。
-- 整理完成后，不得继续向旧名称 `V3.7`、`release/miniprogram-mvp-v3.6-20260802`、`release/v3.6-pre-hatch` 或 `release/v3.7-post-hatch` 推送新提交。
+- 整理完成后，不得继续向已删除的 `V3.7`、`release/miniprogram-mvp-v3.6-20260802`、`release/v3.6-pre-hatch`、`release/v3.7-post-hatch`、`release/v3.6` 或 `release/v3.7` 推送新提交。
+
+### 分支命名规范（今后统一执行）
+
+- 长期分支名称只允许 `main`；历史发布版本通过版本 Tag 与 `archive/*` Tag 保存，不再创建 `release/*` 长期分支。长期分支不添加日期，也不得用生命周期、成员姓名或单个功能命名。
+- 普通任务分支统一使用 `<type>/<scope>-<summary>-<YYYYMMDD>`，全部使用小写 ASCII、数字和连字符；除 `type` 后的单个 `/` 外不得再使用斜杠。示例：`feat/chat-records-settings-20260823`。
+- `<type>` 只能从以下类型中选择：
+  - `feat`：新增用户可见功能；
+  - `fix`：修复缺陷或回归；
+  - `ui`：不改变业务范围的界面与交互调整；
+  - `compliance`：协议、年龄、反馈、AI 标识等合规改动；
+  - `asset`：图片、视频、字体等资产生产与替换；
+  - `docs`：只修改文档；
+  - `test`：只新增或修复测试；
+  - `refactor`：不改变用户行为的代码重构；
+  - `chore`：工程配置、脚本和仓库维护；
+  - `hotfix`：需要优先合入线上稳定版本的紧急修复；
+  - `wip`：仅用于需要隔离、整理或救援尚未完成工作区的短期分支，不作为正式交付分支。
+- `<scope>` 使用稳定的产品或技术模块名，例如 `chat`、`settings`、`home`、`age-range`、`feedback`、`kitchen`、`release`；`<summary>` 用 1 至 4 个能说明交付结果的英文单词。名称总长度原则上不超过 64 个字符。
+- 日期固定使用分支创建日的北京时间八位数字 `YYYYMMDD`。同日同名分支确需并存时，末尾追加 `-2`、`-3`，不得使用 `final`、`latest`、`new`、`temp` 等含义不稳定的后缀。
+- 禁止在新分支名中使用中文、空格、下划线、大写字母、个人姓名，以及单独的 `dev`、`test`、`feature`、`new-branch` 等模糊名称；禁止再创建 `pre-hatch` 与 `post-hatch` 两条长期功能线。
+- 一个任务分支只承载一个可独立说明、测试和回滚的交付主题。功能、无关资产清理和其他文档整理不得因为“顺手”而混进同一分支；同一交付所必需的测试和交接文档可以随功能一起提交。
+- 用户未指定基线时，新任务分支默认从最新 `origin/main` 创建；如需修复历史冻结版本，先由用户明确目标 Tag 和交付方式，不得自行恢复 `release/*` 长期分支。不得默认从陈旧的本地 `main`、已合并分支或 `wip/*` 分支继续派生正式交付分支。
+- 创建分支前必须执行只读检查：确认当前分支、upstream、`git status --short --branch`，并比较计划基线与远程基线。需要获取最新远程状态时先执行 `git fetch --prune`；网络操作按当前授权规则执行。
+- 工作区存在未提交修改时，不得为了创建分支擅自 `stash`、`reset`、`checkout`、覆盖或搬运用户改动。先判断修改归属；无法安全隔离时，向用户报告并选择独立 worktree、按明确路径制作补丁，或等待用户确认。
+- 开始正式交付前必须检查当前分支是否符合本规则、是否基于正确基线。如果当前分支是历史名称或 `wip/*`，不得只为看起来规范而原地改名；应将本次明确文件迁移到从正确基线创建的新任务分支。
+- 首次推送任务分支统一使用 `git push -u origin <branch-name>` 建立同名 upstream。禁止把任务分支推送到另一个远程分支名，也禁止默认直接向 `main` 推送。
+- 分支合并、重命名、删除或强制推送属于独立操作：必须先确认目标、独有提交和远程状态，并获得用户明确授权。禁止使用 `git push --force`；确有必要且经授权时，只能使用带租约保护的 `git push --force-with-lease`。
+- 每次创建或推送分支后，都必须向用户报告：基线分支、实际分支名、commit hash、upstream、推送目标和测试结果。历史分支保留原名，不因本规则自动批量重命名；从本规则写入后创建的新分支必须遵守。
+
+常用示例：
+
+- 新功能：`feat/chat-records-settings-20260823`
+- 缺陷修复：`fix/chat-keyboard-overlap-20260823`
+- 合规修改：`compliance/age-feedback-states-20260823`
+- 视觉调整：`ui/my-settings-layout-20260823`
+- 场景资产：`asset/kitchen-jade-rabbit-bath-20260823`
+- 文档交付：`docs/compliance-cto-handoff-20260823`
+- 紧急修复：`hotfix/release-chat-crash-20260823`
 
 ## 修改与验证
 

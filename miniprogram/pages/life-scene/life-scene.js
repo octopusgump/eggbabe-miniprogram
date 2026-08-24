@@ -111,8 +111,8 @@ function previewCompanionSnapshot(snapshot, target) {
   return Object.assign({}, snapshot, {
     // 仅开发验收器模拟服务端 chat_access；正式运行始终只读取服务端快照。
     chatAccess: target.key === 'away'
-      ? { status: 'away', reason: 'AWAY', message: '蛋宝宝正在外出，暂时不能聊天。', nextAvailableAt: null }
-      : snapshot.chatAccess,
+      ? { status: 'away', reason: 'AWAY', message: '蛋宝宝正在外出，暂时不能聊天。', nextAvailableAt: '' }
+      : { status: 'available', reason: 'AT_HOME', message: '', nextAvailableAt: '' },
     currentState: Object.assign({}, definition, {
       slotIndex: current.slotIndex,
       slotStart: current.slotStart,

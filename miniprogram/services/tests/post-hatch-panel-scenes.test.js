@@ -121,6 +121,7 @@ assert.equal(lifeSceneLogic.includes("key: 'home-sleep', label: '在家 · 睡�
 assert.equal(lifeSceneLogic.includes('}, () => this.refreshEnvironment());'), true, '完成居家动作后必须重新解析动作全景');
 assert.equal(lifeSceneLogic.includes("key: 'away', label: '不在家'"), true, '陪伴状态测试必须覆盖不在家且无写信入口');
 assert.equal(lifeSceneLogic.includes("target.key === 'away'") && lifeSceneLogic.includes("status: 'away', reason: 'AWAY'"), true, '开发验收器选择不在家时必须模拟服务端 away chat_access，不能留下可聊天按钮');
+assert.equal(lifeSceneLogic.includes("status: 'available', reason: 'AT_HOME', message: '', nextAvailableAt: ''"), true, '开发验收器选择居家状态时必须模拟 available chat_access，不能继承真实外出状态');
 assert.equal(lifeSceneLogic.includes('isCompanionStatePreview()'), true, '陪伴状态测试必须明确隔离预览写入');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && acceptanceToolsOpen && currentState && sceneBackgroundReady}}" class="scene-tester'), true, '破壳后环境测试入口必须在验收工具展开且全景图就绪后显示');
 assert.equal(lifeSceneWxml.includes('wx:if="{{isDemo && currentState && sceneBackgroundReady}}" class="stage-tester"') && lifeSceneWxml.includes('isDemo && acceptanceToolsOpen && currentState'), true, '破壳后必须提供单一验收入口，并等待全景图就绪后再展开各测试器');
@@ -154,8 +155,8 @@ assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ u
 assert.equal(/scene-action-unread-dot|contextActionHasNewMessage|toolboxHasNewMessage/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '停用的明信片不得在生活场景显示不可处理的未读提示');
 assert.equal(Boolean(postHatchAssets.POST_HATCH.sceneActions.toolbox) && ['card', 'postcards', 'keepsakes'].every(key => postHatchAssets.POST_HATCH.sceneActions.toolboxItems[key]), true, '已完成的百宝箱与复杂内容图片配置必须保留供后续版本使用');
 assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}\n${postHatchCompanionLogic}\n${cloudApiLogic}`), false, '写信的界面、事件、服务与云接口必须完全移除');
-assert.equal(lifeSceneWxml.includes('wx:if="{{currentState}}" class="scene-context-entry"'), true, '左下角陪伴状态入口必须在外出时继续显示');
-assert.equal(lifeSceneWxml.includes('class="away-status-pill"') && lifeSceneWxml.includes('>外出中</view>'), true, '外出时左下角必须只显示“外出中”');
+assert.equal(lifeSceneWxml.includes('wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry"'), true, '左下角陪伴入口必须只在居家时显示');
+assert.equal(lifeSceneWxml.includes('class="away-status-') || lifeSceneWxml.includes('外出中'), false, '外出时左下角必须留空，不显示按钮或状态文案');
 assert.equal(/away-status-card|currentState\.(?:majorLabel|label|line)/.test(lifeSceneWxml), false, '外出时不得显示地点、活动、去向或中央叙事卡');
 assert.equal(lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome'), true, '外出时不得触发角色动作状态对白');
 assert.equal(lifeSceneWxml.includes('class="scene-action-icon-image scene-action-icon-image--companion"') && lifeSceneWxml.includes('src="{{contextActionIcon}}" mode="aspectFill"'), true, '左下角玉兔或锦鲤头像必须使用独立样式铺满圆形按钮');

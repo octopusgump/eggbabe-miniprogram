@@ -16,7 +16,7 @@
         <view wx:if="{{item.dateDisplayLabel}}" class="ai-content-timeline-label">AI 虚拟宠物 · 内容由 AI 生成</view>
         <view id="message-{{item.id}}" class="message-row message-row--{{item.role}}">
           <view class="message-stack message-stack--{{item.role}}">
-            <view class="message-bubble message-bubble--{{item.role}}"><text>{{item.text}}</text></view>
+            <view class="message-bubble message-bubble--{{item.role}}" data-message-id="{{item.id}}" bindlongpress="onMessageLongPress"><text>{{item.text}}</text></view>
             <view wx:if="{{item.timeLabel}}" class="message-time">{{item.timeLabel}}</view>
             <view wx:if="{{item.role === 'user' && item.status === 'pending'}}" class="message-status message-status--pending" aria-live="polite"><view class="message-status__pending-dot"></view><text>正在发送</text></view>
             <view wx:elif="{{item.role === 'user' && item.status === 'failed'}}" class="message-status message-status--failed" aria-role="button" aria-label="发送失败，点击重试" hover-class="pressable--pressed" hover-stay-time="80" data-client-message-id="{{item.clientMessageId}}" bindtap="onRetryMessage">发送失败 · 点击重试</view>

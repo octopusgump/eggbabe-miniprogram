@@ -68,9 +68,11 @@ const navBar = `${read('components/nav-bar/nav-bar.js')}\n${read('components/nav
 for (const text of ['AI 虚拟宠物 · 内容由 AI 生成', '温馨提示：蛋宝宝是 AI 虚拟宠物，不是真人。', '长时间 AI 陪伴易产生依赖，请多参与线下户外活动。', '我知道了']) {
   assert.equal(chat.includes(text), true, `聊天页必须包含：${text}`);
 }
-for (const removedFeature of ['bindlongpress="onMessageLongPress"', 'onMessageLongPress', "['复制', '举报']", '退出对话', '清空聊天记录', 'onChatMenu', 'onExitConversation', 'clearChatHistory']) {
+for (const removedFeature of ["['复制', '举报']", '退出对话', '清空聊天记录', 'onChatMenu', 'onExitConversation', 'clearChatHistory']) {
   assert.equal(chat.includes(removedFeature), false, `聊天页不得保留已取消功能：${removedFeature}`);
 }
+assert.equal(chatTemplate.includes('data-message-id="{{item.id}}" bindlongpress="onMessageLongPress"') && chat.includes("itemList: ['复制']") && chat.includes('clipboardTextForMessage(target)'), true, '长按单条消息必须只提供复制操作并通过统一规则生成剪贴板内容');
+assert.equal(chat.includes("const AI_COPY_ATTRIBUTION = '——以上内容由 AI 生成（蛋宝宝 eggbabe）'") && chat.includes("source.role === 'assistant' ? `${text}\\n\\n${AI_COPY_ATTRIBUTION}` : text"), true, '只有 AI 回复必须追加锁定的 AI 生成标识，用户消息必须保持原文');
 assert.equal(chat.includes('recordSuccessfulConversationMessages(2)') && chat.includes('advanceSuccessfulMessageCount'), true, '仅成功确认的一问一答分别计数');
 assert.equal(chat.includes('class="health-mask" catchtap="noop"') && chat.includes('healthReminderShown'), true, '健康提醒遮罩不得关闭且同一会话只显示一次');
 assert.equal(chatTemplate.includes('title-interactive="{{true}}"') || chatTemplate.includes('bind:titletap="onChatMenu"'), false, '对话页标题必须保持静态，不得唤起旧菜单');

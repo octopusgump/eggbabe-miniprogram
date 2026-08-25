@@ -1,6 +1,8 @@
 const compliance = require('../../services/compliance-service');
 const { FEEDBACK_TYPES } = require('../../config/compliance');
 const MIN_SUBMITTING_VISIBLE_MS = 600;
+// 客服热线：老年人人工反馈渠道，知情同意书弹窗展示与拨号共用
+const HOTLINE = '18201931204';
 const TYPE_OPTIONS = Object.freeze([
   Object.freeze({ value: '', label: '请选择诉求类型' }),
   ...FEEDBACK_TYPES
@@ -18,7 +20,9 @@ Page({
     submitting: false,
     submitError: '',
     receiptNumber: '',
-    canSubmit: false
+    canSubmit: false,
+    consentVisible: false,
+    hotline: HOTLINE
   },
 
   onLoad(query) {
@@ -67,7 +71,25 @@ Page({
     this.refreshCanSubmit({ consent: !this.data.consent, submitError: '' });
   },
 
-  onPrivacy() { wx.navigateTo({ url: '/pages/policy/policy?type=privacy' }); },
+  onOpenConsent() {
+    this.setData({ consentVisible: true });
+  },
+
+  onCloseConsent() {
+    this.setData({ consentVisible: false });
+  },
+
+  // 弹窗内明确点击"同意"才勾选，查看行为本身不构成同意
+  onAgreeConsent() {
+    this.refreshCanSubmit({ consent: true, consentVisible: false, submitError: '' });
+  },
+
+  onCallHotline() {
+    wx.makePhoneCall({ phoneNumber: HOTLINE });
+  },
+
+  // 拦截弹窗遮罩的触摸穿透与点击冒泡，无实际逻辑
+  noop() {},
 
   onSubmit() {
     if (this.data.submitting || this.submissionInFlight) return;
@@ -75,7 +97,7 @@ Page({
       let submitError = '';
       if (!this.data.type) submitError = '请选择诉求类型';
       else if (!String(this.data.description || '').trim()) submitError = '请填写问题详细描述';
-      else if (!this.data.consent) submitError = '请勾选同意隐私政策';
+      else if (!this.data.consent) submitError = '请勾选同意知情同意书';
       else submitError = '请完善必填信息后提交';
       this.setData({ submitError });
       wx.showToast({ title: submitError, icon: 'none' });

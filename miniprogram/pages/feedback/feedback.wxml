@@ -3,7 +3,11 @@
   <scroll-view scroll-y class="content">
     <view wx:if="{{receiptNumber}}" class="success" aria-live="polite">
       <text class="success__title">反馈已提交</text>
-      <text class="success__receipt">受理编号：{{receiptNumber}}</text>
+      <view class="success__detail">
+        <text class="success__line">受理编号：{{receiptNumber}}</text>
+        <text class="success__line">普通咨询 / 投诉：24 小时内完成核查并反馈结果</text>
+        <text class="success__line">涉及轻生、诈骗、隐私泄露等高风险诉求：2 小时内人工加急处置</text>
+      </view>
     </view>
 
     <view wx:if="{{messageId}}" class="linked-message" aria-role="status" aria-live="polite">已自动关联本条 AI 回复，并预选违规对话类型；提交时将一并发送。</view>

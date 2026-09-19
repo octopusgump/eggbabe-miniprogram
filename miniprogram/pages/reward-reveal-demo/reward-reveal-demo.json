@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "nav-bar": "../../components/nav-bar/nav-bar",
+    "reward-reveal": "../../components/reward-reveal/reward-reveal"
+  }
+}

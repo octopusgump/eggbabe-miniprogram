@@ -1,0 +1,77 @@
+<view class="demo-page">
+  <image class="demo-page__scene" src="{{backgroundImage}}" mode="aspectFill"></image>
+  <view class="demo-page__shade"></view>
+  <nav-bar title="奖励揭晓 · 开发验收"></nav-bar>
+
+  <scroll-view class="demo-panel" scroll-y>
+    <view class="demo-panel__intro">
+      <text class="demo-panel__kicker">LOCAL FIXTURE · 不进入正式导航</text>
+      <text class="demo-panel__title">Reward Reveal</text>
+      <text class="demo-panel__description">切换四种揭晓层级和三档节奏。Memory 使用完整场景结尾，不套开箱卡片。</text>
+    </view>
+
+    <view class="demo-section">
+      <text class="demo-section__label">揭晓层级</text>
+      <view class="demo-segment">
+        <view
+          wx:for="{{tierOptions}}"
+          wx:key="value"
+          class="demo-segment__item {{selectedTier === item.value ? 'demo-segment__item--active' : ''}}"
+          data-tier="{{item.value}}"
+          aria-role="button"
+          aria-label="预览 {{item.label}} 揭晓"
+          bindtap="onTierTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view class="demo-section">
+      <text class="demo-section__label">节奏边界</text>
+      <view class="demo-duration">
+        <view
+          wx:for="{{durationOptions}}"
+          wx:key="value"
+          class="demo-duration__item {{selectedDuration === item.value ? 'demo-duration__item--active' : ''}}"
+          data-duration="{{item.value}}"
+          aria-role="button"
+          bindtap="onDurationTap"
+        >{{item.label}}</view>
+      </view>
+      <text class="demo-section__hint">每档都包含至少 0.2 秒的明确停顿。</text>
+    </view>
+
+    <view class="demo-section demo-section--switches">
+      <view class="demo-switch-row">
+        <view><text class="demo-switch-row__title">声音</text><text class="demo-switch-row__note">静态稿仅验证开关，不播放音频</text></view>
+        <switch checked="{{soundEnabled}}" color="#9DB65B" bindchange="onSoundChange"></switch>
+      </view>
+      <view class="demo-switch-row">
+        <view><text class="demo-switch-row__title">震动</text><text class="demo-switch-row__note">默认关闭，不调用系统震动</text></view>
+        <switch checked="{{hapticEnabled}}" color="#9DB65B" bindchange="onHapticChange"></switch>
+      </view>
+    </view>
+
+    <view class="demo-status" aria-live="polite">
+      <text class="demo-status__phase">{{phaseLabel}}</text>
+      <text wx:if="{{collectedLabel}}" class="demo-status__result">{{collectedLabel}}</text>
+    </view>
+
+    <button class="demo-preview" hover-class="button-press" bindtap="onPreview"><text class="button-label">播放 {{selectedTier}} 揭晓</text></button>
+    <text class="demo-footnote">收下后会直接回到这张原场景，不再叠加第二层“恭喜获得”。</text>
+  </scroll-view>
+
+  <reward-reveal
+    visible="{{revealVisible}}"
+    tier="{{currentFixture.tier}}"
+    title="{{currentFixture.title}}"
+    memory="{{currentFixture.memory}}"
+    image="{{currentFixture.image}}"
+    scene-image="{{currentFixture.sceneImage}}"
+    date-label="{{currentFixture.dateLabel}}"
+    duration="{{selectedDuration}}"
+    sound-enabled="{{soundEnabled}}"
+    haptic-enabled="{{hapticEnabled}}"
+    bindphasechange="onPhaseChange"
+    bindcollect="onCollect"
+  ></reward-reveal>
+</view>

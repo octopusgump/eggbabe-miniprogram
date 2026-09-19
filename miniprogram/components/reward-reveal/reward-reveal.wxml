@@ -1,0 +1,52 @@
+<view
+  wx:if="{{rendered}}"
+  class="reward-reveal reward-reveal--{{normalizedTier}} reward-reveal--{{phase}} {{reducedMotion ? 'reward-reveal--reduced' : ''}}"
+  style="--reward-reveal-duration:{{resolvedDuration}}ms;"
+  catchtouchmove="noop"
+  aria-role="dialog"
+  aria-label="{{tierCopy.eyebrow}}：{{title}}"
+>
+  <view wx:if="{{normalizedTier !== 'MEMORY'}}" class="reward-reveal__veil">
+    <view class="reward-reveal__focus" aria-hidden="true">
+      <view class="reward-reveal__orbit reward-reveal__orbit--outer"></view>
+      <view class="reward-reveal__orbit reward-reveal__orbit--inner"></view>
+      <text class="reward-reveal__mark">{{tierCopy.mark}}</text>
+    </view>
+
+    <view class="reward-reveal__pause-copy" aria-live="polite">好像有什么，被轻轻留下了…</view>
+
+    <view class="reward-reveal__card">
+      <view class="reward-reveal__image-wrap">
+        <image wx:if="{{image}}" class="reward-reveal__image" src="{{image}}" mode="aspectFit"></image>
+        <view wx:else class="reward-reveal__image-fallback"><text>{{tierCopy.mark}}</text></view>
+      </view>
+      <text class="reward-reveal__eyebrow">{{tierCopy.eyebrow}}</text>
+      <text class="reward-reveal__title">{{title}}</text>
+      <text wx:if="{{memory}}" class="reward-reveal__memory">{{memory}}</text>
+      <text wx:if="{{dateLabel}}" class="reward-reveal__date">{{dateLabel}}</text>
+    </view>
+  </view>
+
+  <view wx:else class="reward-reveal__memory-scene">
+    <image wx:if="{{sceneImage}}" class="reward-reveal__scene-image" src="{{sceneImage}}" mode="aspectFill"></image>
+    <view wx:else class="reward-reveal__scene-fallback"></view>
+    <view class="reward-reveal__scene-shade"></view>
+    <view class="reward-reveal__memory-pause" aria-live="polite">这一刻，房间忽然安静了下来。</view>
+    <view class="reward-reveal__memory-copy">
+      <text class="reward-reveal__eyebrow">{{tierCopy.eyebrow}}</text>
+      <text class="reward-reveal__memory-title">{{title}}</text>
+      <text wx:if="{{memory}}" class="reward-reveal__memory-line">{{memory}}</text>
+      <text wx:if="{{dateLabel}}" class="reward-reveal__memory-date">{{dateLabel}}</text>
+    </view>
+  </view>
+
+  <view class="reward-reveal__collect-wrap">
+    <button
+      class="reward-reveal__collect"
+      hover-class="reward-reveal__collect--pressed"
+      disabled="{{phase !== 'ready'}}"
+      bindtap="onCollect"
+    ><text class="button-label">{{tierCopy.collect}}</text></button>
+    <text class="reward-reveal__accessibility-note">画面信息完整，不依赖声音或震动</text>
+  </view>
+</view>

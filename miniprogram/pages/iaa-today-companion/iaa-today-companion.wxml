@@ -1,0 +1,83 @@
+<view class="today-page today-page--{{view ? view.today.accent : 'sage'}}">
+  <view class="today-topbar" style="top:{{topInset}}px;">
+    <view class="round-action" aria-role="button" aria-label="返回" bindtap="onBack"><text>‹</text></view>
+    <view class="today-wordmark"><text class="today-wordmark__main">今日陪伴</text><text class="today-wordmark__sub">和 ta 待一小会儿</text></view>
+    <view wx:if="{{isDev}}" class="dev-entry {{devPanelOpen ? 'dev-entry--active' : ''}}" aria-role="button" aria-label="{{devPanelOpen ? '收起验收状态' : '展开验收状态'}}" bindtap="onToggleDevPanel"><text>验收</text></view>
+    <view wx:else class="topbar-spacer"></view>
+  </view>
+
+  <view wx:if="{{isDev && devPanelOpen}}" class="dev-panel" style="top:{{topInset + 58}}px;">
+    <view class="dev-panel__head"><text>本地静态预览</text><text class="dev-panel__source">local fixture</text></view>
+    <view class="dev-row">
+      <text class="dev-row__label">今日</text>
+      <view class="dev-options">
+        <view wx:for="{{scenarioOptions}}" wx:key="key" class="dev-chip {{selectedScenario === item.key ? 'dev-chip--active' : ''}}" data-key="{{item.key}}" aria-role="button" bindtap="onScenarioSelect"><text>{{item.label}}</text></view>
+      </view>
+    </view>
+    <view class="dev-row">
+      <text class="dev-row__label">页面</text>
+      <view class="dev-options">
+        <view wx:for="{{viewStateOptions}}" wx:key="key" class="dev-chip {{selectedViewState === item.key ? 'dev-chip--active' : ''}}" data-key="{{item.key}}" aria-role="button" bindtap="onViewStateSelect"><text>{{item.label}}</text></view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{screenState === 'loading'}}" class="state-stage">
+    <view class="soft-loader"><view class="soft-loader__dot soft-loader__dot--one"></view><view class="soft-loader__dot soft-loader__dot--two"></view><view class="soft-loader__dot soft-loader__dot--three"></view></view>
+    <text class="state-stage__title">正在推开今天的门</text>
+    <text class="state-stage__copy">看看玉兔现在在做什么。</text>
+  </view>
+
+  <view wx:elif="{{screenState === 'empty'}}" class="state-stage">
+    <view class="empty-window"><view class="empty-window__sun"></view><view class="empty-window__sill"></view></view>
+    <text class="state-stage__title">今天的房间还没准备好</text>
+    <text class="state-stage__copy">这里会放下玉兔今天的一小段生活。</text>
+    <view class="state-stage__action" aria-role="button" bindtap="onRetry"><text>再看一下</text></view>
+  </view>
+
+  <view wx:elif="{{screenState === 'error'}}" class="state-stage state-stage--error">
+    <view class="error-leaf"><text>⌁</text></view>
+    <text class="state-stage__title">刚才没有看清</text>
+    <text class="state-stage__copy">{{errorMessage}}</text>
+    <view class="state-stage__action" aria-role="button" bindtap="onRetry"><text>重新看看</text></view>
+  </view>
+
+  <block wx:elif="{{screenState === 'ready' && view}}">
+    <view class="scene-frame">
+      <image class="scene-image" src="{{view.today.sceneImage}}" mode="aspectFill"></image>
+      <view class="scene-wash"></view>
+      <view class="scene-meta">
+        <text class="scene-meta__date">{{view.displayDate}}</text>
+        <text class="scene-meta__eyebrow">{{view.today.eyebrow}}</text>
+      </view>
+      <view wx:if="{{view.today.scenarioKey === 'away'}}" class="paper-note"><text class="paper-note__pin">●</text><text>{{view.today.line}}</text></view>
+    </view>
+
+    <view class="story-sheet">
+      <view class="story-sheet__handle"></view>
+      <view class="story-heading">
+        <view class="story-title-wrap">
+          <text class="story-kicker">今天，{{view.pet.name}}</text>
+          <text class="story-title">{{view.today.title}}</text>
+        </view>
+        <view class="presence-dot {{view.today.atHome ? '' : 'presence-dot--away'}}"><view class="presence-dot__mark"></view><text>{{view.today.atHome ? '在家' : '出门了'}}</text></view>
+      </view>
+
+      <text wx:if="{{view.today.scenarioKey !== 'away'}}" class="story-line">“{{view.today.line}}”</text>
+
+      <view class="tomorrow-card">
+        <view class="tomorrow-card__moon">☾</view>
+        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">留给明天</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
+      </view>
+
+      <view class="interaction-area">
+        <view class="companion-action {{interactionDone ? 'companion-action--done' : ''}}" aria-role="button" aria-label="{{interactionDone ? '已经陪伴过玉兔' : view.today.interactionLabel}}" bindtap="onInteract">
+          <text class="companion-action__icon">{{interactionDone ? '✓' : '♡'}}</text>
+          <text>{{interactionDone ? '这一会儿，已经好好收下' : view.today.interactionLabel}}</text>
+        </view>
+        <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
+        <text wx:else class="interaction-note">不催促，也不会因为错过而失去什么</text>
+      </view>
+    </view>
+  </block>
+</view>

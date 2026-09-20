@@ -97,7 +97,7 @@ Page({
   },
 
   onBack() {
-    const pages = getCurrentPages ? getCurrentPages() : [];
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
     if (pages.length > 1) {
       wx.navigateBack();
       return;

@@ -75,6 +75,9 @@ function contextFor() {
   await pageDefinition.onRetry.call(page);
   assert.equal(page.data.screenState, 'ready', '重试必须回到同一场景的内容态');
 
+  await pageDefinition.onViewStateSelect.call(page, { currentTarget: { dataset: { key: 'empty' } } });
+  assert.equal(page.data.screenState, 'empty', '空 fixture 必须显示独立空态');
+
   await pageDefinition.onViewStateSelect.call(page, { currentTarget: { dataset: { key: 'loading' } } });
   assert.equal(page.data.screenState, 'loading', '加载演示必须稳定停留在加载画面');
 

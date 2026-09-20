@@ -13,12 +13,13 @@ const scopeDoc = fs.readFileSync(path.resolve(root, '../docs/iaa-core-loop-scope
 const reviewRoute = 'pages/iaa-core-review/iaa-core-review';
 const expectedRoutes = [
   '/pages/iaa-today-companion/iaa-today-companion',
-  '/pages/iaa-star-unlock/iaa-star-unlock',
+  '/pages/life-scene/life-scene?entry=iaa-core-review',
   '/pages/tomorrow-engine-demo/tomorrow-engine-demo',
   '/pages/iaa-memory-album-demo/iaa-memory-album-demo'
 ];
 
 assert.equal(app.pages[0], reviewRoute, '四项验收台必须是开发启动第一页');
+assert.equal(app.pages.includes('pages/iaa-star-unlock/iaa-star-unlock'), false, '陪伴星星不得继续注册为独立页面');
 assert.equal(app.pages.includes('pages/iaa-memory-detail-demo/iaa-memory-detail-demo'), false, '纪念详情不得继续注册');
 assert.equal(app.pages.includes('pages/iaa-memory-save-demo/iaa-memory-save-demo'), false, '纪念保存卡不得继续注册');
 

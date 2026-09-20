@@ -11,6 +11,7 @@ const lifeScenes = require('../../utils/life-scenes');
 const deviceClock = require('../../services/device-clock');
 const { createSceneFeedbackController } = require('../../utils/scene-feedback-controller');
 const dailyMoodConfig = require('../../config/daily-mood');
+const starAdapter = require('../../services/iaa-star-unlock-adapter');
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
@@ -51,6 +52,22 @@ const STATUS_BUBBLE_POOL = Object.freeze({
   work: Object.freeze(['我在认真忙，袖口都精神了。', '今天的小事排队来找我。', '我先把这一点点做好。']),
   school: Object.freeze(['我在上课，问题比铅笔多。', '今天的字好多，我慢慢认识它们。', '我把新知识塞进小脑袋啦。'])
 });
+
+function coreReviewPreviewPet() {
+  return {
+    id: 'iaa-core-review-jade-rabbit',
+    mode: 'demo',
+    prototype: '玉兔',
+    name: '玉兔',
+    createdAt: '2026-09-20T08:00:00+08:00',
+    companionStartedAt: '2026-09-20T08:00:00+08:00',
+    hatchAt: '2026-09-20T08:00:00+08:00',
+    lifecycleStage: 'HATCHED',
+    environmentSeed: 'iaa-core-review-jade-rabbit',
+    environmentVersion: 'environment-v1',
+    collectionCard: { hatched_at: '2026-09-20T08:00:00+08:00' }
+  };
+}
 
 function reducedMotionEnabled() {
   try {
@@ -282,6 +299,10 @@ Page({
     moodTesterKey: dailyMoodConfig.DEFAULT_MOOD_TYPE,
     moodTesterLabel: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE).moodLabel,
     moodTabTopPx: 70,
+    companionStarBalance: -1,
+    companionStarClaimed: false,
+    companionStarProgressText: '',
+    companionStarAwardVisible: false,
     clockMode: 'analog',
     clockTimeText: '--:--',
     clockDateText: '',
@@ -356,7 +377,11 @@ Page({
     const testerTopPx = menuRect && Number(menuRect.bottom)
       ? Number(menuRect.bottom) + 8
       : Number(info.statusBarHeight || 20) + 42;
-    const pet = petStore.getPet();
+    const storedPet = petStore.getPet();
+    const coreReviewPreview = config.localDemoEnabled && query.entry === 'iaa-core-review';
+    const pet = coreReviewPreview && (!storedPet || petStore.getStage(storedPet) !== 'hatched')
+      ? coreReviewPreviewPet()
+      : storedPet;
     if (!pet || petStore.getStage(pet) !== 'hatched') {
       wx.showToast({ title: '破壳后才能进入这里', icon: 'none' });
       this.backTimer = setTimeout(() => wx.switchTab({ url: '/pages/home/home' }), 600);
@@ -405,7 +430,33 @@ Page({
       companionStateTesterOptions: companionStateTesterOptions(pet, dailyWindowEnvironment)
     });
     this.scheduleEnvironmentRefresh();
+    this.loadCompanionStar();
     this.loadSnapshot();
+  },
+
+  loadCompanionStar() {
+    return starAdapter.getRoomStarView().then(result => {
+      if (!this.pageActive || !result.ok || !result.data || !result.data.star) return result;
+      const previousBalance = Number(this.data.companionStarBalance);
+      const balance = Number(result.data.star.balance || 0);
+      const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
+      const remaining = Number(result.data.progress && result.data.progress.remaining || 0);
+      const nextMemory = result.data.nextMemory && result.data.nextMemory.name || '下一段纪念';
+      const companionStarAwardVisible = previousBalance >= 0 && balance > previousBalance;
+      this.setData({
+        companionStarBalance: balance,
+        companionStarClaimed: claimed,
+        companionStarProgressText: remaining > 0 ? `还差 ${remaining} 颗 · ${nextMemory}` : `${nextMemory} 已经留下`,
+        companionStarAwardVisible
+      });
+      clearTimeout(this.companionStarAwardTimer);
+      if (companionStarAwardVisible) {
+        this.companionStarAwardTimer = setTimeout(() => {
+          if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+        }, 1600);
+      }
+      return result;
+    });
   },
 
   loadSnapshot() {
@@ -1292,6 +1343,7 @@ Page({
     this.hasShownOnce = true;
     this.pageActive = true;
     this.startClock();
+    this.loadCompanionStar();
     if (this.data.dailyWindowVisible || this.data.magicWindowVisible) this.setData({ dailyWindowVisible: false, magicWindowVisible: false });
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
@@ -1331,6 +1383,7 @@ Page({
   onUnload() {
     this.pageActive = false;
     this.stopClock();
+    clearTimeout(this.companionStarAwardTimer);
     this.windowGesture = null;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;

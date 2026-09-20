@@ -51,6 +51,9 @@ assert.equal(componentStyles.includes('.pet-mood-tab__eyebrow{flex:none;color:#7
 assert.equal(homeTemplate.includes('<pet-mood-tab') && lifeSceneTemplate.includes('<pet-mood-tab'), true, '破壳前后都必须使用同一名字与心情组合组件');
 assert.equal(homeTemplate.includes('class="home-status-stack') && homeTemplate.indexOf('<pet-mood-tab') < homeTemplate.indexOf('class="room-clock'), true, '首页 Tab 与时钟必须位于同一纵向状态容器并保持顺序');
 assert.equal(lifeSceneTemplate.includes('class="life-status-stack') && lifeSceneTemplate.indexOf('<pet-mood-tab') < lifeSceneTemplate.indexOf('class="room-clock'), true, '破壳后 Tab 与时钟也必须位于同一纵向状态容器并保持顺序');
+assert.equal(componentTemplate.includes('pet-mood-tab__star-summary') && componentTemplate.includes('陪伴星星') && componentTemplate.includes('starProgressText'), true, '今日心情组件必须支持在同一区域展示陪伴星星与纪念进度');
+assert.equal(lifeSceneTemplate.includes('star-balance="{{companionStarBalance}}"') && lifeSceneTemplate.includes('star-progress-text="{{companionStarProgressText}}"'), true, '破壳后房间必须把星星状态传入左上角今日心情组件');
+assert.equal(homeTemplate.includes('star-balance='), false, '破壳前房间不应提前展示陪伴星星');
 assert.match(homeStyles, /\.home-status-stack \{[^}]*left: 24rpx;[^}]*align-items: flex-start;[^}]*max-width: calc\(100vw - 48rpx\)/, '破壳前名字卡与时钟必须共用 24rpx 左对齐线');
 assert.match(homeStyles, /\.home-status-tab \{[^}]*margin-left: 0;/, '破壳前名字卡不得再单独向右偏移');
 assert.match(lifeSceneStyles, /\.life-status-stack\{[^}]*left:24rpx;[^}]*align-items:flex-start/, '破壳后名字卡与时钟必须继续共用 24rpx 左对齐线');

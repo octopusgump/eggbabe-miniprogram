@@ -1,7 +1,7 @@
 <view
   class="pet-mood-tab pet-mood-tab--{{expanded ? 'expanded' : 'compact'}} pet-mood-tab--{{mood.tone || 'neutral'}} {{reducedMotion ? 'pet-mood-tab--reduced' : ''}}"
   aria-role="button"
-  aria-label="{{expanded ? petName + '，今日心情，' + mood.moodLabel + '，' + mood.text + '，点击收起' : petName + '，今日心情，' + mood.moodLabel + '，点击查看完整心情'}}"
+  aria-label="{{expanded ? petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，' + mood.text + '，点击收起' : petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，点击查看详情'}}"
   bindtap="onToggle"
 >
   <text wx:if="{{nameInteractive}}" class="pet-mood-tab__name pet-mood-tab__name--interactive" catchtap="onNameTap">{{petName}}</text>
@@ -11,8 +11,18 @@
     <text class="pet-mood-tab__icon">{{mood.icon}}</text>
     <text class="pet-mood-tab__mood-label">{{mood.moodLabel}}</text>
   </view>
+  <view wx:if="{{starBalance >= 0}}" class="pet-mood-tab__star-summary">
+    <view class="pet-mood-tab__star-count">
+      <text class="pet-mood-tab__star-icon">✦</text>
+      <text class="pet-mood-tab__star-number">{{starBalance}}</text>
+      <text class="pet-mood-tab__star-label">陪伴星星</text>
+      <text wx:if="{{starAwardVisible}}" class="pet-mood-tab__star-award">+1</text>
+    </view>
+    <text class="pet-mood-tab__star-state">{{starClaimed ? '今日已收下' : '今日待收下'}}</text>
+  </view>
   <view class="pet-mood-tab__sentence {{contentVisible ? 'pet-mood-tab__sentence--visible' : ''}}" aria-hidden="{{!contentVisible}}">
     <text class="pet-mood-tab__text">{{mood.text}}</text>
     <text class="pet-mood-tab__ai-label">内容由 AI 生成</text>
   </view>
+  <text wx:if="{{starBalance >= 0 && contentVisible && starProgressText}}" class="pet-mood-tab__star-progress">{{starProgressText}}</text>
 </view>

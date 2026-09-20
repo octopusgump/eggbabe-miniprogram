@@ -15,6 +15,10 @@ Component({
   properties: {
     petName: { type: String, value: '还没有名字' },
     mood: { type: Object, value: null },
+    starBalance: { type: Number, value: -1 },
+    starClaimed: { type: Boolean, value: false },
+    starProgressText: { type: String, value: '' },
+    starAwardVisible: { type: Boolean, value: false },
     introReady: { type: Boolean, value: false },
     reducedMotion: { type: Boolean, value: false },
     nameInteractive: { type: Boolean, value: false }

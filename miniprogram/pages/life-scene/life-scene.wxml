@@ -79,6 +79,10 @@
         id="petMoodTab"
         pet-name="{{pet.name || '蛋宝宝'}}"
         mood="{{dailyMood}}"
+        star-balance="{{companionStarBalance}}"
+        star-claimed="{{companionStarClaimed}}"
+        star-progress-text="{{companionStarProgressText}}"
+        star-award-visible="{{companionStarAwardVisible}}"
         intro-ready="{{sceneEntered && initialViewportReady && sceneBackgroundReady && !error}}"
         reduced-motion="{{reducedMotion}}"
       ></pet-mood-tab>

@@ -13,11 +13,11 @@ const CORE_ITEMS = Object.freeze([
     key: 'star',
     step: '02',
     title: '陪伴星星',
-    summary: '有效陪伴后记下 +1，连接今天与纪念。',
-    meta: '唯一进度',
+    summary: '回到房间左上角，在今日心情处查看累计与进度。',
+    meta: '房间状态',
     symbol: '✦',
     tone: 'gold',
-    route: '/pages/iaa-star-unlock/iaa-star-unlock'
+    route: '/pages/life-scene/life-scene?entry=iaa-core-review'
   }),
   Object.freeze({
     key: 'tomorrow',

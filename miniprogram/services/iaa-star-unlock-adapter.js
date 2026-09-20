@@ -1,5 +1,7 @@
 const fixture = require('../fixtures/iaa-star-unlock');
 
+let roomPreviewView = null;
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -13,6 +15,18 @@ function getStarUnlockView(options) {
   return Promise.resolve({ ok: true, data });
 }
 
+function getRoomStarView() {
+  if (!roomPreviewView) roomPreviewView = fixture.starUnlockViewFor('AVAILABLE');
+  return Promise.resolve({ ok: true, data: clone(roomPreviewView) });
+}
+
+function resetRoomStarView(state) {
+  const next = fixture.starUnlockViewFor(String(state || 'AVAILABLE'));
+  if (!next) return { ok: false, error: { code: 'UNKNOWN_LOCAL_STATE', message: '没有找到这个本地演示状态。' } };
+  roomPreviewView = clone(next);
+  return { ok: true, data: clone(roomPreviewView) };
+}
+
 function recordCompanion(view) {
   const current = clone(view);
   const status = current && current.star && current.star.dailyClaimStatus;
@@ -23,6 +37,7 @@ function recordCompanion(view) {
     return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
   }
   if (status === 'CLAIMED' || status === 'UNLOCKED') {
+    roomPreviewView = clone(current);
     return Promise.resolve({ ok: true, data: current, awardedStars: 0, duplicate: true });
   }
 
@@ -34,6 +49,7 @@ function recordCompanion(view) {
   current.helperText = unlocked
     ? '今天的陪伴已经记下，也有一段新的回忆被轻轻打开。'
     : '今天的陪伴已经记下，再陪一会儿也不会重复增加。';
+  roomPreviewView = clone(current);
   return Promise.resolve({ ok: true, data: current, awardedStars: 1, duplicate: false });
 }
 
@@ -48,6 +64,8 @@ module.exports = {
   contractVersion: 'iaa-mvp-v1',
   source: 'local-fixture',
   getStarUnlockView,
+  getRoomStarView,
+  resetRoomStarView,
   recordCompanion,
   retryCompanion
 };

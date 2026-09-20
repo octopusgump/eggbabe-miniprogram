@@ -39,12 +39,11 @@ assert.equal(template.includes("screenState === 'loading'") && template.includes
 assert.equal(template.includes('bindtap="onRetry"') && pageLogic.includes("selectedViewState: 'ready'"), true, '空态和失败态必须可以重试到内容态');
 assert.equal(styles.includes('min-height:96rpx') && styles.includes('overflow-wrap:anywhere'), true, '主交互热区不得小于 96rpx，长文案必须允许换行');
 assert.equal(pageLogic.includes("require('../../services/iaa-star-unlock-adapter')"), true, '今日陪伴必须复用星星幂等 adapter，不得另写一套计数');
-assert.equal(template.includes('陪伴星星') && template.includes('今日已领取') && template.includes('累计') && template.includes('star-loop__award'), true, '今日陪伴页必须展示星星名称、当日领取状态、累计数量与 +1 反馈');
-assert.equal(template.includes('下一段纪念') && template.includes('starView.progress.remaining') && template.includes('starView.star.balance'), true, '星星区必须同时展示累计数量和距离下一段纪念的进度');
+assert.equal(template.includes('陪伴星星已经回到房间左上角') && template.includes('star-return-feedback__gain'), true, '今日陪伴页只保留 +1 去向反馈，不得承载常驻星星面板');
+assert.equal(template.includes('class="star-loop ') || template.includes('star-progress__track'), false, '常驻星星数量和纪念进度必须移出今日陪伴页');
 assert.equal(template.includes('留给明天') && template.includes('view.today.tomorrowHint'), true, '星星之后仍须保留明日提示');
-assert.equal(template.indexOf('class="star-loop ') < template.indexOf('class="tomorrow-card"'), true, '主流程顺序必须是陪伴、星星、明日提示');
 assert.equal(/奖励揭晓|reward-reveal/.test(`${template}\n${pageLogic}`), false, '今日陪伴主循环不得引入奖励揭晓');
-assert.equal(styles.includes('.star-progress__track') && styles.includes('.star-loop__award') && styles.includes('@keyframes star-award-rise'), true, '星星区必须提供可读进度与轻量 +1 反馈');
+assert.equal(styles.includes('.star-return-feedback') && !styles.includes('.star-loop{'), true, '今日陪伴只保留轻量 +1 去向反馈');
 assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|Math\.random|Date\.now/.test(`${pageLogic}\n${adapterLogic}\n${starAdapterLogic}`), false, '今日陪伴静态页不得接网络、云函数、数据库或随机调度');
 
 let pageDefinition;

@@ -72,33 +72,9 @@
         </view>
         <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
         <text wx:else class="interaction-note">不催促，也不会因为错过而失去什么</text>
-      </view>
-
-      <view class="star-loop {{interactionDone ? 'star-loop--claimed' : ''}}">
-        <view class="star-loop__head">
-          <view class="star-loop__identity">
-            <view class="star-loop__symbol"><text>✦</text></view>
-            <view class="star-loop__titles">
-              <text class="star-loop__title">陪伴星星</text>
-              <text class="star-loop__status">{{interactionDone ? '今日已领取' : '完成陪伴后领取'}}</text>
-            </view>
-          </view>
-          <view class="star-loop__balance">
-            <text class="star-loop__total-label">累计</text>
-            <text class="star-loop__number">{{starView.star.balance}}</text>
-            <text class="star-loop__unit">颗</text>
-            <text wx:if="{{starAwardVisible}}" class="star-loop__award">+{{awardedStars}}</text>
-          </view>
-        </view>
-
-        <view class="star-progress">
-          <view class="star-progress__meta">
-            <text>下一段纪念 · {{starView.nextMemory.name}}</text>
-            <text>{{starView.progress.current}} / {{starView.progress.target}}</text>
-          </view>
-          <view class="star-progress__track"><view class="star-progress__fill" style="width:{{starView.progress.percent}}%;"></view></view>
-          <text wx:if="{{starView.progress.remaining > 0}}" class="star-progress__hint">还差 {{starView.progress.remaining}} 颗星星</text>
-          <text wx:else class="star-progress__hint star-progress__hint--reached">这一段纪念已经好好留下</text>
+        <view wx:if="{{starAwardVisible}}" class="star-return-feedback">
+          <text class="star-return-feedback__gain">✦ +{{awardedStars}}</text>
+          <text>陪伴星星已经回到房间左上角</text>
         </view>
       </view>
 

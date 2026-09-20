@@ -1,0 +1,19 @@
+@import "../../styles/iaa-memory-demo.wxss";
+
+.save-intro { text-align: center; }
+.keepsake-card { position: relative; width: 620rpx; height: 860rpx; overflow: hidden; margin: 34rpx auto 0; border: 12rpx solid #FFFDF7; border-radius: 42rpx; background: #506453; box-shadow: 0 28rpx 66rpx rgba(35, 49, 38, 0.2); }
+.keepsake-card__scene { position: absolute; width: 100%; height: 100%; inset: 0; }
+.keepsake-card__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18, 31, 23, 0.08) 25%, rgba(15, 28, 19, 0.82) 100%); }
+.keepsake-card__top { position: absolute; top: 30rpx; left: 30rpx; right: 30rpx; display: flex; justify-content: space-between; align-items: center; }
+.keepsake-card__brand { color: rgba(255, 255, 255, 0.92); font-size: 17rpx; font-weight: 600; letter-spacing: 1rpx; }
+.keepsake-card__mock { padding: 8rpx 12rpx; border-radius: 999rpx; background: rgba(255, 255, 255, 0.18); color: rgba(255, 255, 255, 0.82); font-size: 14rpx; letter-spacing: 1rpx; }
+.keepsake-card__copy { position: absolute; left: 40rpx; right: 40rpx; bottom: 42rpx; }
+.keepsake-card__date, .keepsake-card__title, .keepsake-card__quote, .keepsake-card__signature { display: block; }
+.keepsake-card__date { color: rgba(255, 255, 255, 0.7); font-size: 19rpx; letter-spacing: 1rpx; }
+.keepsake-card__title { margin-top: 10rpx; color: #FFF; font-size: 46rpx; font-weight: 600; }
+.keepsake-card__quote { margin-top: 20rpx; color: rgba(255, 255, 255, 0.88); font-size: 25rpx; line-height: 1.7; }
+.keepsake-card__rule { width: 56rpx; height: 2rpx; margin-top: 28rpx; background: rgba(255, 255, 255, 0.55); }
+.keepsake-card__signature { margin-top: 18rpx; color: rgba(255, 255, 255, 0.66); font-size: 18rpx; }
+.preview-button { min-height: 96rpx; display: flex; align-items: center; justify-content: center; margin: 32rpx auto 0; border-radius: 999rpx; background: #213E2A; color: #FFF; font-size: 27rpx; font-weight: 600; }
+.preview-notice { display: block; margin-top: 16rpx; padding: 18rpx 22rpx; border-radius: 20rpx; background: #E6E9DC; color: #536052; font-size: 21rpx; line-height: 1.55; text-align: center; }
+@media (max-width: 340px) { .keepsake-card { width: 560rpx; height: 790rpx; } }

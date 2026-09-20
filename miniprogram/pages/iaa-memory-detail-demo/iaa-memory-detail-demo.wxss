@@ -1,0 +1,25 @@
+@import "../../styles/iaa-memory-demo.wxss";
+
+.detail-wrap { padding-top: 8rpx; }
+.detail-visual { position: relative; height: 720rpx; overflow: hidden; border-radius: 40rpx; background: #DDE5DB; box-shadow: 0 20rpx 44rpx rgba(40, 58, 43, 0.12); }
+.detail-visual__scene { position: absolute; width: 100%; height: 100%; inset: 0; }
+.detail-visual__wash { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(22, 35, 27, 0.03) 42%, rgba(18, 35, 23, 0.78) 100%); }
+.detail-visual__object { position: absolute; width: 260rpx; height: 260rpx; right: 24rpx; bottom: 154rpx; filter: drop-shadow(0 18rpx 20rpx rgba(25, 40, 31, 0.24)); }
+.detail-visual__caption { position: absolute; left: 34rpx; right: 34rpx; bottom: 34rpx; }
+.detail-visual__rarity, .detail-visual__title { display: block; }
+.detail-visual__rarity { color: rgba(255, 255, 255, 0.72); font-size: 18rpx; letter-spacing: 1.5rpx; }
+.detail-visual__title { margin-top: 10rpx; color: #FFF; font-size: 44rpx; font-weight: 600; }
+.detail-copy { margin-top: 22rpx; padding: 32rpx; border-radius: 34rpx; background: #FFFDF8; }
+.detail-copy__line { display: block; color: #304735; font-size: 29rpx; line-height: 1.65; font-weight: 500; }
+.detail-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22rpx 18rpx; margin-top: 30rpx; padding-top: 28rpx; border-top: 1rpx solid #ECE8DE; }
+.detail-meta__label, .detail-meta__value { display: block; }
+.detail-meta__label { color: #9A9B94; font-size: 18rpx; }
+.detail-meta__value { margin-top: 6rpx; color: #556158; font-size: 22rpx; line-height: 1.45; }
+.detail-quote { margin-top: 28rpx; padding: 22rpx 24rpx; border-left: 4rpx solid #C9D3A2; border-radius: 0 20rpx 20rpx 0; background: #F2F4E9; color: #536047; font-size: 23rpx; line-height: 1.65; }
+.save-entry { min-height: 126rpx; display: flex; align-items: center; gap: 20rpx; margin-top: 22rpx; padding: 22rpx 26rpx; border-radius: 30rpx; background: #24432D; color: #FFF; box-shadow: 0 12rpx 28rpx rgba(36, 67, 45, 0.16); }
+.save-entry__icon { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; flex: none; border-radius: 50%; background: rgba(255, 255, 255, 0.12); font-size: 30rpx; }
+.save-entry__copy { flex: 1; min-width: 0; }
+.save-entry__title, .save-entry__line { display: block; }
+.save-entry__title { font-size: 26rpx; font-weight: 600; }
+.save-entry__line { margin-top: 6rpx; color: rgba(255, 255, 255, 0.7); font-size: 19rpx; }
+.save-entry__arrow { flex: none; color: rgba(255, 255, 255, 0.72); font-size: 42rpx; }

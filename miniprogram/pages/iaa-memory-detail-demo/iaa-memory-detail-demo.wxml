@@ -1,0 +1,51 @@
+<view class="memory-page">
+  <nav-bar title="纪念详情"></nav-bar>
+  <scroll-view class="memory-scroll" scroll-y>
+    <view wx:if="{{loading}}" class="state-panel state-panel--detail" aria-live="polite">
+      <view class="state-illustration state-illustration--loading"><view class="loading-ring"></view></view>
+      <text class="state-title">正在展开这一页</text>
+      <text class="state-copy">读取本地 fixture 中的详情。</text>
+    </view>
+
+    <view wx:elif="{{error}}" class="state-panel state-panel--error" aria-live="polite">
+      <view class="state-illustration state-illustration--error">!</view>
+      <text class="state-title">没有找到这一页</text>
+      <text class="state-copy">{{error}}</text>
+      <view class="state-button" aria-role="button" bindtap="onRetry">重新试试</view>
+    </view>
+
+    <view wx:else class="detail-wrap">
+      <view class="detail-visual detail-visual--{{memory.artTone}}">
+        <image class="detail-visual__scene" src="{{memory.sceneImage}}" mode="aspectFill"></image>
+        <view class="detail-visual__wash"></view>
+        <image wx:if="{{memory.objectImage}}" class="detail-visual__object" src="{{memory.objectImage}}" mode="aspectFit"></image>
+        <view class="detail-visual__caption">
+          <text class="detail-visual__rarity">{{memory.rarityLabel}} · LOCAL FIXTURE</text>
+          <text class="detail-visual__title">{{memory.title}}</text>
+        </view>
+      </view>
+
+      <view class="detail-copy">
+        <text class="detail-copy__line">{{memory.line}}</text>
+        <view class="detail-meta">
+          <view class="detail-meta__item"><text class="detail-meta__label">日期</text><text class="detail-meta__value">{{memory.date}}</text></view>
+          <view class="detail-meta__item"><text class="detail-meta__label">地点</text><text class="detail-meta__value">{{memory.location}}</text></view>
+          <view class="detail-meta__item"><text class="detail-meta__label">角色</text><text class="detail-meta__value">{{memory.character}}</text></view>
+          <view class="detail-meta__item"><text class="detail-meta__label">发现条件</text><text class="detail-meta__value">{{memory.threshold}} 颗陪伴星</text></view>
+        </view>
+        <view wx:if="{{memory.quote}}" class="detail-quote">{{memory.quote}}</view>
+      </view>
+
+      <view wx:if="{{memory.canSave && memory.state !== 'LOCKED'}}" class="save-entry" aria-role="button" bindtap="onOpenSaveCard">
+        <view class="save-entry__icon">▧</view>
+        <view class="save-entry__copy">
+          <text class="save-entry__title">保存这一刻</text>
+          <text class="save-entry__line">预览一张只属于这段纪念的静态卡片</text>
+        </view>
+        <text class="save-entry__arrow">›</text>
+      </view>
+      <text class="detail-footnote">MOCK PREVIEW · 不写入账户，不代表正式纪念已解锁</text>
+    </view>
+    <view class="safe-space"></view>
+  </scroll-view>
+</view>

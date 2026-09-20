@@ -1,0 +1,101 @@
+<view class="tomorrow-review-page">
+  <nav-bar title="明日提示 · 内容审查"></nav-bar>
+  <scroll-view class="tomorrow-review-scroll" scroll-y>
+    <view class="tomorrow-review-intro">
+      <text class="tomorrow-review-intro__kicker">LOCAL FIXTURE · iaa-mvp-v1</text>
+      <text class="tomorrow-review-intro__title">Tomorrow Engine 候选内容</text>
+      <text class="tomorrow-review-intro__copy">这里审查“明天再回来”的语气和场景线索，不运行正式内容调度。</text>
+      <view class="tomorrow-review-notice">
+        <text class="tomorrow-review-notice__strong">70 / 20 / 9 / 1 只是内容审查标签</text>
+        <text class="tomorrow-review-notice__copy">不是随机概率，也没有用户分群、倒计时、签到或断签惩罚。</text>
+      </view>
+    </view>
+
+    <view class="tomorrow-review-section">
+      <text class="tomorrow-review-section__label">内容类型</text>
+      <scroll-view class="tomorrow-review-tabs" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="tomorrow-review-tabs__row">
+          <view
+            wx:for="{{dayTypeOptions}}"
+            wx:key="dayType"
+            class="tomorrow-review-tab {{selectedDayType === item.dayType ? 'tomorrow-review-tab--active' : ''}}"
+            data-day-type="{{item.dayType}}"
+            aria-role="button"
+            aria-label="查看 {{item.label}}，审查标签 {{item.ratioLabel}}"
+            bindtap="onDayTypeTap"
+          >
+            <text class="tomorrow-review-tab__ratio">{{item.ratioLabel}}</text>
+            <text class="tomorrow-review-tab__name">{{item.label}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="tomorrow-review-section">
+      <text class="tomorrow-review-section__label">页面状态（仅开发验收）</text>
+      <view class="tomorrow-review-state-tabs">
+        <view
+          wx:for="{{viewStateOptions}}"
+          wx:key="value"
+          class="tomorrow-review-state-tab {{selectedViewState === item.value ? 'tomorrow-review-state-tab--active' : ''}}"
+          data-state="{{item.value}}"
+          aria-role="button"
+          bindtap="onViewStateTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="tomorrow-review-state" aria-live="polite">
+      <view class="tomorrow-review-loader"></view>
+      <text class="tomorrow-review-state__title">正在展开这组候选内容…</text>
+      <text class="tomorrow-review-state__copy">这只是本地加载态，不会请求网络。</text>
+    </view>
+
+    <view wx:elif="{{empty}}" class="tomorrow-review-state" aria-live="polite">
+      <view class="tomorrow-review-state__symbol">○</view>
+      <text class="tomorrow-review-state__title">这一组还没有候选内容</text>
+      <text class="tomorrow-review-state__copy">空态不会拿另一组内容伪装成功，也不会自动补一条随机文案。</text>
+      <button class="tomorrow-review-state__button" hover-class="button-press" bindtap="onRetry"><text class="button-label">回到固定示例</text></button>
+    </view>
+
+    <view wx:elif="{{failed}}" class="tomorrow-review-state tomorrow-review-state--error" aria-live="polite">
+      <view class="tomorrow-review-state__symbol">!</view>
+      <text class="tomorrow-review-state__title">刚才没有读到这组候选内容</text>
+      <text class="tomorrow-review-state__copy">当前画面诚实停在失败态，不显示另一份“看起来成功”的内容。</text>
+      <button class="tomorrow-review-state__button" hover-class="button-press" bindtap="onRetry"><text class="button-label">重新读取本地示例</text></button>
+    </view>
+
+    <view wx:elif="{{scenario}}" class="tomorrow-review-content">
+      <view class="tomorrow-review-scene">
+        <image class="tomorrow-review-scene__image" src="{{scenario.image}}" mode="aspectFill"></image>
+        <view class="tomorrow-review-scene__shade"></view>
+        <view class="tomorrow-review-scene__meta">
+          <text class="tomorrow-review-scene__context">{{scenario.contextLabel}}</text>
+          <text class="tomorrow-review-scene__type">{{scenario.dayType}} · 审查标签 {{scenario.reviewRatio}}</text>
+        </view>
+      </view>
+
+      <view class="tomorrow-review-card">
+        <text class="tomorrow-review-card__eyebrow">今天发生的事</text>
+        <text class="tomorrow-review-card__title">{{scenario.title}}</text>
+        <text class="tomorrow-review-card__line">{{scenario.todayLine}}</text>
+        <view class="tomorrow-review-hint">
+          <text class="tomorrow-review-hint__label">留给明天的一点线索</text>
+          <text class="tomorrow-review-hint__copy">{{scenario.tomorrowHint}}</text>
+        </view>
+        <view class="tomorrow-review-guidance">
+          <text class="tomorrow-review-guidance__label">内容审查备注</text>
+          <text class="tomorrow-review-guidance__copy">{{scenario.visualNote}}</text>
+        </view>
+      </view>
+
+      <view class="tomorrow-review-boundary">
+        <text class="tomorrow-review-boundary__label">本页不会做</text>
+        <view class="tomorrow-review-boundary__chips">
+          <text>随机抽取</text><text>用户分群</text><text>倒计时</text><text>连续签到</text><text>断签惩罚</text>
+        </view>
+        <text class="tomorrow-review-boundary__source">数据来源：{{view.source}} · 仅用于静态内容审查</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

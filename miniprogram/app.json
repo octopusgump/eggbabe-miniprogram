@@ -26,7 +26,8 @@
     "pages/terms/terms",
     "pages/policy/policy",
     "pages/help/help",
-    "pages/privacy/privacy"
+    "pages/privacy/privacy",
+    "pages/tomorrow-engine-demo/tomorrow-engine-demo"
   ],
   "tabBar": {
     "custom": true,

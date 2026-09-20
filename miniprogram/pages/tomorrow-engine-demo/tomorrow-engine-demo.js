@@ -12,6 +12,7 @@ const VIEW_STATES = [
 
 Page({
   data: {
+    debugMode: false,
     dayTypeOptions: [],
     viewStateOptions: VIEW_STATES,
     selectedDayType: 'NORMAL',
@@ -23,10 +24,13 @@ Page({
     scenario: null
   },
 
-  onLoad() {
+  onLoad(query) {
     this.pageActive = true;
     this.adapter = createTomorrowEngineAdapter();
-    this.setData({ dayTypeOptions: this.adapter.listReviewOptions() });
+    this.setData({
+      debugMode: Boolean(query && query.debug === '1'),
+      dayTypeOptions: this.adapter.listReviewOptions()
+    });
     this.loadCurrentReview();
   },
 
@@ -90,5 +94,14 @@ Page({
 
   onRetry() {
     this.loadCurrentReview();
+  },
+
+  onBack() {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    if (pages.length > 1) {
+      wx.navigateBack();
+      return;
+    }
+    wx.switchTab({ url: '/pages/home/home' });
   }
 });

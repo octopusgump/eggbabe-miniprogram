@@ -36,13 +36,16 @@ assert.notEqual(adapterModule.buildReviewView('NORMAL').scenario.title, '已改�
 assert.equal(/Math\.random|random\(|概率算法|用户分群逻辑/.test(`${fixtureSource}\n${adapterSource}\n${pageLogic}`), false, '前端不得实现随机概率或用户分群');
 assert.equal(/wx\.(?:request|cloud|setStorage|getStorage)|cloud-api|post-hatch-companion/.test(`${adapterSource}\n${pageLogic}`), false, '审查页不得联网、读写存储或调用现有业务服务');
 assert.equal(/setInterval|countdown|streak/.test(`${adapterSource}\n${pageLogic}`), false, '审查页不得实现倒计时或连续签到机制');
-assert.ok(template.includes('70 / 20 / 9 / 1 只是内容审查标签'), '页面必须显著解释比例仅作内容审查');
-assert.ok(template.includes('不是随机概率') && template.includes('倒计时、签到或断签惩罚'), '页面必须明确不实现随机、倒计时和签到惩罚');
+assert.ok(template.includes('wx:if="{{debugMode}}"') && template.includes('开发验收'), '开发控制必须只在显式 debug 模式显示');
+assert.ok(pageLogic.includes("query && query.debug === '1'"), '普通入口不得自动显示开发控制');
+assert.equal(template.includes('Tomorrow Engine 候选内容'), false, '用户页面不得出现内部引擎名称');
+assert.equal(template.includes('内容审查备注') || template.includes('本页不会做'), false, '用户页面不得夹带审查说明和产品边界');
+assert.ok(template.includes('明天再来看') && template.includes('scenario.tomorrowHint'), '用户页面必须直接呈现留给明天的线索');
 assert.ok(template.includes('wx:if="{{loading}}"') && template.includes('wx:elif="{{empty}}"') && template.includes('wx:elif="{{failed}}"'), '页面必须覆盖加载、空态和失败态');
 assert.ok(template.includes('bindtap="onRetry"') && pageLogic.includes('onRetry()'), '空态和失败态必须可重试');
 assert.ok(app.pages.includes('pages/tomorrow-engine-demo/tomorrow-engine-demo'), '隐藏开发页必须注册，供开发者工具直接打开');
 assert.equal(fs.readFileSync(path.resolve(__dirname, '../../pages/home/home.wxml'), 'utf8').includes('tomorrow-engine-demo'), false, '正式首页不得出现开发验收入口');
-assert.ok(styles.includes('background:#002900') && styles.includes('color:#1A1A1A') && styles.includes('border:1rpx solid #E5E3DF'), '页面必须使用现有设计系统主色、文字色和分隔线');
+assert.ok(styles.includes('background:#294736') && styles.includes('color:#28372D') && styles.includes('overflow-wrap:anywhere'), '用户页面必须使用陪伴页视觉语言并支持长文案');
 assert.equal(/font-weight:(650|700)/.test(styles), false, '页面字重不得超过设计系统规定的 600');
 
 console.log('Tomorrow Engine 四类固定 fixture、统一 adapter、四态页面与隔离边界校验通过。');

@@ -34,14 +34,17 @@ const adapterLogic = fs.readFileSync(path.join(root, 'services/iaa-today-compani
 const starAdapterLogic = fs.readFileSync(path.join(root, 'services/iaa-star-unlock-adapter.js'), 'utf8');
 
 assert.equal(app.pages.includes('pages/iaa-today-companion/iaa-today-companion'), true, '演示页必须在 app.json 注册，才能从开发者工具直接打开');
-assert.equal(template.includes('isDev && devPanelOpen') && template.includes('本地静态预览'), true, '状态切换器必须仅在开发态渲染');
+assert.equal(template.includes('isDev && devPanelOpen') && template.includes('开发验收'), true, '状态切换器必须仅在开发态渲染');
 assert.equal(template.includes("screenState === 'loading'") && template.includes("screenState === 'empty'") && template.includes("screenState === 'error'"), true, '页面必须提供加载、空态和失败的独立画面');
 assert.equal(template.includes('bindtap="onRetry"') && pageLogic.includes("selectedViewState: 'ready'"), true, '空态和失败态必须可以重试到内容态');
 assert.equal(styles.includes('min-height:96rpx') && styles.includes('overflow-wrap:anywhere'), true, '主交互热区不得小于 96rpx，长文案必须允许换行');
 assert.equal(pageLogic.includes("require('../../services/iaa-star-unlock-adapter')"), true, '今日陪伴必须复用星星幂等 adapter，不得另写一套计数');
 assert.equal(template.includes('陪伴星星已经回到房间左上角') && template.includes('star-return-feedback__gain'), true, '今日陪伴页只保留 +1 去向反馈，不得承载常驻星星面板');
 assert.equal(template.includes('class="star-loop ') || template.includes('star-progress__track'), false, '常驻星星数量和纪念进度必须移出今日陪伴页');
-assert.equal(template.includes('留给明天') && template.includes('view.today.tomorrowHint'), true, '星星之后仍须保留明日提示');
+assert.equal(template.includes('wx:if="{{interactionDone}}" class="tomorrow-card"'), true, '明日提示必须在完成陪伴后才出现');
+assert.equal(template.includes('明天再看') && template.includes('view.today.tomorrowHint'), true, '星星之后仍须在同页保留明日提示');
+assert.equal(template.includes('用户正式可见') && template.includes('正式接口') && template.includes('本地 fixture'), true, '开发验收抽屉必须说明可见范围、接口和数据来源');
+assert.equal(styles.includes('.dev-sheet-backdrop') && styles.includes('bottom:0'), true, '开发验收信息必须进入底部抽屉，不占用用户页面布局');
 assert.equal(/奖励揭晓|reward-reveal/.test(`${template}\n${pageLogic}`), false, '今日陪伴主循环不得引入奖励揭晓');
 assert.equal(styles.includes('.star-return-feedback') && !styles.includes('.star-loop{'), true, '今日陪伴只保留轻量 +1 去向反馈');
 assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|Math\.random|Date\.now/.test(`${pageLogic}\n${adapterLogic}\n${starAdapterLogic}`), false, '今日陪伴静态页不得接网络、云函数、数据库或随机调度');
@@ -72,6 +75,7 @@ function contextFor() {
   assert.equal(page.data.view.source, 'local-fixture');
   assert.equal(page.data.starView.star.balance, 2, '互动前必须展示累计星星');
   assert.equal(page.data.starView.progress.remaining, 1, '互动前必须展示距离下一段纪念还差一颗');
+  assert.equal(page.data.interactionDone, false, '用户完成陪伴前不得提前显示明日提示');
 
   await pageDefinition.onScenarioSelect.call(page, { currentTarget: { dataset: { key: 'away' } } });
   assert.equal(page.data.view.today.scenarioKey, 'away', '切换外出态后必须读取对应 fixture');

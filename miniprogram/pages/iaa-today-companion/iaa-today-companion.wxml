@@ -6,10 +6,17 @@
     <view wx:else class="topbar-spacer"></view>
   </view>
 
-  <view wx:if="{{isDev && devPanelOpen}}" class="dev-panel" style="top:{{topInset + 58}}px;">
-    <view class="dev-panel__head"><text>本地静态预览</text><text class="dev-panel__source">local fixture</text></view>
+  <view wx:if="{{isDev && devPanelOpen}}" class="dev-sheet-backdrop" aria-role="button" aria-label="关闭开发验收" bindtap="onToggleDevPanel"></view>
+  <view wx:if="{{isDev && devPanelOpen}}" class="dev-panel">
+    <view class="dev-panel__head"><text>开发验收</text><view class="dev-panel__close" aria-role="button" bindtap="onToggleDevPanel"><text>收起</text></view></view>
+    <view class="dev-facts">
+      <view class="dev-fact"><text class="dev-fact__label">当前状态</text><text class="dev-fact__value">{{screenState}}</text></view>
+      <view class="dev-fact"><text class="dev-fact__label">数据来源</text><text class="dev-fact__value">本地 fixture</text></view>
+      <view class="dev-fact"><text class="dev-fact__label">用户正式可见</text><text class="dev-fact__value">是</text></view>
+      <view class="dev-fact"><text class="dev-fact__label">正式接口</text><text class="dev-fact__value">尚未接入</text></view>
+    </view>
     <view class="dev-row">
-      <text class="dev-row__label">今日</text>
+      <text class="dev-row__label">场景</text>
       <view class="dev-options">
         <view wx:for="{{scenarioOptions}}" wx:key="key" class="dev-chip {{selectedScenario === item.key ? 'dev-chip--active' : ''}}" data-key="{{item.key}}" aria-role="button" bindtap="onScenarioSelect"><text>{{item.label}}</text></view>
       </view>
@@ -71,16 +78,16 @@
           <text>{{interactionDone ? '今日陪伴已完成' : (interactionPending ? '正在收好这一会儿' : view.today.interactionLabel)}}</text>
         </view>
         <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
-        <text wx:else class="interaction-note">不催促，也不会因为错过而失去什么</text>
         <view wx:if="{{starAwardVisible}}" class="star-return-feedback">
           <text class="star-return-feedback__gain">✦ +{{awardedStars}}</text>
           <text>陪伴星星已经回到房间左上角</text>
         </view>
       </view>
 
-      <view class="tomorrow-card">
+      <view wx:if="{{interactionDone}}" class="tomorrow-card">
+        <text wx:if="{{isDev && devPanelOpen}}" class="dev-region-marker">03</text>
         <view class="tomorrow-card__moon">☾</view>
-        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">留给明天</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
+        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">明天再看</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
       </view>
     </view>
   </block>

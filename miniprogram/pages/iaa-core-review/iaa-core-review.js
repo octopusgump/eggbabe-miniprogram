@@ -23,11 +23,11 @@ const CORE_ITEMS = Object.freeze([
     key: 'tomorrow',
     step: '03',
     title: '明日提示',
-    summary: '留下一句轻线索，给明天一个回来的理由。',
-    meta: '次日线索',
+    summary: '完成今天的陪伴后，在原场景里看到明天的线索。',
+    meta: '同页出现',
     symbol: '☾',
     tone: 'blue',
-    route: '/pages/tomorrow-engine-demo/tomorrow-engine-demo'
+    route: '/pages/iaa-today-companion/iaa-today-companion?entry=tomorrow-review'
   }),
   Object.freeze({
     key: 'memory',

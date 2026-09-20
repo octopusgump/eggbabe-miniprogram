@@ -1,0 +1,35 @@
+.review-page{height:100vh;background:#F4F4ED;color:#1A1A1A}
+.review-scroll{height:calc(100vh - 158rpx);padding:28rpx 28rpx calc(60rpx + env(safe-area-inset-bottom));box-sizing:border-box}
+.review-hero{position:relative;overflow:hidden;padding:38rpx 34rpx 32rpx;border:1rpx solid rgba(0,41,0,.08);border-radius:36rpx;background:linear-gradient(145deg,#FBFCF7 0%,#EEF3E7 100%);box-shadow:0 20rpx 60rpx rgba(34,55,31,.08)}
+.review-hero::after{content:"";position:absolute;width:240rpx;height:240rpx;right:-90rpx;top:-100rpx;border:1rpx solid rgba(84,99,44,.15);border-radius:50%;box-shadow:0 0 0 36rpx rgba(255,255,255,.2),0 0 0 74rpx rgba(255,255,255,.13)}
+.review-kicker{position:relative;z-index:1;display:flex;align-items:center;gap:12rpx;color:#667150;font-size:18rpx;font-weight:600;letter-spacing:2rpx}
+.review-kicker__dot{width:12rpx;height:12rpx;border-radius:50%;background:#7B934A;box-shadow:0 0 0 8rpx rgba(123,147,74,.12)}
+.review-title,.review-intro,.review-warning,.flow-label text,.core-card__step,.core-card__meta,.core-card__title,.core-card__summary,.scope-note__label,.scope-note__copy{display:block}
+.review-title{position:relative;z-index:1;max-width:510rpx;margin-top:24rpx;color:#123719;font-size:48rpx;font-weight:600;line-height:1.24;letter-spacing:-1rpx}
+.review-intro{position:relative;z-index:1;max-width:560rpx;margin-top:18rpx;color:#536052;font-size:23rpx;line-height:1.75}
+.review-status{position:relative;z-index:1;display:inline-flex;align-items:center;gap:14rpx;margin-top:28rpx;padding:14rpx 20rpx;border-radius:999rpx;background:#123719;color:#FFF;font-size:17rpx;font-weight:600;letter-spacing:1rpx}
+.review-status__divider{width:6rpx;height:6rpx;border-radius:50%;background:#CADA9E}
+.review-warning{position:relative;z-index:1;margin-top:16rpx;color:#6B735F;font-size:18rpx;line-height:1.5}
+.flow-label{display:flex;align-items:center;justify-content:space-between;margin:34rpx 8rpx 18rpx;color:#7B7D76;font-size:19rpx;font-weight:600;letter-spacing:1rpx}
+.core-flow{display:flex;flex-direction:column}
+.core-card{display:flex;min-height:252rpx}
+.core-card__rail{width:72rpx;display:flex;flex-direction:column;align-items:center;flex:none}
+.core-card__step{width:52rpx;height:52rpx;display:flex;align-items:center;justify-content:center;border:1rpx solid #D5D8CD;border-radius:50%;background:#FAFAF7;color:#6B6E65;font-size:17rpx;font-weight:600}
+.core-card__line{width:1rpx;flex:1;margin:10rpx 0;background:#D5D8CD}
+.core-card__body{position:relative;flex:1;margin:0 0 18rpx 4rpx;padding:25rpx 26rpx 24rpx;overflow:hidden;border:1rpx solid rgba(0,0,0,.055);border-radius:28rpx;background:#FFF;box-shadow:0 10rpx 30rpx rgba(34,40,31,.055)}
+.core-card__body::after{content:"";position:absolute;width:140rpx;height:140rpx;right:-55rpx;top:-64rpx;border-radius:50%;background:var(--card-wash)}
+.core-card--sage{--card-accent:#50663D;--card-soft:#EEF4E8;--card-wash:rgba(129,155,103,.13)}
+.core-card--gold{--card-accent:#8A6A22;--card-soft:#FAF3DD;--card-wash:rgba(207,168,74,.14)}
+.core-card--blue{--card-accent:#4A6478;--card-soft:#EAF1F4;--card-wash:rgba(104,149,178,.13)}
+.core-card--rose{--card-accent:#855C58;--card-soft:#F6EBE8;--card-wash:rgba(185,119,113,.13)}
+.core-card__head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between}
+.core-card__symbol{width:58rpx;height:58rpx;display:flex;align-items:center;justify-content:center;border-radius:18rpx;background:var(--card-soft);color:var(--card-accent);font-size:30rpx}
+.core-card__meta{padding:9rpx 15rpx;border-radius:999rpx;background:#F6F6F2;color:#777A73;font-size:17rpx;line-height:1.35}
+.core-card__title{position:relative;z-index:1;margin-top:16rpx;color:#20251F;font-size:30rpx;font-weight:600;line-height:1.35}
+.core-card__summary{position:relative;z-index:1;margin-top:8rpx;color:#626860;font-size:20rpx;line-height:1.55}
+.core-card__action{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;margin-top:19rpx;color:var(--card-accent);font-size:19rpx;font-weight:600}
+.core-card__arrow{font-size:27rpx;line-height:1}
+.scope-note{margin:8rpx 0 0 76rpx;padding:26rpx;border-radius:26rpx;background:#E9E9E1}
+.scope-note__label{color:#40453E;font-size:19rpx;font-weight:600}
+.scope-note__copy{margin-top:10rpx;color:#696C65;font-size:19rpx;line-height:1.65}
+.safe-space{height:32rpx}

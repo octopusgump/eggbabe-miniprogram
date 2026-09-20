@@ -4,62 +4,39 @@
     <view class="album-heading">
       <view>
         <text class="page-eyebrow">MEMORIES WITH YOU</text>
-        <text class="page-title">{{title || '和玉兔一起记住的事'}}</text>
+        <text class="page-title">{{title || '我们的纪念'}}</text>
       </view>
       <text class="mock-badge">MOCK</text>
     </view>
-    <text class="page-subtitle">{{subtitle || '这里展示静态前端状态，不会读取或写入账户。'}}</text>
+    <text class="page-subtitle">{{subtitle || '一起经历过的小事，会留在这里。'}}</text>
 
     <view wx:if="{{mode === modes.LOADING}}" class="state-panel" aria-live="polite">
-      <view class="state-illustration state-illustration--loading">
-        <view class="loading-ring"></view>
-      </view>
-      <text class="state-title">正在翻开纪念册</text>
-      <text class="state-copy">本页只是加载状态预览，不会发起网络请求。</text>
+      <view class="state-illustration">…</view>
+      <text class="state-title">正在打开纪念册</text>
     </view>
 
     <view wx:elif="{{mode === modes.EMPTY}}" class="state-panel" aria-live="polite">
       <view class="state-illustration state-illustration--empty">✦</view>
-      <text class="state-title">第一段纪念还在路上</text>
-      <text class="state-copy">陪它坐一会儿，平常的小事以后也会留在这里。</text>
+      <text class="state-title">还没有共同纪念</text>
+      <text class="state-copy">以后一起经历的小事，会慢慢留在这里。</text>
     </view>
 
     <view wx:elif="{{mode === modes.ERROR}}" class="state-panel state-panel--error" aria-live="polite">
       <view class="state-illustration state-illustration--error">!</view>
-      <text class="state-title">刚才没有翻开</text>
-      <text class="state-copy">纪念内容暂时没有准备好，没有展示任何假成功数据。</text>
+      <text class="state-title">纪念册暂时打不开</text>
+      <text class="state-copy">请稍后再试。</text>
       <view class="state-button" aria-role="button" bindtap="onRetry">重新试试</view>
     </view>
 
     <view wx:else class="memory-list">
-      <view
-        wx:for="{{memories}}"
-        wx:key="id"
-        class="memory-card memory-card--{{item.stateClass}}"
-        aria-role="button"
-        aria-disabled="{{item.state === memoryStates.LOCKED}}"
-        data-id="{{item.id}}"
-        bindtap="onOpenMemory"
-      >
-        <view class="memory-card__visual">
-          <image class="memory-card__scene" src="{{item.sceneImage}}" mode="aspectFill"></image>
-          <view wx:if="{{item.state === memoryStates.LOCKED}}" class="memory-card__veil">
-            <text class="memory-card__lock">◇</text>
-          </view>
-          <image wx:if="{{item.objectImage && item.state !== memoryStates.LOCKED}}" class="memory-card__object" src="{{item.objectImage}}" mode="aspectFit"></image>
-          <text wx:if="{{item.state === memoryStates.NEW}}" class="memory-card__new">NEW</text>
-        </view>
+      <view wx:for="{{memories}}" wx:key="title" class="memory-card">
+        <image class="memory-card__image" src="{{item.image}}" mode="aspectFill"></image>
         <view class="memory-card__copy">
-          <view class="memory-card__meta-row">
-            <text class="memory-card__rarity">{{item.rarityLabel}}</text>
-            <text class="memory-card__threshold">{{item.threshold}} 颗星</text>
-          </view>
-          <text class="memory-card__title">{{item.state === memoryStates.LOCKED ? '尚未发现的纪念' : item.title}}</text>
-          <text class="memory-card__line">{{item.state === memoryStates.LOCKED ? '它会在合适的时候慢慢显现。' : item.line}}</text>
-          <text class="memory-card__action">{{item.state === memoryStates.LOCKED ? '保留轮廓' : '打开纪念  →'}}</text>
+          <text class="memory-card__date">{{item.date}}</text>
+          <text class="memory-card__title">{{item.title}}</text>
+          <text class="memory-card__line">{{item.line}}</text>
         </view>
       </view>
-      <text wx:if="{{lockedNotice}}" class="locked-notice" aria-live="polite">{{lockedNotice}}</text>
     </view>
 
     <view class="demo-switcher">

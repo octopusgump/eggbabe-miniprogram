@@ -6,17 +6,12 @@
 .page-title { margin-top: 10rpx; color: #203A28; font-size: 38rpx; line-height: 1.3; font-weight: 600; }
 .page-subtitle { margin-top: 14rpx; color: #747D74; font-size: 22rpx; line-height: 1.6; }
 .mock-badge { flex: none; padding: 10rpx 14rpx; border-radius: 999rpx; background: #E5E3DB; color: #74776F; font-size: 16rpx; letter-spacing: 1rpx; }
-.state-panel { min-height: 560rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 34rpx; padding: 48rpx; border: 1rpx solid #E5E1D7; border-radius: 36rpx; background: #FFFDF8; text-align: center; }
+.state-panel { min-height: 520rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 34rpx; padding: 48rpx; border: 1rpx solid #E5E1D7; border-radius: 36rpx; background: #FFFDF8; text-align: center; }
 .state-panel--error { background: #FFF9F6; }
-.state-panel--detail { margin-top: 10rpx; }
 .state-illustration { width: 132rpx; height: 132rpx; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #E8ECD8; color: #70805A; font-size: 46rpx; }
 .state-illustration--error { background: #F8E4DE; color: #A24D3F; }
-.state-illustration--empty { background: linear-gradient(145deg, #E8ECD8, #F6E7DF); }
+.state-illustration--empty { background: #F2EBDD; }
 .state-title { display: block; margin-top: 30rpx; color: #2C4331; font-size: 31rpx; font-weight: 600; }
 .state-copy { display: block; max-width: 480rpx; margin-top: 12rpx; color: #788079; font-size: 23rpx; line-height: 1.65; }
 .state-button { min-width: 260rpx; min-height: 88rpx; display: flex; align-items: center; justify-content: center; margin-top: 28rpx; border-radius: 999rpx; background: #1F3B28; color: #FFF; font-size: 25rpx; font-weight: 600; }
-.loading-ring { width: 50rpx; height: 50rpx; border: 5rpx solid rgba(77, 105, 70, 0.2); border-top-color: #607A54; border-radius: 50%; animation: memory-spin 0.9s linear infinite; }
-@keyframes memory-spin { to { transform: rotate(360deg); } }
 .safe-space { height: calc(48rpx + env(safe-area-inset-bottom)); }
-.detail-footnote { display: block; margin-top: 24rpx; color: #92948F; font-size: 18rpx; line-height: 1.5; text-align: center; letter-spacing: 0.4rpx; }
-@media (prefers-reduced-motion: reduce) { .loading-ring { animation: none; } }

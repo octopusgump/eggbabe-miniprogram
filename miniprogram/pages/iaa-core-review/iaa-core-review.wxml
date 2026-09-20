@@ -1,0 +1,47 @@
+<view class="review-page">
+  <nav-bar title="四项验收台"></nav-bar>
+  <scroll-view class="review-scroll" scroll-y>
+    <view class="review-hero">
+      <view class="review-kicker"><view class="review-kicker__dot"></view><text>CORE LOOP · DEV REVIEW</text></view>
+      <text class="review-title">只验证一条陪伴闭环</text>
+      <text class="review-intro">从今天的相处出发，收下一颗星星，看见明天的线索，最后留下一段纪念。</text>
+      <view class="review-status" aria-label="开发验收边界">
+        <text>LOCAL FIXTURE</text><view class="review-status__divider"></view><text>NO BACKEND</text>
+      </view>
+      <text class="review-warning">开发态独立验收 · 不代表已合入 main</text>
+    </view>
+
+    <view class="flow-label"><text>验收顺序</text><text>4 个保留项</text></view>
+    <view class="core-flow">
+      <view
+        wx:for="{{coreItems}}"
+        wx:key="key"
+        class="core-card core-card--{{item.tone}}"
+        aria-role="button"
+        aria-label="打开{{item.title}}"
+        data-key="{{item.key}}"
+        bindtap="onOpenItem"
+      >
+        <view class="core-card__rail">
+          <text class="core-card__step">{{item.step}}</text>
+          <view wx:if="{{index < coreItems.length - 1}}" class="core-card__line"></view>
+        </view>
+        <view class="core-card__body">
+          <view class="core-card__head">
+            <view class="core-card__symbol"><text>{{item.symbol}}</text></view>
+            <text class="core-card__meta">{{item.meta}}</text>
+          </view>
+          <text class="core-card__title">{{item.title}}</text>
+          <text class="core-card__summary">{{item.summary}}</text>
+          <view class="core-card__action"><text>打开验收</text><text class="core-card__arrow">→</text></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="scope-note">
+      <text class="scope-note__label">本轮边界</text>
+      <text class="scope-note__copy">不含奖励揭晓、广告、独立合规页；纪念册只保留最简单的列表验收入口。</text>
+    </view>
+    <view class="safe-space"></view>
+  </scroll-view>
+</view>

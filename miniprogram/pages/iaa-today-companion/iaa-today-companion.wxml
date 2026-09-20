@@ -65,18 +65,46 @@
 
       <text wx:if="{{view.today.scenarioKey !== 'away'}}" class="story-line">“{{view.today.line}}”</text>
 
-      <view class="tomorrow-card">
-        <view class="tomorrow-card__moon">☾</view>
-        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">留给明天</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
-      </view>
-
       <view class="interaction-area">
-        <view class="companion-action {{interactionDone ? 'companion-action--done' : ''}}" aria-role="button" aria-label="{{interactionDone ? '已经陪伴过玉兔' : view.today.interactionLabel}}" bindtap="onInteract">
+        <view class="companion-action {{interactionDone ? 'companion-action--done' : ''}} {{interactionPending ? 'companion-action--pending' : ''}}" aria-role="button" aria-label="{{interactionDone ? '今日陪伴星星已领取' : view.today.interactionLabel}}" bindtap="onInteract">
           <text class="companion-action__icon">{{interactionDone ? '✓' : '♡'}}</text>
-          <text>{{interactionDone ? '这一会儿，已经好好收下' : view.today.interactionLabel}}</text>
+          <text>{{interactionDone ? '今日陪伴已完成' : (interactionPending ? '正在收好这一会儿' : view.today.interactionLabel)}}</text>
         </view>
         <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
         <text wx:else class="interaction-note">不催促，也不会因为错过而失去什么</text>
+      </view>
+
+      <view class="star-loop {{interactionDone ? 'star-loop--claimed' : ''}}">
+        <view class="star-loop__head">
+          <view class="star-loop__identity">
+            <view class="star-loop__symbol"><text>✦</text></view>
+            <view class="star-loop__titles">
+              <text class="star-loop__title">陪伴星星</text>
+              <text class="star-loop__status">{{interactionDone ? '今日已领取' : '完成陪伴后领取'}}</text>
+            </view>
+          </view>
+          <view class="star-loop__balance">
+            <text class="star-loop__total-label">累计</text>
+            <text class="star-loop__number">{{starView.star.balance}}</text>
+            <text class="star-loop__unit">颗</text>
+            <text wx:if="{{starAwardVisible}}" class="star-loop__award">+{{awardedStars}}</text>
+          </view>
+        </view>
+
+        <view class="star-progress">
+          <view class="star-progress__meta">
+            <text>下一段纪念 · {{starView.nextMemory.name}}</text>
+            <text>{{starView.progress.current}} / {{starView.progress.target}}</text>
+          </view>
+          <view class="star-progress__track"><view class="star-progress__fill" style="width:{{starView.progress.percent}}%;"></view></view>
+          <text wx:if="{{starView.progress.remaining > 0}}" class="star-progress__hint">还差 {{starView.progress.remaining}} 颗星星</text>
+          <text wx:else class="star-progress__hint star-progress__hint--reached">这一段纪念已经好好留下</text>
+        </view>
+      </view>
+
+      <view class="tomorrow-card">
+        <view class="tomorrow-card__moon">☾</view>
+        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">留给明天</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
       </view>
     </view>
   </block>

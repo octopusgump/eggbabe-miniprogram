@@ -1,25 +1,14 @@
 @import "../../styles/iaa-memory-demo.wxss";
 
 .memory-list { margin-top: 32rpx; }
-.memory-card { display: flex; overflow: hidden; margin-top: 20rpx; border: 1rpx solid rgba(44, 65, 47, 0.08); border-radius: 32rpx; background: #FFFDF8; box-shadow: 0 12rpx 30rpx rgba(43, 61, 46, 0.07); }
+.memory-card { overflow: hidden; margin-top: 20rpx; border-radius: 30rpx; background: #FFFDF8; }
 .memory-card:first-child { margin-top: 0; }
-.memory-card__visual { position: relative; width: 244rpx; min-height: 270rpx; flex: none; overflow: hidden; background: #DDE3D6; }
-.memory-card__scene { position: absolute; width: 100%; height: 100%; inset: 0; }
-.memory-card__object { position: absolute; z-index: 2; width: 116rpx; height: 116rpx; right: 14rpx; bottom: 10rpx; filter: drop-shadow(0 8rpx 10rpx rgba(30, 45, 35, 0.18)); }
-.memory-card__veil { position: absolute; z-index: 3; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(231, 231, 222, 0.78); -webkit-backdrop-filter: blur(9rpx); backdrop-filter: blur(9rpx); }
-.memory-card__lock { width: 72rpx; height: 72rpx; display: flex; align-items: center; justify-content: center; border: 2rpx solid rgba(78, 92, 79, 0.32); border-radius: 50%; color: #69746A; font-size: 34rpx; }
-.memory-card__new { position: absolute; z-index: 4; top: 16rpx; left: 16rpx; padding: 9rpx 14rpx; border-radius: 999rpx; background: #F6EAA4; color: #5D5837; font-size: 16rpx; font-weight: 600; letter-spacing: 1rpx; }
-.memory-card__copy { flex: 1; min-width: 0; padding: 25rpx 24rpx 23rpx; }
-.memory-card__meta-row { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; }
-.memory-card__rarity, .memory-card__threshold { color: #80877F; font-size: 17rpx; }
-.memory-card__rarity { letter-spacing: 1rpx; }
-.memory-card__title, .memory-card__line, .memory-card__action { display: block; }
-.memory-card__title { margin-top: 13rpx; color: #29402F; font-size: 28rpx; line-height: 1.35; font-weight: 600; }
-.memory-card__line { margin-top: 10rpx; color: #727A73; font-size: 21rpx; line-height: 1.55; }
-.memory-card__action { margin-top: 15rpx; color: #536A55; font-size: 20rpx; font-weight: 600; }
-.memory-card--locked { box-shadow: none; }
-.memory-card--locked .memory-card__copy { background: #F7F6F1; }
-.locked-notice { display: block; margin-top: 18rpx; padding: 18rpx 22rpx; border-radius: 20rpx; background: #E8E6DF; color: #626B63; font-size: 21rpx; line-height: 1.5; }
+.memory-card__image { display: block; width: 100%; height: 320rpx; background: #DDE3D6; }
+.memory-card__copy { padding: 26rpx 28rpx 30rpx; }
+.memory-card__date, .memory-card__title, .memory-card__line { display: block; }
+.memory-card__date { color: #8A9089; font-size: 19rpx; }
+.memory-card__title { margin-top: 10rpx; color: #29402F; font-size: 29rpx; line-height: 1.35; font-weight: 600; }
+.memory-card__line { margin-top: 10rpx; color: #727A73; font-size: 22rpx; line-height: 1.6; }
 .demo-switcher { margin-top: 32rpx; padding: 26rpx; border: 1rpx dashed #B8BBB2; border-radius: 30rpx; background: rgba(255, 255, 255, 0.52); }
 .demo-switcher__heading { display: flex; justify-content: space-between; gap: 20rpx; }
 .demo-switcher__title { color: #49564C; font-size: 23rpx; font-weight: 600; }
@@ -28,4 +17,3 @@
 .demo-chip { min-height: 76rpx; display: flex; align-items: center; justify-content: center; border: 1rpx solid #DFDFD7; border-radius: 999rpx; background: #FFF; color: #697168; font-size: 21rpx; }
 .demo-chip--active { border-color: #76876A; background: #E9EFDF; color: #314D35; font-weight: 600; }
 .demo-switcher__note { display: block; margin-top: 18rpx; color: #92948D; font-size: 17rpx; text-align: center; letter-spacing: 0.6rpx; }
-@media (max-width: 340px) { .memory-card__visual { width: 208rpx; } .memory-card__copy { padding-left: 20rpx; padding-right: 18rpx; } }

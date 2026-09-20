@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/iaa-core-review/iaa-core-review",
     "pages/welcome/welcome",
     "pages/home/home",
     "pages/add-device/add-device",
@@ -24,8 +25,6 @@
     "pages/age-range/age-range",
     "pages/feedback/feedback",
     "pages/iaa-memory-album-demo/iaa-memory-album-demo",
-    "pages/iaa-memory-detail-demo/iaa-memory-detail-demo",
-    "pages/iaa-memory-save-demo/iaa-memory-save-demo",
     "pages/terms/terms",
     "pages/policy/policy",
     "pages/help/help",

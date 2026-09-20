@@ -36,6 +36,7 @@ const starAdapterLogic = fs.readFileSync(path.join(root, 'services/iaa-star-unlo
 assert.equal(app.pages.includes('pages/iaa-today-companion/iaa-today-companion'), true, '演示页必须在 app.json 注册，才能从开发者工具直接打开');
 assert.equal(template.includes('isDev && devPanelOpen') && template.includes('开发验收'), true, '状态切换器必须仅在开发态渲染');
 assert.equal(template.includes("screenState === 'loading'") && template.includes("screenState === 'empty'") && template.includes("screenState === 'error'"), true, '页面必须提供加载、空态和失败的独立画面');
+assert.equal(template.includes("screenState === 'unavailable'") && template.includes('今天的陪伴还在准备'), true, '正式服务未接入时必须向用户诚实阻断');
 assert.equal(template.includes('bindtap="onRetry"') && pageLogic.includes("selectedViewState: 'ready'"), true, '空态和失败态必须可以重试到内容态');
 assert.equal(styles.includes('min-height:96rpx') && styles.includes('overflow-wrap:anywhere'), true, '主交互热区不得小于 96rpx，长文案必须允许换行');
 assert.equal(pageLogic.includes("require('../../services/iaa-star-unlock-adapter')"), true, '今日陪伴必须复用星星幂等 adapter，不得另写一套计数');
@@ -44,6 +45,8 @@ assert.equal(template.includes('class="star-loop ') || template.includes('star-p
 assert.equal(template.includes('wx:if="{{interactionDone}}" class="tomorrow-card"'), true, '明日提示必须在完成陪伴后才出现');
 assert.equal(template.includes('明天再看') && template.includes('view.today.tomorrowHint'), true, '星星之后仍须在同页保留明日提示');
 assert.equal(template.includes('用户正式可见') && template.includes('正式接口') && template.includes('本地 fixture'), true, '开发验收抽屉必须说明可见范围、接口和数据来源');
+assert.equal(template.includes('否（仅开发版）'), true, '本地 fixture 不得标记为正式用户可见');
+assert.equal(template.includes('wx:if="{{interactionError}}"') && pageLogic.includes("interactionError: result.error.message"), true, '陪伴记录失败必须在当前页显示原因');
 assert.equal(styles.includes('.dev-sheet-backdrop') && styles.includes('bottom:0'), true, '开发验收信息必须进入底部抽屉，不占用用户页面布局');
 assert.equal(/奖励揭晓|reward-reveal/.test(`${template}\n${pageLogic}`), false, '今日陪伴主循环不得引入奖励揭晓');
 assert.equal(styles.includes('.star-return-feedback') && !styles.includes('.star-loop{'), true, '今日陪伴只保留轻量 +1 去向反馈');
@@ -106,7 +109,47 @@ function contextFor() {
   await pageDefinition.onViewStateSelect.call(page, { currentTarget: { dataset: { key: 'loading' } } });
   assert.equal(page.data.screenState, 'loading', '加载演示必须稳定停留在加载画面');
 
-  console.log('IAA 今日陪伴四场景、陪伴星星 +1 幂等、纪念进度、明日提示与本地隔离校验通过。');
+  page.setData({
+    screenState: 'ready',
+    view: fixture.todayViewFor('normal'),
+    starView: (await require('../iaa-star-unlock-adapter').getStarUnlockView({ state: 'ERROR' })).data,
+    interactionDone: false,
+    interactionError: ''
+  });
+  const failedInteraction = await pageDefinition.onInteract.call(page);
+  assert.equal(failedInteraction.ok, false, '记录失败不得伪装为成功');
+  assert.equal(page.data.interactionDone, false, '记录失败不得解锁明日提示');
+  assert.equal(page.data.interactionError, '刚才没有记下来，请再试一次。', '记录失败必须给出可见反馈');
+
+  const configPath = require.resolve('../../config/v2');
+  const environmentPath = require.resolve('../../config/build-environment');
+  const pagePath = require.resolve('../../pages/iaa-today-companion/iaa-today-companion');
+  delete require.cache[configPath];
+  delete require.cache[environmentPath];
+  delete require.cache[pagePath];
+  let releaseDefinition;
+  global.Page = definition => { releaseDefinition = definition; };
+  global.wx = {
+    getAccountInfoSync() { return { miniProgram: { envVersion: 'release' } }; },
+    getWindowInfo() { return { statusBarHeight: 22 }; },
+    navigateBack() {},
+    switchTab() {}
+  };
+  require('../../pages/iaa-today-companion/iaa-today-companion');
+  const releasePage = Object.assign({}, releaseDefinition, {
+    data: Object.assign({}, releaseDefinition.data),
+    setData(patch) { Object.assign(this.data, patch); }
+  });
+  const releaseLoad = await releaseDefinition.onLoad.call(releasePage, {});
+  assert.equal(releasePage.data.isDev, false, '正式版不得开放本地验收入口');
+  assert.equal(releasePage.data.screenState, 'unavailable', '正式服务未接入时不得读取 fixture');
+  assert.equal(releasePage.data.view, null);
+  assert.equal(releasePage.data.starView, null);
+  assert.equal(releaseLoad.code, 'OFFICIAL_SERVICE_NOT_CONNECTED');
+  const releaseInteraction = await releaseDefinition.onInteract.call(releasePage);
+  assert.equal(releaseInteraction.code, 'OFFICIAL_SERVICE_NOT_CONNECTED', '正式版不得产生本地加星结果');
+
+  console.log('IAA 今日陪伴四场景、失败反馈、正式版阻断、明日提示与本地隔离校验通过。');
 })().catch(error => {
   console.error(error);
   process.exit(1);

@@ -34,4 +34,4 @@
 
 ## 验收入口
 
-微信开发者工具启动后，第一页为 `pages/iaa-core-review/iaa-core-review`。该页只用于快速比较四项开发态界面，不是正式小程序导航。
+微信开发者工具可通过编译路径直接打开 `pages/iaa-core-review/iaa-core-review`。该页只用于快速比较四项开发态界面，不是正式小程序导航；`trial` / `release` 即使命中旧路径也会回到正式欢迎页。

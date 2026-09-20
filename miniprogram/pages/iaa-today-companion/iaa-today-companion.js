@@ -1,15 +1,11 @@
-const adapter = require('../../services/iaa-today-companion-adapter');
-const starAdapter = require('../../services/iaa-star-unlock-adapter');
-const fixture = require('../../fixtures/iaa-today-companion');
+const config = require('../../config/v2');
 
-function isDevelopmentBuild() {
-  try {
-    const account = wx.getAccountInfoSync ? wx.getAccountInfoSync() : {};
-    return !account.miniProgram || account.miniProgram.envVersion === 'develop';
-  } catch (error) {
-    return true;
-  }
-}
+const previewEnabled = config.localDemoEnabled;
+const adapter = previewEnabled ? require('../../services/iaa-today-companion-adapter') : null;
+const starAdapter = previewEnabled ? require('../../services/iaa-star-unlock-adapter') : null;
+const fixture = previewEnabled
+  ? require('../../fixtures/iaa-today-companion')
+  : { SCENARIO_OPTIONS: [], VIEW_STATE_OPTIONS: [] };
 
 function optionKey(options, candidate, fallback) {
   const key = String(candidate || '');
@@ -32,6 +28,7 @@ Page({
     interactionDone: false,
     interactionPending: false,
     interactionFeedback: '',
+    interactionError: '',
     awardedStars: 0,
     starAwardVisible: false
   },
@@ -42,21 +39,37 @@ Page({
     const selectedViewState = optionKey(fixture.VIEW_STATE_OPTIONS, query && query.state, 'ready');
     this.setData({
       topInset: Number(info.statusBarHeight || 20) + 12,
-      isDev: isDevelopmentBuild(),
+      isDev: previewEnabled,
       selectedScenario,
       selectedViewState
     });
+    if (!previewEnabled) {
+      this.setData({
+        screenState: 'unavailable',
+        view: null,
+        starView: null,
+        errorMessage: '',
+        interactionDone: false,
+        interactionPending: false,
+        interactionFeedback: '',
+        interactionError: '',
+        awardedStars: 0,
+        starAwardVisible: false
+      });
+      return Promise.resolve({ ok: false, code: 'OFFICIAL_SERVICE_NOT_CONNECTED' });
+    }
     return this.loadPreview();
   },
 
   loadPreview() {
+    if (!previewEnabled) return Promise.resolve({ ok: false, code: 'LOCAL_PREVIEW_DISABLED' });
     const state = this.data.selectedViewState;
     if (state === 'loading') {
-      this.setData({ screenState: 'loading', view: null, starView: null, errorMessage: '', interactionDone: false, interactionPending: false, interactionFeedback: '', awardedStars: 0, starAwardVisible: false });
+      this.setData({ screenState: 'loading', view: null, starView: null, errorMessage: '', interactionDone: false, interactionPending: false, interactionFeedback: '', interactionError: '', awardedStars: 0, starAwardVisible: false });
       return Promise.resolve();
     }
 
-    this.setData({ screenState: 'loading', view: null, starView: null, errorMessage: '', interactionDone: false, interactionPending: false, interactionFeedback: '', awardedStars: 0, starAwardVisible: false });
+    this.setData({ screenState: 'loading', view: null, starView: null, errorMessage: '', interactionDone: false, interactionPending: false, interactionFeedback: '', interactionError: '', awardedStars: 0, starAwardVisible: false });
     return adapter.getTodayView({ scenario: this.data.selectedScenario, state }).then(result => {
       if (!result.ok) {
         this.setData({ screenState: 'error', errorMessage: result.error.message, view: null });
@@ -90,33 +103,37 @@ Page({
   },
 
   onScenarioSelect(event) {
+    if (!previewEnabled) return Promise.resolve();
     const selectedScenario = optionKey(fixture.SCENARIO_OPTIONS, event.currentTarget.dataset.key, 'normal');
     this.setData({ selectedScenario });
     return this.loadPreview();
   },
 
   onViewStateSelect(event) {
+    if (!previewEnabled) return Promise.resolve();
     const selectedViewState = optionKey(fixture.VIEW_STATE_OPTIONS, event.currentTarget.dataset.key, 'ready');
     this.setData({ selectedViewState });
     return this.loadPreview();
   },
 
   onRetry() {
+    if (!previewEnabled) return Promise.resolve();
     this.setData({ selectedViewState: 'ready' });
     return this.loadPreview();
   },
 
   onInteract() {
+    if (!previewEnabled) return Promise.resolve({ ok: false, code: 'OFFICIAL_SERVICE_NOT_CONNECTED' });
     const view = this.data.view;
     const starView = this.data.starView;
     if (!view || !view.today || !starView || this.data.interactionDone || this.data.interactionPending) return Promise.resolve();
 
-    this.setData({ interactionPending: true, starAwardVisible: false });
+    this.setData({ interactionPending: true, interactionError: '', starAwardVisible: false });
     return starAdapter.recordCompanion(starView).then(result => {
       if (!result.ok) {
         this.setData({
           interactionPending: false,
-          interactionFeedback: result.error.message
+          interactionError: result.error.message
         });
         return result;
       }
@@ -127,6 +144,7 @@ Page({
         interactionDone: true,
         interactionPending: false,
         interactionFeedback: awardedStars > 0 ? view.today.interactionFeedback : result.data.helperText,
+        interactionError: '',
         awardedStars,
         starAwardVisible: awardedStars > 0
       });

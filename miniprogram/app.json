@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/iaa-core-review/iaa-core-review",
     "pages/welcome/welcome",
+    "pages/iaa-core-review/iaa-core-review",
     "pages/home/home",
     "pages/add-device/add-device",
     "pages/wish/wish",

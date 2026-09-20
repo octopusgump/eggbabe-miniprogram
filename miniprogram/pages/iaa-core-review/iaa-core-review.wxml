@@ -1,4 +1,4 @@
-<view class="review-page">
+<view wx:if="{{isDev}}" class="review-page">
   <nav-bar title="四项验收台"></nav-bar>
   <scroll-view class="review-scroll" scroll-y>
     <view class="review-hero">

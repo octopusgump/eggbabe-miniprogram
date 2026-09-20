@@ -18,7 +18,7 @@ const expectedRoutes = [
   '/pages/iaa-memory-album-demo/iaa-memory-album-demo'
 ];
 
-assert.equal(app.pages[0], reviewRoute, '四项验收台必须是开发启动第一页');
+assert.equal(app.pages[0], 'pages/welcome/welcome', '用户正式入口必须保持为欢迎页');
 assert.equal(app.pages.includes('pages/iaa-star-unlock/iaa-star-unlock'), false, '陪伴星星不得继续注册为独立页面');
 assert.equal(app.pages.includes('pages/iaa-memory-detail-demo/iaa-memory-detail-demo'), false, '纪念详情不得继续注册');
 assert.equal(app.pages.includes('pages/iaa-memory-save-demo/iaa-memory-save-demo'), false, '纪念保存卡不得继续注册');
@@ -45,10 +45,15 @@ const previousPage = global.Page;
 const previousWx = global.wx;
 const routes = [];
 global.Page = page => { definition = page; };
-global.wx = { navigateTo({ url }) { routes.push(url); } };
+global.wx = {
+  getAccountInfoSync() { return { miniProgram: { envVersion: 'develop' } }; },
+  navigateTo({ url }) { routes.push(url); },
+  reLaunch() {}
+};
 delete require.cache[require.resolve('../../pages/iaa-core-review/iaa-core-review')];
 require('../../pages/iaa-core-review/iaa-core-review');
 
+assert.equal(definition.data.isDev, true, '开发版必须开放四项验收台');
 assert.equal(definition.data.coreItems.length, 4, '页面数据必须只有四项');
 for (const item of definition.data.coreItems) {
   definition.onOpenItem({ currentTarget: { dataset: { key: item.key } } });
@@ -57,7 +62,27 @@ assert.deepEqual(routes, expectedRoutes, '四张卡片必须按主循环顺序�
 definition.onOpenItem({ currentTarget: { dataset: { key: 'unknown' } } });
 assert.equal(routes.length, 4, '未知卡片不得跳转');
 
+const configPath = require.resolve('../../config/v2');
+const environmentPath = require.resolve('../../config/build-environment');
+const pagePath = require.resolve('../../pages/iaa-core-review/iaa-core-review');
+delete require.cache[configPath];
+delete require.cache[environmentPath];
+delete require.cache[pagePath];
+let releaseDefinition;
+let releaseRedirect = '';
+global.Page = page => { releaseDefinition = page; };
+global.wx = {
+  getAccountInfoSync() { return { miniProgram: { envVersion: 'release' } }; },
+  navigateTo() { throw new Error('release 不得打开开发验收子页'); },
+  reLaunch({ url }) { releaseRedirect = url; }
+};
+require('../../pages/iaa-core-review/iaa-core-review');
+releaseDefinition.onLoad.call({ data: Object.assign({}, releaseDefinition.data) });
+assert.equal(releaseDefinition.data.isDev, false, '正式版不得渲染四项验收台');
+assert.equal(releaseRedirect, '/pages/welcome/welcome', '正式版命中旧验收路径必须回到欢迎页');
+releaseDefinition.onOpenItem({ currentTarget: { dataset: { key: 'today' } } });
+
 global.Page = previousPage;
 global.wx = previousWx;
 
-console.log('IAA 四项验收首页、路由收敛、静态边界与跳转顺序校验通过。');
+console.log('IAA 四项验收首页、发布门禁、路由收敛、静态边界与跳转顺序校验通过。');

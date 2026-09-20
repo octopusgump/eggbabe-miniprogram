@@ -54,6 +54,7 @@ page{height:100%;background:#F4F1E9}
 .companion-action__icon{font-size:30rpx}
 .interaction-note,.interaction-feedback{display:block;min-height:34rpx;margin-top:13rpx;color:#929991;font-size:20rpx;line-height:1.5}
 .interaction-feedback{color:#657567}
+.interaction-error{display:block;min-height:34rpx;margin-top:13rpx;color:#946E64;font-size:20rpx;line-height:1.5}
 .star-return-feedback{display:inline-flex;align-items:center;gap:10rpx;margin-top:13rpx;padding:10rpx 16rpx;border-radius:999rpx;background:#F8F0D7;color:#706346;font-size:19rpx;line-height:1.4}
 .star-return-feedback__gain{color:#9A782C;font-weight:700}
 .state-stage{height:100vh;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 72rpx;flex-direction:column;text-align:center;background:radial-gradient(circle at 50% 38%,#FFFDF7 0%,#F3EFE5 58%,#E8E5D9 100%)}

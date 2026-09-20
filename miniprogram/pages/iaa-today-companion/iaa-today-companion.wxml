@@ -12,7 +12,7 @@
     <view class="dev-facts">
       <view class="dev-fact"><text class="dev-fact__label">当前状态</text><text class="dev-fact__value">{{screenState}}</text></view>
       <view class="dev-fact"><text class="dev-fact__label">数据来源</text><text class="dev-fact__value">本地 fixture</text></view>
-      <view class="dev-fact"><text class="dev-fact__label">用户正式可见</text><text class="dev-fact__value">是</text></view>
+      <view class="dev-fact"><text class="dev-fact__label">用户正式可见</text><text class="dev-fact__value">否（仅开发版）</text></view>
       <view class="dev-fact"><text class="dev-fact__label">正式接口</text><text class="dev-fact__value">尚未接入</text></view>
     </view>
     <view class="dev-row">
@@ -49,6 +49,12 @@
     <view class="state-stage__action" aria-role="button" bindtap="onRetry"><text>重新看看</text></view>
   </view>
 
+  <view wx:elif="{{screenState === 'unavailable'}}" class="state-stage">
+    <view class="empty-window"><view class="empty-window__sun"></view><view class="empty-window__sill"></view></view>
+    <text class="state-stage__title">今天的陪伴还在准备</text>
+    <text class="state-stage__copy">等准备好以后，你就能在这里陪玉兔待一会儿。</text>
+  </view>
+
   <block wx:elif="{{screenState === 'ready' && view}}">
     <view class="scene-frame">
       <image class="scene-image" src="{{view.today.sceneImage}}" mode="aspectFill"></image>
@@ -78,6 +84,7 @@
           <text>{{interactionDone ? '今日陪伴已完成' : (interactionPending ? '正在收好这一会儿' : view.today.interactionLabel)}}</text>
         </view>
         <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
+        <text wx:if="{{interactionError}}" class="interaction-error">{{interactionError}}</text>
         <view wx:if="{{starAwardVisible}}" class="star-return-feedback">
           <text class="star-return-feedback__gain">✦ +{{awardedStars}}</text>
           <text>陪伴星星已经回到房间左上角</text>

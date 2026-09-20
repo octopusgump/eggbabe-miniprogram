@@ -1,3 +1,5 @@
+const config = require('../../config/v2');
+
 const CORE_ITEMS = Object.freeze([
   Object.freeze({
     key: 'today',
@@ -43,10 +45,17 @@ const CORE_ITEMS = Object.freeze([
 
 Page({
   data: {
+    isDev: config.localDemoEnabled,
     coreItems: CORE_ITEMS
   },
 
+  onLoad() {
+    if (this.data.isDev) return;
+    wx.reLaunch({ url: '/pages/welcome/welcome' });
+  },
+
   onOpenItem(event) {
+    if (!this.data.isDev) return;
     const key = String(event.currentTarget.dataset.key || '');
     const target = CORE_ITEMS.find(item => item.key === key);
     if (!target) return;

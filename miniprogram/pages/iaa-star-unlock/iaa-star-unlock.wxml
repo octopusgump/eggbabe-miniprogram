@@ -1,0 +1,59 @@
+<view class="star-page">
+  <view class="star-topbar" style="top:{{topInset}}px;">
+    <view class="round-action" aria-role="button" aria-label="返回" bindtap="onBack"><text>‹</text></view>
+    <view class="star-wordmark"><text class="star-wordmark__main">陪伴星星</text><text class="star-wordmark__sub">每一天，只记下一颗</text></view>
+    <view wx:if="{{isDev}}" class="dev-entry {{devPanelOpen ? 'dev-entry--active' : ''}}" aria-role="button" bindtap="onToggleDevPanel"><text>验收</text></view>
+    <view wx:else class="topbar-spacer"></view>
+  </view>
+
+  <view wx:if="{{isDev && devPanelOpen}}" class="dev-panel" style="top:{{topInset + 58}}px;">
+    <view class="dev-panel__head"><text>星星状态</text><text class="dev-panel__source">local fixture</text></view>
+    <view class="dev-options">
+      <view wx:for="{{stateOptions}}" wx:key="key" class="dev-chip {{selectedState === item.key ? 'dev-chip--active' : ''}}" data-key="{{item.key}}" aria-role="button" bindtap="onStateSelect"><text>{{item.label}}</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-star">✦</view><text>正在翻开今天这一页</text>
+  </view>
+
+  <block wx:elif="{{view}}">
+    <view class="ambient ambient--one"></view><view class="ambient ambient--two"></view>
+    <view class="star-content">
+      <view class="star-hero">
+        <text class="star-hero__eyebrow">玉兔的陪伴记录</text>
+        <view class="star-count"><text class="star-count__symbol">✦</text><text class="star-count__number">{{view.star.balance}}</text></view>
+        <text class="star-hero__label">已经一起收好的星星</text>
+        <view wx:if="{{awardedStars > 0}}" class="star-gain"><text>+{{awardedStars}}</text><text>今天的陪伴已记下</text></view>
+      </view>
+
+      <view class="progress-card">
+        <view class="progress-card__head"><view><text class="progress-card__kicker">下一段纪念</text><text class="progress-card__title">{{view.nextMemory.name}}</text></view><text class="progress-card__count">{{view.progress.current}} / {{view.progress.target}}</text></view>
+        <view class="progress-track"><view class="progress-fill" style="width:{{view.progress.percent}}%;"></view></view>
+        <text class="progress-card__hint">{{view.progress.remaining > 0 ? '再收好 ' + view.progress.remaining + ' 颗星星，就会轻轻打开' : '这段纪念已经打开了'}}</text>
+      </view>
+
+      <view class="rule-note"><view class="rule-note__icon">○</view><text>{{view.helperText}}</text></view>
+
+      <view wx:if="{{errorMessage}}" class="error-card"><view><text class="error-card__title">刚才没有记下来</text><text class="error-card__copy">{{errorMessage}}</text></view><view class="error-card__retry" aria-role="button" bindtap="onRetry"><text>{{busy ? '正在重试…' : '重新记下'}}</text></view></view>
+      <text wx:if="{{duplicateFeedback}}" class="duplicate-feedback">{{duplicateFeedback}}</text>
+
+      <view class="companion-action {{busy ? 'companion-action--busy' : ''}} {{view.star.dailyClaimStatus === 'CLAIMED' || view.star.dailyClaimStatus === 'UNLOCKED' ? 'companion-action--soft' : ''}}" aria-role="button" bindtap="onCompanionTap">
+        <text class="companion-action__icon">{{view.star.dailyClaimStatus === 'AVAILABLE' || view.star.dailyClaimStatus === 'ERROR' ? '♡' : '✓'}}</text>
+        <text>{{busy ? '正在记下…' : (view.star.dailyClaimStatus === 'AVAILABLE' || view.star.dailyClaimStatus === 'ERROR' ? '陪玉兔坐一会儿' : '再陪玉兔坐一会儿')}}</text>
+      </view>
+      <text class="mock-note">前端静态演示 · 不代表星星已写入正式账户</text>
+    </view>
+
+    <view wx:if="{{unlockVisible && view.newlyUnlockedMemory}}" class="unlock-backdrop" bindtap="onCloseUnlock">
+      <view class="unlock-sheet" catchtap="noop">
+        <view class="unlock-spark unlock-spark--one">✦</view><view class="unlock-spark unlock-spark--two">✧</view><view class="unlock-spark unlock-spark--three">✦</view>
+        <text class="unlock-sheet__eyebrow">一段纪念被打开了</text>
+        <image class="unlock-sheet__image" src="{{view.newlyUnlockedMemory.image}}" mode="aspectFill"></image>
+        <text class="unlock-sheet__title">{{view.newlyUnlockedMemory.name}}</text>
+        <text class="unlock-sheet__copy">{{view.newlyUnlockedMemory.line}}</text>
+        <view class="unlock-sheet__action" aria-role="button" bindtap="onCloseUnlock"><text>收好这一刻</text></view>
+      </view>
+    </view>
+  </block>
+</view>

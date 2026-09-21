@@ -36,6 +36,11 @@ Page({
   },
 
   onLoad(query) {
+    query = query || {};
+    if (previewEnabled && query.entry !== 'isolated-test') {
+      wx.redirectTo({ url: '/pages/life-scene/life-scene?entry=iaa-core-review&open=today-companion' });
+      return Promise.resolve({ ok: true, redirected: true });
+    }
     const info = wx.getWindowInfo ? wx.getWindowInfo() : { statusBarHeight: 20 };
     const selectedScenario = optionKey(fixture.SCENARIO_OPTIONS, query && query.scenario, 'normal');
     const selectedViewState = optionKey(fixture.VIEW_STATE_OPTIONS, query && query.state, 'ready');

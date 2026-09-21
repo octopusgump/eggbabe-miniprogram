@@ -155,6 +155,43 @@
     </view>
   </block>
 
+  <view
+    wx:if="{{todayCompanionVisible && todayCompanionView}}"
+    class="today-companion-overlay"
+    aria-role="dialog"
+    aria-label="今日陪伴"
+    bindtap="onCloseTodayCompanion"
+    catchtouchmove="onTodayCompanionOverlayTouchMove"
+  >
+    <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">
+      <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
+      <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
+
+      <view class="today-companion-letter__interaction">
+        <view
+          wx:if="{{!todayCompanionInteractionDone}}"
+          class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
+          aria-role="button"
+          aria-label="{{todayCompanionView.today.interactionLabel}}"
+          bindtap="onTodayCompanionInteract"
+        >{{todayCompanionView.today.interactionLabel}}</view>
+        <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
+        <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
+        <text wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-letter__star">✦ +{{todayCompanionAwardedStars}}</text>
+      </view>
+
+      <view class="today-companion-letter__tomorrow">
+        <view
+          class="today-companion-letter__question {{todayCompanionTomorrowVisible ? 'today-companion-letter__question--open' : ''}}"
+          aria-role="button"
+          aria-label="{{todayCompanionTomorrowVisible ? '明日内容已展开' : '看看明天'}}"
+          bindtap="onTodayCompanionRevealTomorrow"
+        ><text>明天呢？</text></view>
+        <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint">{{todayCompanionView.today.tomorrowHint}}</text>
+      </view>
+    </view>
+  </view>
+
   <daily-window-detail
     id="dailyWindowDetail"
     visible="{{dailyWindowVisible}}"

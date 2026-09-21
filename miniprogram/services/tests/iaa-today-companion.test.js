@@ -75,10 +75,12 @@ global.wx = {
 global.getCurrentPages = () => [{}];
 const analytics = require('../analytics');
 const trackedEvents = [];
+const redirects = [];
 analytics.track = (eventName, properties) => {
   trackedEvents.push({ eventName, properties });
   return { ok: true };
 };
+global.wx.redirectTo = ({ url }) => { redirects.push(url); };
 require('../../pages/iaa-today-companion/iaa-today-companion');
 
 function contextFor() {
@@ -89,8 +91,13 @@ function contextFor() {
 }
 
 (async () => {
+  const redirectedPage = contextFor();
+  const redirectResult = await pageDefinition.onLoad.call(redirectedPage, {});
+  assert.equal(redirectResult.redirected, true, '开发版旧直达页必须改为房间 overlay，不得继续展示第二张场景图');
+  assert.deepEqual(redirects, ['/pages/life-scene/life-scene?entry=iaa-core-review&open=today-companion']);
+
   const page = contextFor();
-  await pageDefinition.onLoad.call(page, { scenario: 'normal', state: 'ready' });
+  await pageDefinition.onLoad.call(page, { entry: 'isolated-test', scenario: 'normal', state: 'ready' });
   assert.equal(page.data.isDev, true, 'develop 构建必须开放验收切换器');
   assert.equal(page.data.screenState, 'ready');
   assert.equal(page.data.view.source, 'local-fixture');
@@ -130,7 +137,7 @@ function contextFor() {
   assert.equal(page.data.starView.star.balance, claimedBalance, '今日已领取后重复点击不得重复加星');
 
   const reopenedPage = contextFor();
-  await pageDefinition.onLoad.call(reopenedPage, { entry: 'room-mood', scenario: 'normal', state: 'ready' });
+  await pageDefinition.onLoad.call(reopenedPage, { entry: 'isolated-test', scenario: 'normal', state: 'ready' });
   assert.equal(reopenedPage.data.starView.star.balance, 3, '从房间再次进入今日陪伴必须读取同一份星星状态');
   assert.equal(reopenedPage.data.interactionDone, true, '同日再次进入不得重新出现可领取的陪伴操作');
 

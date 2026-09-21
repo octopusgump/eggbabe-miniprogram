@@ -39,6 +39,7 @@ fixture.STATE_OPTIONS.forEach(option => {
   const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
   const roomTemplate = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.wxml'), 'utf8');
   const roomLogic = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.js'), 'utf8');
+  const roomStyles = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.wxss'), 'utf8');
   const moodTemplate = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.wxml'), 'utf8');
   const moodLogic = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.js'), 'utf8');
   const moodStyles = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.wxss'), 'utf8');
@@ -49,7 +50,16 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomLogic.includes("query.entry === 'iaa-core-review'") && roomLogic.includes('coreReviewPreviewPet()'), true, '开发验收入口必须能用内存 fixture 直达房间，不写入绑定数据');
   assert.equal(roomTemplate.includes('star-balance="{{companionStarBalance}}"') && roomTemplate.includes('star-claimed="{{companionStarClaimed}}"'), true, '星星必须进入房间左上角今日心情组件');
   assert.equal(roomTemplate.includes('today-companion-entry="{{isDemo}}"') && roomTemplate.includes('bindtodaycompaniontap="onOpenTodayCompanion"'), true, '开发版房间左上角今日心情卡必须成为今日陪伴入口');
-  assert.equal(roomLogic.includes("'/pages/iaa-today-companion/iaa-today-companion?entry=room-mood'") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须进入今日陪伴并记录入口点击');
+  assert.equal(roomLogic.includes("require('../../services/iaa-today-companion-adapter')") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须在原场景读取今日陪伴内容并记录入口点击');
+  assert.equal(roomLogic.includes('todayCompanionVisible: true') && roomLogic.includes('starAdapter.recordCompanion(starView)'), true, '房间 overlay 必须承接陪伴操作与同一份星星状态');
+  assert.equal(roomLogic.includes("wx.navigateTo({ url: '/pages/iaa-today-companion"), false, '今日陪伴不得再跳转到带第二张场景图的独立页面');
+  const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
+  const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);
+  const overlayTemplate = roomTemplate.slice(overlayStart, overlayEnd);
+  assert.equal(overlayStart >= 0 && overlayTemplate.includes('today-companion-letter__title') && overlayTemplate.includes('明天呢？'), true, '当前房间上方必须渲染极简信纸内容');
+  assert.equal(overlayTemplate.includes('<image'), false, '信纸 overlay 内不得重复渲染第二张场景图');
+  assert.equal(/窗边的小纸条|这一会儿，收好了。|房间左上角，多了一颗星星。|♡|✓/.test(overlayTemplate), false, '信纸 overlay 不得增加未经确认的小标题、完成文案、说明或装饰图标');
+  assert.equal(roomStyles.includes('.today-companion-overlay{position:fixed;z-index:400') && roomStyles.includes('.today-companion-letter__title') && roomStyles.includes('font-size:42rpx'), true, 'overlay 必须覆盖原房间并保持标题与正文两级层次');
   assert.equal(moodLogic.includes("this.triggerEvent('todaycompaniontap')") && moodTemplate.includes('点击查看今日陪伴'), true, '今日心情组件必须通过明确事件开放今日陪伴，并提供无障碍点击语义');
   assert.equal(moodTemplate.includes('pet-mood-tab__star-summary') && moodTemplate.includes('今日已收下') && moodTemplate.includes('今日待收下'), true, '今日心情区域必须展示星星数量和今日状态');
   assert.equal(moodTemplate.includes('starProgressText') && moodStyles.includes('.pet-mood-tab__star-progress'), true, '展开今日心情后必须展示下一段纪念进度');

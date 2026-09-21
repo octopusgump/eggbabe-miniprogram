@@ -12,6 +12,7 @@ const deviceClock = require('../../services/device-clock');
 const { createSceneFeedbackController } = require('../../utils/scene-feedback-controller');
 const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
+const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
@@ -303,6 +304,15 @@ Page({
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
+    todayCompanionVisible: false,
+    todayCompanionView: null,
+    todayCompanionStarView: null,
+    todayCompanionInteractionPending: false,
+    todayCompanionInteractionDone: false,
+    todayCompanionInteractionFeedback: '',
+    todayCompanionInteractionError: '',
+    todayCompanionAwardedStars: 0,
+    todayCompanionTomorrowVisible: false,
     clockMode: 'analog',
     clockTimeText: '--:--',
     clockDateText: '',
@@ -369,6 +379,7 @@ Page({
   },
 
   onLoad(query) {
+    query = query || {};
     this.pageActive = true;
     this.hasTrackedEnter = false;
     this.needsInitialViewport = true;
@@ -432,6 +443,7 @@ Page({
     this.scheduleEnvironmentRefresh();
     this.loadCompanionStar();
     this.loadSnapshot();
+    if (query.open === 'today-companion') this.onOpenTodayCompanion();
   },
 
   loadCompanionStar() {
@@ -460,12 +472,83 @@ Page({
   },
 
   onOpenTodayCompanion() {
-    if (!this.data.isDemo) return;
+    if (!this.data.isDemo || this.data.todayCompanionVisible) return Promise.resolve();
     analytics.track('room_element_interaction', {
       element_id: 'today_companion_entry',
       result: 'opened'
     });
-    wx.navigateTo({ url: '/pages/iaa-today-companion/iaa-today-companion?entry=room-mood' });
+    return Promise.all([
+      todayCompanionAdapter.getTodayView({ scenario: 'normal', state: 'ready' }),
+      starAdapter.getRoomStarView()
+    ]).then(([todayResult, starResult]) => {
+      if (!todayResult.ok || !todayResult.data || !starResult.ok || !starResult.data) return;
+      const claimed = starResult.data.star && starResult.data.star.dailyClaimStatus !== 'AVAILABLE';
+      this.setData({
+        acceptanceToolsOpen: false,
+        todayCompanionVisible: true,
+        todayCompanionView: todayResult.data,
+        todayCompanionStarView: starResult.data,
+        todayCompanionInteractionPending: false,
+        todayCompanionInteractionDone: claimed,
+        todayCompanionInteractionFeedback: '',
+        todayCompanionInteractionError: '',
+        todayCompanionAwardedStars: 0,
+        todayCompanionTomorrowVisible: false
+      });
+      analytics.track('companion_interaction', {
+        interaction_type: 'tomorrow_hint',
+        result: 'prompt_shown'
+      });
+    });
+  },
+
+  onCloseTodayCompanion() {
+    if (!this.data.todayCompanionVisible) return;
+    this.setData({ todayCompanionVisible: false });
+  },
+
+  onTodayCompanionLetterTap() {},
+
+  onTodayCompanionOverlayTouchMove() {},
+
+  onTodayCompanionInteract() {
+    const view = this.data.todayCompanionView;
+    const starView = this.data.todayCompanionStarView;
+    if (!view || !starView || this.data.todayCompanionInteractionDone || this.data.todayCompanionInteractionPending) return Promise.resolve();
+    this.setData({
+      todayCompanionInteractionPending: true,
+      todayCompanionInteractionError: '',
+      todayCompanionAwardedStars: 0
+    });
+    return starAdapter.recordCompanion(starView).then(result => {
+      if (!result.ok) {
+        this.setData({
+          todayCompanionInteractionPending: false,
+          todayCompanionInteractionError: result.error.message
+        });
+        return result;
+      }
+      const awardedStars = Number(result.awardedStars || 0);
+      this.setData({
+        todayCompanionStarView: result.data,
+        todayCompanionInteractionPending: false,
+        todayCompanionInteractionDone: true,
+        todayCompanionInteractionFeedback: awardedStars > 0 ? view.today.interactionFeedback : '',
+        todayCompanionInteractionError: '',
+        todayCompanionAwardedStars: awardedStars
+      });
+      this.loadCompanionStar();
+      return result;
+    });
+  },
+
+  onTodayCompanionRevealTomorrow() {
+    if (!this.data.todayCompanionView || this.data.todayCompanionTomorrowVisible) return;
+    this.setData({ todayCompanionTomorrowVisible: true });
+    analytics.track('companion_interaction', {
+      interaction_type: 'tomorrow_hint',
+      result: 'revealed'
+    });
   },
 
   loadSnapshot() {
@@ -1312,6 +1395,10 @@ Page({
   onMagicTouchMove() {},
 
   onBack() {
+    if (this.data.todayCompanionVisible) {
+      this.onCloseTodayCompanion();
+      return;
+    }
     if (this.data.magicWindowVisible) {
       this.onCloseMagicWindow();
       return;

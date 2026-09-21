@@ -459,6 +459,15 @@ Page({
     });
   },
 
+  onOpenTodayCompanion() {
+    if (!this.data.isDemo) return;
+    analytics.track('room_element_interaction', {
+      element_id: 'today_companion_entry',
+      result: 'opened'
+    });
+    wx.navigateTo({ url: '/pages/iaa-today-companion/iaa-today-companion?entry=room-mood' });
+  },
+
   loadSnapshot() {
     if (!this.data.pet) return;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();

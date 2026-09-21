@@ -21,7 +21,8 @@ Component({
     starAwardVisible: { type: Boolean, value: false },
     introReady: { type: Boolean, value: false },
     reducedMotion: { type: Boolean, value: false },
-    nameInteractive: { type: Boolean, value: false }
+    nameInteractive: { type: Boolean, value: false },
+    todayCompanionEntry: { type: Boolean, value: false }
   },
 
   data: {
@@ -120,6 +121,10 @@ Component({
     },
 
     onToggle() {
+      if (this.properties.todayCompanionEntry) {
+        this.triggerEvent('todaycompaniontap');
+        return;
+      }
       if (this.data.expanded && !this.collapsePending) this.collapse();
       else this.reveal();
     },

@@ -83,8 +83,7 @@ Page({
         this.setData({ screenState: 'empty', view: null });
         return;
       }
-      const dailyClaimStatus = result.data.star && result.data.star.dailyClaimStatus || 'AVAILABLE';
-      return starAdapter.getStarUnlockView({ state: dailyClaimStatus }).then(starResult => {
+      return starAdapter.getRoomStarView().then(starResult => {
         if (!starResult.ok) {
           this.setData({ screenState: 'error', errorMessage: starResult.error.message, view: null, starView: null });
           return;

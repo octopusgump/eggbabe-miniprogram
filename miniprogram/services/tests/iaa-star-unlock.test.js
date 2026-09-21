@@ -40,6 +40,7 @@ fixture.STATE_OPTIONS.forEach(option => {
   const roomTemplate = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.wxml'), 'utf8');
   const roomLogic = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.js'), 'utf8');
   const moodTemplate = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.wxml'), 'utf8');
+  const moodLogic = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.js'), 'utf8');
   const moodStyles = fs.readFileSync(path.join(root, 'components/pet-mood-tab/pet-mood-tab.wxss'), 'utf8');
   const adapterLogic = fs.readFileSync(path.join(root, 'services/iaa-star-unlock-adapter.js'), 'utf8');
 
@@ -47,6 +48,9 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomLogic.includes("require('../../services/iaa-star-unlock-adapter')") && roomLogic.includes('loadCompanionStar()'), true, '房间页必须从统一 adapter 读取星星');
   assert.equal(roomLogic.includes("query.entry === 'iaa-core-review'") && roomLogic.includes('coreReviewPreviewPet()'), true, '开发验收入口必须能用内存 fixture 直达房间，不写入绑定数据');
   assert.equal(roomTemplate.includes('star-balance="{{companionStarBalance}}"') && roomTemplate.includes('star-claimed="{{companionStarClaimed}}"'), true, '星星必须进入房间左上角今日心情组件');
+  assert.equal(roomTemplate.includes('today-companion-entry="{{isDemo}}"') && roomTemplate.includes('bindtodaycompaniontap="onOpenTodayCompanion"'), true, '开发版房间左上角今日心情卡必须成为今日陪伴入口');
+  assert.equal(roomLogic.includes("'/pages/iaa-today-companion/iaa-today-companion?entry=room-mood'") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须进入今日陪伴并记录入口点击');
+  assert.equal(moodLogic.includes("this.triggerEvent('todaycompaniontap')") && moodTemplate.includes('点击查看今日陪伴'), true, '今日心情组件必须通过明确事件开放今日陪伴，并提供无障碍点击语义');
   assert.equal(moodTemplate.includes('pet-mood-tab__star-summary') && moodTemplate.includes('今日已收下') && moodTemplate.includes('今日待收下'), true, '今日心情区域必须展示星星数量和今日状态');
   assert.equal(moodTemplate.includes('starProgressText') && moodStyles.includes('.pet-mood-tab__star-progress'), true, '展开今日心情后必须展示下一段纪念进度');
   assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|getStorage|setStorage/.test(adapterLogic), false, '星星 adapter 不得联网或写入本地存储');

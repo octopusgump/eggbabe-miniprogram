@@ -1,7 +1,7 @@
 <view
   class="pet-mood-tab pet-mood-tab--{{expanded ? 'expanded' : 'compact'}} pet-mood-tab--{{mood.tone || 'neutral'}} {{reducedMotion ? 'pet-mood-tab--reduced' : ''}}"
   aria-role="button"
-  aria-label="{{expanded ? petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，' + mood.text + '，点击收起' : petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，点击查看详情'}}"
+  aria-label="{{todayCompanionEntry ? petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，点击查看今日陪伴' : (expanded ? petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，' + mood.text + '，点击收起' : petName + '，今日心情，' + mood.moodLabel + '，陪伴星星 ' + starBalance + ' 颗，点击查看详情')}}"
   bindtap="onToggle"
 >
   <text wx:if="{{nameInteractive}}" class="pet-mood-tab__name pet-mood-tab__name--interactive" catchtap="onNameTap">{{petName}}</text>

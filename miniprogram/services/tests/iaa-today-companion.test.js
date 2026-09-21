@@ -129,6 +129,11 @@ function contextFor() {
   await pageDefinition.onInteract.call(page);
   assert.equal(page.data.starView.star.balance, claimedBalance, '今日已领取后重复点击不得重复加星');
 
+  const reopenedPage = contextFor();
+  await pageDefinition.onLoad.call(reopenedPage, { entry: 'room-mood', scenario: 'normal', state: 'ready' });
+  assert.equal(reopenedPage.data.starView.star.balance, 3, '从房间再次进入今日陪伴必须读取同一份星星状态');
+  assert.equal(reopenedPage.data.interactionDone, true, '同日再次进入不得重新出现可领取的陪伴操作');
+
   await pageDefinition.onViewStateSelect.call(page, { currentTarget: { dataset: { key: 'error' } } });
   assert.equal(page.data.screenState, 'error', '失败 fixture 不得伪装为成功内容');
   await pageDefinition.onRetry.call(page);

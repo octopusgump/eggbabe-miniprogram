@@ -121,6 +121,17 @@ componentDefinition.methods.onNameTap.call(context);
 assert.equal(context.lastEvent, 'nametap', '破壳前名字点击必须继续打开改名入口');
 componentDefinition.lifetimes.detached.call(context);
 
+const companionEntryContext = {
+  properties: Object.assign({}, context.properties, { todayCompanionEntry: true }),
+  data: Object.assign({}, componentDefinition.data),
+  setData(patch) { Object.assign(this.data, patch); },
+  triggerEvent(name) { this.lastEvent = name; }
+};
+Object.assign(companionEntryContext, componentDefinition.methods);
+componentDefinition.methods.onToggle.call(companionEntryContext);
+assert.equal(companionEntryContext.lastEvent, 'todaycompaniontap', '破壳后开发版点击今日心情卡必须进入今日陪伴');
+assert.equal(companionEntryContext.data.expanded, false, '作为今日陪伴入口时不得先执行旧的卡片展开交互');
+
 const secondContext = {
   properties: Object.assign({}, context.properties, { introReady: true }),
   data: Object.assign({}, componentDefinition.data),

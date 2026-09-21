@@ -350,6 +350,8 @@ Page({
     initialViewportReady: false,
     sceneEntered: false,
     isDemo: config.localDemoEnabled,
+    // 正式用户功能开关，与开发调试工具 isDemo 分开维护。
+    todayCompanionEnabled: config.todayCompanionEnabled,
     acceptanceToolsOpen: false,
     acceptanceTesterTopPx: 88,
     sceneTesterOpen: false,
@@ -453,15 +455,14 @@ Page({
       const previousBalance = Number(this.data.companionStarBalance);
       const balance = Number(result.data.star.balance || 0);
       const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
-      const remaining = Number(result.data.progress && result.data.progress.remaining || 0);
-      const nextMemory = result.data.nextMemory && result.data.nextMemory.name || '下一段纪念';
       const balanceIncreased = previousBalance >= 0 && balance > previousBalance;
       const companionStarAwardVisible = balanceIncreased && !settings.deferAward;
       if (balanceIncreased && settings.deferAward) this.companionStarAwardPending = true;
       this.setData({
         companionStarBalance: balance,
         companionStarClaimed: claimed,
-        companionStarProgressText: remaining > 0 ? `还差 ${remaining} 颗 · ${nextMemory}` : `${nextMemory} 已经留下`,
+        // 极简纪念册已暂停：房间只显示星星累计，不显示纪念进度或纪念解锁文案。
+        companionStarProgressText: '',
         companionStarAwardVisible
       });
       clearTimeout(this.companionStarAwardTimer);
@@ -475,7 +476,7 @@ Page({
   },
 
   onOpenTodayCompanion() {
-    if (!this.data.isDemo || this.data.todayCompanionVisible) return Promise.resolve();
+    if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible) return Promise.resolve();
     analytics.track('room_element_interaction', {
       element_id: 'today_companion_entry',
       result: 'opened'

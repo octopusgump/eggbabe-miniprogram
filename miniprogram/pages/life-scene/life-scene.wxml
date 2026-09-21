@@ -85,7 +85,7 @@
         star-award-visible="{{companionStarAwardVisible}}"
         intro-ready="{{sceneEntered && initialViewportReady && sceneBackgroundReady && !error}}"
         reduced-motion="{{reducedMotion}}"
-        today-companion-entry="{{isDemo}}"
+        today-companion-entry="{{todayCompanionEnabled}}"
         bindtodaycompaniontap="onOpenTodayCompanion"
       ></pet-mood-tab>
     </view>

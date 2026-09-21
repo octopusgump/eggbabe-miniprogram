@@ -1,7 +1,7 @@
 <view class="today-page today-page--{{view ? view.today.accent : 'sage'}}">
   <view class="today-topbar" style="top:{{topInset}}px;">
     <view class="round-action" aria-role="button" aria-label="返回" bindtap="onBack"><text>‹</text></view>
-    <view class="today-wordmark"><text class="today-wordmark__main">今日陪伴</text><text class="today-wordmark__sub">和 ta 待一小会儿</text></view>
+    <view class="today-wordmark"><text class="today-wordmark__main">今日陪伴</text></view>
     <view wx:if="{{isDev}}" class="dev-entry {{devPanelOpen ? 'dev-entry--active' : ''}}" aria-role="button" aria-label="{{devPanelOpen ? '收起验收状态' : '展开验收状态'}}" bindtap="onToggleDevPanel"><text>验收</text></view>
     <view wx:else class="topbar-spacer"></view>
   </view>
@@ -66,35 +66,27 @@
       <view wx:if="{{view.today.scenarioKey === 'away'}}" class="paper-note"><text class="paper-note__pin">●</text><text>{{view.today.line}}</text></view>
     </view>
 
-    <view class="story-sheet">
-      <view class="story-sheet__handle"></view>
-      <view class="story-heading">
-        <view class="story-title-wrap">
-          <text class="story-kicker">今天，{{view.pet.name}}</text>
-          <text class="story-title">{{view.today.title}}</text>
-        </view>
-        <view class="presence-dot {{view.today.atHome ? '' : 'presence-dot--away'}}"><view class="presence-dot__mark"></view><text>{{view.today.atHome ? '在家' : '出门了'}}</text></view>
-      </view>
+    <view class="letter-stage">
+      <view class="letter-paper">
+        <text class="letter-title">{{view.today.title}}</text>
+        <text wx:if="{{view.today.scenarioKey !== 'away'}}" class="letter-line">“{{view.today.line}}”</text>
 
-      <text wx:if="{{view.today.scenarioKey !== 'away'}}" class="story-line">“{{view.today.line}}”</text>
-
-      <view class="interaction-area">
-        <view class="companion-action {{interactionDone ? 'companion-action--done' : ''}} {{interactionPending ? 'companion-action--pending' : ''}}" aria-role="button" aria-label="{{interactionDone ? '今日陪伴星星已领取' : view.today.interactionLabel}}" bindtap="onInteract">
-          <text class="companion-action__icon">{{interactionDone ? '✓' : '♡'}}</text>
-          <text>{{interactionDone ? '今日陪伴已完成' : (interactionPending ? '正在收好这一会儿' : view.today.interactionLabel)}}</text>
+        <view class="interaction-area">
+          <view wx:if="{{!interactionDone}}" class="companion-action {{interactionPending ? 'companion-action--pending' : ''}}" aria-role="button" aria-label="{{view.today.interactionLabel}}" bindtap="onInteract">
+            <text class="companion-action__copy">{{interactionPending ? '正在收好这一会儿' : view.today.interactionLabel}}</text>
+          </view>
+          <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
+          <text wx:if="{{interactionError}}" class="interaction-error">{{interactionError}}</text>
+          <view wx:if="{{starAwardVisible}}" class="star-return-feedback">
+            <text class="star-return-feedback__gain">✦ +{{awardedStars}}</text>
+          </view>
         </view>
-        <text wx:if="{{interactionDone}}" class="interaction-feedback">{{interactionFeedback}}</text>
-        <text wx:if="{{interactionError}}" class="interaction-error">{{interactionError}}</text>
-        <view wx:if="{{starAwardVisible}}" class="star-return-feedback">
-          <text class="star-return-feedback__gain">✦ +{{awardedStars}}</text>
-          <text>陪伴星星已经回到房间左上角</text>
-        </view>
-      </view>
 
-      <view wx:if="{{interactionDone}}" class="tomorrow-card">
-        <text wx:if="{{isDev && devPanelOpen}}" class="dev-region-marker">03</text>
-        <view class="tomorrow-card__moon">☾</view>
-        <view class="tomorrow-card__copy"><text class="tomorrow-card__label">明天再看</text><text class="tomorrow-card__text">{{view.today.tomorrowHint}}</text></view>
+        <view class="tomorrow-section">
+          <text wx:if="{{isDev && devPanelOpen}}" class="dev-region-marker">03</text>
+          <view class="tomorrow-question {{tomorrowHintVisible ? 'tomorrow-question--open' : ''}}" aria-role="button" aria-label="{{tomorrowHintVisible ? '明日内容已展开' : '看看明天'}}" bindtap="onRevealTomorrow"><text>明天呢？</text></view>
+          <text wx:if="{{tomorrowHintVisible}}" class="tomorrow-hint">{{view.today.tomorrowHint}}</text>
+        </view>
       </view>
     </view>
   </block>

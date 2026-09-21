@@ -38,16 +38,28 @@ assert.equal(template.includes('isDev && devPanelOpen') && template.includes('�
 assert.equal(template.includes("screenState === 'loading'") && template.includes("screenState === 'empty'") && template.includes("screenState === 'error'"), true, '页面必须提供加载、空态和失败的独立画面');
 assert.equal(template.includes("screenState === 'unavailable'") && template.includes('今天的陪伴还在准备'), true, '正式服务未接入时必须向用户诚实阻断');
 assert.equal(template.includes('bindtap="onRetry"') && pageLogic.includes("selectedViewState: 'ready'"), true, '空态和失败态必须可以重试到内容态');
-assert.equal(styles.includes('min-height:96rpx') && styles.includes('overflow-wrap:anywhere'), true, '主交互热区不得小于 96rpx，长文案必须允许换行');
+assert.equal(styles.includes('.companion-action{min-height:72rpx') && styles.includes('.tomorrow-question{min-height:72rpx') && styles.includes('overflow-wrap:anywhere'), true, '信纸交互行必须使用紧凑一致的纵向节奏，长文案必须允许换行');
+assert.equal(template.includes("tomorrowHintVisible ? 'tomorrow-question--open' : ''") && styles.includes('.tomorrow-question--open{min-height:54rpx'), true, '明日正文展开后，问题与答案必须收紧为同一内容组');
 assert.equal(pageLogic.includes("require('../../services/iaa-star-unlock-adapter')"), true, '今日陪伴必须复用星星幂等 adapter，不得另写一套计数');
-assert.equal(template.includes('陪伴星星已经回到房间左上角') && template.includes('star-return-feedback__gain'), true, '今日陪伴页只保留 +1 去向反馈，不得承载常驻星星面板');
+assert.equal(template.includes('star-return-feedback__gain'), true, '今日陪伴页只保留轻量 +1 反馈，不得承载常驻星星面板');
 assert.equal(template.includes('class="star-loop ') || template.includes('star-progress__track'), false, '常驻星星数量和纪念进度必须移出今日陪伴页');
-assert.equal(template.includes('wx:if="{{interactionDone}}" class="tomorrow-card"'), true, '明日提示必须在完成陪伴后才出现');
-assert.equal(template.includes('明天再看') && template.includes('view.today.tomorrowHint'), true, '星星之后仍须在同页保留明日提示');
+assert.equal(template.includes('class="tomorrow-section"') && !template.includes('wx:if="{{interactionDone}}" class="tomorrow-section"'), true, '明日入口必须在页面初次展示时即可发现');
+assert.equal(template.includes('明天呢？') && template.includes('wx:if="{{tomorrowHintVisible}}"') && template.includes('view.today.tomorrowHint'), true, '明日正文必须由带期待感的入口点击展开');
+assert.equal(pageLogic.includes("interaction_type: 'tomorrow_hint'") && pageLogic.includes("result: 'prompt_shown'") && pageLogic.includes("result: 'revealed'"), true, '明日入口必须记录曝光和展开，且不得上报正文');
 assert.equal(template.includes('用户正式可见') && template.includes('正式接口') && template.includes('本地 fixture'), true, '开发验收抽屉必须说明可见范围、接口和数据来源');
 assert.equal(template.includes('否（仅开发版）'), true, '本地 fixture 不得标记为正式用户可见');
 assert.equal(template.includes('wx:if="{{interactionError}}"') && pageLogic.includes("interactionError: result.error.message"), true, '陪伴记录失败必须在当前页显示原因');
 assert.equal(styles.includes('.dev-sheet-backdrop') && styles.includes('bottom:0'), true, '开发验收信息必须进入底部抽屉，不占用用户页面布局');
+assert.equal(template.includes('class="letter-paper"') && template.includes('view.today.title') && template.includes('明天呢？'), true, '用户内容必须呈现在简洁信纸中，不得继续使用底部弹窗样式');
+assert.equal(/letter-date|presence-dot|letter-name|letter-signoff/.test(template), false, '信纸不得重复日期、状态、名字和落款信息');
+assert.equal(/窗边的小纸条|这一会儿，收好了。|房间左上角，多了一颗星星。|✓/.test(template), false, '信纸不得增加无必要的小标题、完成文案、去向说明或勾选符号');
+assert.equal(template.includes('♡') || styles.includes('companion-action__icon'), false, '陪伴操作不得增加未经定义的心形或装饰图标');
+assert.equal(/\.companion-action\{[^}]*border-(top|bottom)/.test(styles), false, '陪伴操作上下不得增加分隔横线');
+assert.equal(template.includes('wx:if="{{!interactionDone}}" class="companion-action'), true, '陪伴完成后操作入口必须直接消失，不得生成第三个完成态层级');
+assert.equal(template.includes('story-sheet__handle'), false, '用户信件不应保留抽屉把手');
+assert.equal(!styles.includes('repeating-linear-gradient') && styles.includes('.letter-paper::after'), true, '信纸保留折角，但不得用装饰横线干扰正文行距');
+assert.equal(styles.includes('font-size:42rpx') && (styles.match(/font-size:27rpx/g) || []).length >= 7, true, '用户内容只能使用标题与正文两级字号');
+assert.equal((styles.match(/line-height:1\.55/g) || []).length >= 7 && !styles.includes('tomorrow-arrive'), true, '正文必须统一行高，低动效页面不得增加无必要的展开动画');
 assert.equal(/奖励揭晓|reward-reveal/.test(`${template}\n${pageLogic}`), false, '今日陪伴主循环不得引入奖励揭晓');
 assert.equal(styles.includes('.star-return-feedback') && !styles.includes('.star-loop{'), true, '今日陪伴只保留轻量 +1 去向反馈');
 assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|Math\.random|Date\.now/.test(`${pageLogic}\n${adapterLogic}\n${starAdapterLogic}`), false, '今日陪伴静态页不得接网络、云函数、数据库或随机调度');
@@ -61,6 +73,12 @@ global.wx = {
   switchTab() {}
 };
 global.getCurrentPages = () => [{}];
+const analytics = require('../analytics');
+const trackedEvents = [];
+analytics.track = (eventName, properties) => {
+  trackedEvents.push({ eventName, properties });
+  return { ok: true };
+};
 require('../../pages/iaa-today-companion/iaa-today-companion');
 
 function contextFor() {
@@ -78,21 +96,34 @@ function contextFor() {
   assert.equal(page.data.view.source, 'local-fixture');
   assert.equal(page.data.starView.star.balance, 2, '互动前必须展示累计星星');
   assert.equal(page.data.starView.progress.remaining, 1, '互动前必须展示距离下一段纪念还差一颗');
-  assert.equal(page.data.interactionDone, false, '用户完成陪伴前不得提前显示明日提示');
+  assert.equal(page.data.interactionDone, false, '用户操作前不得提前进入陪伴完成状态');
+  assert.deepEqual(trackedEvents.filter(item => item.properties.interaction_type === 'tomorrow_hint').map(item => item.properties.result), ['prompt_shown'], '页面初次展示时必须记录一次明日入口曝光');
+
+  pageDefinition.onRevealTomorrow.call(page);
+  assert.equal(page.data.tomorrowHintVisible, true, '用户无需先完成陪伴，也能从初始页面展开明日正文');
 
   await pageDefinition.onScenarioSelect.call(page, { currentTarget: { dataset: { key: 'away' } } });
   assert.equal(page.data.view.today.scenarioKey, 'away', '切换外出态后必须读取对应 fixture');
+  pageDefinition.onRevealTomorrow.call(page);
+  assert.equal(page.data.tomorrowHintVisible, true, '每个场景都必须允许独立展开明日正文');
   const firstInteraction = pageDefinition.onInteract.call(page);
   const rapidRepeat = pageDefinition.onInteract.call(page);
   const firstResult = await firstInteraction;
   await rapidRepeat;
   assert.equal(firstResult.awardedStars, 1, '首次有效陪伴必须在同页获得 +1');
   assert.equal(page.data.interactionDone, true, '轻互动必须在当前页面给出完成反馈');
+  assert.equal(page.data.tomorrowHintVisible, true, '完成陪伴不得把用户已经展开的明日正文重新折叠');
   assert.equal(page.data.starAwardVisible, true, '首次有效陪伴必须显示 +1 反馈');
   assert.equal(page.data.awardedStars, 1);
   assert.equal(page.data.starView.star.balance, 3, '完成陪伴后累计星星必须立即更新');
   assert.equal(page.data.starView.progress.remaining, 0, '达到门槛后距离下一段纪念必须归零');
   assert.equal(page.data.starView.star.dailyClaimStatus, 'UNLOCKED', '达到纪念门槛时仍须标记今日已经领取');
+  assert.deepEqual(trackedEvents.filter(item => item.properties.interaction_type === 'tomorrow_hint').map(item => item.properties.result), ['prompt_shown', 'revealed', 'prompt_shown', 'revealed'], '切换场景后入口重新露出，但完成陪伴不得重复记录曝光或展开');
+
+  pageDefinition.onRevealTomorrow.call(page);
+  assert.equal(page.data.tomorrowHintVisible, true, '点击“明天呢？”后必须展开明日正文');
+  pageDefinition.onRevealTomorrow.call(page);
+  assert.deepEqual(trackedEvents.filter(item => item.properties.interaction_type === 'tomorrow_hint').map(item => item.properties.result), ['prompt_shown', 'revealed', 'prompt_shown', 'revealed'], '同一场景内重复点击不得重复记录展开');
 
   const claimedBalance = page.data.starView.star.balance;
   await pageDefinition.onInteract.call(page);

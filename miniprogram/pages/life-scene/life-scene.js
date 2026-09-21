@@ -446,7 +446,8 @@ Page({
     if (query.open === 'today-companion') this.onOpenTodayCompanion();
   },
 
-  loadCompanionStar() {
+  loadCompanionStar(options) {
+    const settings = options || {};
     return starAdapter.getRoomStarView().then(result => {
       if (!this.pageActive || !result.ok || !result.data || !result.data.star) return result;
       const previousBalance = Number(this.data.companionStarBalance);
@@ -454,7 +455,9 @@ Page({
       const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
       const remaining = Number(result.data.progress && result.data.progress.remaining || 0);
       const nextMemory = result.data.nextMemory && result.data.nextMemory.name || '下一段纪念';
-      const companionStarAwardVisible = previousBalance >= 0 && balance > previousBalance;
+      const balanceIncreased = previousBalance >= 0 && balance > previousBalance;
+      const companionStarAwardVisible = balanceIncreased && !settings.deferAward;
+      if (balanceIncreased && settings.deferAward) this.companionStarAwardPending = true;
       this.setData({
         companionStarBalance: balance,
         companionStarClaimed: claimed,
@@ -504,7 +507,17 @@ Page({
 
   onCloseTodayCompanion() {
     if (!this.data.todayCompanionVisible) return;
-    this.setData({ todayCompanionVisible: false });
+    const showRoomAward = Boolean(this.companionStarAwardPending);
+    this.companionStarAwardPending = false;
+    const patch = { todayCompanionVisible: false };
+    if (showRoomAward) patch.companionStarAwardVisible = true;
+    this.setData(patch);
+    clearTimeout(this.companionStarAwardTimer);
+    if (showRoomAward) {
+      this.companionStarAwardTimer = setTimeout(() => {
+        if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+      }, 1600);
+    }
   },
 
   onTodayCompanionLetterTap() {},
@@ -537,8 +550,7 @@ Page({
         todayCompanionInteractionError: '',
         todayCompanionAwardedStars: awardedStars
       });
-      this.loadCompanionStar();
-      return result;
+      return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
     });
   },
 

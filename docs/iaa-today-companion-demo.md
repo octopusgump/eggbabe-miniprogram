@@ -13,4 +13,5 @@
 - 所有内容来自 `miniprogram/fixtures/iaa-today-companion.js`。
 - 房间 overlay 只通过 `miniprogram/services/iaa-today-companion-adapter.js` 消费统一视图模型。
 - 当前轻互动会在本次小程序运行内存中同步房间左上角星星状态，不写入本地存储、纪念册或任何远程数据。
+- 信纸内保留本次 `+1`，关闭信纸回到房间时，左上角“陪伴星星”同步展示 `+1`；同日重复进入不重复增加。
 - 正式接口接入时由 CTO 保持 `iaa-mvp-v1` 返回形状并替换 adapter，页面不直接读取服务端专属字段。

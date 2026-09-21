@@ -52,6 +52,8 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomTemplate.includes('today-companion-entry="{{isDemo}}"') && roomTemplate.includes('bindtodaycompaniontap="onOpenTodayCompanion"'), true, '开发版房间左上角今日心情卡必须成为今日陪伴入口');
   assert.equal(roomLogic.includes("require('../../services/iaa-today-companion-adapter')") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须在原场景读取今日陪伴内容并记录入口点击');
   assert.equal(roomLogic.includes('todayCompanionVisible: true') && roomLogic.includes('starAdapter.recordCompanion(starView)'), true, '房间 overlay 必须承接陪伴操作与同一份星星状态');
+  assert.equal(roomLogic.includes('companionStarAwardPending') && roomLogic.includes('deferAward: awardedStars > 0'), true, '信纸内获得星星后必须把房间左上角 +1 保留到 overlay 关闭时再展示');
+  assert.equal(roomLogic.includes('showRoomAward') && roomLogic.includes('companionStarAwardVisible = true'), true, '关闭信纸回到房间时必须立即展示左上角 +1');
   assert.equal(roomLogic.includes("wx.navigateTo({ url: '/pages/iaa-today-companion"), false, '今日陪伴不得再跳转到带第二张场景图的独立页面');
   const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
   const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);

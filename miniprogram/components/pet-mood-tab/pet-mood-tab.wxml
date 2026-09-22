@@ -13,7 +13,7 @@
   </view>
   <view wx:if="{{starBalance >= 0}}" class="pet-mood-tab__star-summary">
     <view class="pet-mood-tab__star-count">
-      <text class="pet-mood-tab__star-icon">✦</text>
+      <companion-star class="pet-mood-tab__star-icon" mode="room" size="22" pulse="{{starAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star>
       <text class="pet-mood-tab__star-number">{{starBalance}}</text>
       <text class="pet-mood-tab__star-label">陪伴星星</text>
       <text wx:if="{{starAwardVisible}}" class="pet-mood-tab__star-award">+1</text>

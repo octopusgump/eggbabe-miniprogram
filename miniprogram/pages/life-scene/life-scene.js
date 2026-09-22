@@ -14,6 +14,12 @@ const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 
+// 信件收星反馈：音效在 0.2 秒响起，让第二个音落在 0.4 秒弹出高点，同时轻震一次。
+const STAR_AWARD_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
+const STAR_AWARD_SOUND_VOLUME = 0.2;
+const STAR_AWARD_SOUND_DELAY_MS = 200;
+const STAR_AWARD_HAPTIC_DELAY_MS = 400;
+
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
   storm: '雷雨', afterRain: '雨后', postSnow: '雪后', wind: '有风'
@@ -487,6 +493,7 @@ Page({
     ]).then(([todayResult, starResult]) => {
       if (!todayResult.ok || !todayResult.data || !starResult.ok || !starResult.data) return;
       const claimed = starResult.data.star && starResult.data.star.dailyClaimStatus !== 'AVAILABLE';
+      if (!claimed) this.prepareStarAwardSound();
       this.setData({
         acceptanceToolsOpen: false,
         todayCompanionVisible: true,
@@ -508,6 +515,7 @@ Page({
 
   onCloseTodayCompanion() {
     if (!this.data.todayCompanionVisible) return;
+    this.clearStarAwardFeedback();
     const showRoomAward = Boolean(this.companionStarAwardPending);
     this.companionStarAwardPending = false;
     const patch = { todayCompanionVisible: false };
@@ -551,8 +559,56 @@ Page({
         todayCompanionInteractionError: '',
         todayCompanionAwardedStars: awardedStars
       });
+      if (awardedStars > 0) this.playStarAwardFeedback();
       return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
     });
+  },
+
+  prepareStarAwardSound() {
+    if (this.starAwardAudio || typeof wx.createInnerAudioContext !== 'function') return;
+    try {
+      const audio = wx.createInnerAudioContext({ useWebAudioImplement: true });
+      audio.src = STAR_AWARD_SOUND_SRC;
+      audio.volume = STAR_AWARD_SOUND_VOLUME;
+      // 音效只是点缀：加载或播放失败时静默放弃，不影响收星。
+      if (audio.onError) audio.onError(() => this.releaseStarAwardSound());
+      this.starAwardAudio = audio;
+    } catch (error) {
+      this.starAwardAudio = null;
+    }
+  },
+
+  playStarAwardFeedback() {
+    this.clearStarAwardFeedback();
+    this.prepareStarAwardSound();
+    this.starAwardSoundTimer = setTimeout(() => {
+      this.starAwardSoundTimer = null;
+      const audio = this.starAwardAudio;
+      if (!audio || !this.pageActive || !this.data.todayCompanionVisible) return;
+      try { audio.play(); } catch (error) {}
+    }, STAR_AWARD_SOUND_DELAY_MS);
+    if (this.data.reducedMotion) return;
+    this.starAwardHapticTimer = setTimeout(() => {
+      this.starAwardHapticTimer = null;
+      if (!this.pageActive || !this.data.todayCompanionVisible) return;
+      try { if (wx.vibrateShort) wx.vibrateShort({ type: 'light' }); } catch (error) {}
+    }, STAR_AWARD_HAPTIC_DELAY_MS);
+  },
+
+  clearStarAwardFeedback() {
+    clearTimeout(this.starAwardSoundTimer);
+    clearTimeout(this.starAwardHapticTimer);
+    this.starAwardSoundTimer = null;
+    this.starAwardHapticTimer = null;
+  },
+
+  releaseStarAwardSound() {
+    this.clearStarAwardFeedback();
+    const audio = this.starAwardAudio;
+    this.starAwardAudio = null;
+    if (!audio) return;
+    try { audio.stop(); } catch (error) {}
+    try { audio.destroy(); } catch (error) {}
   },
 
   onTodayCompanionRevealTomorrow() {
@@ -1470,6 +1526,7 @@ Page({
     this.snapshotRequest = null;
     this.returningFromChild = true;
     this.clearEnvironmentTimer();
+    this.releaseStarAwardSound();
     this.clearTransientState();
   },
   clearTransientState() {
@@ -1493,6 +1550,7 @@ Page({
     this.pageActive = false;
     this.stopClock();
     clearTimeout(this.companionStarAwardTimer);
+    this.releaseStarAwardSound();
     this.windowGesture = null;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;

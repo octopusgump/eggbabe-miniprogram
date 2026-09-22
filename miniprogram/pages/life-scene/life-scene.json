@@ -1,6 +1,7 @@
 {
   "disableSwipeBack": true,
   "usingComponents": {
+    "companion-star": "../../components/companion-star/companion-star",
     "daily-window-detail": "../../components/daily-window-detail/daily-window-detail",
     "pet-mood-tab": "../../components/pet-mood-tab/pet-mood-tab",
     "scene-feedback-stack": "../../components/scene-feedback-stack/scene-feedback-stack"

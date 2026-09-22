@@ -10,7 +10,7 @@
 .pet-mood-tab__mood-label{overflow:hidden;color:#31463A;font-size:22rpx;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .pet-mood-tab__star-summary{display:flex;align-items:center;justify-content:space-between;gap:8rpx;margin-top:8rpx;padding-top:8rpx;border-top:1rpx solid rgba(116,128,120,.12);white-space:nowrap}
 .pet-mood-tab__star-count{position:relative;display:flex;min-width:0;align-items:center;gap:5rpx;color:#725D2B}
-.pet-mood-tab__star-icon{color:#D1A73F;font-size:22rpx;line-height:1}
+.pet-mood-tab__star-icon{flex:none;line-height:0}
 .pet-mood-tab__star-number{font-size:23rpx;font-weight:700;line-height:1}
 .pet-mood-tab__star-label{overflow:hidden;color:#6E745F;font-size:18rpx;text-overflow:ellipsis}
 .pet-mood-tab__star-state{flex:none;color:#879087;font-size:17rpx}

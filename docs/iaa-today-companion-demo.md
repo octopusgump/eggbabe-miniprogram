@@ -12,6 +12,8 @@
 2. 进入破壳后房间 `pages/life-scene/life-scene`。
 3. 点击左上角“今日心情”卡打开信件；点击信件外的房间区域关闭。
 
+验收记录：2026-09-22 COO 在开发者工具与手机“预览”中人工验收通过（信件四项内容、“明天呢？”展开、信件内 `+1`、关闭后左上角 `+1`）。注意：开发者工具“预览”扫码在微信里仍属开发状态（develop），会显示“验收：工具”钮；正式状态（体验版 / 正式版）由 CTO 接口调试阶段上传体验版后预览确认，本次不上传后台。
+
 开发状态补充入口（仅 `develop`）：编译参数 `entry=iaa-core-review` 可用内存 fixture 直达房间；`pages/iaa-core-review/iaa-core-review` 提供四段对比入口和 fixture 切换。`trial` / `release` 命中旧的 `pages/iaa-today-companion` 路径会回到房间正式入口。
 
 ## 静态边界

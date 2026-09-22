@@ -183,16 +183,17 @@ function contextFor() {
     data: Object.assign({}, releaseDefinition.data),
     setData(patch) { Object.assign(this.data, patch); }
   });
+  const releaseRedirects = [];
+  global.wx.redirectTo = ({ url }) => { releaseRedirects.push(url); };
   const releaseLoad = await releaseDefinition.onLoad.call(releasePage, {});
-  assert.equal(releasePage.data.isDev, false, '正式版不得开放本地验收入口');
-  assert.equal(releasePage.data.screenState, 'unavailable', '正式服务未接入时不得读取 fixture');
-  assert.equal(releasePage.data.view, null);
-  assert.equal(releasePage.data.starView, null);
-  assert.equal(releaseLoad.code, 'OFFICIAL_SERVICE_NOT_CONNECTED');
+  assert.equal(releasePage.data.isDev, false, '正式版不得开放 fixture 切换器');
+  assert.equal(releaseLoad.redirected, true, '正式版命中旧路由必须回到房间正式入口，不再显示阻断页');
+  assert.deepEqual(releaseRedirects, ['/pages/life-scene/life-scene?open=today-companion']);
+  assert.equal(releasePage.data.view, null, '旧页在正式版不得读取 fixture');
   const releaseInteraction = await releaseDefinition.onInteract.call(releasePage);
-  assert.equal(releaseInteraction.code, 'OFFICIAL_SERVICE_NOT_CONNECTED', '正式版不得产生本地加星结果');
+  assert.equal(releaseInteraction.code, 'OFFICIAL_SERVICE_NOT_CONNECTED', '旧页在正式版不得产生本地加星结果');
 
-  console.log('IAA 今日陪伴四场景、失败反馈、正式版阻断、明日提示与本地隔离校验通过。');
+  console.log('IAA 今日陪伴四场景、失败反馈、正式版旧路由回房间、明日钩子与本地隔离校验通过。');
 })().catch(error => {
   console.error(error);
   process.exit(1);

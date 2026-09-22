@@ -8,7 +8,7 @@
       <view class="review-status" aria-label="开发验收边界">
         <text>LOCAL FIXTURE</text><view class="review-status__divider"></view><text>NO BACKEND</text>
       </view>
-      <text class="review-warning">开发态独立验收 · 不代表已合入 main</text>
+      <text class="review-warning">开发状态独立验收 · 正式用户不可见</text>
     </view>
 
     <view class="flow-label"><text>验收顺序</text><text>4 个保留项</text></view>
@@ -40,7 +40,7 @@
 
     <view class="scope-note">
       <text class="scope-note__label">本轮边界</text>
-      <text class="scope-note__copy">不含奖励揭晓、广告、独立合规页；纪念册只保留最简单的列表验收入口。</text>
+      <text class="scope-note__copy">不含奖励揭晓、广告、独立合规页；纪念册已暂停，只保留最简单的列表验收入口。</text>
     </view>
     <view class="safe-space"></view>
   </scroll-view>

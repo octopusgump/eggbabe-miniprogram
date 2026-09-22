@@ -15,6 +15,10 @@ module.exports = {
   // develop 验收代码，trial / release 不开放。
   deferredContentEnabled: false,
   deferredContentDeveloperPreviewEnabled: true,
+  // 每日陪伴主循环（今日陪伴、陪伴星星、明日钩子）是正式用户功能：develop / trial / release
+  // 一致开放。内容来自 COO 已确认的本地静态 fixture，不代表 CTO 服务端已经接入。
+  // fixture 切换、测试器、开发验收页等调试能力仍只由 localDemoEnabled 控制。
+  todayCompanionEnabled: true,
   apiBase,
   apiBases: Object.assign({}, API_BASES),
   requestTimeoutMs: 15000,

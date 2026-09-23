@@ -163,6 +163,11 @@
     bindtap="onCloseTodayCompanion"
     catchtouchmove="onTodayCompanionOverlayTouchMove"
   >
+    <view class="today-companion-stage">
+    <view wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-label="✦ +{{todayCompanionAwardedStars}}">
+      <companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star>
+      <text class="today-companion-award__plus" aria-hidden="true">+{{todayCompanionAwardedStars}}</text>
+    </view>
     <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
@@ -177,7 +182,6 @@
         >{{todayCompanionView.today.interactionLabel}}</view>
         <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
-        <text wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-letter__star">✦ +{{todayCompanionAwardedStars}}</text>
       </view>
 
       <view class="today-companion-letter__tomorrow">
@@ -189,6 +193,7 @@
         ><text>明天呢？</text></view>
         <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint">{{todayCompanionView.today.tomorrowHint}}</text>
       </view>
+    </view>
     </view>
   </view>
 

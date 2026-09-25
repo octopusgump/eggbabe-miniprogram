@@ -77,6 +77,15 @@
 - 文档交付：`docs/compliance-cto-handoff-20260823`
 - 紧急修复：`hotfix/release-chat-crash-20260823`
 
+### 版本号、上传与 Tag 同步（2026-09-25 起执行）
+
+- 微信后台上传只能来自干净且已推送的 `main`：上传前 `git status --short --branch` 无修改，且本地 `main` 与 `origin/main` 指向同一提交；禁止从任务分支、`wip/*` 或带未提交修改的工作区上传。
+- 每次上传体验版前，先在 `main` 上同时更新 `miniprogram/config/v2.js` 的 `version` 与 `CHANGELOG.md` 顶部版本条目；`version` 去掉 `-ordinary` 后缀后必须与微信后台填写的版本号完全一致，`scripts/verify-v2.js` 会校验它与 CHANGELOG 顶部版本一致。
+- 上传完成后立即在该提交上打版本 Tag 并推送：`v<版本号>-<summary>-<YYYYMMDD>`，例如 `v3.8.0-today-companion-20260925`；同一版本号不得对应两个提交，需重传时递增补丁号。
+- CHANGELOG 每个版本条目记录上传状态：`上传状态：未上传 / 体验版已上传（日期，提交） / 已提审（日期） / 正式发布（日期）`；状态变化时单独提交更新。
+- 开发者工具“预览”与真机调试属于 develop 状态，不改版本号、不打 Tag、不记为上传。
+- 任务分支合入 `main` 后，确认无独有提交，再删除本地分支、远程同名分支和对应临时 worktree；worktree 中未提交文件先归档或确认可丢弃。
+
 ## 修改与验证
 
 - 先阅读现有代码、文档和工作区差异，再做最小修改；保留用户已有工作，不通过扩大提交范围解决测试失败。

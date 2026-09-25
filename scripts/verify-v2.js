@@ -20,7 +20,8 @@ const petStore = require('../miniprogram/utils/pet-store');
 const analytics = require('../miniprogram/services/analytics');
 const h5Bridge = require('../miniprogram/services/birth-card-h5');
 
-assert.equal(config.version, '3.7.0-ordinary', '前端版本必须对齐 V3.7 普通版');
+const changelogVersion = (fs.readFileSync(path.join(__dirname, '../CHANGELOG.md'), 'utf8').match(/^## v(\d+\.\d+\.\d+)/m) || [])[1];
+assert.equal(config.version, `${changelogVersion}-ordinary`, '前端版本必须与 CHANGELOG 顶部版本一致');
 assert.equal(config.buildTarget, 'ordinary-live', '生产构建必须明确为普通版 live');
 assert.equal(runtime.getMode(), 'live', '普通版运行时只能使用 live');
 assert.equal(runtime.setMode('demo').ok, false, '普通版不得切换到 demo');

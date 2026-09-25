@@ -5,7 +5,7 @@ const API_BASES = { trial: '', release: '' };
 const apiBase = policy.localDemoEnabled ? '' : API_BASES[policy.envVersion] || '';
 
 module.exports = {
-  version: '3.7.0-ordinary',
+  version: '3.8.0-ordinary',
   buildTarget: policy.buildTarget,
   envVersion: policy.envVersion,
   localDemoEnabled: policy.localDemoEnabled,

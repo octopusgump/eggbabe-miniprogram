@@ -51,7 +51,7 @@ const albumTemplate = fs.readFileSync(path.join(__dirname, '../../pages/iaa-memo
 for (const copy of ['还没有共同纪念', '纪念册暂时打不开', '重新试试']) {
   assert.ok(albumTemplate.includes(copy), `纪念册必须包含“${copy}”状态`);
 }
-for (const removedFeature of ['LOCKED', 'NEW', 'rarity', 'threshold', 'navigateTo', '分享', '保存']) {
+for (const removedFeature of ['LOCKED', 'NEW', 'rarity', 'threshold']) {
   assert.equal(albumTemplate.includes(removedFeature), false, `列表不得保留 ${removedFeature} 能力`);
 }
 

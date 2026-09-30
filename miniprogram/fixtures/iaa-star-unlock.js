@@ -42,6 +42,7 @@ function starUnlockViewFor(stateKey) {
   if (!state) return null;
   const star = {
     balance: state.balance,
+    companionDays: state.dailyClaimStatus === 'CLAIMED' || state.dailyClaimStatus === 'UNLOCKED' ? 1 : 0,
     dailyClaimStatus: state.dailyClaimStatus,
     nextUnlockAt: 3
   };

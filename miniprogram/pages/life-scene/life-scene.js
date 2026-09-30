@@ -15,6 +15,8 @@ const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 
 // 信件收星反馈：音效在 0.2 秒响起，让第二个音落在 0.4 秒弹出高点，同时轻震一次。
+const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
+const LETTER_ICON_SRC = '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.webp';
 const STAR_AWARD_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const STAR_AWARD_SOUND_VOLUME = 0.2;
 const STAR_AWARD_SOUND_DELAY_MS = 200;
@@ -307,6 +309,18 @@ Page({
     moodTesterLabel: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE).moodLabel,
     moodTabTopPx: 70,
     companionStarBalance: -1,
+    companionDays: 0,
+    companionLastAward: 0,
+    companionUnread: false,
+    companionLetterArriving: false,
+    companionRoleEntering: false,
+    companionRoleImage: '',
+    companionNavigating: false,
+    pendingCompanionMemory: null,
+    memoryGuideVisible: false,
+    toolboxVisible: false,
+    toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
+    memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
@@ -448,6 +462,8 @@ Page({
       prototypeTesterLabel: prototypeTester.label,
       companionStateTesterOptions: companionStateTesterOptions(pet, dailyWindowEnvironment)
     });
+    try { this.memoryGuideShown = Boolean(wx.getStorageSync('eggbabe_memory_guide_seen_v1')); } catch (error) {}
+    starAdapter.configureRoom(pet.id);
     this.scheduleEnvironmentRefresh();
     this.loadCompanionStar();
     this.loadSnapshot();
@@ -466,8 +482,10 @@ Page({
       if (balanceIncreased && settings.deferAward) this.companionStarAwardPending = true;
       this.setData({
         companionStarBalance: balance,
+        companionDays: Number(result.data.star.companionDays || 0),
+        companionLastAward: balanceIncreased ? balance - previousBalance : this.data.companionLastAward,
         companionStarClaimed: claimed,
-        // 极简纪念册已暂停：房间只显示星星累计，不显示纪念进度或纪念解锁文案。
+        // 房间状态保持极简，不额外展示解锁进度。
         companionStarProgressText: '',
         companionStarAwardVisible
       });
@@ -482,41 +500,52 @@ Page({
   },
 
   onOpenTodayCompanion() {
-    if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible) return Promise.resolve();
+    if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
+    this.companionOpening = true;
     analytics.track('room_element_interaction', {
       element_id: 'today_companion_entry',
       result: 'opened'
     });
     return Promise.all([
-      todayCompanionAdapter.getTodayView({ scenario: 'normal', state: 'ready' }),
+      todayCompanionAdapter.getTodayView({ scenario: this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal', state: 'ready' }),
       starAdapter.getRoomStarView()
     ]).then(([todayResult, starResult]) => {
-      if (!todayResult.ok || !todayResult.data || !starResult.ok || !starResult.data) return;
-      const claimed = starResult.data.star && starResult.data.star.dailyClaimStatus !== 'AVAILABLE';
+      if (!this.pageActive) return;
+      if (!todayResult.ok || !todayResult.data || !starResult.ok || !starResult.data) { this.showSystemNotice('信件没有打开，请再试一次', 'warning'); return; }
+      this.markCompanionSeen();
+      const claimed = Boolean(starResult.data.star && (this.data.currentState && !this.data.currentState.atHome ? starResult.data.star.noteCollected : starResult.data.star.effectiveDone));
+      this.stopLetterArrival();
+      const progress = this.readLetterProgress();
+      this.todayCompanionScenario = this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal';
       if (!claimed) this.prepareStarAwardSound();
       this.setData({
         acceptanceToolsOpen: false,
         todayCompanionVisible: true,
+        companionUnread: false,
+        companionLetterArriving: false,
+        companionNavigating: false,
+        toolboxVisible: false,
         todayCompanionView: todayResult.data,
         todayCompanionStarView: starResult.data,
         todayCompanionInteractionPending: false,
         todayCompanionInteractionDone: claimed,
-        todayCompanionInteractionFeedback: '',
+        todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
         todayCompanionInteractionError: '',
         todayCompanionAwardedStars: 0,
-        todayCompanionTomorrowVisible: false
+        todayCompanionTomorrowVisible: Boolean(progress.tomorrow),
+        companionRoleEntering: false
       });
       analytics.track('companion_interaction', {
         interaction_type: 'tomorrow_hint',
         result: 'prompt_shown'
       });
-    });
+    }).catch(() => { if (this.pageActive) this.showSystemNotice('信件没有打开，请再试一次', 'warning'); }).finally(() => { this.companionOpening = false; });
   },
 
   onCloseTodayCompanion() {
     if (!this.data.todayCompanionVisible) return;
     this.clearStarAwardFeedback();
-    const showRoomAward = Boolean(this.companionStarAwardPending);
+    const showRoomAward = false;
     this.companionStarAwardPending = false;
     const patch = { todayCompanionVisible: false };
     if (showRoomAward) patch.companionStarAwardVisible = true;
@@ -543,25 +572,21 @@ Page({
       todayCompanionAwardedStars: 0
     });
     return starAdapter.recordCompanion(starView).then(result => {
-      if (!result.ok) {
-        this.setData({
-          todayCompanionInteractionPending: false,
-          todayCompanionInteractionError: result.error.message
-        });
-        return result;
-      }
-      const awardedStars = Number(result.awardedStars || 0);
-      this.setData({
-        todayCompanionStarView: result.data,
-        todayCompanionInteractionPending: false,
-        todayCompanionInteractionDone: true,
-        todayCompanionInteractionFeedback: awardedStars > 0 ? view.today.interactionFeedback : '',
-        todayCompanionInteractionError: '',
-        todayCompanionAwardedStars: awardedStars
-      });
-      if (awardedStars > 0) this.playStarAwardFeedback();
-      return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
+      if (!this.pageActive) { this.pendingCompanionResult = result; return result; }
+      return this.applyCompanionInteractionResult(result);
     });
+  },
+
+  applyCompanionInteractionResult(result) {
+    if (!result || !result.ok) {
+      this.setData({ todayCompanionInteractionPending: false, todayCompanionInteractionError: result && result.error ? result.error.message : '刚才没有记下来，请再试一次。' });
+      return Promise.resolve(result);
+    }
+    const awardedStars = Number(result.awardedStars || 0);
+    const view = this.data.todayCompanionView;
+    this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionPending: false, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: view && view.today ? view.today.interactionFeedback : '', todayCompanionInteractionError: '', todayCompanionAwardedStars: awardedStars });
+    if (awardedStars > 0) this.playStarAwardFeedback();
+    return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
   },
 
   prepareStarAwardSound() {
@@ -570,6 +595,7 @@ Page({
       const audio = wx.createInnerAudioContext({ useWebAudioImplement: true });
       audio.src = STAR_AWARD_SOUND_SRC;
       audio.volume = STAR_AWARD_SOUND_VOLUME;
+      audio.obeyMuteSwitch = true;
       // 音效只是点缀：加载或播放失败时静默放弃，不影响收星。
       if (audio.onError) audio.onError(() => this.releaseStarAwardSound());
       this.starAwardAudio = audio;
@@ -580,6 +606,7 @@ Page({
 
   playStarAwardFeedback() {
     this.clearStarAwardFeedback();
+    this.letterAwardTimer = setTimeout(() => { if (this.pageActive) this.setData({ todayCompanionAwardedStars: 0 }); }, 1750);
     this.prepareStarAwardSound();
     this.starAwardSoundTimer = setTimeout(() => {
       this.starAwardSoundTimer = null;
@@ -596,6 +623,7 @@ Page({
   },
 
   clearStarAwardFeedback() {
+    clearTimeout(this.letterAwardTimer);
     clearTimeout(this.starAwardSoundTimer);
     clearTimeout(this.starAwardHapticTimer);
     this.starAwardSoundTimer = null;
@@ -613,7 +641,12 @@ Page({
 
   onTodayCompanionRevealTomorrow() {
     if (!this.data.todayCompanionView || this.data.todayCompanionTomorrowVisible) return;
-    this.setData({ todayCompanionTomorrowVisible: true });
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    this.letterProgress = { date, tomorrow: true };
+    try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
+    this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.reducedMotion) });
+    clearTimeout(this.companionRoleTimer);
+    this.companionRoleTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionRoleEntering: false }); }, 1000);
     analytics.track('companion_interaction', {
       interaction_type: 'tomorrow_hint',
       result: 'revealed'
@@ -664,7 +697,8 @@ Page({
         currentState,
         panelSceneSetId: panorama.sceneSetId,
         windowHotspots: panorama.windowHotspots,
-        contextActionIcon: contextAction.icon,
+        contextActionIcon: LETTER_ICON_SRC,
+        companionRoleImage: `/assets/scenes/lifecycle/post-hatch/30-character/${['锦鲤', 'KOI'].includes(String(this.data.pet && this.data.pet.prototype)) ? 'boon-koi' : 'jade-rabbit'}/stare.webp`,
         contextActionLabel: contextAction.label,
         contextActionHint: contextAction.hint,
         contextActionDisabled: contextAction.disabled,
@@ -678,6 +712,8 @@ Page({
       }), () => {
         this.scheduleInitialSceneDeadline();
         this.revealInitialScene();
+        if (this.data.todayCompanionVisible && this.todayCompanionScenario !== (currentState.atHome ? 'normal' : 'away')) { this.setData({ todayCompanionVisible: false }); this.onOpenTodayCompanion(); }
+        this.maybeShowDailyCompanion();
         if (preparingInitialViewport) this.scheduleInitialViewportSettle(initialViewportToken);
         if (panoramaChanged && panorama.valid) this.queuePanoramaTransition(panorama.panoramaImage);
         if (shouldShowStatusBubble) {
@@ -867,7 +903,7 @@ Page({
     clearTimeout(this.sceneEnterTimer);
     this.sceneEnterTimer = setTimeout(() => {
       if (this.pageActive && this.data.currentState && this.data.sceneBackgroundReady) {
-        this.setData({ sceneEntered: true });
+        this.setData({ sceneEntered: true }, () => this.maybeShowDailyCompanion());
       }
     }, this.data.reducedMotion ? 0 : 24);
   },
@@ -1139,7 +1175,7 @@ Page({
     this.needsInitialViewport = false;
     clearTimeout(this.initialViewportTimer);
     this.initialViewportTimer = null;
-    this.setData({ initialViewportReady: true });
+    this.setData({ initialViewportReady: true }, () => this.maybeShowDailyCompanion());
   },
 
   vibrateCuddleTick() {
@@ -1261,21 +1297,105 @@ Page({
 
   noop() {},
 
-  onContextActionTap() {
+  onContextActionTap() { return this.onOpenTodayCompanion(); },
+
+  onCompanionChatTap() {
+    if (this.data.companionNavigating) return;
     const current = this.data.currentState;
     const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
-    if (!current) return;
-    if (!current.atHome) {
-      this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info');
-      analytics.track('room_element_interaction', { element_id: 'away_status', result: 'shown' });
-      return;
-    }
-    if (!chatAccess || chatAccess.status !== 'available') {
-      this.showSystemNotice(chatAccess && chatAccess.message || '聊天权限正在同步，请稍后再试。', 'warning');
-      analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'unavailable' });
-      return;
-    }
+    if (!current || !current.atHome) { this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info'); return; }
+    if (!chatAccess || chatAccess.status !== 'available') { this.showSystemNotice(chatAccess && chatAccess.message || '聊天权限正在同步，请稍后再试。', 'warning'); return; }
+    clearTimeout(this.companionRoleTimer);
+    this.setData({ companionRoleEntering: false, companionNavigating: true });
+    this.returnToCompanion = true;
+    this.onCloseTodayCompanion();
     this.openChatPage(current);
+  },
+
+  companionSeenKey() { return `eggbabe_companion_seen_${this.data.pet && this.data.pet.id || 'preview'}`; },
+  markCompanionSeen() {
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    this.companionSeenDate = date;
+    try { wx.setStorageSync(this.companionSeenKey(), date); } catch (error) {}
+  },
+  letterProgressKey() { return `${this.companionSeenKey()}_progress`; },
+  readLetterProgress() {
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    try { const value = wx.getStorageSync(this.letterProgressKey()) || this.letterProgress; return value && value.date === date ? value : {}; } catch (error) { return this.letterProgress && this.letterProgress.date === date ? this.letterProgress : {}; }
+  },
+  stopLetterArrival() {
+    clearTimeout(this.letterArrivalTimer);
+    clearTimeout(this.letterSoundTimer);
+    this.releaseLetterSound();
+    this.setData({ companionLetterArriving: false });
+  },
+  releaseLetterSound() {
+    if (!this.letterAudio) return;
+    try { this.letterAudio.stop(); this.letterAudio.destroy(); } catch (error) {}
+    this.letterAudio = null;
+  },
+  maybeShowDailyCompanion() {
+    if (!this.data.todayCompanionEnabled || !this.pageActive || !this.data.currentState || !this.data.sceneEntered || !this.data.initialViewportReady || this.data.error) return;
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    if (this.letterDate !== date) {
+      this.letterDate = date;
+      this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow), companionRoleEntering: false, todayCompanionAwardedStars: 0 });
+      // 已打开的旧信跨日更新内容，但不会自动把未打开的信展开。
+      if (this.data.todayCompanionVisible) { this.setData({ todayCompanionVisible: false }); this.onOpenTodayCompanion(); }
+    }
+    let seen;
+    try { seen = wx.getStorageSync(this.companionSeenKey()) || this.companionSeenDate; } catch (error) { seen = this.companionSeenDate; }
+    this.setData({ companionUnread: seen !== date });
+    let arrival;
+    try { arrival = wx.getStorageSync(`${this.companionSeenKey()}_arrival`) || this.letterArrivalDate; } catch (error) { arrival = this.letterArrivalDate; }
+    if (seen === date || arrival === date) return;
+    this.letterArrivalDate = date;
+    try { wx.setStorageSync(`${this.companionSeenKey()}_arrival`, date); } catch (error) {}
+    this.setData({ companionLetterArriving: !this.data.reducedMotion });
+    try {
+      if (wx.createInnerAudioContext) {
+        const audio = wx.createInnerAudioContext();
+        audio.src = LETTER_SOUND_SRC; audio.volume = 0.25; audio.obeyMuteSwitch = true;
+        this.letterAudio = audio;
+        if (audio.onError) audio.onError(() => this.releaseLetterSound());
+        this.letterSoundTimer = setTimeout(() => { if (this.pageActive && this.letterAudio) { try { this.letterAudio.play(); } catch (error) {} } }, 450);
+      }
+    } catch (error) { this.releaseLetterSound(); }
+    this.letterArrivalTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionLetterArriving: false }); this.releaseLetterSound(); }, 1050);
+  },
+  onToggleToolbox() { this.setData({ toolboxVisible: !this.data.toolboxVisible }); },
+  onOpenMemoryAlbum() {
+    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.returningFromChild = true;
+    wx.navigateTo({ url: '/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room',
+      success: result => {
+        const photo = assets.resolveActionPanorama(this.data.pet, { atHome: true, key: 'window' }, this.data.dailyWindowEnvironment || {}, '');
+        if (result && result.eventChannel) result.eventChannel.emit('roomActivityContext', { atHome: Boolean(this.data.currentState && this.data.currentState.atHome), teaImage: photo && photo.panorama || '' });
+        this.memoryGuideShown = true; try { wx.setStorageSync('eggbabe_memory_guide_seen_v1', true); } catch (error) {}
+      },
+      fail: () => { this.returningFromChild = false; this.showSystemNotice('纪念册没有打开，请重试', 'warning'); }
+    });
+  },
+  onPreviewCompanionMemory() {
+    const memory = this.data.pendingCompanionMemory;
+    if (memory && wx.previewImage) wx.previewImage({ urls: [memory.image], current: memory.image });
+  },
+  onCollectCompanionMemory() {
+    if (!starAdapter.collectMemory(this.data.pendingCompanionMemory)) return;
+    this.setData({ pendingCompanionMemory: null, memoryGuideVisible: !this.memoryGuideShown });
+    this.memoryGuideShown = true;
+    this.onCloseTodayCompanion();
+  },
+  onTodayCompanionAction() {
+    if (this.data.todayCompanionInteractionPending || this.data.companionNavigating || this.data.pendingCompanionMemory) return;
+    if (this.data.currentState && !this.data.currentState.atHome) return this.onTodayCompanionInteract();
+    this.returningFromChild = true;
+    this.setData({ companionNavigating: true });
+    wx.navigateTo({
+      url: '/pages/doodle/doodle?entry=companion',
+      events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
+      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false }); this.showSystemNotice('画纸没有打开，请重试', 'warning'); }
+    });
   },
 
   openChatPage(current) {
@@ -1286,7 +1406,7 @@ Page({
       success: () => analytics.track('room_element_interaction', { element_id: 'scene_chat_button', result: 'opened' }),
       fail: () => {
         this.returningFromChild = false;
-        if (this.pageActive) this.showSystemNotice('对话页面没有打开，请重试', 'warning');
+        if (this.pageActive) { this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('对话页面没有打开，请重试', 'warning'); }
       }
     });
   },
@@ -1508,7 +1628,29 @@ Page({
     this.hasShownOnce = true;
     this.pageActive = true;
     this.startClock();
-    this.loadCompanionStar();
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    if (this.letterDate !== date) { this.letterDate = date; this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow) }); }
+    this.setData({ companionNavigating: false, companionRoleEntering: false, todayCompanionAwardedStars: 0 });
+    if (this.returnToCompanion) { this.returnToCompanion = false; this.onOpenTodayCompanion(); }
+    if (this.pendingCompanionResult) {
+      const pending = this.pendingCompanionResult; this.pendingCompanionResult = null;
+      if (!pending.ok || pending.data.dateKey === date) this.applyCompanionInteractionResult(pending);
+      else this.setData({ todayCompanionInteractionPending: false });
+    }
+    this.loadCompanionStar({ deferAward: true }).then(result => {
+      if (!this.pageActive || !result || !result.ok) return;
+      this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.effectiveDone) });
+      if (!this.completedCompanionDrawing) return;
+      const memory = this.completedCompanionDrawing;
+      return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {
+        if (!completion.ok) { this.setData({ todayCompanionInteractionError: completion.error.message }); return; }
+        if (!this.pageActive) return;
+        this.completedCompanionDrawing = null;
+        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: memory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: memory.line, todayCompanionAwardedStars: completion.awardedStars });
+        if (completion.awardedStars > 0) this.playStarAwardFeedback();
+        return this.loadCompanionStar({ deferAward: true });
+      });
+    });
     if (this.data.dailyWindowVisible || this.data.magicWindowVisible) this.setData({ dailyWindowVisible: false, magicWindowVisible: false });
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
@@ -1527,6 +1669,8 @@ Page({
     this.returningFromChild = true;
     this.clearEnvironmentTimer();
     this.releaseStarAwardSound();
+    this.stopLetterArrival();
+    clearTimeout(this.companionRoleTimer);
     this.clearTransientState();
   },
   clearTransientState() {
@@ -1551,6 +1695,8 @@ Page({
     this.stopClock();
     clearTimeout(this.companionStarAwardTimer);
     this.releaseStarAwardSound();
+    this.stopLetterArrival();
+    clearTimeout(this.companionRoleTimer);
     this.windowGesture = null;
     if (this.snapshotRequest && this.snapshotRequest.abort) this.snapshotRequest.abort();
     this.snapshotRequest = null;

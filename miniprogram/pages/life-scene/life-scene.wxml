@@ -75,19 +75,10 @@
 
   <view wx:if="{{pet}}" class="life-status-stack" style="top:{{moodTabTopPx}}px;">
     <view class="pet-mood-anchor">
-      <pet-mood-tab
-        id="petMoodTab"
-        pet-name="{{pet.name || '蛋宝宝'}}"
-        mood="{{dailyMood}}"
-        star-balance="{{companionStarBalance}}"
-        star-claimed="{{companionStarClaimed}}"
-        star-progress-text="{{companionStarProgressText}}"
-        star-award-visible="{{companionStarAwardVisible}}"
-        intro-ready="{{sceneEntered && initialViewportReady && sceneBackgroundReady && !error}}"
-        reduced-motion="{{reducedMotion}}"
-        today-companion-entry="{{todayCompanionEnabled}}"
-        bindtodaycompaniontap="onOpenTodayCompanion"
-      ></pet-mood-tab>
+      <view class="companion-balance" aria-label="星星 {{companionStarBalance}}，一起 {{companionDays}} 天">
+        <view class="companion-balance__stars"><companion-star mode="room" size="30" pulse="{{companionStarAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star><text>{{companionStarBalance >= 0 ? companionStarBalance : '—'}}</text><text wx:if="{{companionStarAwardVisible}}" class="companion-balance__gain">+{{companionLastAward}}</text></view>
+        <text class="companion-balance__days">一起 {{companionDays}} 天</text>
+      </view>
     </view>
     <view
       class="room-clock room-clock--{{clockMode}}"
@@ -140,14 +131,21 @@
     <view wx:if="{{sceneBackgroundError || sceneTransitionError}}" class="scene-background-error" bindtap="onRetrySceneBackground">{{sceneTransitionError ? '房间背景更新失败 · 轻触重试' : '房间背景没有加载好 · 轻触重试'}}</view>
 
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
-    <view wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry">
-      <view class="scene-action-button {{contextActionDisabled ? 'scene-action-button--unavailable' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextActionLabel}}" bindtap="onContextActionTap">
-        <image class="scene-action-icon-image scene-action-icon-image--companion" src="{{contextActionIcon}}" mode="aspectFill"></image>
-        <view wx:if="{{contextActionBadge}}" class="scene-action-unavailable-badge">{{contextActionBadge}}</view>
+    <view wx:if="{{currentState}}" class="scene-context-entry">
+      <view class="scene-action-button " hover-class="scene-action-button--pressed" aria-role="button" aria-label="读信" bindtap="onContextActionTap">
+        <view wx:if="{{companionLetterArriving}}" class="companion-letter-plane" aria-hidden="true"></view>
+        <image class="scene-action-icon-image scene-action-icon-image--companion {{companionLetterArriving ? 'companion-letter-envelope--arriving' : ''}}" src="{{contextActionIcon}}" mode="aspectFit"></image>
+        <view wx:if="{{companionUnread}}" class="companion-unread-dot"></view>
       </view>
     </view>
 
+    <view wx:if="{{toolboxVisible}}" class="toolbox-dismiss" bindtap="onToggleToolbox"></view>
+    <view wx:if="{{toolboxVisible}}" class="companion-toolbox" catchtap="noop">
+      <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
+    </view>
+    <view wx:if="{{memoryGuideVisible}}" class="companion-memory-guide" bindtap="onToggleToolbox">打开百宝箱，看看回忆</view>
     <view class="scene-action-dock">
+      <view class="scene-action-button companion-toolbox-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox"><image class="scene-action-icon-image" src="{{toolboxIcon}}" mode="aspectFit"></image></view>
       <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开我的和设置" bindtap="onOpenMySettings">
         <image class="scene-action-icon-image" src="{{mySettingsIcon}}" mode="aspectFit"></image>
       </view>
@@ -166,24 +164,29 @@
     <view class="today-companion-stage">
     <view wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-label="✦ +{{todayCompanionAwardedStars}}">
       <companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star>
+      <view wx:if="{{!reducedMotion}}" class="companion-award-flight"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="companion-award-flight__star companion-award-flight__star--{{item}}"><companion-star mode="room" size="22" reduced-motion="{{true}}"></companion-star></view></view>
       <text class="today-companion-award__plus" aria-hidden="true">+{{todayCompanionAwardedStars}}</text>
     </view>
     <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">
+      <view class="companion-close" aria-role="button" aria-label="关闭陪伴" bindtap="onCloseTodayCompanion">×</view>
+      <text wx:if="{{currentState.atHome}}" class="today-companion-letter__line">{{dailyMood.moodLabel}}</text>
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
 
       <view class="today-companion-letter__interaction">
         <view
-          wx:if="{{!todayCompanionInteractionDone}}"
+          wx:if="{{!pendingCompanionMemory}}"
           class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
           aria-role="button"
           aria-label="{{todayCompanionView.today.interactionLabel}}"
-          bindtap="onTodayCompanionInteract"
-        >{{todayCompanionView.today.interactionLabel}}</view>
+          bindtap="onTodayCompanionAction"
+        >{{!currentState.atHome && todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}</view>
         <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
       </view>
 
+      <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image src="{{pendingCompanionMemory.image}}" mode="aspectFit" bindtap="onPreviewCompanionMemory"></image><view class="today-companion-letter__action" aria-role="button" bindtap="onCollectCompanionMemory">收下</view></view>
+      <text wx:if="{{todayCompanionInteractionDone && !pendingCompanionMemory && currentState.atHome}}" class="today-companion-letter__feedback">今天已陪伴</text>
       <view class="today-companion-letter__tomorrow">
         <view
           class="today-companion-letter__question {{todayCompanionTomorrowVisible ? 'today-companion-letter__question--open' : ''}}"
@@ -191,9 +194,10 @@
           aria-label="{{todayCompanionTomorrowVisible ? '明日内容已展开' : '看看明天'}}"
           bindtap="onTodayCompanionRevealTomorrow"
         ><text>明天呢？</text></view>
-        <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint">{{todayCompanionView.today.tomorrowHint}}</text>
+        <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint {{currentState.atHome ? 'today-companion-letter__hint--with-role' : ''}}">{{todayCompanionView.today.tomorrowHint}}</text>
       </view>
     </view>
+    <view wx:if="{{todayCompanionTomorrowVisible && currentState.atHome}}" class="companion-letter-role {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><image src="{{companionRoleImage}}" mode="aspectFit"></image></view>
     </view>
   </view>
 

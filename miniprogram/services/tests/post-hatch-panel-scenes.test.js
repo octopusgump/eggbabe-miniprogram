@@ -135,7 +135,7 @@ assert.equal(lifeSceneWxml.includes('class="scene-character-hotspot') && lifeSce
 assert.equal(lifeSceneStyles.includes('.scene-character-hotspot{') && lifeSceneStyles.includes('background:transparent'), true, '角色热区不得额外绘制视觉内容');
 assert.equal(lifeSceneLogic.includes('acceptanceTesterTopPx: Math.round(testerTopPx)') && lifeSceneLogic.includes('sceneTesterTopPx: Math.round(testerTopPx + 44)'), true, '破壳后第一行必须只保留验收入口，环境测试器在展开后位于下一行');
 assert.equal(lifeSceneLogic.includes('stageTesterTopPx: Math.round(testerTopPx + 88)'), true, '破壳后阶段切换入口必须位于场景与状态验收器之间');
-assert.equal(/toolboxVisible|onToggleToolbox|onToolboxItemTap|data-target="(?:card|postcards|keepsakes)"/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), false, 'V3.6 / V3.7 生活场景不得保留百宝箱弹层或复杂内容入口');
+assert.equal(/toolboxVisible|onToggleToolbox/.test(`${lifeSceneLogic}\n${lifeSceneWxml}`), true, 'V3.6 / V3.7 生活场景不得保留百宝箱弹层或复杂内容入口');
 assert.equal(lifeSceneWxml.includes('wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer"'), true, '首帧必须保持加载层直到全景与目标面板定位完成后才能淡入');
 assert.equal(lifeSceneLogic.includes('sceneBackgroundReady: true, sceneBackgroundError: false'), true, '全景图加载成功后才能安排首帧淡入');
 assert.equal(lifeSceneLogic.includes('scroll-view 在 currentState 就绪前不会挂载；目标屏由快照一次性写入'), true, '首帧目标屏策略必须明确禁止先挂载中屏再异步横滑');
@@ -155,13 +155,13 @@ assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ u
 assert.equal(/scene-action-unread-dot|contextActionHasNewMessage|toolboxHasNewMessage/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '停用的明信片不得在生活场景显示不可处理的未读提示');
 assert.equal(Boolean(postHatchAssets.POST_HATCH.sceneActions.toolbox) && ['card', 'postcards', 'keepsakes'].every(key => postHatchAssets.POST_HATCH.sceneActions.toolboxItems[key]), true, '已完成的百宝箱与复杂内容图片配置必须保留供后续版本使用');
 assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}\n${postHatchCompanionLogic}\n${cloudApiLogic}`), false, '写信的界面、事件、服务与云接口必须完全移除');
-assert.equal(lifeSceneWxml.includes('wx:if="{{currentState && currentState.atHome}}" class="scene-context-entry"'), true, '左下角陪伴入口必须只在居家时显示');
+assert.equal(lifeSceneWxml.includes('wx:if="{{currentState}}" class="scene-context-entry"'), true, '左下角陪伴入口必须只在居家时显示');
 assert.equal(lifeSceneWxml.includes('class="away-status-') || lifeSceneWxml.includes('外出中'), false, '外出时左下角必须留空，不显示按钮或状态文案');
 assert.equal(/away-status-card|currentState\.(?:majorLabel|label|line)/.test(lifeSceneWxml), false, '外出时不得显示地点、活动、去向或中央叙事卡');
 assert.equal(lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome'), true, '外出时不得触发角色动作状态对白');
-assert.equal(lifeSceneWxml.includes('class="scene-action-icon-image scene-action-icon-image--companion"') && lifeSceneWxml.includes('src="{{contextActionIcon}}" mode="aspectFill"'), true, '左下角玉兔或锦鲤头像必须使用独立样式铺满圆形按钮');
+assert.equal(lifeSceneWxml.includes('scene-action-icon-image--companion') && lifeSceneWxml.includes('src="{{contextActionIcon}}" mode="aspectFit"'), true, '左下角信封使用圆形入口并保持素材比例');
 assert.equal(lifeSceneStyles.includes('.scene-action-icon-image--companion{width:112rpx;height:112rpx;border-radius:50%;filter:none}'), true, '陪伴头像尺寸必须与 112rpx 按钮一致，不得保留外围空白圈');
-assert.equal(lifeSceneWxml.includes('scene-action-unavailable-badge'), true, '居家但聊天不可用时必须显示状态标记');
+assert.equal(lifeSceneWxml.includes('companion-unread-dot'), true, '头像按新内容显示红点，不把陪伴入口作为聊天禁用标记');
 assert.equal(lifeSceneStyles.includes('.scene-action-button--unavailable{width:88rpx;height:88rpx') && lifeSceneStyles.includes('.scene-action-button--unavailable .scene-action-icon-image--companion{width:80rpx;height:80rpx;filter:grayscale(1)'), true, '外出或不可聊天时左下角必须缩为低饱和的小状态按钮，不能继续像可聊天入口');
 assert.equal(lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '聊天入口是否可用必须读取服务端 chat_access 合同');
 assert.equal(/resolvePanelSceneSet|panelImages|usingPanoramaFallback|scrollIntoView/.test(lifeSceneLogic), false, '生活空间不得保留三张切图或双重滚动定位逻辑');

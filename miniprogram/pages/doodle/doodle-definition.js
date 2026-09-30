@@ -1,3 +1,4 @@
+const companionAdapter = require('../../services/iaa-star-unlock-adapter');
 const petStore = require('../../utils/pet-store');
 const analytics = require('../../services/analytics');
 const cloudApi = require('../../services/cloud-api');
@@ -86,19 +87,26 @@ const doodleDefinition = {
     exitConfirmSaving: false,
     exitConfirmErrorText: '',
     canvasReady: false,
+    canvasPreparationError: false,
     canvasScale: MIN_CANVAS_SCALE,
     canvasNoticeText: '',
     canvasNoticeTone: 'info',
     canvasNoticeVisible: false,
+    companionStartAward: 0,
+    companionStartAwardVisible: false,
+    companionReducedMotion: false,
     pageTransitionPhase: 'waiting'
   },
 
-  onLoad() {
+  onLoad(query) {
+    this.companionDrawing = Boolean(query && query.entry === 'companion');
+    this.setData({ companionDrawing: this.companionDrawing });
     this.pageActive = true;
     this.colorHintSeen = hasSeenColorHint();
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     const pet = petStore.getPet();
-    this.shellArt = shellArtService.normalizeShellArt(pet && pet.shell);
+    this.resumingCompanionDraft = Boolean(this.companionDrawing && companionAdapter.getCompanionDraft());
+    this.shellArt = shellArtService.normalizeShellArt(this.companionDrawing ? companionAdapter.getCompanionDraft() : pet && pet.shell);
     const latestBrush = this.shellArt.operations.slice().reverse().find(item => (
       item.type === 'stroke'
       && item.tool === 'brush'
@@ -144,8 +152,10 @@ const doodleDefinition = {
     clearTimeout(this.pageTransitionTimer);
     this.setData({ pageTransitionPhase: 'exiting' });
     return new Promise(resolve => {
+      this.pageExitResolve = resolve;
       this.pageTransitionTimer = setTimeout(() => {
         this.pageTransitionTimer = null;
+        this.pageExitResolve = null;
         resolve();
       }, this.pageTransitionDuration());
     });
@@ -162,10 +172,49 @@ const doodleDefinition = {
           if (this.pageActive) this.setData({ pageTransitionPhase: 'visible' });
         }, transitionDuration + 40);
         if (this.triggerEvent) this.triggerEvent('ready');
+        if (this.companionDrawing) this.beginCompanionDrawing();
       });
     };
     if (wx.nextTick) wx.nextTick(reveal);
     else setTimeout(reveal, 0);
+  },
+
+  beginCompanionDrawing() {
+    if (this.companionStartRequested) return Promise.resolve();
+    this.companionStartRequested = true;
+    // 跨日继续旧草稿不自动领取新一天的开始奖励。
+    if (this.resumingCompanionDraft && companionAdapter.getCompanionDraftStartDate() && companionAdapter.getCompanionDraftStartDate() !== require('../../services/companion-star-rules').shanghaiDate()) return Promise.resolve();
+    companionAdapter.setCompanionDraft(this.shellArt);
+    return companionAdapter.getRoomStarView().then(view => companionAdapter.recordDrawingStart(view.data)).then(result => {
+      if (!result.ok) { this.companionStartRequested = false; if (this.pageActive) this.showCanvasNotice(result.error.message, 'warning'); return result; }
+      companionAdapter.markCompanionDraftStarted();
+      if (!this.pageActive || !result.awardedStars) return result;
+      this.setData({ companionStartAward: result.awardedStars, companionStartAwardVisible: true, companionReducedMotion: this.pageTransitionDuration() <= 20 });
+      clearTimeout(this.companionStartAwardTimer);
+      this.companionStartAwardTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionStartAwardVisible: false }); }, 1700);
+      try {
+        if (wx.createInnerAudioContext) {
+          const audio = wx.createInnerAudioContext();
+          audio.src = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
+          audio.volume = 0.32; audio.obeyMuteSwitch = true;
+          this.companionStartAudio = audio;
+          if (audio.onError) audio.onError(() => this.clearCompanionFeedback());
+          this.companionStartSoundTimer = setTimeout(() => { if (this.pageActive && this.companionStartAudio) { try { this.companionStartAudio.play(); } catch (error) {} } }, 200);
+        }
+      } catch (error) {}
+      if (this.pageTransitionDuration() > 20) this.companionStartHapticTimer = setTimeout(() => { if (this.pageActive && wx.vibrateShort) { try { wx.vibrateShort({ type: 'light' }); } catch (error) {} } }, 400);
+      return result;
+    });
+  },
+  clearCompanionFeedback() {
+    clearTimeout(this.companionStartAwardTimer); clearTimeout(this.companionStartSoundTimer); clearTimeout(this.companionStartHapticTimer);
+    if (this.companionStartAudio) { try { this.companionStartAudio.stop(); this.companionStartAudio.destroy(); } catch (error) {} this.companionStartAudio = null; }
+  },
+
+  failCanvasPreparation() {
+    if (!this.pageActive || !this.companionDrawing) return;
+    this.setData({ canvasPreparationError: true, canvasReady: false, pageTransitionPhase: 'visible' });
+    this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
   },
 
   setupCanvases() {
@@ -178,18 +227,19 @@ const doodleDefinition = {
       if (setupToken !== this.canvasSetupToken) return;
       this.baseLayer = layers[0];
       this.artLayer = layers[1];
-      if (!this.baseLayer || !this.artLayer) return;
+      if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       return Promise.all([
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),
         canvas2d.loadImage(this.artLayer, shellArtService.BASE_ASSET)
       ]).then(images => {
         if (setupToken !== this.canvasSetupToken) return;
+        if (!images[0] || !images[1]) { this.failCanvasPreparation(); return; }
         this.baseImage = images[0];
         this.artMaskImage = images[1];
         this.renderAll();
         this.revealEditor();
       });
-    });
+    }).catch(() => { if (setupToken === this.canvasSetupToken) this.failCanvasPreparation(); });
   },
 
   syncViewState(extra) {
@@ -544,6 +594,7 @@ const doodleDefinition = {
   },
 
   onCanvasTouchStart(event) {
+    if (this.companionDrawing && (this.companionCompleting || this.savedForReturn)) return;
     this.collapseToolPanel();
     if (!this.artLayer) return;
     const touches = event.touches || [];
@@ -630,6 +681,7 @@ const doodleDefinition = {
   },
 
   async performPersistence(snapshot) {
+    if (this.companionDrawing) { this.companionDraft = shellArtService.cloneShellArt(snapshot); companionAdapter.setCompanionDraft(this.companionDraft); return { ok: true }; }
     if (runtime.getMode() === 'demo') {
       const result = petStore.applyConfirmedDoodle(snapshot);
       if (!result.ok) return { ok: false, message: result.message || '蛋壳没有保存成功，请重试' };
@@ -692,6 +744,13 @@ const doodleDefinition = {
   async onManualSave() {
     if (this.manualSaveTask || this.data.saveStatus === 'saving') return this.manualSaveTask;
     if (this.currentStroke) this.finishStroke();
+    if (this.companionDrawing) {
+      if (!this.data.canvasReady) { this.failCanvasPreparation(); return { ok: false }; }
+      if (this.savedForReturn) { await this.leaveEditor({ saved: true }); return { ok: true }; }
+      const task = this.completeCompanionDrawing();
+      this.manualSaveTask = task;
+      try { return await task; } finally { if (this.manualSaveTask === task) this.manualSaveTask = null; }
+    }
     if (this.editRevision === this.savedRevision) {
       this.setSaveStatus('saved');
       return { ok: true };
@@ -708,6 +767,24 @@ const doodleDefinition = {
     } finally {
       if (this.manualSaveTask === task) this.manualSaveTask = null;
     }
+  },
+
+  async completeCompanionDrawing() {
+    if (this.companionCompleting || this.pageDisposed || this.pageActive === false) return { ok: false };
+    if (!this.shellArt.operations.some(item => item.type === 'stroke' && item.tool !== 'eraser')) { this.showCanvasNotice('先画几笔吧', 'info'); return { ok: false }; }
+    this.companionCompleting = true;
+    let image;
+    try { image = await canvas2d.exportImage(this.artLayer); } catch (error) { this.companionCompleting = false; this.showCanvasNotice('画没有保存成功，请重试', 'warning'); return { ok: false }; }
+    if (this.pageDisposed || this.pageActive === false) { this.companionCompleting = false; return { ok: false }; }
+    if (!image) { this.companionCompleting = false; this.showCanvasNotice('画没有保存成功，请重试', 'warning'); return { ok: false }; }
+    const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+    if (!channel || !channel.emit) { this.companionCompleting = false; return { ok: false }; }
+    channel.emit('companionDrawingCompleted', { id: `drawing-${Date.now()}`, image, title: '一起画的画', line: '这张是我们一起画的。', date: require('../../services/companion-star-rules').shanghaiDate() });
+    companionAdapter.setCompanionDraft(null);
+    this.savedRevision = this.editRevision;
+    this.savedForReturn = true;
+    await this.leaveEditor({ saved: true });
+    return { ok: true };
   },
 
   onContinueEditing() {
@@ -728,6 +805,7 @@ const doodleDefinition = {
     this.backInProgress = true;
     this.setData({ exitConfirmVisible: false });
     await this.waitForPageExit();
+    if (this.pageDisposed) return;
     if (this.properties && this.properties.embedded) {
       this.triggerEvent('close', { saved });
       return;
@@ -769,6 +847,12 @@ const doodleDefinition = {
       await this.manualSaveTask;
       this.backInProgress = false;
     }
+    if (this.companionDrawing) {
+      if (this.pageDisposed) return;
+      if (this.savedForReturn) { await this.leaveEditor({ saved: true }); return; }
+      companionAdapter.setCompanionDraft(this.shellArt);
+      await this.leaveEditor(); return;
+    }
     if (this.editRevision !== this.savedRevision) {
       this.collapseToolPanel();
       this.dismissCanvasNotice();
@@ -779,6 +863,9 @@ const doodleDefinition = {
   },
 
   onHide() {
+    if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
+    this.clearCompanionFeedback();
+    this.setData({ companionStartAwardVisible: false });
     this.pageActive = false;
     this.clearCanvasNoticeTimers();
     this.clearColorHintTimers();
@@ -791,6 +878,10 @@ const doodleDefinition = {
   },
 
   onUnload() {
+    this.pageDisposed = true;
+    if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }
+    if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
+    this.clearCompanionFeedback();
     this.pageActive = false;
     clearTimeout(this.pageTransitionTimer);
     this.pageTransitionTimer = null;

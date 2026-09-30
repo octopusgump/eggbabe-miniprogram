@@ -35,11 +35,11 @@ const CORE_ITEMS = Object.freeze([
     key: 'memory',
     step: '04',
     title: '极简纪念册',
-    summary: '已暂停开发；只保留列表验收入口，不作为本次上线范围。',
+    summary: '房间百宝箱进入纪念册，查看回忆与活动；作品收录为运行内演示。',
     meta: '留存结果',
     symbol: '◌',
     tone: 'rose',
-    route: '/pages/iaa-memory-album-demo/iaa-memory-album-demo'
+    route: '/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room'
   })
 ]);
 

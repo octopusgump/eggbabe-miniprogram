@@ -25,7 +25,7 @@ const TODAY_SCENARIOS = Object.freeze({
     title: '玉兔在窗边画画',
     line: '这个圆有一点点歪，但我觉得它很像月亮。',
     tomorrowHint: '桌上还压着半张没有画完的纸。',
-    interactionLabel: '陪它画一会儿',
+    interactionLabel: '一起画',
     interactionFeedback: '你坐下以后，房间里好像更安静了。',
     atHome: true,
     sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_draw_day_v01.webp`,

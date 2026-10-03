@@ -1,6 +1,6 @@
 # 蛋宝宝生命周期图片生成清单
 
-> **历史清单（截至 2026-08-02），不得据此判断当前缺图或运行路径。** 当前资产要求见 `docs/设计素材/eggbabe-DESIGN.md`，实际映射见 `miniprogram/config/pre-hatch-assets.js` 与 `miniprogram/config/post-hatch-assets.js`；本文只保留早期生成记录与提示词。
+> **历史清单（截至 2026-08-02），不得据此判断当前缺图或运行路径。** 当前资产要求见 `docs/设计素材/01_蛋宝宝_设计规范.md`，实际映射见 `miniprogram/config/pre-hatch-assets.js` 与 `miniprogram/config/post-hatch-assets.js`；本文只保留早期生成记录与提示词。
 
 更新时间：2026-08-02
 依据：主 PRD §11、辅助 PRD §10.11、`lifecycle/README.md` 锁定基准。

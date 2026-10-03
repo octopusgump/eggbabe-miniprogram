@@ -160,7 +160,7 @@ assert.equal(lifeSceneWxml.includes('class="away-status-') || lifeSceneWxml.incl
 assert.equal(/away-status-card|currentState\.(?:majorLabel|label|line)/.test(lifeSceneWxml), false, '外出时不得显示地点、活动、去向或中央叙事卡');
 assert.equal(lifeSceneLogic.includes('const shouldShowStatusBubble = currentState.atHome'), true, '外出时不得触发角色动作状态对白');
 assert.equal(lifeSceneWxml.includes('scene-action-icon-image--companion') && lifeSceneWxml.includes('src="{{contextActionIcon}}" mode="aspectFit"'), true, '左下角信封使用圆形入口并保持素材比例');
-assert.equal(lifeSceneStyles.includes('.scene-action-icon-image--companion{width:112rpx;height:112rpx;border-radius:50%;filter:none}'), true, '陪伴头像尺寸必须与 112rpx 按钮一致，不得保留外围空白圈');
+assert.equal(lifeSceneStyles.includes('.scene-action-icon-image--companion{width:84rpx;height:84rpx;border-radius:50%;filter:none}'), true, '信封图标为 84rpx，在 112rpx 按钮内保留留白');
 assert.equal(lifeSceneWxml.includes('companion-unread-dot'), true, '头像按新内容显示红点，不把陪伴入口作为聊天禁用标记');
 assert.equal(lifeSceneStyles.includes('.scene-action-button--unavailable{width:88rpx;height:88rpx') && lifeSceneStyles.includes('.scene-action-button--unavailable .scene-action-icon-image--companion{width:80rpx;height:80rpx;filter:grayscale(1)'), true, '外出或不可聊天时左下角必须缩为低饱和的小状态按钮，不能继续像可聊天入口');
 assert.equal(lifeSceneLogic.includes("chatAccess.status !== 'available'"), true, '聊天入口是否可用必须读取服务端 chat_access 合同');

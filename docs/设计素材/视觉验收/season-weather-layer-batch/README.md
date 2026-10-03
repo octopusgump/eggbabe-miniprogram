@@ -1,5 +1,7 @@
 # 20 组季节天气分层资产验收
 
+> 所属主 PRD：[01 全产品](../../../主PRD/01_蛋宝宝_全产品_PRD_v3.6.md)。
+
 运行包资产：
 
 - 20 张蛋体透明 WebP：`miniprogram/.../30-character/egg/season-weather/`

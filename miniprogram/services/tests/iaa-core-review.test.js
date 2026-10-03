@@ -8,7 +8,7 @@ const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 const logic = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.js'), 'utf8');
 const template = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.wxss'), 'utf8');
-const scopeDoc = fs.readFileSync(path.resolve(root, '../docs/技术交接/iaa-core-loop-scope.md'), 'utf8');
+const scopeDoc = fs.readFileSync(path.resolve(root, '../docs/主PRD/02_蛋宝宝_IAA陪伴_PRD_v1.0.md'), 'utf8');
 
 const reviewRoute = 'pages/iaa-core-review/iaa-core-review';
 const expectedRoutes = [
@@ -37,9 +37,9 @@ for (const boundary of ['LOCAL FIXTURE', 'NO BACKEND', '正式用户不可见'])
 assert.equal(/reward|ad-state|compliance-demo|广告验收/.test(`${logic}\n${template}`), false, '验收台不得引入奖励、广告或独立合规入口');
 assert.equal(/wx\.(?:request|cloud|setStorage|getStorage)/.test(logic), false, '验收台不得联网或读写账户状态');
 assert.equal(styles.includes('background:#123719') && styles.includes('border-radius:36rpx'), true, '验收首页必须保留清晰的核心视觉层级');
-assert.equal(scopeDoc.includes('左下角是信封') && scopeDoc.includes('纪念册') && scopeDoc.includes('每日陪伴主循环'), true, '范围文档必须固定每日陪伴主循环');
+assert.equal(scopeDoc.includes('左下：圆形信封按钮') && scopeDoc.includes('纪念册') && scopeDoc.includes('今日陪伴 → 获得星星 → 明日期待 → 纪念册 → 下一次共同活动'), true, '范围文档必须固定每日陪伴主循环');
 assert.equal(/develop-only|尚未合入 main|不代表已合入 main|只在 `develop` 静态验收环境启用/.test(scopeDoc), false, '范围文档不得保留过时的 develop-only 或未合入描述');
-assert.equal(scopeDoc.includes('茶会已接通纪念册活动入口') && scopeDoc.includes('第二次确认完成并结算') && scopeDoc.includes('旅行40星仍只显示详情'), true, '范围文档必须准确列明已实现 UI 与尚未执行的机制');
+assert.equal(scopeDoc.includes('茶会已接通纪念册活动入口') && scopeDoc.includes('第二次确认完成并结算') && scopeDoc.includes('旅行 40 星当前仍只显示详情'), true, '范围文档必须准确列明已实现 UI 与尚未执行的机制');
 
 let definition;
 const previousPage = global.Page;

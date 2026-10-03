@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BACKGROUND_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/10-background/incubation-room/season-weather-full-scenes"
 EGG_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather"
 NEST_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather"
-OUTPUT_ROOT = ROOT / "docs/visual-qa/season-weather-layer-batch/previews"
+OUTPUT_ROOT = ROOT / "docs/设计素材/视觉验收/season-weather-layer-batch/previews"
 
 SCENE_KEYS = [
     "spring_clear_day",

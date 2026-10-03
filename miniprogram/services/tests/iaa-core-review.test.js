@@ -8,7 +8,7 @@ const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 const logic = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.js'), 'utf8');
 const template = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(pageRoot, 'iaa-core-review.wxss'), 'utf8');
-const scopeDoc = fs.readFileSync(path.resolve(root, '../docs/iaa-core-loop-scope.md'), 'utf8');
+const scopeDoc = fs.readFileSync(path.resolve(root, '../docs/技术交接/iaa-core-loop-scope.md'), 'utf8');
 
 const reviewRoute = 'pages/iaa-core-review/iaa-core-review';
 const expectedRoutes = [

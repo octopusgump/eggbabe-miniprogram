@@ -6,7 +6,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EGG_SOURCE = ROOT / "docs/visual-qa/egg-rotation-sample-warm-day/runtime-sample/clear-night-v2/normalized/egg_right_45.png"
+EGG_SOURCE = ROOT / "docs/设计素材/视觉验收/egg-rotation-sample-warm-day/runtime-sample/clear-night-v2/normalized/egg_right_45.png"
 SHADOW_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.webp"
 NEST_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.webp"
 EGG_OUTPUT_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather"

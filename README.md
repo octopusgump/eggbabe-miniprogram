@@ -1,6 +1,6 @@
 # eggbabe 蛋宝宝普通小程序 V3.7
 
-这是基于现有 MVP 增量收敛的微信普通小程序生产前端。全周期产品规则以 `docs/蛋宝宝小程序_V3_6_PRD.md` 为唯一主基线，`docs/eggbabe-DESIGN.md` 是 UI 与视觉判据，其他文档只作实现或参考补充。完整文档层级见 `docs/README.md`。
+这是基于现有 MVP 增量收敛的微信普通小程序生产前端。全周期产品规则以 `docs/产品需求/蛋宝宝小程序_V3_6_PRD.md` 为唯一主基线，`docs/设计素材/eggbabe-DESIGN.md` 是 UI 与视觉判据，其他文档只作实现或参考补充。完整文档层级见 `docs/README.md`。
 
 公开仓库：<https://github.com/octopusgump/eggbabe-miniprogram>
 

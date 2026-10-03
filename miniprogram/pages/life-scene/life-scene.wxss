@@ -98,7 +98,7 @@
 .scene-action-button--pressed{transform:scale(.98);box-shadow:0 5rpx 12rpx rgba(34,45,36,.15),inset 0 3rpx 6rpx rgba(96,112,91,.12)}
 .scene-action-button--unavailable{width:88rpx;height:88rpx;border-color:rgba(255,255,255,.46);background:rgba(78,84,75,.62);box-shadow:0 7rpx 18rpx rgba(34,45,36,.14)}
 .scene-action-icon-image{display:block;width:72rpx;height:72rpx;filter:drop-shadow(0 5rpx 5rpx rgba(57,65,50,.16))}
-.scene-action-icon-image--companion{width:112rpx;height:112rpx;border-radius:50%;filter:none}
+.scene-action-icon-image--companion{width:84rpx;height:84rpx;border-radius:50%;filter:none}
 .scene-action-button--unavailable .scene-action-icon-image--companion{width:80rpx;height:80rpx;filter:grayscale(1) brightness(.78) contrast(.86);opacity:.78}
 .scene-action-unavailable-badge{position:absolute;right:-12rpx;bottom:-14rpx;min-width:52rpx;padding:5rpx 8rpx;border:2rpx solid rgba(255,255,255,.9);border-radius:999rpx;background:#697267;color:#FFF;font-size:16rpx;font-weight:600;line-height:1.2;text-align:center;white-space:nowrap;box-shadow:0 4rpx 10rpx rgba(34,45,36,.16)}
 .today-companion-overlay{position:fixed;z-index:400;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(80rpx + env(safe-area-inset-top)) 30rpx calc(48rpx + env(safe-area-inset-bottom));background:rgba(29,34,30,.38);backdrop-filter:blur(5rpx)}

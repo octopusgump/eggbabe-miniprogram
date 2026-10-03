@@ -1,6 +1,6 @@
 # 蛋宝宝小程序图片续作提示词（删除旧 incubation 后）
 
-> **历史提示词，已停止执行。** 其中“五层运行时”“三屏独立背景”和透明角色姿态方案均已被当前完整场景／动作全景方案替代；不得复制本文继续生产。当前判据见 `docs/eggbabe-DESIGN.md` 与两份运行时资产配置。
+> **历史提示词，已停止执行。** 其中“五层运行时”“三屏独立背景”和透明角色姿态方案均已被当前完整场景／动作全景方案替代；不得复制本文继续生产。当前判据见 `docs/设计素材/eggbabe-DESIGN.md` 与两份运行时资产配置。
 
 下面代码块可直接完整复制到新的 Codex 对话框。
 
@@ -35,17 +35,17 @@
 二、开始前必须完整读取
 
 1. 主 PRD：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/reference/蛋宝宝_日常陪伴系统_结构说明_v0.3.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/设计素材/参考资料/蛋宝宝_日常陪伴系统_结构说明_v0.3.md
 
 重点读取 §11。
 
 2. 辅助 PRD：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/蛋宝宝小程序_V3_6_PRD.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/产品需求/蛋宝宝小程序_V3_6_PRD.md
 
 重点读取 §10.11。
 
 3. 视觉风格指南：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/reference/design/蛋宝宝_CG魔幻冒险视觉风格指南.md
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/docs/设计素材/参考资料/design/蛋宝宝_CG魔幻冒险视觉风格指南.md
 
 4. 分层规范：
 /Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/miniprogram/assets/scenes/lifecycle/README.md

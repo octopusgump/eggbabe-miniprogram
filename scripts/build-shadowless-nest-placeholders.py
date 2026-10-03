@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DAY_SOURCE = ROOT / "docs/visual-qa/egg-rotation-sample-warm-day/runtime-sample/warm-day-v2/normalized/nest_pad.png"
+DAY_SOURCE = ROOT / "docs/设计素材/视觉验收/egg-rotation-sample-warm-day/runtime-sample/warm-day-v2/normalized/nest_pad.png"
 OUTPUT_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather"
 NIGHT_KEYS = {
     "spring_clear_night",

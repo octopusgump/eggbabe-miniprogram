@@ -114,3 +114,5 @@
 @keyframes doodle-page-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes tool-options-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes exit-confirm-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}

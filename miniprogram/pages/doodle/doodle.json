@@ -1,6 +1,7 @@
 {
   "disableSwipeBack": true,
   "usingComponents": {
-    "inline-notice": "../../components/inline-notice/inline-notice"
+    "inline-notice": "../../components/inline-notice/inline-notice",
+    "companion-star": "../../components/companion-star/companion-star"
   }
 }

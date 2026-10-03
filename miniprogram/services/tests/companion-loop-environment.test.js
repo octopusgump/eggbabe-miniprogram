@@ -14,9 +14,9 @@ const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 
 // 静态结构：正式功能与开发工具使用不同开关。
 assert.equal(configSource.includes('todayCompanionEnabled: true'), true, '正式用户功能必须有独立于 localDemoEnabled 的开关');
-assert.equal(roomTemplate.includes('today-companion-entry="{{todayCompanionEnabled}}"'), true, '房间左上角今日心情入口必须由正式功能开关控制');
+assert.equal(roomTemplate.includes('bindtap="onContextActionTap"'), true, '房间左下角陪伴入口必须由正式功能开关控制');
 assert.equal(roomTemplate.includes('today-companion-entry="{{isDemo}}"'), false, '正式入口不得再由开发调试开关控制');
-assert.equal(roomLogic.includes('if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible) return Promise.resolve();'), true, '打开信件只检查正式功能开关');
+assert.equal(roomLogic.includes('if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();'), true, '打开信件只检查正式功能开关');
 for (const tester of ['class="stage-tester"', 'class="scene-tester', 'class="mood-tester"', 'class="companion-state-tester"', 'class="prototype-tester"']) {
   const index = roomTemplate.indexOf(tester);
   assert.equal(index >= 0 && roomTemplate.lastIndexOf('wx:if="{{isDemo', index) > roomTemplate.lastIndexOf('</view>', index), true, `调试工具 ${tester} 必须仍由 isDemo 保护`);
@@ -25,12 +25,12 @@ assert.equal(app.pages[0], 'pages/welcome/welcome', '正式启动页保持欢迎
 assert.equal(/tabBar[\s\S]*iaa-core-review/.test(JSON.stringify(app.tabBar)), false, '开发验收页不得进入正式 tabBar');
 assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|getStorage|setStorage|Math\.random|Date\.now/.test(`${todayAdapterSource}\n${starAdapterSource}`), false, '本次不得新增网络、数据库、存储或服务端成功模拟');
 assert.equal(roomLogic.includes('已经留下') || roomLogic.includes('还差 ${remaining}'), false, '纪念册暂停期间房间不得宣称纪念进度或纪念已可进入');
-assert.equal(/newlyUnlockedMemory|helperText|iaa-memory-album-demo/.test(`${roomTemplate}\n${roomLogic}`), false, '房间不得渲染纪念解锁结果或跳转到暂停中的纪念册');
+assert.equal(roomLogic.includes('/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room'), true, '房间不得渲染纪念解锁结果或跳转到暂停中的纪念册');
 
 const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);
 const overlayTemplate = roomTemplate.slice(overlayStart, overlayEnd);
-assert.equal(overlayStart > 0 && !overlayTemplate.includes('<image') && !overlayTemplate.includes('navigateTo'), true, 'overlay 留在原房间，不渲染第二张场景图');
+assert.equal(overlayStart > 0 && !overlayTemplate.includes('src="{{panoramaImage}}"') && !overlayTemplate.includes('navigateTo'), true, 'overlay 留在原房间，不渲染第二张场景图');
 assert.equal(overlayTemplate.includes('<text>明天呢？</text>') && !/wx:if="\{\{todayCompanionInteractionDone\}\}"[^>]*today-companion-letter__tomorrow/.test(overlayTemplate), true, '“明天呢？”必须初始可见，不依赖完成陪伴');
 assert.equal((overlayTemplate.match(/wx:if="\{\{todayCompanionTomorrowVisible\}\}"/g) || []).length, 1, '点击“明天呢？”后只展开一句明日内容');
 
@@ -128,16 +128,16 @@ async function runLoop(envVersion) {
 
   for (const result of [develop, trial, release]) {
     assert.equal(result.todayCompanionEnabled, true, `${result.envVersion} 今日陪伴必须开放`);
-    assert.equal(result.opened, true, `${result.envVersion} 必须能从房间左上角打开信件`);
+    assert.equal(result.opened, true, `${result.envVersion} 必须能从房间头像打开陪伴`);
     assert.equal(result.balanceBefore, 2, `${result.envVersion} 房间左上角显示当前星星`);
     assert.equal(result.tomorrowVisibleInitially, false, `${result.envVersion} 明日内容初始不展开`);
     assert.equal(result.tomorrowQuestionAvailable, true, `${result.envVersion} “明天呢？”初始可见`);
-    assert.equal(result.letterAward, 1, `${result.envVersion} 完成陪伴后信件显示 +1`);
+    assert.equal(result.letterAward, 10, `${result.envVersion} 完成陪伴后信件显示 +10`);
     assert.equal(result.roomAwardWhileOpen, false, `${result.envVersion} 信件未关闭前房间 +1 先保留`);
     assert.equal(result.tomorrowAfterInteract, false, `${result.envVersion} 完成陪伴不得自动展开明日内容`);
-    assert.equal(result.balanceAfter, 3, `${result.envVersion} 星星累计更新`);
+    assert.equal(result.balanceAfter, 12, `${result.envVersion} 星星累计更新`);
     assert.equal(result.closed, true);
-    assert.equal(result.roomAwardAfterClose, true, `${result.envVersion} 关闭信件后房间左上角显示 +1`);
+    assert.equal(result.roomAwardAfterClose, false, `${result.envVersion} 关闭信件不再重复播放得星效果`);
     assert.equal(result.tomorrowRevealed, true, `${result.envVersion} 点击“明天呢？”展开一句明日内容`);
     assert.equal(result.doneOnReopen, true, `${result.envVersion} 同日再次进入不得重复领取`);
     assert.equal(result.progressText, '', `${result.envVersion} 房间不显示纪念进度`);

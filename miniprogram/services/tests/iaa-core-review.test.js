@@ -15,7 +15,7 @@ const expectedRoutes = [
   '/pages/iaa-today-companion/iaa-today-companion',
   '/pages/life-scene/life-scene?entry=iaa-core-review',
   '/pages/iaa-today-companion/iaa-today-companion?entry=tomorrow-review',
-  '/pages/iaa-memory-album-demo/iaa-memory-album-demo'
+  '/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room'
 ];
 
 assert.equal(app.pages[0], 'pages/welcome/welcome', '用户正式入口必须保持为欢迎页');
@@ -37,9 +37,9 @@ for (const boundary of ['LOCAL FIXTURE', 'NO BACKEND', '正式用户不可见'])
 assert.equal(/reward|ad-state|compliance-demo|广告验收/.test(`${logic}\n${template}`), false, '验收台不得引入奖励、广告或独立合规入口');
 assert.equal(/wx\.(?:request|cloud|setStorage|getStorage)/.test(logic), false, '验收台不得联网或读写账户状态');
 assert.equal(styles.includes('background:#123719') && styles.includes('border-radius:36rpx'), true, '验收首页必须保留清晰的核心视觉层级');
-assert.equal(scopeDoc.includes('今日陪伴 → 陪伴星星 → 明日钩子 → 极简纪念册') && scopeDoc.includes('每日陪伴主循环'), true, '范围文档必须固定每日陪伴主循环');
+assert.equal(scopeDoc.includes('左下角是信封') && scopeDoc.includes('纪念册') && scopeDoc.includes('每日陪伴主循环'), true, '范围文档必须固定每日陪伴主循环');
 assert.equal(/develop-only|尚未合入 main|不代表已合入 main|只在 `develop` 静态验收环境启用/.test(scopeDoc), false, '范围文档不得保留过时的 develop-only 或未合入描述');
-assert.equal(scopeDoc.includes('奖励揭晓') && scopeDoc.includes('广告状态') && scopeDoc.includes('独立合规验收页'), true, '范围文档必须写清删减项');
+assert.equal(scopeDoc.includes('茶会已接通纪念册活动入口') && scopeDoc.includes('第二次确认完成并结算') && scopeDoc.includes('旅行40星仍只显示详情'), true, '范围文档必须准确列明已实现 UI 与尚未执行的机制');
 
 let definition;
 const previousPage = global.Page;

@@ -1,4 +1,5 @@
 <view class="page page--{{pageTransitionPhase}}">
+  <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
     <view class="doodle-nav-row">
@@ -9,12 +10,12 @@
         <text
           class="save-status save-status--{{saveStatus}}"
           aria-role="button"
-          aria-label="{{saveStatusText}}"
-          aria-disabled="{{saveStatus === 'saved' || saveStatus === 'saving'}}"
+          aria-label="{{companionDrawing ? '画好了' : saveStatusText}}"
+          aria-disabled="{{!companionDrawing && (saveStatus === 'saved' || saveStatus === 'saving')}}"
           bindtap="onManualSave"
-        >{{saveStatusText}}</text>
+        >{{companionDrawing ? '画好了' : saveStatusText}}</text>
       </view>
-      <text class="doodle-title">画我的蛋壳</text>
+      <text class="doodle-title">{{companionDrawing ? '一起画' : '画我的蛋壳'}}</text>
       <view class="doodle-nav-safe"></view>
     </view>
   </view>
@@ -77,7 +78,7 @@
         catchtouchcancel="onCanvasTouchCancel"
       ></canvas>
     </view>
-    <text wx:if="{{!canvasReady}}" class="canvas-loading">正在准备蛋壳…</text>
+    <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <view class="content" catchtap="onToolPanelTap">
       <view class="tool-section {{!toolPanelOpen ? 'tool-section--compact' : ''}}">
@@ -202,7 +203,7 @@
     >
       <cover-view class="exit-confirm-dialog" catchtap="onExitConfirmDialogTap">
         <cover-view class="exit-confirm-title">画画还没有保存</cover-view>
-        <cover-view class="exit-confirm-message {{exitConfirmErrorText ? 'exit-confirm-message--error' : ''}}">{{exitConfirmErrorText || '保存后，蛋宝宝会带着新装饰回到卧室。'}}</cover-view>
+        <cover-view class="exit-confirm-message {{exitConfirmErrorText ? 'exit-confirm-message--error' : ''}}">{{exitConfirmErrorText || (companionDrawing ? '画好后回到陪伴。' : '保存后，蛋宝宝会带着新装饰回到卧室。')}}</cover-view>
         <cover-view class="exit-confirm-actions">
           <cover-view
             class="exit-confirm-button exit-confirm-button--continue {{exitConfirmSaving ? 'exit-confirm-control--disabled' : ''}}"

@@ -1,15 +1,9 @@
 <view class="memory-page">
   <nav-bar title="纪念册"></nav-bar>
   <scroll-view class="memory-scroll" scroll-y>
-    <view class="album-heading">
-      <view>
-        <text class="page-eyebrow">MEMORIES WITH YOU</text>
-        <text class="page-title">{{title || '我们的纪念'}}</text>
-      </view>
-      <text class="mock-badge">MOCK</text>
-    </view>
-    <text class="page-subtitle">{{subtitle || '一起经历过的小事，会留在这里。'}}</text>
-
+    <view class="album-tabs"><view class="album-tab {{section === 'memories' ? 'album-tab--active' : ''}}" data-section="memories" bindtap="onSelectSection">回忆</view><view class="album-tab {{section === 'activities' ? 'album-tab--active' : ''}}" data-section="activities" bindtap="onSelectSection">活动</view></view>
+    <view wx:if="{{section === 'activities'}}" class="album-activities"><view wx:for="{{activities}}" wx:key="key" class="album-activity" data-key="{{item.key}}" bindtap="onOpenActivity"><text>{{item.title}}</text><text class="album-activity__cost">{{item.key === 'tea' && firstActivityFree ? '首次免费' : item.cost + ' 星'}}</text></view></view>
+    <block wx:else>
     <view wx:if="{{mode === modes.LOADING}}" class="state-panel" aria-live="polite">
       <view class="state-illustration">…</view>
       <text class="state-title">正在打开纪念册</text>
@@ -29,7 +23,7 @@
     </view>
 
     <view wx:else class="memory-list">
-      <view wx:for="{{memories}}" wx:key="title" class="memory-card">
+      <view wx:for="{{memories}}" wx:key="listKey" class="memory-card" data-index="{{index}}" bindtap="onOpenMemory">
         <image class="memory-card__image" src="{{item.image}}" mode="aspectFill"></image>
         <view class="memory-card__copy">
           <text class="memory-card__date">{{item.date}}</text>
@@ -39,7 +33,8 @@
       </view>
     </view>
 
-    <view class="demo-switcher">
+    </block>
+    <view wx:if="{{isDemo && !roomEntry}}" class="demo-switcher">
       <view class="demo-switcher__heading">
         <text class="demo-switcher__title">开发态页面状态</text>
         <text class="demo-switcher__version">{{contractVersion}}</text>
@@ -50,5 +45,18 @@
       <text class="demo-switcher__note">LOCAL FIXTURE · 无网络 · 无账户写入</text>
     </view>
     <view class="safe-space"></view>
+    <view wx:if="{{selectedMemory || selectedActivity}}" class="album-detail-mask" bindtap="onCloseDetail"><view class="album-detail" catchtap="noop"><view class="album-detail__close" bindtap="onCloseDetail">×</view><block wx:if="{{selectedMemory}}"><image src="{{selectedMemory.image}}" mode="aspectFit" bindtap="onPreviewMemory"></image><text>{{selectedMemory.title}}</text><text class="memory-card__line">{{selectedMemory.line}}</text><view class="album-detail__save" bindtap="onSaveMemory">保存</view></block><block wx:else><text>{{selectedActivity.title}}</text><text class="memory-card__line">{{selectedActivity.key === 'tea' && firstActivityFree ? '首次免费' : '需花费 ' + selectedActivity.cost + ' 星'}}</text><view wx:if="{{selectedActivity.key === 'tea'}}" class="album-detail__save" bindtap="onStartTea">{{tea ? '继续' : '开始'}}</view></block></view></view>
+    <view wx:if="{{teaVisible && tea}}" class="album-detail-mask" bindtap="onCloseTea"><view class="album-detail tea-detail" catchtap="noop">
+      <view class="album-detail__close" bindtap="onCloseTea">×</view>
+      <text>窗边茶会</text>
+      <image wx:if="{{!teaPhotoFailed}}" class="tea-photo {{tea.phase !== 'result' ? 'tea-photo--preload' : ''}}" src="{{tea.photo.image}}" mode="aspectFit" bindload="onTeaPhotoLoad" binderror="onTeaPhotoError"></image>
+      <block wx:if="{{teaPhotoFailed}}"><text class="memory-card__line">照片暂时打不开</text><view class="album-detail__save" bindtap="onRetryTeaPhoto">重试</view></block>
+      <block wx:elif="{{tea.phase === 'result'}}"><text class="memory-card__line">{{tea.photo.line}}</text><view class="album-detail__save" bindtap="onCollectTea">收下</view></block>
+      <block wx:else>
+        <view class="tea-options"><view wx:for="{{teaOptions}}" wx:key="key" class="tea-option {{tea.choice === item.key ? 'tea-option--selected' : ''}}" data-key="{{item.key}}" bindtap="onChooseTea">{{item.label}}</view></view>
+        <text wx:if="{{teaReply}}" class="memory-card__line tea-reply">{{teaReply}}</text>
+        <button wx:if="{{tea.phase === 'confirming'}}" class="album-detail__save tea-confirm" disabled="{{!teaPhotoReady}}" bindtap="onConfirmTea"><text class="button-label">{{tea.cost ? '确认 · 需花费 20 星' : '确认 · 免费'}}</text></button>
+      </block>
+    </view></view>
   </scroll-view>
 </view>

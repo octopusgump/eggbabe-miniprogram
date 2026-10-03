@@ -2,6 +2,7 @@
   "component": true,
   "styleIsolation": "isolated",
   "usingComponents": {
-    "inline-notice": "../inline-notice/inline-notice"
+    "inline-notice": "../inline-notice/inline-notice",
+    "companion-star": "../../components/companion-star/companion-star"
   }
 }

@@ -110,7 +110,7 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     assert.equal(log.created, 1, '可收星时打开信件即预加载音效');
     const startedAt = Date.now();
     await page.onTodayCompanionInteract();
-    assert.equal(page.data.todayCompanionAwardedStars, 1);
+    assert.equal(page.data.todayCompanionAwardedStars, 10);
     await page.onTodayCompanionInteract();
     await wait(520);
     assert.equal(log.plays.length, 1, '成功收星只播放一次音效');
@@ -125,7 +125,7 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
 
     // 回房间：只展示原 +1 与光晕，不再发声或震动。
     page.onCloseTodayCompanion();
-    assert.equal(page.data.companionStarAwardVisible, true, '关闭信件后房间左上角原 +1 出现');
+    assert.equal(page.data.companionStarAwardVisible, false, '关闭信件不再重复播放得星效果');
     // 同日重开：不再收星，也不再播放。
     await page.onOpenTodayCompanion();
     assert.equal(page.data.todayCompanionAwardedStars, 0, '重开信件不得重播收星');
@@ -178,7 +178,7 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     await page.onOpenTodayCompanion();
     await page.onTodayCompanionInteract();
     await wait(520);
-    assert.equal(page.data.todayCompanionAwardedStars, 1);
+    assert.equal(page.data.todayCompanionAwardedStars, 10);
     assert.equal(log.plays.length, 1, '减少动态效果时仍按系统静音规则播放音效');
     assert.equal(log.vibrations.length, 0, '减少动态效果时不震动');
     page.onUnload();

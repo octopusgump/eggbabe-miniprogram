@@ -1646,7 +1646,8 @@ Page({
         if (!completion.ok) { this.setData({ todayCompanionInteractionError: completion.error.message }); return; }
         if (!this.pageActive) return;
         this.completedCompanionDrawing = null;
-        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: memory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: memory.line, todayCompanionAwardedStars: completion.awardedStars });
+        const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line: completion.drawingGift.line }) : memory;
+        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: completedMemory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: completedMemory.line, todayCompanionAwardedStars: completion.awardedStars });
         if (completion.awardedStars > 0) this.playStarAwardFeedback();
         return this.loadCompanionStar({ deferAward: true });
       });

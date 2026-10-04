@@ -7,7 +7,10 @@ const paperContext={clearRect(){},save(){},restore(){},fillRect(...args){paintCa
 shellService.drawEggArt(paperContext,null,300,300,{operations:[{type:'stroke',tool:'brush',color:'#526B4D',width:.01,points:[{x:.02,y:.02}]}]},null,true);
 assert(paintCalls.length,'纸角笔迹必须保留');
 const layout=require('fs').readFileSync(require('path').join(__dirname,'../../pages/doodle/doodle.wxml'),'utf8');
-assert(layout.includes('theme-hint--empty') && !layout.includes('themeName && !themeResultVisible && themeStepImage'),'跳过所有步骤后保留提示区高度，避免画纸位移导致触点偏移');
+const styles=require('fs').readFileSync(require('path').join(__dirname,'../../pages/doodle/doodle.wxss'),'utf8');
+assert.match(styles,/\.page--theme \.preview \{ flex:0 0 60%/);
+assert.match(styles,/\.page--theme \.egg-canvas-stack--paper \{[^}]*width:100%; height:100%; border:0/);
+assert(layout.includes('themeReferenceImage') && !layout.includes('onNextThemeStep'),'完整参考图直接展示，不保留三步按钮');
 
 const originalSetTimeout=global.setTimeout, originalClearTimeout=global.clearTimeout;
 const timers=new Map();let sequence=0;
@@ -35,13 +38,9 @@ async function run(){
   const offer=stars.getThemeInvitation();
   assert.equal(offer.theme.id,'K-R01');
   editor.onLoad({entry:'companion',theme:offer.id});
-  assert.equal(editor.data.themeFullImage,'','开始前不向可见页面提供完整画作');
-  assert.equal(editor.data.themeStepImage,theme.steps[0].image);
-  editor.onNextThemeStep();editor.onNextThemeStep();editor.onNextThemeStep();
-  assert.equal(editor.data.themeStepImage,'','三步可全部跳过，仍能自由发挥');
-  assert.equal(editor.data.themeStep,3);
+  assert.equal(editor.data.themeReferenceImage,theme.artwork,'进入后直接展示完整单色参考图');
   await editor.beginCompanionDrawing();
-  assert.equal((await editor.completeCompanionDrawing()).ok,false,'跳过全部提示但空白仍不能完成');
+  assert.equal((await editor.completeCompanionDrawing()).ok,false,'有参考图但空白仍不能完成');
   editor.shellArt={operations:[{type:'stroke',tool:'brush',points:[{x:1,y:1}]}]};
   canvas.exportImage=async()=>{throw Error('export failure');};
   assert.equal((await editor.completeCompanionDrawing()).ok,false);
@@ -77,6 +76,6 @@ async function run(){
   assert.equal((await stars.getRoomStarView()).data.star.balance,settled,'加载重试或提前关闭不重抽和重复发奖');
   assert.equal(stars.getMemories().length,1);
   editor.clearCompanionFeedback();
-  console.log('画画页三步跳过、空白拦截、导出失败、原画自动保存、PNG揭晓顺序、加载重试和提前关闭通过。');
+  console.log('画画页完整参考、空白拦截、导出失败、原画自动保存、PNG揭晓顺序、加载重试和提前关闭通过。');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{themes.forEach((t,i)=>t.approved=approvals[i]);Math.random=oldRandom;canvas.exportImage=oldExport;global.setTimeout=originalSetTimeout;global.clearTimeout=originalClearTimeout;});

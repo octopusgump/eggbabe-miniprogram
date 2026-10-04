@@ -1,4 +1,4 @@
-<view class="page page--{{pageTransitionPhase}}">
+<view class="page page--{{pageTransitionPhase}} {{companionDrawing ? 'page--companion' : ''}} {{themeName ? 'page--theme' : ''}}">
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
@@ -20,9 +20,9 @@
     </view>
   </view>
 
-  <view wx:if="{{themeName && !themeResultVisible}}" class="theme-hint {{!themeStepImage ? 'theme-hint--empty' : ''}}">
-    <image wx:if="{{themeStepImage}}" src="{{themeStepImage}}" mode="aspectFit"></image>
-    <view class="theme-hint-actions"><text bindtap="onNextThemeStep">跳过这步</text><text bindtap="onNextThemeStep">下一步</text></view>
+  <view wx:if="{{themeName}}" class="theme-reference">
+    <text>{{themeName}}</text>
+    <image src="{{themeReferenceImage}}" mode="aspectFit"></image>
   </view>
   <view wx:if="{{themeResultVisible}}" class="theme-result theme-result--{{themeRevealPhase}} {{companionReducedMotion ? 'theme-result--reduced' : ''}}">
     <text class="theme-result-close" bindtap="onCloseThemeResult" aria-role="button" aria-label="关闭">×</text>

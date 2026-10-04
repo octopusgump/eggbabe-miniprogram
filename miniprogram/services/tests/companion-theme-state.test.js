@@ -18,7 +18,7 @@ assert.equal(readyThemes(rabbit,THEMES.filter(t=>!t.approved)).length,0,'其余�
 assert.deepEqual(readyThemes(rabbit, catalog).map(t => t.id), ['duck', 'bell']);
 assert.deepEqual(readyThemes(koi, catalog).map(t => t.id), ['bell', 'pinwheel']);
 assert.equal(readyThemes(rabbit, [{...catalog[0], approved: false}]).length, 0);
-assert.equal(readyThemes(rabbit, [{...catalog[0], steps: []}]).length, 0);
+assert.equal(readyThemes(rabbit, [{...catalog[0], steps: []}]).length, 1);
 assert.equal(readyThemes(rabbit, [{...catalog[0], artwork: '/assets/four-view.webp'}]).length, 0);
 let state = createThemeState({catalog});
 const today = state.invitation(rabbit, '2026-10-04');

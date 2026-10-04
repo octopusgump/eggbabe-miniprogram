@@ -33,9 +33,7 @@ for (const id of ['K-R01', 'K-K03', 'K-A06']) {
 }
 function isReady(theme) {
   return Boolean(theme && theme.approved && theme.id && theme.name &&
-    /^\/assets\/.+\.png$/i.test(theme.artwork || '') &&
-    Array.isArray(theme.steps) && theme.steps.length === 3 &&
-    theme.steps.every(step => step && /^\/assets\/.+\.png$/i.test(step.image || '')));
+    /^\/assets\/.+\.png$/i.test(theme.artwork || ''));
 }
 function readyThemes(pet, catalog) {
   const key = petKey(pet);

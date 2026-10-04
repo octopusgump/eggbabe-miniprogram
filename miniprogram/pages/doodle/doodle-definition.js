@@ -93,8 +93,7 @@ const doodleDefinition = {
     canvasNoticeTone: 'info',
     canvasNoticeVisible: false,
     themeName: '',
-    themeStep: 0,
-    themeStepImage: '',
+    themeReferenceImage: '',
     themeResultVisible: false,
     themeRevealPhase: 'original',
     themeOriginalImage: '',
@@ -117,8 +116,7 @@ const doodleDefinition = {
       this.themeUnavailable = !started.ok;
       if (started.ok) {
         this.themeDrawing = started.data;
-        this.setData({ themeName: started.data.theme.name });
-        this.syncThemeStep();
+        this.setData({ themeName: started.data.theme.name, themeReferenceImage: started.data.theme.artwork });
       }
     }
     this.pageActive = true;
@@ -806,19 +804,6 @@ const doodleDefinition = {
     }
   },
 
-  syncThemeStep() {
-    if (!this.themeDrawing) return;
-    const step = this.themeDrawing.step;
-    this.setData({ themeStep: step, themeStepImage: step < 3 ? this.themeDrawing.theme.steps[step].image : '' });
-  },
-  onNextThemeStep() {
-    if (!this.themeDrawing || this.savedForReturn) return;
-    const step = Math.min(3, this.themeDrawing.step + 1);
-    if (companionAdapter.advanceThemeStep(this.themeDrawing.id, step)) {
-      this.themeDrawing.step = step;
-      this.syncThemeStep();
-    }
-  },
   clearThemeRevealTimers() {
     (this.themeRevealTimers || []).forEach(clearTimeout);
     this.themeRevealTimers = [];

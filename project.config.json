@@ -669,6 +669,14 @@
       {
         "value": "assets/tab/egg.png",
         "type": "file"
+      },
+      {
+        "type": "folder",
+        "value": "assets/scenes/lifecycle/post-hatch/50-overlays/postcards/_candidates"
+      },
+      {
+        "type": "folder",
+        "value": "services/tests"
       }
     ],
     "include": []

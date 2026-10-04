@@ -463,7 +463,7 @@ Page({
       companionStateTesterOptions: companionStateTesterOptions(pet, dailyWindowEnvironment)
     });
     try { this.memoryGuideShown = Boolean(wx.getStorageSync('eggbabe_memory_guide_seen_v1')); } catch (error) {}
-    starAdapter.configureRoom(pet.id);
+    starAdapter.configureRoom(pet.id, pet);
     this.scheduleEnvironmentRefresh();
     this.loadCompanionStar();
     this.loadSnapshot();
@@ -500,6 +500,7 @@ Page({
   },
 
   onOpenTodayCompanion() {
+    this.syncPendingPaperPhoto();
     if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
     this.companionOpening = true;
     analytics.track('room_element_interaction', {
@@ -571,7 +572,7 @@ Page({
       todayCompanionInteractionError: '',
       todayCompanionAwardedStars: 0
     });
-    return starAdapter.recordCompanion(starView).then(result => {
+    return starAdapter.recordCompanion(starView, { paper: Boolean(this.data.currentState && !this.data.currentState.atHome) }).then(result => {
       if (!this.pageActive) { this.pendingCompanionResult = result; return result; }
       return this.applyCompanionInteractionResult(result);
     });
@@ -583,6 +584,7 @@ Page({
       return Promise.resolve(result);
     }
     const awardedStars = Number(result.awardedStars || 0);
+    if (result.paperPhoto) this.setData({ pendingCompanionMemory: result.paperPhoto, companionPhotoReady: false, companionPhotoFailed: false });
     const view = this.data.todayCompanionView;
     this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionPending: false, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: view && view.today ? view.today.interactionFeedback : '', todayCompanionInteractionError: '', todayCompanionAwardedStars: awardedStars });
     if (awardedStars > 0) this.playStarAwardFeedback();
@@ -1335,6 +1337,7 @@ Page({
     this.letterAudio = null;
   },
   maybeShowDailyCompanion() {
+    this.syncPendingPaperPhoto();
     if (!this.data.todayCompanionEnabled || !this.pageActive || !this.data.currentState || !this.data.sceneEntered || !this.data.initialViewportReady || this.data.error) return;
     const date = require('../../services/companion-star-rules').shanghaiDate();
     if (this.letterDate !== date) {
@@ -1376,17 +1379,31 @@ Page({
       fail: () => { this.returningFromChild = false; this.showSystemNotice('纪念册没有打开，请重试', 'warning'); }
     });
   },
+  onCompanionPhotoLoad() { this.setData({ companionPhotoReady: true, companionPhotoFailed: false }); },
+  onCompanionPhotoError() { this.setData({ companionPhotoReady: false, companionPhotoFailed: true }); },
+  onRetryCompanionPhoto() { this.setData({ companionPhotoFailed: false }); },
   onPreviewCompanionMemory() {
     const memory = this.data.pendingCompanionMemory;
     if (memory && wx.previewImage) wx.previewImage({ urls: [memory.image], current: memory.image });
   },
   onCollectCompanionMemory() {
-    if (!starAdapter.collectMemory(this.data.pendingCompanionMemory)) return;
+    const photo = this.data.pendingCompanionMemory;
+    if (!photo) return;
+    if (photo.source === 'paper') {
+      if (!this.data.companionPhotoReady || this.data.companionPhotoFailed || !starAdapter.collectPhoto(photo.id).ok) return;
+    } else if (!starAdapter.collectMemory(photo)) return;
     this.setData({ pendingCompanionMemory: null, memoryGuideVisible: !this.memoryGuideShown });
     this.memoryGuideShown = true;
     this.onCloseTodayCompanion();
   },
+  syncPendingPaperPhoto() {
+    const photo = this.data.pendingCompanionMemory;
+    if (!photo || photo.source !== 'paper') return;
+    const today = require('../../services/companion-star-rules').shanghaiDate();
+    if (photo.date !== today || !starAdapter.getPendingPhotos().some(item => item.id === photo.id)) this.setData({ pendingCompanionMemory: null });
+  },
   onTodayCompanionAction() {
+    this.syncPendingPaperPhoto();
     if (this.data.todayCompanionInteractionPending || this.data.companionNavigating || this.data.pendingCompanionMemory) return;
     if (this.data.currentState && !this.data.currentState.atHome) return this.onTodayCompanionInteract();
     this.returningFromChild = true;
@@ -1624,6 +1641,7 @@ Page({
   },
 
   onShow() {
+    this.syncPendingPaperPhoto();
     const resuming = Boolean(this.hasShownOnce);
     this.hasShownOnce = true;
     this.pageActive = true;
@@ -1646,7 +1664,8 @@ Page({
         if (!completion.ok) { this.setData({ todayCompanionInteractionError: completion.error.message }); return; }
         if (!this.pageActive) return;
         this.completedCompanionDrawing = null;
-        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: memory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: memory.line, todayCompanionAwardedStars: completion.awardedStars });
+        const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line: completion.drawingGift.line }) : memory;
+        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: completedMemory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: completedMemory.line, todayCompanionAwardedStars: completion.awardedStars });
         if (completion.awardedStars > 0) this.playStarAwardFeedback();
         return this.loadCompanionStar({ deferAward: true });
       });

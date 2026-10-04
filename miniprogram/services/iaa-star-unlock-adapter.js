@@ -1,4 +1,9 @@
+const { createPhotoState } = require('./companion-photo-state');
+const photoCatalog = require('./companion-photo-catalog');
+let photoState = createPhotoState();
+let roomPet = null;
 const fixture = require('../fixtures/iaa-star-unlock');
+const { decideDrawingGift } = require('./companion-drawing-gift');
 
 const { dailyStars, shanghaiDate } = require('./companion-star-rules');
 let roomPreviewView = null;
@@ -7,9 +12,12 @@ let collectedMemories = [];
 let companionDraft = null;
 let companionDraftStartDate = null;
 let completedDrawingIds = new Set();
+let firstDrawingGiftDone = false;
+let drawingGiftResults = new Map();
 let activityState = { current: null, firstResultSeen: false };
-function configureRoom(petId) {
-  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); activityState = { current: null, firstResultSeen: false }; }
+function configureRoom(petId, pet) {
+  roomPet = pet || roomPet;
+  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); photoState = createPhotoState(); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
 }
 function getMemories() { return clone(collectedMemories); }
 function collectMemory(memory) {
@@ -65,33 +73,75 @@ function resetRoomStarView(state) {
   ensureDaily(roomPreviewView);
   return { ok: true, data: clone(roomPreviewView) };
 }
-function settle(view, kind, drawingId) {
+function settle(view, kind, drawingId, options) {
   if (!view || !view.star || !view.star.dailyClaimStatus) return Promise.resolve({ ok: false, error: { code: 'INVALID_LOCAL_VIEW', message: '这次陪伴还没有准备好。' } });
   if (view.star.dailyClaimStatus === 'ERROR') return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
   const current = ensureDaily(clone(roomPreviewView || view));
   const star = current.star;
   let awardedStars = 0;
   let effectiveAdded = false;
+  let giftStars = 0;
+  let drawingGift = drawingId ? drawingGiftResults.get(drawingId) || null : null;
   const alreadyCompleted = (kind === 'complete' && drawingId && completedDrawingIds.has(drawingId)) || (kind === 'ordinary' && star.noteCollected);
   if (!alreadyCompleted) {
     if (kind !== 'complete' && !star.baseClaimed) { awardedStars = star.dailyBasis; star.baseClaimed = true; }
-    if (kind === 'complete' && !star.drawingBonusClaimed) { awardedStars = star.dailyBasis; star.drawingBonusClaimed = true; }
+    if (kind === 'complete' && !star.drawingBonusClaimed) {
+      drawingGift = decideDrawingGift(!firstDrawingGiftDone, options && options.random);
+      awardedStars = star.dailyBasis;
+      giftStars = drawingGift.stars;
+      star.drawingBonusClaimed = true;
+      firstDrawingGiftDone = true;
+      if (drawingId) drawingGiftResults.set(drawingId, clone(drawingGift));
+    }
     if (kind !== 'start' && !star.effectiveDone) { star.companionDays = Number(star.companionDays || 0) + 1; star.effectiveDone = true; effectiveAdded = true; }
     if (kind === 'ordinary') star.noteCollected = true;
     if (kind === 'complete' && drawingId) completedDrawingIds.add(drawingId);
   }
-  star.balance = Number(star.balance || 0) + awardedStars;
+  star.balance = Number(star.balance || 0) + awardedStars + giftStars;
   star.dailyClaimStatus = star.baseClaimed ? (star.balance >= current.nextMemory.unlockedAtStar ? 'UNLOCKED' : 'CLAIMED') : 'AVAILABLE';
   current.progress = fixture.progressPresentation(star.balance, star.nextUnlockAt);
   // 保留旧 demo 合同，不在正式纪念册自动收录其样例照片。
   current.newlyUnlockedMemory = awardedStars > 0 && star.balance >= current.nextMemory.unlockedAtStar ? clone(current.nextMemory) : null;
   current.helperText = star.effectiveDone ? '今天的陪伴已经记下。' : '画好了再记下今天的陪伴。';
   roomPreviewView = clone(current);
-  return Promise.resolve({ ok: true, data: current, awardedStars, effectiveAdded, duplicate: awardedStars === 0 && !effectiveAdded });
+  return Promise.resolve({ ok: true, data: current, awardedStars: awardedStars + giftStars, baseAwardedStars: awardedStars, giftStars, drawingGift: drawingGift ? clone(drawingGift) : null, effectiveAdded, duplicate: awardedStars === 0 && giftStars === 0 && !effectiveAdded });
 }
-function recordCompanion(view) { return settle(view, 'ordinary'); }
+function recordCompanion(view, options) {
+  return settle(view, 'ordinary').then(result => {
+    if (result.ok && options && options.paper) result.paperPhoto = photoState.offer(photoCatalog.eligiblePhotos(roomPet, shanghaiDate()), options);
+    return result;
+  });
+}
+function getPendingPhotos() { return photoState.getPending(); }
+function collectPhoto(id) {
+  const photo = photoState.find(id);
+  if (!photo) return { ok: false };
+  const collected = Object.assign({}, photo, { collected: true });
+  if (!collectMemory(collected)) return { ok: false };
+  photoState.receive(id);
+  return { ok: true, memory: collected };
+}
+function getExchangePhoto() {
+  const photo = photoCatalog.eligiblePhotos(roomPet, shanghaiDate()).find(item => item.kind === 'exchange');
+  if (!photo) return null;
+  return Object.assign({}, clone(photo), { owned: Boolean(photoState.find(photo.id)), cost: 10 });
+}
+function exchangePhoto(id, ready) {
+  const photo = getExchangePhoto();
+  if (!photo || photo.id !== id) return { ok: false, error: { code: 'PHOTO_NOT_READY' } };
+  if (photo.owned) return { ok: true, duplicate: true, memory: photoState.find(id) };
+  if (!ready) return { ok: false, error: { code: 'PHOTO_NOT_READY' } };
+  if (!roomPreviewView || Number(roomPreviewView.star.balance || 0) < 10) return { ok: false, error: { code: 'INSUFFICIENT_STARS' } };
+  deductActivityStars(10);
+  const memory = photoState.purchase(photo);
+  collectMemory(memory);
+  return { ok: true, memory };
+}
 function recordDrawingStart(view) { return settle(view, 'start'); }
-function recordDrawingComplete(view, drawingId) { return settle(view, 'complete', drawingId); }
+function recordDrawingComplete(view, drawingId, options) {
+  if (!drawingId || typeof drawingId !== 'string') return Promise.resolve({ ok: false, error: { code: 'DRAWING_ID_REQUIRED', message: '这幅画还没有准备好，请再试一次。' } });
+  return settle(view, 'complete', drawingId, options);
+}
 function getCompanionDraft() { return companionDraft ? clone(companionDraft) : null; }
 function setCompanionDraft(art) { companionDraft = art ? clone(art) : null; if (!art) companionDraftStartDate = null; }
 function getCompanionDraftStartDate() { return companionDraftStartDate; }
@@ -129,18 +179,23 @@ function confirmTeaActivity() {
   if (!current) return { ok: false, error: { code: 'NO_ACTIVITY' } };
   if (current.phase === 'result') return { ok: true, duplicate: true, data: getActivityState() };
   if (current.phase !== 'confirming' || !current.choice) return { ok: false, error: { code: 'CHOICE_REQUIRED' } };
+  ensureDaily(roomPreviewView);
   if (!current.paid) {
     if (Number(roomPreviewView.star.balance || 0) < current.cost) return { ok: false, error: { code: 'INSUFFICIENT_STARS' } };
     deductActivityStars(current.cost);
     current.paid = true;
   }
+  const star = roomPreviewView.star;
+  const effectiveAdded = !star.effectiveDone;
+  if (effectiveAdded) { star.companionDays = Number(star.companionDays || 0) + 1; star.effectiveDone = true; }
+  current.completedDate = shanghaiDate();
   current.phase = 'result';
-  return { ok: true, data: getActivityState() };
+  return { ok: true, effectiveAdded, data: getActivityState() };
 }
 function collectTeaActivity() {
   const current = activityState.current;
   if (!current || current.phase !== 'result') return { ok: false, error: { code: 'RESULT_REQUIRED' } };
-  const memory = Object.assign({}, current.photo, { id: current.id, date: shanghaiDate() });
+  const memory = Object.assign({}, current.photo, { id: current.id, date: current.completedDate || shanghaiDate() });
   if (!collectMemory(memory)) return { ok: false, error: { code: 'INVALID_ACTIVITY_PHOTO' } };
   activityState.firstResultSeen = true;
   activityState.current = null;
@@ -158,7 +213,12 @@ module.exports = {
   contractVersion: 'iaa-mvp-v1',
   source: 'local-fixture',
   configureRoom,
+  getRoomIdentity: () => roomPetId,
   getMemories,
+  getPendingPhotos,
+  collectPhoto,
+  getExchangePhoto,
+  exchangePhoto,
   collectMemory,
   getStarUnlockView,
   getRoomStarView,

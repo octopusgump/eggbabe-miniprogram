@@ -32,8 +32,8 @@ async function main(){
   assert.equal(start.data.star.effectiveDone,false);
   assert.equal((await adapter.recordDrawingStart(input)).awardedStars,0,'旧快照不重复发开始奖励');
   const done=await adapter.recordDrawingComplete(input,'work-1');
-  assert.equal(done.awardedStars,11);assert.equal(done.data.star.companionDays,3,'完成才增加一天');
-  assert.equal(done.data.star.balance,24);assert.equal(done.data.star.dailyBasis,11);
+  assert.equal(done.awardedStars,14);assert.equal(done.baseAwardedStars,11);assert.equal(done.giftStars,3);assert.equal(done.data.star.companionDays,3,'完成才增加一天');
+  assert.equal(done.data.star.balance,27);assert.equal(done.data.star.dailyBasis,11);
   assert.equal((await adapter.recordDrawingComplete(input,'work-1')).awardedStars,0);
   assert.equal((await adapter.recordDrawingComplete(input,'work-2')).awardedStars,0,'第二幅仍可收藏但没有额外奖励');
   assert.equal((await adapter.recordCompanion(input)).data.star.companionDays,3,'普通动作不会重复计日');
@@ -41,7 +41,7 @@ async function main(){
   adapter.configureRoom('ordinary-first');
   const ordinary=await adapter.recordCompanion(seed(6));assert.equal(ordinary.awardedStars,12);
   const subsequentStart=await adapter.recordDrawingStart(ordinary.data);assert.equal(subsequentStart.awardedStars,0);
-  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,12);assert.equal(bonus.data.star.companionDays,7);
+  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,15);assert.equal(bonus.baseAwardedStars,12);assert.equal(bonus.data.star.companionDays,7);
 
   adapter.configureRoom('midnight-draft');
   const yesterday=await adapter.recordDrawingStart(seed(2));assert.equal(yesterday.awardedStars,11);
@@ -51,7 +51,7 @@ async function main(){
   await resumed.beginCompanionDrawing();
   const todayView=(await adapter.getRoomStarView()).data;
   assert.equal(todayView.star.baseClaimed,false,'跨日继续旧草稿不自动发新一天基础奖励');
-  const nextDone=await adapter.recordDrawingComplete(todayView,'midnight-work');assert.equal(nextDone.awardedStars,11);assert.equal(nextDone.data.star.companionDays,3);
+  const nextDone=await adapter.recordDrawingComplete(todayView,'midnight-work');assert.equal(nextDone.awardedStars,14);assert.equal(nextDone.baseAwardedStars,11);assert.equal(nextDone.data.star.companionDays,3);
   assert.equal(nextDone.data.star.baseClaimed,false);
   assert.equal(nextDone.data.star.noteCollected,false,'完成画画不冒充已经收好纸条');
   assert.equal((await adapter.recordDrawingStart(nextDone.data)).awardedStars,11,'之后主动进入新画作才发今日基础奖励');
@@ -108,8 +108,8 @@ async function main(){
   assert.equal(adapter.getCompanionDraft(),null,'画好后清空旧草稿，下一幅从空白开始');
   parent.startClock=()=>{};parent.refreshEnvironment=()=>{};parent.loadSnapshot=()=>{};parent.scheduleEnvironmentRefresh=()=>{};
   parent.onShow();await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(parent.data.pendingCompanionMemory.image,'/tmp/local-drawing.png');assert.equal(parent.data.todayCompanionAwardedStars,10);
-  assert.equal(parent.data.companionStarBalance,22);assert.equal(parent.data.companionDays,1);
+  assert.equal(parent.data.pendingCompanionMemory.image,'/tmp/local-drawing.png');assert.equal(parent.data.todayCompanionAwardedStars,13);assert.equal(parent.data.todayCompanionInteractionFeedback,'一起画完啦。这三颗小星星，送给你。');
+  assert.equal(parent.data.companionStarBalance,25);assert.equal(parent.data.companionDays,1);
   parent.onCollectCompanionMemory();assert.equal(adapter.getMemories().length,1);assert.equal(parent.data.todayCompanionVisible,false);
   parent.clearStarAwardFeedback();editor.clearCompanionFeedback();
   adapter.configureRoom('background-note');

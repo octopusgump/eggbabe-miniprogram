@@ -20,8 +20,8 @@
     </view>
   </view>
 
-  <view wx:if="{{themeName && !themeResultVisible && themeStepImage}}" class="theme-hint">
-    <image src="{{themeStepImage}}" mode="aspectFit"></image>
+  <view wx:if="{{themeName && !themeResultVisible}}" class="theme-hint {{!themeStepImage ? 'theme-hint--empty' : ''}}">
+    <image wx:if="{{themeStepImage}}" src="{{themeStepImage}}" mode="aspectFit"></image>
     <view class="theme-hint-actions"><text bindtap="onNextThemeStep">跳过这步</text><text bindtap="onNextThemeStep">下一步</text></view>
   </view>
   <view wx:if="{{themeResultVisible}}" class="theme-result theme-result--{{themeRevealPhase}} {{companionReducedMotion ? 'theme-result--reduced' : ''}}">
@@ -70,7 +70,7 @@
     </view>
 
     <view class="preview-aura"></view>
-    <view class="egg-canvas-stack" style="transform:scale({{canvasScale}});">
+    <view class="egg-canvas-stack {{companionDrawing ? 'egg-canvas-stack--paper' : ''}}" style="transform:scale({{canvasScale}});">
       <canvas
         type="2d"
         id="eggBaseCanvas"

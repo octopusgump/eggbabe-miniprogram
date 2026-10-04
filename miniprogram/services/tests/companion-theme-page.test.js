@@ -1,4 +1,14 @@
 const assert = require('assert');
+
+// 破壳后画纸不加载蛋底图，也不裁切掉纸角的真实笔迹。
+const shellService=require('../egg-shell-art');
+const paintCalls=[];
+const paperContext={clearRect(){},save(){},restore(){},fillRect(...args){paintCalls.push(args);},clip(){throw Error('paper must not clip to egg');},drawImage(){throw Error('paper must not mask to egg');}};
+shellService.drawEggArt(paperContext,null,300,300,{operations:[{type:'stroke',tool:'brush',color:'#526B4D',width:.01,points:[{x:.02,y:.02}]}]},null,true);
+assert(paintCalls.length,'纸角笔迹必须保留');
+const layout=require('fs').readFileSync(require('path').join(__dirname,'../../pages/doodle/doodle.wxml'),'utf8');
+assert(layout.includes('theme-hint--empty') && !layout.includes('themeName && !themeResultVisible && themeStepImage'),'跳过所有步骤后保留提示区高度，避免画纸位移导致触点偏移');
+
 const originalSetTimeout=global.setTimeout, originalClearTimeout=global.clearTimeout;
 const timers=new Map();let sequence=0;
 global.setTimeout=(fn,delay)=>{const id=++sequence;timers.set(id,{fn,delay});return id;};

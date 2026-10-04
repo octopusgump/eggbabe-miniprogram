@@ -250,6 +250,13 @@ const doodleDefinition = {
       this.baseLayer = layers[0];
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
+      if (this.companionDrawing) {
+        this.baseImage = null;
+        this.artMaskImage = null;
+        this.renderAll();
+        this.revealEditor();
+        return;
+      }
       return Promise.all([
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),
         canvas2d.loadImage(this.artLayer, shellArtService.BASE_ASSET)
@@ -316,6 +323,13 @@ const doodleDefinition = {
 
   renderBase() {
     if (!this.baseLayer) return;
+    if (this.companionDrawing) {
+      const { context, width, height } = this.baseLayer;
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = '#FFFCF5';
+      context.fillRect(0, 0, width, height);
+      return;
+    }
     shellArtService.drawEggBase(
       this.baseLayer.context,
       this.baseImage,
@@ -333,7 +347,8 @@ const doodleDefinition = {
       this.artLayer.width,
       this.artLayer.height,
       this.shellArt,
-      activeOperation
+      activeOperation,
+      this.companionDrawing
     );
   },
 

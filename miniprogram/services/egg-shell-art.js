@@ -371,10 +371,10 @@ function drawEraserStroke(context, operation, width, height) {
   context.restore();
 }
 
-function drawEggArt(context, image, width, height, shellInput, activeOperation) {
+function drawEggArt(context, image, width, height, shellInput, activeOperation, paperMode) {
   const shell = normalizeShellArt(shellInput);
   context.clearRect(0, 0, width, height);
-  if (!image) {
+  if (!image && !paperMode) {
     context.save();
     eggPath(context, width, height);
     context.clip();
@@ -384,6 +384,7 @@ function drawEggArt(context, image, width, height, shellInput, activeOperation) 
     if (operation.type === 'stroke' && operation.tool === 'eraser') drawEraserStroke(context, operation, width, height);
     if (operation.type === 'stroke' && operation.tool === 'brush') drawPixelStroke(context, operation, width, height);
   });
+  if (paperMode) return;
   if (!image) {
     context.restore();
     return;

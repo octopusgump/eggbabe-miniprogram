@@ -325,6 +325,7 @@ Page({
     companionStarProgressText: '',
     companionStarAwardVisible: false,
     todayCompanionVisible: false,
+    companionThemeInvitation: null,
     todayCompanionView: null,
     todayCompanionStarView: null,
     todayCompanionInteractionPending: false,
@@ -526,6 +527,7 @@ Page({
         companionLetterArriving: false,
         companionNavigating: false,
         toolboxVisible: false,
+        companionThemeInvitation: this.data.currentState && this.data.currentState.atHome ? starAdapter.getThemeInvitation() : null,
         todayCompanionView: todayResult.data,
         todayCompanionStarView: starResult.data,
         todayCompanionInteractionPending: false,
@@ -1409,8 +1411,14 @@ Page({
     this.returningFromChild = true;
     this.setData({ companionNavigating: true });
     wx.navigateTo({
-      url: '/pages/doodle/doodle?entry=companion',
-      events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
+      url: '/pages/doodle/doodle?entry=companion' + (() => {
+        const invitation = starAdapter.getThemeInvitation();
+        return invitation ? `&theme=${encodeURIComponent(invitation.id)}` : '';
+      })(),
+      events: {
+        companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; },
+        companionThemeDrawingCompleted: completion => { this.completedCompanionTheme = completion; }
+      },
       fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false }); this.showSystemNotice('画纸没有打开，请重试', 'warning'); }
     });
   },
@@ -1658,6 +1666,16 @@ Page({
     this.loadCompanionStar({ deferAward: true }).then(result => {
       if (!this.pageActive || !result || !result.ok) return;
       this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.effectiveDone) });
+      if (this.completedCompanionTheme) {
+        const completion = this.completedCompanionTheme;
+        this.completedCompanionTheme = null;
+        this.setData({ todayCompanionVisible: true, companionThemeInvitation: null,
+          todayCompanionStarView: result.data, todayCompanionInteractionDone: true,
+          todayCompanionInteractionFeedback: completion.themeResult.line,
+          todayCompanionAwardedStars: completion.awardedStars });
+        if (completion.awardedStars > 0) this.playStarAwardFeedback();
+        return this.loadCompanionStar({ deferAward: true });
+      }
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {

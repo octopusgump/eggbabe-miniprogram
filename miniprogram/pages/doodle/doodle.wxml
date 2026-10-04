@@ -20,6 +20,17 @@
     </view>
   </view>
 
+  <view wx:if="{{themeName && !themeResultVisible && themeStepImage}}" class="theme-hint">
+    <image src="{{themeStepImage}}" mode="aspectFit"></image>
+    <view class="theme-hint-actions"><text bindtap="onNextThemeStep">跳过这步</text><text bindtap="onNextThemeStep">下一步</text></view>
+  </view>
+  <view wx:if="{{themeResultVisible}}" class="theme-result theme-result--{{themeRevealPhase}} {{companionReducedMotion ? 'theme-result--reduced' : ''}}">
+    <text class="theme-result-close" bindtap="onCloseThemeResult" aria-role="button" aria-label="关闭">×</text>
+    <view class="theme-result-art"><image class="theme-original" src="{{themeOriginalImage}}" mode="aspectFit"></image><image wx:if="{{!themeFullFailed}}" class="theme-complete" src="{{themeFullImage}}" mode="aspectFit" bindload="onThemeFullLoad" binderror="onThemeFullError"></image></view>
+    <text wx:if="{{themeFullFailed}}" bindtap="onRetryThemeFull">重试</text>
+    <view class="theme-result-reward"><text>{{themeRewardLabel}}</text><text>{{themeRewardLine}}</text></view>
+  </view>
+
   <view class="preview" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor">
       <inline-notice

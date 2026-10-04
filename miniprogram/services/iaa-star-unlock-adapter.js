@@ -1,3 +1,5 @@
+const { createThemeState } = require('./companion-theme-state');
+let themeState = createThemeState();
 const { createPhotoState } = require('./companion-photo-state');
 const photoCatalog = require('./companion-photo-catalog');
 let photoState = createPhotoState();
@@ -17,7 +19,7 @@ let drawingGiftResults = new Map();
 let activityState = { current: null, firstResultSeen: false };
 function configureRoom(petId, pet) {
   roomPet = pet || roomPet;
-  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); photoState = createPhotoState(); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
+  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); themeState = createThemeState(); photoState = createPhotoState(); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
 }
 function getMemories() { return clone(collectedMemories); }
 function collectMemory(memory) {
@@ -142,6 +144,32 @@ function recordDrawingComplete(view, drawingId, options) {
   if (!drawingId || typeof drawingId !== 'string') return Promise.resolve({ ok: false, error: { code: 'DRAWING_ID_REQUIRED', message: '这幅画还没有准备好，请再试一次。' } });
   return settle(view, 'complete', drawingId, options);
 }
+function getThemeInvitation() { return themeState.invitation(roomPet); }
+function beginThemeDrawing(id) { return themeState.begin(roomPet, id); }
+function getActiveThemeDrawing() { return themeState.getActive(); }
+function advanceThemeStep(id, step) { return themeState.setStep(id, step); }
+function recordThemeDrawingComplete(view, id, memory, art, options) {
+  const input = options || {};
+  if (input.roomIdentity !== roomPetId || !view || !view.star || !view.star.dailyClaimStatus || view.star.dailyClaimStatus === 'ERROR') {
+    return Promise.resolve({ ok: false, error: { code: 'THEME_ROOM_CHANGED', message: '这次陪伴还没有准备好。' } });
+  }
+  const decision = themeState.complete(id, memory, art, { random: input.themeRandom });
+  if (!decision.ok) return Promise.resolve({ ok: false, error: { code: decision.code, message: '画没有保存成功，请重试' } });
+  if (decision.duplicate) return getRoomStarView().then(result => Object.assign({}, result, {
+    duplicate: true, awardedStars: 0, themeResult: decision.data, memory: decision.data.memory
+  }));
+  // 原有两份基数与小回礼仍按同一画画结算；主题奖励另行叠加。
+  const settlement = recordDrawingComplete(view, id, { random: input.giftRandom });
+  const extra = decision.data.stars;
+  roomPreviewView.star.balance += extra;
+  roomPreviewView.progress = fixture.progressPresentation(roomPreviewView.star.balance, roomPreviewView.star.nextUnlockAt);
+  collectMemory(decision.data.memory);
+  const settledView = clone(roomPreviewView);
+  return settlement.then(result => Object.assign({}, result, {
+    data: settledView, awardedStars: result.awardedStars + extra,
+    themeStars: extra, themeResult: decision.data, memory: decision.data.memory
+  }));
+}
 function getCompanionDraft() { return companionDraft ? clone(companionDraft) : null; }
 function setCompanionDraft(art) { companionDraft = art ? clone(art) : null; if (!art) companionDraftStartDate = null; }
 function getCompanionDraftStartDate() { return companionDraftStartDate; }
@@ -226,6 +254,11 @@ module.exports = {
   recordCompanion,
   recordDrawingStart,
   recordDrawingComplete,
+  getThemeInvitation,
+  beginThemeDrawing,
+  getActiveThemeDrawing,
+  advanceThemeStep,
+  recordThemeDrawingComplete,
   getCompanionDraft,
   setCompanionDraft,
   getCompanionDraftStartDate,

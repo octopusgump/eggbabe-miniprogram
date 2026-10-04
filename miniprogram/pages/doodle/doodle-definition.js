@@ -92,6 +92,16 @@ const doodleDefinition = {
     canvasNoticeText: '',
     canvasNoticeTone: 'info',
     canvasNoticeVisible: false,
+    themeName: '',
+    themeStep: 0,
+    themeStepImage: '',
+    themeResultVisible: false,
+    themeRevealPhase: 'original',
+    themeOriginalImage: '',
+    themeFullImage: '',
+    themeFullFailed: false,
+    themeRewardLabel: '',
+    themeRewardLine: '',
     companionStartAward: 0,
     companionStartAwardVisible: false,
     companionReducedMotion: false,
@@ -101,6 +111,16 @@ const doodleDefinition = {
   onLoad(query) {
     this.companionDrawing = Boolean(query && query.entry === 'companion');
     this.setData({ companionDrawing: this.companionDrawing });
+    this.companionRoomIdentity = companionAdapter.getRoomIdentity();
+    if (this.companionDrawing && query && query.theme) {
+      const started = companionAdapter.beginThemeDrawing(query.theme);
+      this.themeUnavailable = !started.ok;
+      if (started.ok) {
+        this.themeDrawing = started.data;
+        this.setData({ themeName: started.data.theme.name });
+        this.syncThemeStep();
+      }
+    }
     this.pageActive = true;
     this.colorHintSeen = hasSeenColorHint();
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -134,6 +154,7 @@ const doodleDefinition = {
 
   onShow() {
     this.pageActive = true;
+    if (this.themeCompletion && this.data.themeResultVisible && this.themeFullReady) this.onThemeFullLoad();
     if (this.data.toolPanelOpen && this.data.activeTool === 'brush') this.scheduleColorHint();
   },
 
@@ -180,6 +201,7 @@ const doodleDefinition = {
   },
 
   beginCompanionDrawing() {
+    if (this.themeUnavailable || this.companionRoomIdentity && this.companionRoomIdentity !== companionAdapter.getRoomIdentity()) return Promise.resolve({ ok: false });
     if (this.companionStartRequested) return Promise.resolve();
     this.companionStartRequested = true;
     // 跨日继续旧草稿不自动领取新一天的开始奖励。
@@ -769,9 +791,63 @@ const doodleDefinition = {
     }
   },
 
+  syncThemeStep() {
+    if (!this.themeDrawing) return;
+    const step = this.themeDrawing.step;
+    this.setData({ themeStep: step, themeStepImage: step < 3 ? this.themeDrawing.theme.steps[step].image : '' });
+  },
+  onNextThemeStep() {
+    if (!this.themeDrawing || this.savedForReturn) return;
+    const step = Math.min(3, this.themeDrawing.step + 1);
+    if (companionAdapter.advanceThemeStep(this.themeDrawing.id, step)) {
+      this.themeDrawing.step = step;
+      this.syncThemeStep();
+    }
+  },
+  clearThemeRevealTimers() {
+    (this.themeRevealTimers || []).forEach(clearTimeout);
+    this.themeRevealTimers = [];
+  },
+  showThemeResult(completion, image) {
+    this.themeCompletion = completion;
+    this.clearThemeRevealTimers();
+    this.setData({ themeResultVisible: true, themeRevealPhase: 'original', themeOriginalImage: image,
+      themeFullImage: completion.themeResult.theme.artwork, themeFullFailed: false, companionReducedMotion: this.pageTransitionDuration() <= 20,
+      themeRewardLabel: completion.themeResult.label, themeRewardLine: completion.themeResult.line });
+  },
+  onThemeFullLoad() {
+    if (!this.data.themeResultVisible) return;
+    this.themeFullReady = true;
+    if (!this.pageActive) return;
+    this.clearThemeRevealTimers();
+    this.setData({ themeFullFailed: false });
+    const schedule = (delay, phase) => setTimeout(() => {
+      if (this.pageActive && !this.pageDisposed && this.data.themeResultVisible) this.setData({ themeRevealPhase: phase });
+    }, delay);
+    const phase = this.data.themeRevealPhase;
+    this.themeRevealTimers = [];
+    if (phase === 'original') this.themeRevealTimers.push(schedule(80, 'artwork'));
+    if (phase !== 'reward') this.themeRevealTimers.push(schedule(1200, 'reward'));
+    this.themeRevealTimers.push(setTimeout(() => {
+      if (this.pageActive && !this.pageDisposed && this.data.themeResultVisible) this.onCloseThemeResult();
+    }, 5000));
+  },
+  onThemeFullError() {
+    this.themeFullReady = false;
+    this.clearThemeRevealTimers();
+    this.setData({ themeFullFailed: true, themeRevealPhase: 'original' });
+  },
+  onRetryThemeFull() { this.setData({ themeFullFailed: false }); },
+  async onCloseThemeResult() {
+    this.clearThemeRevealTimers();
+    this.setData({ themeResultVisible: false });
+    await this.leaveEditor({ saved: true });
+  },
+
   async completeCompanionDrawing() {
     if (this.companionCompleting || this.pageDisposed || this.pageActive === false) return { ok: false };
     if (!this.shellArt.operations.some(item => item.type === 'stroke' && item.tool !== 'eraser')) { this.showCanvasNotice('先画几笔吧', 'info'); return { ok: false }; }
+    if (this.themeUnavailable || this.companionRoomIdentity && this.companionRoomIdentity !== companionAdapter.getRoomIdentity()) return { ok: false };
     this.companionCompleting = true;
     let image;
     try { image = await canvas2d.exportImage(this.artLayer); } catch (error) { this.companionCompleting = false; this.showCanvasNotice('画没有保存成功，请重试', 'warning'); return { ok: false }; }
@@ -779,7 +855,24 @@ const doodleDefinition = {
     if (!image) { this.companionCompleting = false; this.showCanvasNotice('画没有保存成功，请重试', 'warning'); return { ok: false }; }
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (!channel || !channel.emit) { this.companionCompleting = false; return { ok: false }; }
-    channel.emit('companionDrawingCompleted', { id: `drawing-${Date.now()}`, image, title: '一起画的画', line: '这张是我们一起画的。', date: require('../../services/companion-star-rules').shanghaiDate() });
+    const memory = { id: this.themeDrawing ? this.themeDrawing.id : `drawing-${Date.now()}`, image,
+      title: '一起画的画', line: '这张是我们一起画的。', date: require('../../services/companion-star-rules').shanghaiDate() };
+    if (this.themeDrawing) {
+      if (this.companionRoomIdentity !== companionAdapter.getRoomIdentity()) { this.companionCompleting = false; return { ok: false }; }
+      const view = await companionAdapter.getRoomStarView();
+      if (this.pageDisposed || this.pageActive === false || this.companionRoomIdentity !== companionAdapter.getRoomIdentity()) { this.companionCompleting = false; return { ok: false }; }
+      const completion = await companionAdapter.recordThemeDrawingComplete(view.data, this.themeDrawing.id, memory, this.shellArt,
+        { roomIdentity: this.companionRoomIdentity });
+      if (!completion.ok) { this.companionCompleting = false; this.showCanvasNotice(completion.error.message, 'warning'); return completion; }
+      // 完成即入册和结算；揭晓提前关闭或进入后台不影响已完成结果。
+      channel.emit('companionThemeDrawingCompleted', completion);
+      companionAdapter.setCompanionDraft(null);
+      this.savedRevision = this.editRevision;
+      this.savedForReturn = true;
+      if (this.pageActive && !this.pageDisposed) this.showThemeResult(completion, image);
+      return completion;
+    }
+    channel.emit('companionDrawingCompleted', memory);
     companionAdapter.setCompanionDraft(null);
     this.savedRevision = this.editRevision;
     this.savedForReturn = true;
@@ -865,6 +958,7 @@ const doodleDefinition = {
   onHide() {
     if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
     this.clearCompanionFeedback();
+    this.clearThemeRevealTimers();
     this.setData({ companionStartAwardVisible: false });
     this.pageActive = false;
     this.clearCanvasNoticeTimers();
@@ -879,6 +973,7 @@ const doodleDefinition = {
 
   onUnload() {
     this.pageDisposed = true;
+    this.clearThemeRevealTimers();
     if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }
     if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
     this.clearCompanionFeedback();

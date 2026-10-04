@@ -1,3 +1,7 @@
+const { createPhotoState } = require('./companion-photo-state');
+const photoCatalog = require('./companion-photo-catalog');
+let photoState = createPhotoState();
+let roomPet = null;
 const fixture = require('../fixtures/iaa-star-unlock');
 const { decideDrawingGift } = require('./companion-drawing-gift');
 
@@ -11,8 +15,9 @@ let completedDrawingIds = new Set();
 let firstDrawingGiftDone = false;
 let drawingGiftResults = new Map();
 let activityState = { current: null, firstResultSeen: false };
-function configureRoom(petId) {
-  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
+function configureRoom(petId, pet) {
+  roomPet = pet || roomPet;
+  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); photoState = createPhotoState(); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
 }
 function getMemories() { return clone(collectedMemories); }
 function collectMemory(memory) {
@@ -101,7 +106,37 @@ function settle(view, kind, drawingId, options) {
   roomPreviewView = clone(current);
   return Promise.resolve({ ok: true, data: current, awardedStars: awardedStars + giftStars, baseAwardedStars: awardedStars, giftStars, drawingGift: drawingGift ? clone(drawingGift) : null, effectiveAdded, duplicate: awardedStars === 0 && giftStars === 0 && !effectiveAdded });
 }
-function recordCompanion(view) { return settle(view, 'ordinary'); }
+function recordCompanion(view, options) {
+  return settle(view, 'ordinary').then(result => {
+    if (result.ok && options && options.paper) result.paperPhoto = photoState.offer(photoCatalog.eligiblePhotos(roomPet, shanghaiDate()), options);
+    return result;
+  });
+}
+function getPendingPhotos() { return photoState.getPending(); }
+function collectPhoto(id) {
+  const photo = photoState.find(id);
+  if (!photo) return { ok: false };
+  const collected = Object.assign({}, photo, { collected: true });
+  if (!collectMemory(collected)) return { ok: false };
+  photoState.receive(id);
+  return { ok: true, memory: collected };
+}
+function getExchangePhoto() {
+  const photo = photoCatalog.eligiblePhotos(roomPet, shanghaiDate()).find(item => item.kind === 'exchange');
+  if (!photo) return null;
+  return Object.assign({}, clone(photo), { owned: Boolean(photoState.find(photo.id)), cost: 10 });
+}
+function exchangePhoto(id, ready) {
+  const photo = getExchangePhoto();
+  if (!photo || photo.id !== id) return { ok: false, error: { code: 'PHOTO_NOT_READY' } };
+  if (photo.owned) return { ok: true, duplicate: true, memory: photoState.find(id) };
+  if (!ready) return { ok: false, error: { code: 'PHOTO_NOT_READY' } };
+  if (!roomPreviewView || Number(roomPreviewView.star.balance || 0) < 10) return { ok: false, error: { code: 'INSUFFICIENT_STARS' } };
+  deductActivityStars(10);
+  const memory = photoState.purchase(photo);
+  collectMemory(memory);
+  return { ok: true, memory };
+}
 function recordDrawingStart(view) { return settle(view, 'start'); }
 function recordDrawingComplete(view, drawingId, options) {
   if (!drawingId || typeof drawingId !== 'string') return Promise.resolve({ ok: false, error: { code: 'DRAWING_ID_REQUIRED', message: '这幅画还没有准备好，请再试一次。' } });
@@ -178,7 +213,12 @@ module.exports = {
   contractVersion: 'iaa-mvp-v1',
   source: 'local-fixture',
   configureRoom,
+  getRoomIdentity: () => roomPetId,
   getMemories,
+  getPendingPhotos,
+  collectPhoto,
+  getExchangePhoto,
+  exchangePhoto,
   collectMemory,
   getStarUnlockView,
   getRoomStarView,

@@ -185,7 +185,7 @@
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
       </view>
 
-      <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image src="{{pendingCompanionMemory.image}}" mode="aspectFit" bindtap="onPreviewCompanionMemory"></image><view class="today-companion-letter__action" aria-role="button" bindtap="onCollectCompanionMemory">收下</view></view>
+      <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image wx:if="{{!companionPhotoFailed}}" class="{{pendingCompanionMemory.source === 'paper' ? 'companion-polaroid' : ''}}" src="{{pendingCompanionMemory.image}}" mode="{{pendingCompanionMemory.source === 'paper' ? 'widthFix' : 'aspectFit'}}" bindload="onCompanionPhotoLoad" binderror="onCompanionPhotoError" bindtap="onPreviewCompanionMemory"></image><view wx:else class="today-companion-letter__action" bindtap="onRetryCompanionPhoto">重试</view><text wx:if="{{pendingCompanionMemory.source === 'paper'}}" class="today-companion-letter__feedback">{{pendingCompanionMemory.line}}</text><button class="today-companion-letter__action" disabled="{{pendingCompanionMemory.source === 'paper' && !companionPhotoReady}}" bindtap="onCollectCompanionMemory"><text class="button-label">收下</text></button></view>
       <text wx:if="{{todayCompanionInteractionDone && !pendingCompanionMemory && currentState.atHome}}" class="today-companion-letter__feedback">今天已陪伴</text>
       <view class="today-companion-letter__tomorrow">
         <view

@@ -75,13 +75,13 @@
         type="2d"
         id="eggBaseCanvas"
         class="egg-canvas egg-canvas--base"
-        hidden="{{exitConfirmVisible}}"
+        hidden="{{exitConfirmVisible || themeResultVisible}}"
       ></canvas>
       <canvas
         type="2d"
         id="eggArtCanvas"
         class="egg-canvas egg-canvas--art"
-        hidden="{{exitConfirmVisible}}"
+        hidden="{{exitConfirmVisible || themeResultVisible}}"
         disable-scroll
         catchtouchstart="onCanvasTouchStart"
         catchtouchmove="onCanvasTouchMove"

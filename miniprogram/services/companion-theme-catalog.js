@@ -20,7 +20,7 @@ const INVENTORY = [
   ['RETAINED-LADLE', '糖画勺', 'retained'], ['RETAINED-YUNNAN', '云南特产', 'retained']
 ];
 const THEMES = INVENTORY.map(([id, name, pet]) => ({
-  id, name, pet, approved: false, steps: [], artwork: ''
+  id, name, pet, approved: false, steps: [], artwork: '', keepsakeImage: ''
 }));
 const ART_ROOT = '/assets/scenes/lifecycle/post-hatch/50-overlays/theme-drawings/';
 // 首批主题与布局已认可；完整图按用户修正使用单色线稿，其他主题保持关闭。
@@ -28,12 +28,14 @@ for (const id of ['K-R01', 'K-K03', 'K-A06']) {
   const theme = THEMES.find(item => item.id === id);
   theme.approved = true;
   const file = id.toLowerCase();
+  theme.keepsakeImage = `${ART_ROOT}${file}_keepsake_3d_v01.png`;
   theme.artwork = `${ART_ROOT}${file}_full_v02.png`;
   theme.steps = [1,2,3].map(step => ({ image: `${ART_ROOT}${file}_step${step}_v02.png` }));
 }
 function isReady(theme) {
   return Boolean(theme && theme.approved && theme.id && theme.name &&
-    /^\/assets\/.+\.png$/i.test(theme.artwork || ''));
+    /^\/assets\/.+\.png$/i.test(theme.artwork || '') &&
+    /^\/assets\/.+\.png$/i.test(theme.keepsakeImage || ''));
 }
 function readyThemes(pet, catalog) {
   const key = petKey(pet);

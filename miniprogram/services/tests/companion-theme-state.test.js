@@ -4,7 +4,7 @@ const { createThemeState } = require('../companion-theme-state');
 const rabbit = { prototype: '玉兔' };
 const koi = { prototype: '锦鲤' };
 const ready = (id, pet) => ({ id, name: id === 'duck' ? '小黄鸭' : id, pet, approved: true,
-  artwork: `/assets/themes/${id}.png`, steps: [1,2,3].map(n => ({image: `/assets/themes/${id}-${n}.png`})) });
+  artwork: `/assets/themes/${id}.png`, keepsakeImage: `/assets/themes/${id}-3d.png`, steps: [1,2,3].map(n => ({image: `/assets/themes/${id}-${n}.png`})) });
 const catalog = [ready('duck', 'jade-rabbit'), ready('bell', 'shared'), ready('pinwheel', 'boon-koi')];
 const art = { operations: [{ type: 'stroke', tool: 'brush', points: [{ x: 1, y: 1 }] }] };
 const memory = { image: '/tmp/user-original.png', title: '一起画的画' };
@@ -55,7 +55,7 @@ assert.equal(done.data.tier, 2);
 assert.equal(done.data.duplicateProp, true);
 assert.equal(done.data.prop, null);
 assert.equal(done.data.stars, 6, '惊喜档1+3星，重复道具再替换为2星');
-assert.equal(done.data.line, '星星送给你。', '重复道具改星后文案表达实际所得');
+assert.equal(done.data.line, `${done.data.theme.name}已拥有，改送2颗星星。`, '重复道具改星后文案表达实际所得');
 for (const [roll, tier, stars] of [[0,0,1],[0.599999,0,1],[0.6,1,1],[0.899999,1,1],[0.9,2,4],[0.999999,2,4]]) {
   const single = createThemeState({catalog: [catalog[0]]});
   const offer = single.invitation(rabbit, '2026-10-04');

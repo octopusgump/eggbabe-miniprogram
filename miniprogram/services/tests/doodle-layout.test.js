@@ -95,7 +95,7 @@ assert.equal(wxml.includes('wx:if="{{exitConfirmVisible}}"') && wxml.includes('�
 assert.equal(wxml.includes('保存并返回'), true, '确认窗口必须明确说明保存成功后会返回桌面');
 assert.equal(wxml.includes('保存后，蛋宝宝会带着新装饰回到卧室。'), true, '确认窗口说明必须明确保存后的卧室同步结果');
 assert.match(wxml, /<root-portal[\s\S]*<cover-view[\s\S]*class="exit-confirm-overlay"[\s\S]*class="exit-confirm-dialog"/, '退出确认必须通过 root-portal 和 cover-view 提升到原生 Canvas 之上');
-assert.equal((wxml.match(/hidden="\{\{exitConfirmVisible\}\}"/g) || []).length, 2, '确认窗口显示时必须隐藏两个原生 Canvas，避免蛋穿透弹窗');
+assert.equal((wxml.match(/hidden="\{\{exitConfirmVisible \|\| themeResultVisible\}\}"/g) || []).length, 2, '确认窗口显示时必须隐藏两个原生 Canvas，避免蛋穿透弹窗');
 assert.equal(wxml.includes('catchtap="onExitConfirmTap"') && wxml.includes('catchtap="onExitConfirmDialogTap"'), true, '点击遮罩必须返回画画，点击确认卡片内部不得误关闭');
 assert.equal(wxml.includes('exit-confirm-close'), false, '确认窗口不得再显示右上角关闭按钮');
 assert.match(wxss, /\.exit-confirm-dialog\s*\{[^}]*border:\s*1rpx solid #E5E3DF;[^}]*border-radius:\s*32rpx;[^}]*background:\s*#FFF;[^}]*color:\s*#1A1A1A;/, '退出确认窗口必须使用设计系统的白色卡片、浅色描边和深色正文');

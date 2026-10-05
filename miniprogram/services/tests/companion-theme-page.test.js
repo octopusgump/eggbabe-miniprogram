@@ -10,6 +10,8 @@ const layout=require('fs').readFileSync(require('path').join(__dirname,'../../pa
 const styles=require('fs').readFileSync(require('path').join(__dirname,'../../pages/doodle/doodle.wxss'),'utf8');
 assert.match(styles,/\.page--theme \.preview \{ flex:0 0 60%/);
 assert.match(styles,/\.page--theme \.egg-canvas-stack--paper \{[^}]*width:100%; height:100%; border:0/);
+assert.equal((layout.match(/exitConfirmVisible \|\| themeResultVisible/g)||[]).length,2,'揭晓时隐藏两个原生Canvas');
+assert(styles.includes('theme-art-pop-out') && styles.includes('theme-keepsake-pop-in'));
 assert(layout.includes('themeReferenceImage') && !layout.includes('onNextThemeStep'),'完整参考图直接展示，不保留三步按钮');
 
 const originalSetTimeout=global.setTimeout, originalClearTimeout=global.clearTimeout;
@@ -52,9 +54,10 @@ async function run(){
   assert.equal(event.name,'companionThemeDrawingCompleted');
   assert.equal(stars.getMemories()[0].image,'/tmp/original-art.png');
   assert.equal(editor.data.themeOriginalImage,'/tmp/original-art.png');
-  assert.equal(editor.data.themeFullImage,theme.artwork);
+  assert.equal(editor.data.themeFullImage,theme.keepsakeImage);
   assert.equal(editor.data.themeRevealPhase,'original');
   assert.equal(editor.data.themeRewardLabel,'惊喜加倍！');
+  assert(editor.data.themeRewardLine.includes('+4星'),'实际主题星数显示，不把基础画画与小回礼混为主题奖励');
   assert.equal(stars.getCompanionDraft(),null);
   const settled=(await stars.getRoomStarView()).data.star.balance;
   editor.onThemeFullError();
@@ -62,6 +65,8 @@ async function run(){
   assert.equal(editor.data.themeFullFailed,true);
   editor.onRetryThemeFull();editor.onThemeFullLoad();
   for(const timer of [...timers.values()])if(timer.delay===80)timer.fn();
+  assert.equal(editor.data.themeRevealPhase,'popout');
+  for(const timer of [...timers.values()])if(timer.delay===260)timer.fn();
   assert.equal(editor.data.themeRevealPhase,'artwork');
   for(const timer of [...timers.values()])if(timer.delay===1200)timer.fn();
   assert.equal(editor.data.themeRevealPhase,'reward');

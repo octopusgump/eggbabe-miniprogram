@@ -338,6 +338,7 @@ const doodleDefinition = {
   },
 
   renderArt(activeOperation) {
+    this.cancelStrokeFrame();
     if (!this.artLayer) return;
     shellArtService.drawEggArt(
       this.artLayer.context,
@@ -348,6 +349,30 @@ const doodleDefinition = {
       activeOperation,
       this.companionDrawing
     );
+  },
+
+  cancelStrokeFrame() {
+    if (this.strokeFrame == null) return;
+    if (this.strokeFrameCanvas && this.strokeFrameCanvas.cancelAnimationFrame) this.strokeFrameCanvas.cancelAnimationFrame(this.strokeFrame);
+    else clearTimeout(this.strokeFrame);
+    this.strokeFrame = null;
+  },
+  queuePaperStroke() {
+    if (this.strokeFrame != null) return;
+    const canvas = this.artLayer && this.artLayer.canvas;
+    const paint = () => { this.strokeFrame = null; if (this.pageActive !== false && !this.pageDisposed) this.flushPaperStroke(); };
+    this.strokeFrameCanvas = canvas;
+    this.strokeFrame = canvas && canvas.requestAnimationFrame ? canvas.requestAnimationFrame(paint) : setTimeout(paint, 16);
+  },
+  flushPaperStroke() {
+    this.cancelStrokeFrame();
+    if (!this.currentStroke || !this.artLayer) return;
+    const points = this.currentStroke.points;
+    const count = this.paperPaintedPoints || 0;
+    if (count >= points.length) return;
+    const segment = Object.assign({}, this.currentStroke, { points: points.slice(Math.max(0, count - 1)) });
+    shellArtService.drawPaperStroke(this.artLayer.context, segment, this.artLayer.width, this.artLayer.height);
+    this.paperPaintedPoints = points.length;
   },
 
   renderAll() {
@@ -577,7 +602,10 @@ const doodleDefinition = {
   cancelPendingDrawing() {
     if (this.currentStroke) {
       this.currentStroke = null;
-      if (this.undoStack && this.undoStack.length) this.undoStack.pop();
+      if (this.undoStack && this.undoStack.length) {
+        const beforeStroke = this.undoStack.pop();
+        if (this.companionDrawing) this.shellArt.operations = beforeStroke;
+      }
       this.syncViewState();
       this.renderArt();
     }
@@ -665,7 +693,8 @@ const doodleDefinition = {
       strokeWidth,
       this.data.selectedBrushColor
     );
-    this.renderArt(this.currentStroke);
+    if (this.companionDrawing) { this.paperPaintedPoints = 0; this.queuePaperStroke(); }
+    else this.renderArt(this.currentStroke);
   },
 
   onCanvasTouchMove(event) {
@@ -687,16 +716,30 @@ const doodleDefinition = {
     const previous = points[points.length - 1];
     const distance = Math.abs(previous.x - point.x) + Math.abs(previous.y - point.y);
     if (distance < 0.006) return;
-    this.currentStroke.points = points.concat(point).slice(-300);
-    this.renderArt(this.currentStroke);
+    if (this.companionDrawing && points.length >= 300) {
+      this.flushPaperStroke();
+      const prior = this.currentStroke;
+      const dropped = this.shellArt.operations.length >= shellArtService.MAX_OPERATIONS;
+      this.shellArt.operations = this.shellArt.operations.concat(prior).slice(-shellArtService.MAX_OPERATIONS);
+      this.currentStroke = shellArtService.createStroke(prior.tool, [points[points.length - 1], point], this.operationSequence += 1, prior.width, prior.color);
+      this.paperPaintedPoints = 1;
+      if (dropped) { this.renderArt(this.currentStroke); this.paperPaintedPoints = 2; }
+      else this.queuePaperStroke();
+      return;
+    }
+    this.currentStroke.points = points.concat(point);
+    if (this.companionDrawing) this.queuePaperStroke();
+    else { this.currentStroke.points = this.currentStroke.points.slice(-300); this.renderArt(this.currentStroke); }
   },
 
   finishStroke() {
     if (!this.currentStroke) return;
+    if (this.companionDrawing) this.flushPaperStroke();
+    const droppedOperation = this.shellArt.operations.length >= shellArtService.MAX_OPERATIONS;
     this.shellArt.operations = this.shellArt.operations.concat(this.currentStroke).slice(-shellArtService.MAX_OPERATIONS);
     this.currentStroke = null;
     this.syncViewState();
-    this.renderArt();
+    if (!this.companionDrawing || droppedOperation) this.renderArt();
     this.markDirty();
   },
 
@@ -812,8 +855,8 @@ const doodleDefinition = {
     this.themeCompletion = completion;
     this.clearThemeRevealTimers();
     this.setData({ themeResultVisible: true, themeRevealPhase: 'original', themeOriginalImage: image,
-      themeFullImage: completion.themeResult.theme.artwork, themeFullFailed: false, companionReducedMotion: this.pageTransitionDuration() <= 20,
-      themeRewardLabel: completion.themeResult.label, themeRewardLine: completion.themeResult.line });
+      themeFullImage: completion.themeResult.theme.keepsakeImage, themeFullFailed: false, companionReducedMotion: this.pageTransitionDuration() <= 20,
+      themeRewardLabel: completion.themeResult.label, themeRewardLine: `${completion.themeResult.line} +${completion.themeResult.stars}星` });
   },
   onThemeFullLoad() {
     if (!this.data.themeResultVisible) return;
@@ -826,7 +869,8 @@ const doodleDefinition = {
     }, delay);
     const phase = this.data.themeRevealPhase;
     this.themeRevealTimers = [];
-    if (phase === 'original') this.themeRevealTimers.push(schedule(80, 'artwork'));
+    if (phase === 'original') this.themeRevealTimers.push(schedule(80, 'popout'));
+    if (phase === 'original' || phase === 'popout') this.themeRevealTimers.push(schedule(260, 'artwork'));
     if (phase !== 'reward') this.themeRevealTimers.push(schedule(1200, 'reward'));
     this.themeRevealTimers.push(setTimeout(() => {
       if (this.pageActive && !this.pageDisposed && this.data.themeResultVisible) this.onCloseThemeResult();
@@ -972,6 +1016,7 @@ const doodleDefinition = {
   },
 
   onUnload() {
+    this.cancelStrokeFrame();
     this.pageDisposed = true;
     this.clearThemeRevealTimers();
     if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }

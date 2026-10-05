@@ -69,7 +69,7 @@ function createThemeState(options) {
     const prop = tier > 0 && !duplicateProp ? { id: theme.id, name: theme.name } : null;
     const result = {
       id, date: day, theme: clone(theme), tier, label: LABELS[tier], stars, prop, duplicateProp,
-      line: tier === 0 || duplicateProp ? '星星送给你。' :
+      line: duplicateProp ? `${theme.name}已拥有，改送2颗星星。` : tier === 0 ? '星星送给你。' :
         (tier === 1 ? `${theme.name}送给你。` : `${theme.name}和星星都给你。`),
       memory: Object.assign({}, clone(memory), { id, date: day, source: 'theme-drawing' })
     };

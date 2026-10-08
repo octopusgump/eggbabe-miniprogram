@@ -164,7 +164,6 @@
     <view class="today-companion-stage">
     <view wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-label="✦ +{{todayCompanionAwardedStars}}">
       <companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star>
-      <view wx:if="{{!reducedMotion}}" class="companion-award-flight"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="companion-award-flight__star companion-award-flight__star--{{item}}"><companion-star mode="room" size="22" reduced-motion="{{true}}"></companion-star></view></view>
       <text class="today-companion-award__plus" aria-hidden="true">+{{todayCompanionAwardedStars}}</text>
     </view>
     <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">

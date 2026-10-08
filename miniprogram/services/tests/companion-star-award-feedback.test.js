@@ -39,8 +39,9 @@ assert.equal(/todayCompanionAwardedStars|companion-star|✦/.test(letterTemplate
 assert.equal(overlayTemplate.includes('+{{todayCompanionAwardedStars}}'), true, '保留 +1 数字');
 assert.equal((starTemplate.match(/companion-star__spark--\d/g) || []).length, 7, '光点保持 7 个（5–8 范围内）');
 assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:150rpx;/, '星星绝对定位在信纸上方居中，不改变信纸排版');
-assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-companion-award-plus \.6s [^}]*\.2s both/, '+1 约 0.2 秒开始翻滚、0.8 秒落定');
-assert.match(starStyles, /companion-star-neutral-show \.8s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
+assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-companion-award-plus \.85s [^}]*\.88s both/, '+X 在弹出后约 0.88s 开始翻滚、约 2s 内落定');
+assert.match(starStyles, /companion-star-neutral-show 2s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
+assert.match(starStyles, /companion-star--award .companion-star__pose--neutral\{[^}]*2s/, '收星挤压弹出主节奏约 2 秒');
 
 // 房间：左上角沿用同一哑光造型，只做光晕回应，不重播信件动作。
 assert.equal(moodTemplate.includes('<companion-star class="pet-mood-tab__star-icon" mode="room" size="22" pulse="{{starAwardVisible}}"'), true, '房间左上角星星沿用同一造型并随原 +1 时机回应');
@@ -101,7 +102,7 @@ function loadRoomPage(log, dataOverrides) {
 function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0 }; }
 
 (async () => {
-  // 1. 真实收星成功：音效 0.2 秒、轻震 0.4 秒，各一次。
+  // 1. 真实收星成功：音效约 0.52 秒、轻震约 0.84 秒（对齐弹出高点），各一次。
   {
     const log = newLog();
     const { page } = loadRoomPage(log);
@@ -112,7 +113,7 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     await page.onTodayCompanionInteract();
     assert.equal(page.data.todayCompanionAwardedStars, 10);
     await page.onTodayCompanionInteract();
-    await wait(520);
+    await wait(950);
     assert.equal(log.plays.length, 1, '成功收星只播放一次音效');
     assert.equal(log.vibrations.length, 1, '成功收星只轻震一次');
     assert.equal(log.vibrations[0].type, 'light', '只使用轻档短震');
@@ -120,8 +121,8 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     assert.equal(log.plays[0].src.endsWith('/companion-star/companion-star-award.mp3'), true);
     const soundAt = log.plays[0].at - startedAt;
     const hapticAt = log.vibrations[0].at - startedAt;
-    assert.equal(soundAt >= 190 && soundAt < 320, true, `音效应在约 0.2 秒响起，实际 ${soundAt}ms`);
-    assert.equal(hapticAt >= 390 && hapticAt < 520, true, `轻震应在约 0.4 秒弹出高点，实际 ${hapticAt}ms`);
+    assert.equal(soundAt >= 500 && soundAt < 650, true, `音效应在约 0.52 秒响起，实际 ${soundAt}ms`);
+    assert.equal(hapticAt >= 820 && hapticAt < 960, true, `轻震应在约 0.84 秒弹出高点，实际 ${hapticAt}ms`);
 
     // 回房间：只展示原 +1 与光晕，不再发声或震动。
     page.onCloseTodayCompanion();

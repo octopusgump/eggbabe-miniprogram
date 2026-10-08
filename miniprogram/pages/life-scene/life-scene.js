@@ -14,13 +14,13 @@ const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 
-// 信件收星反馈：音效在 0.2 秒响起，让第二个音落在 0.4 秒弹出高点，同时轻震一次。
+// 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
 const LETTER_ICON_SRC = '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.webp';
 const STAR_AWARD_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const STAR_AWARD_SOUND_VOLUME = 0.2;
-const STAR_AWARD_SOUND_DELAY_MS = 200;
-const STAR_AWARD_HAPTIC_DELAY_MS = 400;
+const STAR_AWARD_SOUND_DELAY_MS = 520;
+const STAR_AWARD_HAPTIC_DELAY_MS = 840;
 
 const WEATHER_LABELS = {
   sunny: '晴朗', cloudy: '多云', rain: '下雨', snow: '下雪', fog: '有雾',
@@ -608,7 +608,7 @@ Page({
 
   playStarAwardFeedback() {
     this.clearStarAwardFeedback();
-    this.letterAwardTimer = setTimeout(() => { if (this.pageActive) this.setData({ todayCompanionAwardedStars: 0 }); }, 1750);
+    this.letterAwardTimer = setTimeout(() => { if (this.pageActive) this.setData({ todayCompanionAwardedStars: 0 }); }, 2100);
     this.prepareStarAwardSound();
     this.starAwardSoundTimer = setTimeout(() => {
       this.starAwardSoundTimer = null;

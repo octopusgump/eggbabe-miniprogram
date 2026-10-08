@@ -57,7 +57,9 @@ assert.equal(albumTemplate.includes('selectedMemory &&"') || albumTemplate.inclu
 assert.equal(albumTemplate.includes('inline-notice'), true, '回忆展开 meta 必须使用标准轻提示');
 assert.equal(albumStyles.includes('grid-template-columns: repeat(3'), true, '回忆方格必须为 3 列');
 assert.equal(albumStyles.includes('memory-cell--polaroid::before'), true, '拍立得格必须使用居中图钉');
-assert.equal(albumStyles.includes('postcard-frame--silhouette'), true, '未解锁旅途必须使用明信片剪影');
+assert.equal(albumTemplate.includes('暗格 · 待解锁'), true, '未解锁旅途暗格必须显示待解锁说明');
+assert.equal(albumStyles.includes('memory-cell--postcard-locked'), true, '未解锁旅途必须使用模糊暗格与锁');
+assert.equal(albumStyles.includes('memory-cell__locked-dim'), true, '未解锁旅途必须有压暗层');
 for (const removedFeature of ['NEW', 'rarity', 'threshold']) {
   assert.equal(albumTemplate.includes(removedFeature), false, `列表不得保留 ${removedFeature} 能力`);
 }

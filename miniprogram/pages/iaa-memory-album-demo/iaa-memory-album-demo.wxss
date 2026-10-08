@@ -2,10 +2,12 @@
 
 .memory-page { background: #FAFAF8; color: #1A1A1A; }
 
-.memory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16rpx; margin-top: 32rpx; }
-.memory-grid__cell { position: relative; width: 100%; padding-bottom: 100%; border: 1rpx solid #E5E3DF; border-radius: 12rpx; background: #FFF; box-sizing: border-box; overflow: hidden; }
+.memory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16rpx 16rpx; margin-top: 32rpx; }
+.memory-grid__slot { display: flex; flex-direction: column; align-items: stretch; min-width: 0; }
+.memory-grid__caption { display: block; margin-top: 10rpx; color: #8C8C88; font-size: 20rpx; font-weight: 600; line-height: 1.3; text-align: center; }
+.memory-grid__cell { position: relative; width: 100%; padding-bottom: 100%; border: 1rpx solid #E5E3DF; border-radius: 12rpx; background: #FFF; box-sizing: border-box; overflow: hidden; box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06); }
 .memory-grid__cell--selected { border-color: #9DB65B; border-width: 3rpx; }
-.memory-grid__cell--locked { background: #EDE8E2; }
+.memory-grid__cell--locked { border-color: #E5E3DF; box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.08); }
 .memory-grid__inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 
 .memory-cell { width: 100%; height: 100%; box-sizing: border-box; }
@@ -22,8 +24,13 @@
 
 .memory-cell--postcard { padding: 14rpx; background: #F3F0E8; }
 .memory-cell__postcard-frame { width: 100%; height: 72%; border-radius: 8rpx; overflow: hidden; background: #EDE8E2; }
-.memory-cell__postcard-frame--silhouette { background: #E4DDD6; }
-.memory-cell__postcard-frame--silhouette .memory-cell__photo { filter: grayscale(1) brightness(0.68) contrast(0.52); opacity: 0.92; }
+
+.memory-cell--postcard-locked { position: relative; overflow: hidden; }
+.memory-cell--postcard-locked .memory-cell__photo--locked-blur { filter: blur(14rpx) saturate(0.72); transform: scale(1.12); }
+.memory-cell__locked-dim { position: absolute; inset: 0; z-index: 2; background: rgba(36, 40, 38, 0.44); }
+.memory-cell__lock { position: absolute; z-index: 3; left: 50%; top: 50%; width: 52rpx; height: 60rpx; transform: translate(-50%, -50%); }
+.memory-cell__lock-shackle { position: absolute; top: 0; left: 50%; width: 30rpx; height: 22rpx; margin-left: -15rpx; border: 5rpx solid rgba(255, 255, 255, 0.72); border-bottom: 0; border-radius: 16rpx 16rpx 0 0; box-sizing: border-box; }
+.memory-cell__lock-body { position: absolute; bottom: 0; left: 50%; width: 40rpx; height: 30rpx; margin-left: -20rpx; border-radius: 6rpx; background: rgba(255, 255, 255, 0.72); }
 
 .memory-cell--expand { max-width: 560rpx; margin: 0 auto; height: auto; min-height: 360rpx; }
 .memory-cell--expand.memory-cell--polaroid { padding: 28rpx 22rpx 56rpx; }

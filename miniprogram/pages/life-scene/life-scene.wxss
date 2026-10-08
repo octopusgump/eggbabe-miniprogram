@@ -105,7 +105,7 @@
 /* 收星：星星宽 20vw（150rpx），浮在信纸上方居中，不进入信件正文流；信纸位置与排版不变。 */
 .today-companion-stage{position:relative;width:100%}
 .today-companion-award{position:absolute;left:50%;bottom:100%;width:150rpx;height:150rpx;margin-bottom:32rpx;transform:translateX(-50%);pointer-events:none}
-.today-companion-award__plus{position:absolute;left:100%;top:50%;margin-left:26rpx;margin-top:-34rpx;color:#FFDD79;font-size:44rpx;font-weight:700;line-height:68rpx;white-space:nowrap;text-shadow:0 2rpx 8rpx rgba(72,50,12,.35);transform-origin:30% 60%;animation:today-companion-award-plus .6s cubic-bezier(.2,.9,.3,1) .2s both}
+.today-companion-award__plus{position:absolute;left:100%;top:50%;margin-left:26rpx;margin-top:-34rpx;color:#FFDD79;font-size:44rpx;font-weight:700;line-height:68rpx;white-space:nowrap;text-shadow:0 2rpx 8rpx rgba(72,50,12,.35);transform-origin:30% 60%;animation:today-companion-award-plus .85s cubic-bezier(.2,.9,.3,1) .88s both}
 .today-companion-award--reduced .today-companion-award__plus{animation:none}
 @media (prefers-reduced-motion:reduce){.today-companion-award__plus{animation:none}}
 @keyframes today-companion-award-plus{0%{opacity:0;transform:translate3d(-44rpx,20rpx,0) rotate(-160deg) scale(.5)}40%{opacity:1;transform:translate3d(4rpx,-14rpx,0) rotate(10deg) scale(1.08)}65%{transform:translate3d(0,4rpx,0) rotate(-4deg) scale(.97)}85%{transform:translate3d(0,-2rpx,0) rotate(1deg) scale(1.01)}100%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}}

@@ -199,10 +199,10 @@ const doodleDefinition = {
           audio.volume = 0.32; audio.obeyMuteSwitch = true;
           this.companionStartAudio = audio;
           if (audio.onError) audio.onError(() => this.clearCompanionFeedback());
-          this.companionStartSoundTimer = setTimeout(() => { if (this.pageActive && this.companionStartAudio) { try { this.companionStartAudio.play(); } catch (error) {} } }, 200);
+          this.companionStartSoundTimer = setTimeout(() => { if (this.pageActive && this.companionStartAudio) { try { this.companionStartAudio.play(); } catch (error) {} } }, 520);
         }
       } catch (error) {}
-      if (this.pageTransitionDuration() > 20) this.companionStartHapticTimer = setTimeout(() => { if (this.pageActive && wx.vibrateShort) { try { wx.vibrateShort({ type: 'light' }); } catch (error) {} } }, 400);
+      if (this.pageTransitionDuration() > 20) this.companionStartHapticTimer = setTimeout(() => { if (this.pageActive && wx.vibrateShort) { try { wx.vibrateShort({ type: 'light' }); } catch (error) {} } }, 840);
       return result;
     });
   },

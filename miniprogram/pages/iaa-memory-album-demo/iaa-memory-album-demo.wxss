@@ -33,6 +33,7 @@
 .memory-cell__lock-body { position: absolute; bottom: 0; left: 50%; width: 40rpx; height: 30rpx; margin-left: -20rpx; border-radius: 6rpx; background: rgba(255, 255, 255, 0.72); }
 
 .memory-cell--expand { max-width: 560rpx; margin: 0 auto; height: auto; min-height: 360rpx; }
+.memory-cell--expand > .memory-cell__photo { height: 420rpx; }
 .memory-cell--expand.memory-cell--polaroid { padding: 28rpx 22rpx 56rpx; }
 .memory-cell--expand.memory-cell--keepsake,
 .memory-cell--expand.memory-cell--drawing { min-height: 420rpx; }

@@ -28,11 +28,9 @@ function pageContext(page, data) {
 
 assert.ok(MEMORY_ITEMS.length > 0, 'READY 状态必须提供已解锁纪念');
 for (const memory of MEMORY_ITEMS) {
-  assert.deepEqual(
-    Object.keys(memory).sort(),
-    ['date', 'image', 'line', 'title'],
-    '每条纪念只保留图片、标题、日期和一句话'
-  );
+  for (const key of ['date', 'image', 'line', 'title']) {
+    assert.ok(Object.prototype.hasOwnProperty.call(memory, key), `每条纪念必须包含 ${key}`);
+  }
   assert.equal(
     fs.existsSync(path.join(__dirname, '../..', memory.image.replace(/^\//, ''))),
     true,
@@ -48,10 +46,19 @@ for (const mode of Object.values(ALBUM_MODES)) {
 }
 
 const albumTemplate = fs.readFileSync(path.join(__dirname, '../../pages/iaa-memory-album-demo/iaa-memory-album-demo.wxml'), 'utf8');
+const albumStyles = fs.readFileSync(path.join(__dirname, '../../pages/iaa-memory-album-demo/iaa-memory-album-demo.wxss'), 'utf8');
 for (const copy of ['还没有共同纪念', '纪念册暂时打不开', '重新试试']) {
   assert.ok(albumTemplate.includes(copy), `纪念册必须包含“${copy}”状态`);
 }
-for (const removedFeature of ['LOCKED', 'NEW', 'rarity', 'threshold']) {
+assert.equal(albumTemplate.includes('class="memory-grid"'), true, '回忆必须使用三列方格墙');
+assert.equal(albumTemplate.includes('class="memory-list"'), false, '回忆不得继续使用纵向卡片列表');
+assert.equal(albumTemplate.includes('memory-grid-expand'), true, '回忆展开必须使用格下内联区域');
+assert.equal(albumTemplate.includes('selectedMemory &&"') || albumTemplate.includes('selectedMemory}}" class="album-detail-mask"'), false, '回忆展开不得使用全屏遮罩弹窗');
+assert.equal(albumTemplate.includes('inline-notice'), true, '回忆展开 meta 必须使用标准轻提示');
+assert.equal(albumStyles.includes('grid-template-columns: repeat(3'), true, '回忆方格必须为 3 列');
+assert.equal(albumStyles.includes('memory-cell--polaroid::before'), true, '拍立得格必须使用居中图钉');
+assert.equal(albumStyles.includes('postcard-frame--silhouette'), true, '未解锁旅途必须使用明信片剪影');
+for (const removedFeature of ['NEW', 'rarity', 'threshold']) {
   assert.equal(albumTemplate.includes(removedFeature), false, `列表不得保留 ${removedFeature} 能力`);
 }
 
@@ -64,8 +71,15 @@ for (const removedFeature of ['LOCKED', 'NEW', 'rarity', 'threshold']) {
   const context = pageContext(page);
   await context.loadAlbum(ALBUM_MODES.EMPTY);
   assert.equal(context.data.memories.length, 0, '空状态不得混入纪念数据');
+  assert.equal(context.data.gridItems.length, 0, '空状态不得混入方格数据');
   await context.onRetry();
   assert.equal(context.data.mode, ALBUM_MODES.READY, '失败重试应回到列表状态');
+  await context.loadAlbum(ALBUM_MODES.READY);
+  assert.equal(context.data.gridItems.length, MEMORY_ITEMS.length, 'READY 状态方格数量必须与 fixture 一致');
+  const lockedCell = context.data.gridItems.find(item => item.locked);
+  assert.ok(lockedCell, 'fixture 必须包含未解锁旅途剪影格');
+  lockedCell && context.onTapGridCell({ currentTarget: { dataset: { key: lockedCell.listKey } } });
+  assert.equal(context.data.selectedMemory, null, '未解锁格点击不得展开');
 
   console.log('极简纪念册列表、空态、加载态与失败重试校验通过。');
 })().catch(error => {

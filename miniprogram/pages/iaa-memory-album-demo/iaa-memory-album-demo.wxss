@@ -1,14 +1,45 @@
 @import "../../styles/iaa-memory-demo.wxss";
 
-.memory-list { margin-top: 32rpx; }
-.memory-card { overflow: hidden; margin-top: 20rpx; border-radius: 30rpx; background: #FFFDF8; }
-.memory-card:first-child { margin-top: 0; }
-.memory-card__image { display: block; width: 100%; height: 320rpx; background: #DDE3D6; }
-.memory-card__copy { padding: 26rpx 28rpx 30rpx; }
-.memory-card__date, .memory-card__title, .memory-card__line { display: block; }
-.memory-card__date { color: #8A9089; font-size: 19rpx; }
-.memory-card__title { margin-top: 10rpx; color: #29402F; font-size: 29rpx; line-height: 1.35; font-weight: 600; }
-.memory-card__line { margin-top: 10rpx; color: #727A73; font-size: 22rpx; line-height: 1.6; }
+.memory-page { background: #FAFAF8; color: #1A1A1A; }
+
+.memory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16rpx; margin-top: 32rpx; }
+.memory-grid__cell { position: relative; width: 100%; padding-bottom: 100%; border: 1rpx solid #E5E3DF; border-radius: 12rpx; background: #FFF; box-sizing: border-box; overflow: hidden; }
+.memory-grid__cell--selected { border-color: #9DB65B; border-width: 3rpx; }
+.memory-grid__cell--locked { background: #EDE8E2; }
+.memory-grid__inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+.memory-cell { width: 100%; height: 100%; box-sizing: border-box; }
+.memory-cell__photo { display: block; width: 100%; height: 100%; }
+
+.memory-cell--polaroid { position: relative; padding: 22rpx 14rpx 34rpx; background: #FFF; }
+.memory-cell--polaroid::before { content: ''; position: absolute; top: 8rpx; left: 50%; z-index: 2; width: 16rpx; height: 16rpx; border-radius: 50%; transform: translateX(-50%); background: radial-gradient(circle at 32% 28%, #F2EEE6, #A39E94); box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.16); }
+.memory-cell--polaroid .memory-cell__photo { border-radius: 2rpx; }
+
+.memory-cell--keepsake { padding: 16rpx; background: #F3F0E8; }
+
+.memory-cell--drawing { padding: 12rpx; background: #FFFDF8; }
+.memory-cell--drawing .memory-cell__photo { border-radius: 4rpx; }
+
+.memory-cell--postcard { padding: 14rpx; background: #F3F0E8; }
+.memory-cell__postcard-frame { width: 100%; height: 72%; border-radius: 8rpx; overflow: hidden; background: #EDE8E2; }
+.memory-cell__postcard-frame--silhouette { background: #E4DDD6; }
+.memory-cell__postcard-frame--silhouette .memory-cell__photo { filter: grayscale(1) brightness(0.68) contrast(0.52); opacity: 0.92; }
+
+.memory-cell--expand { max-width: 560rpx; margin: 0 auto; height: auto; min-height: 360rpx; }
+.memory-cell--expand.memory-cell--polaroid { padding: 28rpx 22rpx 56rpx; }
+.memory-cell--expand.memory-cell--keepsake,
+.memory-cell--expand.memory-cell--drawing { min-height: 420rpx; }
+.memory-cell__postcard-frame--expand { height: 320rpx; }
+
+.memory-grid-expand { margin-top: 28rpx; padding: 32rpx 24rpx 36rpx; border-top: 1rpx solid #E5E3DF; background: #FFFDF8; }
+.memory-grid-expand__hero { width: 100%; }
+.memory-grid-expand__notice { display: flex; justify-content: center; margin-top: 28rpx; }
+.memory-grid-expand__notice .inline-notice { opacity: 1; pointer-events: none; }
+.memory-grid-expand__actions { display: flex; justify-content: center; margin-top: 20rpx; }
+.memory-grid-expand__secondary { min-height: 72rpx; padding: 0 32rpx; display: flex; align-items: center; justify-content: center; color: #5C5C5C; font-size: 24rpx; font-weight: 600; }
+.memory-grid-expand__retry { min-height: 360rpx; display: flex; align-items: center; justify-content: center; color: #5C5C5C; font-size: 26rpx; }
+.memory-grid-expand__close { min-height: 96rpx; margin-top: 28rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 28rpx; font-weight: 600; }
+
 .demo-switcher { margin-top: 32rpx; padding: 26rpx; border: 1rpx dashed #B8BBB2; border-radius: 30rpx; background: rgba(255, 255, 255, 0.52); }
 .demo-switcher__heading { display: flex; justify-content: space-between; gap: 20rpx; }
 .demo-switcher__title { color: #49564C; font-size: 23rpx; font-weight: 600; }
@@ -20,7 +51,7 @@
 
 .album-tabs{display:flex;gap:40rpx}.album-tab{font-size:28rpx;min-height:88rpx;display:flex;align-items:center;color:#5C5C5C}.album-tab--active{color:#002900;text-decoration:underline;text-underline-offset:12rpx}.album-activity{margin-top:24rpx;min-height:112rpx;border:1rpx solid #E5E3DF;border-radius:24rpx;background:#FFFDF8;padding:28rpx;display:flex;justify-content:space-between;color:#35483C;font-size:28rpx}.album-activity__cost{color:#5C5C5C;font-size:24rpx}.album-detail-mask{position:fixed;inset:0;z-index:300;background:rgba(29,34,30,.38);display:flex;align-items:center;justify-content:center;padding:36rpx}.album-detail{position:relative;width:100%;padding:60rpx 36rpx 36rpx;background:#FFFDF8;border-radius:24rpx;color:#35483C;font-size:28rpx}.album-detail image{display:block;width:100%;height:480rpx;background:#FFF}.album-detail__close{position:absolute;top:8rpx;right:8rpx;width:72rpx;height:72rpx;display:flex;align-items:center;justify-content:center;font-size:40rpx}.album-detail__save{margin-top:28rpx;min-height:88rpx;border-radius:999rpx;background:#002900;color:#FFF;display:flex;align-items:center;justify-content:center}
 
-.tea-options{display:flex;gap:20rpx;margin-top:32rpx}.tea-option{flex:1;min-height:96rpx;display:flex;align-items:center;justify-content:center;border:2rpx solid #E5E3DF;border-radius:24rpx;background:#FFFDF8}.tea-option--selected{border-color:#5C765B;background:#EDF2E6}.tea-reply{min-height:72rpx}.tea-confirm{font-size:26rpx;padding:0;border:0}.tea-confirm::after{border:0}.tea-confirm[disabled]{background:#B5BCB0;color:#FFF}.album-detail .tea-photo--preload{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.tea-detail{max-height:80vh;overflow-y:auto}
+.tea-options{display:flex;gap:20rpx;margin-top:32rpx}.tea-option{flex:1;min-height:96rpx;display:flex;align-items:center;justify-content:center;border:2rpx solid #E5E3DF;border-radius:24rpx;background:#FFFDF8}.tea-option--selected{border-color:#5C765B;background:#EDF2E6}.tea-reply{min-height:72rpx}.tea-confirm{font-size:26rpx;padding:0;border:0;background:transparent;color:#5C5C5C}.tea-confirm::after{border:0}.tea-confirm[disabled]{color:#B5BCB0}.album-detail .tea-photo--preload{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.tea-detail{max-height:80vh;overflow-y:auto}
 
-.memory-card .polaroid-photo, .album-detail .polaroid-photo { box-sizing:border-box; padding:16rpx 16rpx 48rpx; background:#FFF; height:auto; }
+.memory-card__line { color: #727A73; font-size: 22rpx; line-height: 1.6; }
 .polaroid-canvas { position:fixed; left:-2000px; top:-2000px; width:1024px; height:1200px; pointer-events:none; }

@@ -22,16 +22,75 @@
       <view class="state-button" aria-role="button" bindtap="onRetry">重新试试</view>
     </view>
 
-    <view wx:else class="memory-list"><view wx:for="{{pendingPhotos}}" wx:key="id" class="memory-card memory-card--pending" data-id="{{item.id}}" bindtap="onOpenPendingPhoto"><image class="memory-card__image polaroid-photo" src="{{item.image}}" mode="widthFix"></image><view class="memory-card__copy"><text class="memory-card__date">{{item.date}}</text><text class="memory-card__line">{{item.line}}</text><text class="memory-card__title">待收下</text></view></view>
-      <view wx:for="{{memories}}" wx:key="listKey" class="memory-card" data-index="{{index}}" bindtap="onOpenMemory">
-        <image class="memory-card__image {{item.source === 'paper' || item.source === 'exchange' ? 'polaroid-photo' : ''}}" src="{{item.image}}" mode="{{item.source === 'paper' || item.source === 'exchange' ? 'widthFix' : 'aspectFill'}}"></image>
-        <view class="memory-card__copy">
-          <text class="memory-card__date">{{item.date}}</text>
-          <text class="memory-card__title">{{item.title}}</text>
-          <text class="memory-card__line">{{item.line}}</text>
+    <block wx:else>
+      <view class="memory-grid" aria-label="回忆方格">
+        <view wx:for="{{gridItems}}" wx:key="listKey" class="memory-grid__slot">
+          <view
+            class="memory-grid__cell {{selectedGridKey === item.listKey ? 'memory-grid__cell--selected' : ''}} {{item.locked ? 'memory-grid__cell--locked' : ''}}"
+            data-key="{{item.listKey}}"
+            bindtap="onTapGridCell"
+            aria-role="button"
+            aria-label="{{item.locked ? '暗格，待解锁' : '打开回忆'}}"
+          >
+            <view class="memory-grid__inner">
+              <view wx:if="{{item.cellKind === 'polaroid'}}" class="memory-cell memory-cell--polaroid">
+                <image class="memory-cell__photo" src="{{item.image}}" mode="aspectFill"></image>
+              </view>
+              <view wx:elif="{{item.cellKind === 'keepsake'}}" class="memory-cell memory-cell--keepsake">
+                <image class="memory-cell__photo" src="{{item.image}}" mode="aspectFit"></image>
+              </view>
+              <view wx:elif="{{item.cellKind === 'drawing'}}" class="memory-cell memory-cell--drawing">
+                <image class="memory-cell__photo" src="{{item.image}}" mode="aspectFill"></image>
+              </view>
+              <view wx:elif="{{item.cellKind === 'postcard_locked'}}" class="memory-cell memory-cell--postcard-locked">
+                <image class="memory-cell__photo memory-cell__photo--locked-blur" src="{{item.image}}" mode="aspectFill"></image>
+                <view class="memory-cell__locked-dim"></view>
+                <view class="memory-cell__lock" aria-hidden="true">
+                  <view class="memory-cell__lock-shackle"></view>
+                  <view class="memory-cell__lock-body"></view>
+                </view>
+              </view>
+              <view wx:elif="{{item.cellKind === 'postcard'}}" class="memory-cell memory-cell--postcard">
+                <view class="memory-cell__postcard-frame">
+                  <image class="memory-cell__photo" src="{{item.image}}" mode="aspectFill"></image>
+                </view>
+              </view>
+            </view>
+          </view>
+          <text wx:if="{{item.locked}}" class="memory-grid__caption">暗格 · 待解锁</text>
         </view>
       </view>
-    </view>
+
+      <view wx:if="{{selectedMemory}}" class="memory-grid-expand" aria-live="polite">
+        <view class="memory-grid-expand__hero">
+          <view wx:if="{{selectedMemory.cellKind === 'polaroid'}}" class="memory-cell memory-cell--polaroid memory-cell--expand">
+            <image wx:if="{{!selectedPhotoFailed}}" class="memory-cell__photo" src="{{selectedMemory.image}}" mode="aspectFit" bindload="onSelectedPhotoLoad" binderror="onSelectedPhotoError" bindtap="onPreviewMemory"></image>
+            <view wx:else class="memory-grid-expand__retry" bindtap="onRetrySelectedPhoto">重试</view>
+          </view>
+          <view wx:elif="{{selectedMemory.cellKind === 'keepsake'}}" class="memory-cell memory-cell--keepsake memory-cell--expand">
+            <image class="memory-cell__photo" src="{{selectedMemory.image}}" mode="aspectFit" bindtap="onPreviewMemory"></image>
+          </view>
+          <view wx:elif="{{selectedMemory.cellKind === 'drawing'}}" class="memory-cell memory-cell--drawing memory-cell--expand">
+            <image class="memory-cell__photo" src="{{selectedMemory.image}}" mode="aspectFit" bindtap="onPreviewMemory"></image>
+          </view>
+          <view wx:elif="{{selectedMemory.cellKind === 'postcard'}}" class="memory-cell memory-cell--postcard memory-cell--expand">
+            <view class="memory-cell__postcard-frame memory-cell__postcard-frame--expand">
+              <image class="memory-cell__photo" src="{{selectedMemory.image}}" mode="aspectFit" bindtap="onPreviewMemory"></image>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{selectedMemory.metaPill}}" class="memory-grid-expand__notice">
+          <inline-notice text="{{selectedMemory.metaPill}}" tone="info" visible="{{true}}"></inline-notice>
+        </view>
+        <view wx:if="{{selectedMemory.pending && !selectedMemory.collected}}" class="memory-grid-expand__actions">
+          <button class="memory-grid-expand__secondary tea-confirm" disabled="{{!selectedPhotoReady}}" bindtap="onCollectPendingPhoto"><text class="button-label">收下</text></button>
+        </view>
+        <view wx:elif="{{selectedMemory.source === 'paper' || selectedMemory.source === 'exchange' || selectedMemory.cellKind === 'polaroid'}}" class="memory-grid-expand__actions">
+          <view wx:if="{{selectedPhotoReady && !selectedPhotoFailed}}" class="memory-grid-expand__secondary" bindtap="onSaveMemory">保存</view>
+        </view>
+        <view class="memory-grid-expand__close" aria-role="button" bindtap="onCloseDetail">关闭</view>
+      </view>
+    </block>
 
     </block>
     <view wx:if="{{isDemo && !roomEntry}}" class="demo-switcher">
@@ -45,7 +104,7 @@
       <text class="demo-switcher__note">LOCAL FIXTURE · 无网络 · 无账户写入</text>
     </view>
     <view class="safe-space"></view>
-    <view wx:if="{{selectedMemory || selectedActivity}}" class="album-detail-mask" bindtap="onCloseDetail"><view class="album-detail" catchtap="noop"><view class="album-detail__close" bindtap="onCloseDetail">×</view><block wx:if="{{selectedMemory}}"><image wx:if="{{!selectedPhotoFailed}}" class="{{selectedMemory.source === 'paper' || selectedMemory.source === 'exchange' ? 'polaroid-photo' : ''}}" src="{{selectedMemory.image}}" mode="{{selectedMemory.source === 'paper' || selectedMemory.source === 'exchange' ? 'widthFix' : 'aspectFit'}}" bindload="onSelectedPhotoLoad" binderror="onSelectedPhotoError" bindtap="onPreviewMemory"></image><view wx:else class="album-detail__save" bindtap="onRetrySelectedPhoto">重试</view><text>{{selectedMemory.title}}</text><text class="memory-card__line">{{selectedMemory.line}}</text><button wx:if="{{selectedMemory.source === 'paper' && !selectedMemory.collected}}" class="album-detail__save tea-confirm" disabled="{{!selectedPhotoReady}}" bindtap="onCollectPendingPhoto"><text class="button-label">收下</text></button><view wx:else class="album-detail__save" bindtap="onSaveMemory">保存</view></block><block wx:else><text>{{selectedActivity.title}}</text><block wx:if="{{selectedActivity.key === 'exchange' && exchange}}"><text class="memory-card__line">{{exchange.line}}</text><text class="memory-card__line">10 星</text><text wx:if="{{exchangeInsufficient && !exchange.owned}}" class="memory-card__line">星星还不够</text><text wx:if="{{exchangeFailed}}" class="memory-card__line">照片暂时打不开</text><button class="album-detail__save tea-confirm" disabled="{{exchangeLoading || (exchangeInsufficient && !exchange.owned)}}" bindtap="onExchangePhoto"><text class="button-label">{{exchange.owned ? '已拥有' : exchangeFailed ? '重试' : '确认兑换'}}</text></button></block><text wx:else class="memory-card__line">{{selectedActivity.key === 'tea' && firstActivityFree ? '首次免费' : '需花费 ' + selectedActivity.cost + ' 星'}}</text><view wx:if="{{selectedActivity.key === 'tea'}}" class="album-detail__save" bindtap="onStartTea">{{tea ? '继续' : '开始'}}</view></block></view></view>
+    <view wx:if="{{selectedActivity}}" class="album-detail-mask" bindtap="onCloseDetail"><view class="album-detail" catchtap="noop"><view class="album-detail__close" bindtap="onCloseDetail">×</view><block><text>{{selectedActivity.title}}</text><block wx:if="{{selectedActivity.key === 'exchange' && exchange}}"><text class="memory-card__line">{{exchange.line}}</text><text class="memory-card__line">10 星</text><text wx:if="{{exchangeInsufficient && !exchange.owned}}" class="memory-card__line">星星还不够</text><text wx:if="{{exchangeFailed}}" class="memory-card__line">照片暂时打不开</text><button class="album-detail__save tea-confirm" disabled="{{exchangeLoading || (exchangeInsufficient && !exchange.owned)}}" bindtap="onExchangePhoto"><text class="button-label">{{exchange.owned ? '已拥有' : exchangeFailed ? '重试' : '确认兑换'}}</text></button></block><text wx:else class="memory-card__line">{{selectedActivity.key === 'tea' && firstActivityFree ? '首次免费' : '需花费 ' + selectedActivity.cost + ' 星'}}</text><view wx:if="{{selectedActivity.key === 'tea'}}" class="album-detail__save" bindtap="onStartTea">{{tea ? '继续' : '开始'}}</view></block></view></view>
     <view wx:if="{{teaVisible && tea}}" class="album-detail-mask" bindtap="onCloseTea"><view class="album-detail tea-detail" catchtap="noop">
       <view class="album-detail__close" bindtap="onCloseTea">×</view>
       <text>窗边茶会</text>

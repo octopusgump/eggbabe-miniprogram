@@ -6,6 +6,7 @@ let teaSequence = 0;
 const stars = require('../../services/iaa-star-unlock-adapter');
 const config = require('../../config/v2');
 const { savePolaroid } = require('../../services/companion-polaroid');
+const { buildGridItems, enrichGridItem } = require('../../utils/memory-album-grid');
 const MODE_OPTIONS = Object.freeze([
   Object.freeze({ value: ALBUM_MODES.READY, label: '纪念列表' }),
   Object.freeze({ value: ALBUM_MODES.LOADING, label: '加载中' }),
@@ -31,6 +32,8 @@ Page({
     isDemo: config.localDemoEnabled,
     section: 'memories',
     selectedMemory: null,
+    selectedGridKey: '',
+    gridItems: [],
     activities: [{ key: 'tea', title: '窗边茶会', cost: 20 }, { key: 'travel', title: '旅行', cost: 40 }],
     selectedActivity: null,
     tea: null,
@@ -54,15 +57,28 @@ Page({
   onHide() { this.albumVisible = false; this.cancelExchangePreparation(); },
   onUnload() { this.albumVisible = false; this.cancelExchangePreparation(); },
   cancelExchangePreparation() { this.exchangeAttempt = (this.exchangeAttempt || 0) + 1; this.setData({ exchangeLoading: false }); },
+  syncGridItems(memories, pendingPhotos) {
+    const rows = (memories || []).map((item, index) =>
+      enrichGridItem(Object.assign({}, item, { listKey: item.listKey || item.id || `${item.date}-${index}` }), index)
+    );
+    return buildGridItems(pendingPhotos || [], rows);
+  },
+
   loadAlbum(mode) {
     return adapter.getAlbum(mode).then(view => {
+      const pendingPhotos = this.roomEntry ? stars.getPendingPhotos() : [];
+      const memories = (this.roomEntry ? stars.getMemories() : view.memories).map((item, index) =>
+        Object.assign({}, item, { listKey: item.id || `${item.date}-${index}` })
+      );
+      const gridItems = this.syncGridItems(memories, pendingPhotos);
       this.setData({
         contractVersion: view.contractVersion,
         title: view.title,
         subtitle: view.subtitle,
-        pendingPhotos: this.roomEntry ? stars.getPendingPhotos() : [],
-        memories: (this.roomEntry ? stars.getMemories() : view.memories).map((item, index) => Object.assign({}, item, { listKey: item.id || `${item.date}-${index}` })),
-        mode: this.roomEntry && !stars.getMemories().length && !stars.getPendingPhotos().length ? ALBUM_MODES.EMPTY : view.mode
+        pendingPhotos,
+        memories,
+        gridItems,
+        mode: this.roomEntry && !memories.length && !pendingPhotos.length ? ALBUM_MODES.EMPTY : view.mode
       });
       return view;
     });
@@ -79,7 +95,17 @@ Page({
   onExchangePhoto() {
     const photo = this.data.exchange;
     if (!photo || this.data.exchangeLoading) return;
-    if (photo.owned) { this.setData({ selectedActivity: null, selectedMemory: photo, selectedPhotoReady: false, selectedPhotoFailed: false }); return; }
+    if (photo.owned) {
+      const selectedMemory = enrichGridItem(Object.assign({}, photo, { listKey: photo.id || 'exchange-owned' }), 0);
+      this.setData({
+        selectedActivity: null,
+        selectedMemory,
+        selectedGridKey: selectedMemory.listKey,
+        selectedPhotoReady: false,
+        selectedPhotoFailed: false
+      });
+      return;
+    }
     if (this.data.exchangeInsufficient) return;
     const identity = stars.getRoomIdentity();
     const attempt = this.exchangeAttempt = (this.exchangeAttempt || 0) + 1;
@@ -90,7 +116,15 @@ Page({
         if (!current()) return;
         const result = stars.exchangePhoto(photo.id, true);
         if (result.ok) {
-          this.setData({ selectedActivity: null, selectedMemory: result.memory, selectedPhotoReady: false, selectedPhotoFailed: false, section: 'memories' });
+          const selectedMemory = enrichGridItem(Object.assign({}, result.memory, { listKey: result.memory.id || 'exchange-new' }), 0);
+          this.setData({
+            selectedActivity: null,
+            selectedMemory,
+            selectedGridKey: selectedMemory.listKey,
+            selectedPhotoReady: false,
+            selectedPhotoFailed: false,
+            section: 'memories'
+          });
           this.loadAlbum(ALBUM_MODES.READY);
         } else this.setData({ exchangeFailed: result.error.code !== 'INSUFFICIENT_STARS' });
         this.refreshExchange();
@@ -99,9 +133,20 @@ Page({
       complete: () => { if (current()) this.setData({ exchangeLoading: false }); }
     });
   },
-  onOpenPendingPhoto(event) {
-    const photo = this.data.pendingPhotos.find(item => item.id === event.currentTarget.dataset.id);
-    if (photo) this.setData({ selectedMemory: photo, selectedPhotoReady: false, selectedPhotoFailed: false });
+  onTapGridCell(event) {
+    const key = event.currentTarget.dataset.key;
+    const item = this.data.gridItems.find(row => row.listKey === key);
+    if (!item || item.locked) return;
+    if (this.data.selectedGridKey === key) {
+      this.onCloseDetail();
+      return;
+    }
+    this.setData({
+      selectedGridKey: key,
+      selectedMemory: item,
+      selectedPhotoReady: false,
+      selectedPhotoFailed: false
+    });
   },
   onSelectedPhotoLoad() { this.setData({ selectedPhotoReady: true, selectedPhotoFailed: false }); },
   onSelectedPhotoError() { this.setData({ selectedPhotoReady: false, selectedPhotoFailed: true }); },
@@ -109,7 +154,7 @@ Page({
   onCollectPendingPhoto() {
     const photo = this.data.selectedMemory;
     if (!photo || !this.data.selectedPhotoReady || !stars.collectPhoto(photo.id).ok) return;
-    this.setData({ selectedMemory: null });
+    this.setData({ selectedMemory: null, selectedGridKey: '' });
     this.loadAlbum(ALBUM_MODES.READY);
   },
   refreshTea() {
@@ -152,10 +197,14 @@ Page({
     this.refreshTea();
     this.loadAlbum(ALBUM_MODES.READY);
   },
-  onSelectSection(event) { this.setData({ section: event.currentTarget.dataset.section, selectedMemory: null, selectedActivity: null }); },
-  onOpenMemory(event) { this.setData({ selectedMemory: this.data.memories[Number(event.currentTarget.dataset.index)] || null, selectedPhotoReady: false, selectedPhotoFailed: false }); },
+  onSelectSection(event) {
+    this.setData({ section: event.currentTarget.dataset.section, selectedMemory: null, selectedActivity: null, selectedGridKey: '' });
+  },
   noop() {},
-  onCloseDetail() { this.cancelExchangePreparation(); this.setData({ selectedMemory: null, selectedActivity: null }); },
+  onCloseDetail() {
+    this.cancelExchangePreparation();
+    this.setData({ selectedMemory: null, selectedActivity: null, selectedGridKey: '' });
+  },
   onPreviewMemory() { const item = this.data.selectedMemory; if (item) wx.previewImage({ urls: [item.image], current: item.image }); },
   onSaveMemory() { const item = this.data.selectedMemory; if (!item) return; if (['paper', 'exchange'].includes(item.source)) { if (this.data.selectedPhotoReady) savePolaroid(this, item).catch(() => wx.showToast({ title: '图片没有保存，请检查相册权限', icon: 'none' })); } else wx.saveImageToPhotosAlbum({filePath:item.image,fail:()=>wx.showToast({title:'图片没有保存，请检查相册权限',icon:'none'})}); },
   onOpenActivity(event) { this.setData({ selectedActivity: this.data.activities.find(item => item.key === event.currentTarget.dataset.key) || null }); },

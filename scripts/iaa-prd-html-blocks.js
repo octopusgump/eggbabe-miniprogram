@@ -81,7 +81,7 @@ module.exports = function blocks(U) {
   <table><tr><th>类</th><th>定义</th><th>实例</th></tr>
   <tr><td>日常陪伴</td><td>在家；一次选择或短互动</td><td>普通在家信</td></tr>
   <tr><td>外出牵挂</td><td>外出；纸条/牵挂</td><td>收好纸条</td></tr>
-  <tr><td>特别奖励</td><td>非常规一步完成；独立流程+结果</td><td>创作向：一起画 · 活动向：茶会等</td></tr></table>
+  <tr><td>特别奖励</td><td>非「一次点击即结束」；须独立流程+明确结果</td><td>创作向：一起画 · 活动向：茶会等</td></tr></table>
   <h4>判据顺序（命中即停）</h4>
   <ol class="steps"><li>外出 + 纸条核心 → 外出牵挂</li><li>信核心 = 一起画 → 特别奖励·创作向</li><li>信核心 = B 类多步活动 → 特别奖励·活动向</li><li>否则 → 日常陪伴</li></ol>
   <p class="note"><strong>不参与分类</strong>：A 类兑换、纪念册「活动」页自选入口、随机惊喜、明天呢、收下。</p>
@@ -98,18 +98,18 @@ module.exports = function blocks(U) {
 <tr><td>7–13</td><td>12</td><td>45–59</td><td>16</td></tr>
 <tr><td>14–20</td><td>13</td><td>60–89</td><td>17</td></tr>
 <tr><td colspan="2"></td><td>90+</td><td>18</td></tr></table>
-<p>§5.1.1（2026-10-09）：<strong>读信计日</strong>；未读信自然日<strong>断开清零</strong>；画好等另发星。不生息、不按余额计息。</p>
+<p>§5.1.1（2026-10-09）：当日首次<strong>点开信纸</strong>→「一起 X 天」+1（只开信则 +1 天、0 星）；未开信自然日<strong>断开清零</strong>；茶会永不加天数；画好等另发星。不生息、不按余额计息。</p>
 <p class="callout callout-undef"><span class="tag u">待定义</span> 随机 +3 等是否计入 36 封顶 — 见 §7.5.1 / 附录</p>
 </section>
 <section class="sub" id="b2-2"><h3>§5.2 结算点</h3>
-<table><tr><th>动作</th><th>星星</th><th>有效日</th></tr>
-<tr><td>读信、关信、点「明天呢？」</td><td>无</td><td>无</td></tr>
-<tr><td><strong>当日首次读信</strong></td><td>无</td><td><strong>+1</strong></td></tr>
-<tr><td>完成普通核心动作</td><td>基础×1（当日）</td><td>不重复计日</td></tr>
+<table><tr><th>动作</th><th>星星</th><th>一起 X 天</th></tr>
+<tr><td><strong>当日首次点开信纸</strong></td><td>无</td><td><strong>+1</strong></td></tr>
+<tr><td>关信、点「明天呢？」</td><td>无</td><td>无</td></tr>
+<tr><td>完成普通核心动作</td><td>基础×1（当日）</td><td>无</td></tr>
 <tr><td>一起画 · 画布就绪</td><td>基础×1（与普通共用额度）</td><td>无</td></tr>
-<tr><td>画好了 · 导出成功</td><td>额外=冻结基数</td><td>不重复计日</td></tr>
+<tr><td>画好了 · 导出成功</td><td>额外=冻结基数</td><td>无</td></tr>
 <tr><td>收下作品</td><td>无</td><td>无</td></tr>
-<tr><td>茶会确认完成 · 有照片</td><td>无基础奖</td><td>不重复计日</td></tr></table>
+<tr><td>茶会确认完成 · 有照片</td><td>无基础奖</td><td><strong>永不 +1</strong></td></tr></table>
 <p>常规日最多 <strong>2 份基数 · 封顶 36</strong>。日界 Asia/Shanghai；<strong>断开清零</strong>；花星只减余额。</p>
 <p class="callout callout-slim"><span class="tag s">可精简</span> 「前 7 有效日 76 星 / 茶会+旅行 60」算术 — 见 canonical §5.2</p>
 <div class="flex"><div class="col-pic"><div class="phone"><img class="room" src="${U.roomDay}"/><div class="award-mock" style="position:absolute;top:30px;left:50%;transform:translateX(-50%);text-align:center"><img src="${U.starNeutral}" width="64"/><div style="color:#c99200;font-weight:800">+11</div></div></div>
@@ -149,8 +149,8 @@ module.exports = function blocks(U) {
   const block4 = `
 <div class="block-head" id="b4">阅读块 4 · §6 一起画 · §7 纪念册与活动</div>
 <section class="sub" id="b4-1"><h3>§6 一起画（破壳后）· 特别奖励·创作向</h3>
-<p><strong>路径</strong>：信邀 → 一起画 → 画布就绪（发未领基础奖）→ 创作 → 画好了导出 → 额外奖+有效日 → 信纸见作品 → 可选收下。</p>
-<ul><li>至少一笔真实非橡皮笔迹；空白/仅贴纸/仅擦除不算</li><li>不评分、不限时；不假装看懂未解释的画面</li><li>中途退出：保留开始奖与运行内草稿；不发完成奖</li><li>导出失败可重试；跨日恢复旧稿不自动发今日基础奖</li><li>破壳前蛋壳流程不变；陪伴作品<strong>不</strong>写入蛋壳</li></ul>
+<p><strong>路径</strong>：信邀 → 一起画 → 画布就绪（发未领基础奖）→ 创作 → 画好了导出 → 额外奖（天数只靠开信纸）→ 信纸见作品 → 可选收下。</p>
+<ul><li>至少一笔真实非橡皮笔迹；空白/仅贴纸/仅擦除不算</li><li>v1 不评分、不限时；无「告诉宠物我想表达什么」步骤</li><li>中途退出：保留开始奖与运行内草稿；不发完成奖</li><li>导出失败可重试；跨日恢复旧稿不自动发今日基础奖</li><li>破壳前蛋壳流程不变；陪伴作品<strong>不</strong>写入蛋壳</li></ul>
 <p class="callout callout-undef"><span class="tag u">待定义</span> 关小程序后草稿/作品持久化 — CTO</p>
 </section>
 <section class="sub" id="b4-2"><h3>§7.1 纪念册结构 + Layout</h3>
@@ -164,7 +164,7 @@ ${albumActivitiesMock}
 <p><span class="tag p">待实现</span> 样张与揭晓交互验收未完成</p>
 </section>
 <section class="sub" id="b4-4"><h3>§7.3 窗边茶会 · 特别奖励·活动向</h3>
-<ol><li>首次免费；选茶后须再点确认才结算</li><li>完成才扣 20 星；开始/中途退出不扣</li><li>外出不能新开始；已有进度可继续</li><li>计有效日、不发基础星；与普通/画画共用每日一次</li></ol>
+<ol><li>首次免费；选茶后须再点确认才结算</li><li>完成才扣 20 星；开始/中途退出不扣</li><li>外出不能新开始；已有进度可继续</li><li>不发基础星；「一起 X 天」永不因茶会 +1（只靠开信纸）</li></ol>
 <p><span class="tag d">已交付前端</span> 运行内 mock · 非手机视觉终验收</p>
 </section>
 <section class="sub" id="b4-5"><h3>§7.4 后续方向（摘要）</h3>

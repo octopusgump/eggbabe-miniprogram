@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>IAA PRD 定稿阅读窗 · 2026-10-09</title>
+<style>
+body{font-family:-apple-system,"PingFang SC",sans-serif;margin:0;background:#f4f1ea;color:#2a332e;line-height:1.6}
+header{background:linear-gradient(135deg,#2f4f3f,#4a7c59);color:#fff;padding:18px 20px}
+header h1{margin:0;font-size:20px}header p{margin:8px 0 0;opacity:.92;font-size:14px}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:#ebe4d8;position:sticky;top:0;z-index:2}
+nav a{background:#fff;border:1px solid #d5cdb8;border-radius:999px;padding:6px 12px;color:#2a332e;text-decoration:none;font-size:13px;font-weight:600}
+.wrap{display:grid;grid-template-columns:280px 1fr;min-height:70vh}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+aside{padding:16px;border-right:1px solid #ddd5c8;background:#fffdf8}
+aside h2{font-size:14px;margin:0 0 10px;color:#3d6b52}
+aside a{display:block;padding:8px 10px;margin-bottom:6px;border-radius:8px;color:#2a332e;text-decoration:none;background:#f0ebe3;font-size:13px}
+aside a:hover,aside a.on{background:#dfece3}
+main{padding:0}
+iframe{width:100%;height:calc(100vh - 120px);border:0;background:#fff}
+.note{padding:12px 16px;font-size:13px;color:#5c6b62;background:#fff4e6;border-bottom:1px solid #e6d3a8}
+code{font-size:12px;background:#eee;padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <h1>IAA 陪伴 PRD · 定稿阅读窗</h1>
+  <p>分支 <code>cursor/iaa-prd-letter-days-f09e</code> · commit <code>8303aea</code> · 点左侧切换文件；手机预览最适合扫读</p>
+</header>
+<nav>
+  <a href="#mobile" data-src="./02_蛋宝宝_IAA陪伴_手机预览.html">手机预览 HTML</a>
+  <a href="#prd" data-src="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">主 PRD（原文）</a>
+  <a href="#decisions" data-src="../未来储备/02_IAA陪伴_后续决策清单_v1.0.md">决策清单</a>
+  <a href="#glossary" data-src="../../GLOSSARY.md">GLOSSARY</a>
+</nav>
+<p class="note">定稿要点：点开信纸 →「一起 X 天」+1；只开信 = +1 天 0 星；未开信断开清零；茶会永不加天数；画画 v1 不评分。Markdown 在 iframe 里可能是纯文本，优先看手机预览。</p>
+<div class="wrap">
+  <aside>
+    <h2>本轮改动文件</h2>
+    <a class="on" href="#mobile" data-src="./02_蛋宝宝_IAA陪伴_手机预览.html">1. 手机预览 HTML（推荐）</a>
+    <a href="#prd" data-src="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">2. 主 PRD v1.0</a>
+    <a href="#decisions" data-src="../未来储备/02_IAA陪伴_后续决策清单_v1.0.md">3. 后续决策清单</a>
+    <a href="#glossary" data-src="../../GLOSSARY.md">4. GLOSSARY.md</a>
+    <h2 style="margin-top:18px">定稿锚点（主 PRD）</h2>
+    <a href="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">§1 一起 X 天</a>
+    <a href="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">§3.0 特别奖励措辞</a>
+    <a href="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">§5.1.1 / §5.2 开信加天数</a>
+    <a href="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">§6.2 画画 v1 不评分</a>
+    <a href="./02_蛋宝宝_IAA陪伴_PRD_v1.0.md">§7.3 茶会不加天数</a>
+  </aside>
+  <main>
+    <iframe id="viewer" title="IAA PRD viewer" src="./02_蛋宝宝_IAA陪伴_手机预览.html"></iframe>
+  </main>
+</div>
+<script>
+const frame = document.getElementById('viewer');
+const links = [...document.querySelectorAll('[data-src]')];
+function go(a){
+  links.forEach(x=>x.classList.remove('on'));
+  a.classList.add('on');
+  frame.src = a.getAttribute('data-src');
+  history.replaceState(null,'',a.getAttribute('href'));
+}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a);}));
+</script>
+</body>
+</html>

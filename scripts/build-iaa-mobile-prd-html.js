@@ -7,7 +7,9 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const out = path.join(root, 'iaa-prd-mobile-with-images.html');
+/** Single canonical self-contained PRD preview (P0–P2, embedded images). Regenerate; do not hand-edit. */
+const out = path.join(root, 'docs/主PRD/02_蛋宝宝_IAA陪伴_手机预览.html');
+const blocks = require('./iaa-prd-html-blocks');
 
 const assets = {
   starNeutral: 'miniprogram/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-neutral.png',
@@ -207,27 +209,7 @@ const block1 = `
 </section>
 `;
 
-const block2 = `
-<div class="block-head" id="b2">阅读块 2 · §5 星星与有效陪伴日</div>
-<section class="sub"><div class="flex"><div class="col-text"><h3>阶梯与结算（摘要）</h3>
-<table><tr><th>有效日</th><th>基础星</th><th>有效日</th><th>基础星</th></tr>
-<tr><td>1-2</td><td>10</td><td>30-44</td><td>15</td></tr><tr><td>3-6</td><td>11</td><td>45-59</td><td>16</td></tr>
-<tr><td>7-13</td><td>12</td><td>60-89</td><td>17</td></tr><tr><td>14-20</td><td>13</td><td>90+</td><td>18</td></tr></table>
-<p>日最多 2 份基数，封顶 36。茶会完成计有效日、不发基础星。</p></div>
-<div class="col-pic"><img src="${U.starNeutral}" width="90"/><img src="${U.starSqueeze}" width="90"/>
-<p class="cap">收星动效两帧</p></div></div></section>`;
-
-const block3 = `
-<div class="block-head" id="b3">阅读块 3 · §4 房间与信件</div>
-<section class="sub"><div class="flex"><div class="col-text"><ul>
-<li>废止陪伴/聊天分栏、进入聊天文字钮</li><li>明天呢？不发星</li><li>外出无聊天角色</li></ul></div>
-<div class="col-pic"><div class="phone"><img class="room" src="${U.roomDay}"/><img src="${U.stare}" style="position:absolute;right:6px;bottom:50px;width:88px"/></div></div></div></section>`;
-
-const block4 = `
-<div class="block-head" id="b4">阅读块 4 · §6 一起画 · §7 纪念册与茶会</div>
-<section class="sub"><div class="flex"><div class="col-text"><p><span class="tag d">已交付</span> 一起画、茶会 · <span class="tag p">待实现</span> 10 星兑换</p></div>
-<div class="col-pic" style="display:flex;gap:8px;flex-wrap:wrap"><div class="polaroid"><img src="${U.polarOuting}" width="130"/></div>
-<div class="polaroid"><img src="${U.polarSolar}" width="130"/></div><div class="polaroid"><img src="${U.polarAfternoon}" width="130"/></div></div></div></section>`;
+const { extraCss, block2, block3, block4, blockP2 } = blocks(U);
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -235,22 +217,23 @@ const html = `<!DOCTYPE html>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>蛋宝宝 IAA 陪伴 PRD · 手机预览</title>
-<style>${css}</style>
+<style>${css}${extraCss}</style>
 </head>
 <body>
 <header>
 <h1>蛋宝宝 · IAA 陪伴 PRD</h1>
-<p>阅读块 1 已展开全文 · 单文件内嵌图 · Safari 打开</p>
+<p>阅读块 1–4 + 附录 P2 · 单文件内嵌图 · 手机 Safari / Chrome 打开</p>
 </header>
 <nav>
-<a href="#b1">块1 完整</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3 流程</a><a href="#b1-5">§3.2</a>
-<a href="#b2">块2</a><a href="#b3">块3</a><a href="#b4">块4</a>
+<a href="#b1">块1</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3</a><a href="#b1-5">§3.2</a>
+<a href="#b2">块2 §5</a><a href="#b3">块3 §4</a><a href="#b4">块4 §6–7</a><a href="#album-memories">纪念册</a><a href="#p2">附录</a>
 </nav>
 ${block1}
 ${block2}
 ${block3}
 ${block4}
-<footer>Canonical：02_蛋宝宝_IAA陪伴_PRD_v1.0.md · 本地模拟 ≠ 已发布</footer>
+${blockP2}
+<footer>生成：<code>node scripts/build-iaa-mobile-prd-html.js</code> · Canonical：02_蛋宝宝_IAA陪伴_PRD_v1.0.md · 本地模拟 ≠ 已发布</footer>
 </body>
 </html>`;
 

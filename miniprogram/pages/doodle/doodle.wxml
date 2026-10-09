@@ -1,4 +1,4 @@
-<view class="page page--{{pageTransitionPhase}}">
+<view class="page page--{{pageTransitionPhase}} {{companionDrawing ? 'page--companion' : ''}} {{themeName ? 'page--theme' : ''}}">
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
@@ -18,6 +18,17 @@
       <text class="doodle-title">{{companionDrawing ? '一起画' : '画我的蛋壳'}}</text>
       <view class="doodle-nav-safe"></view>
     </view>
+  </view>
+
+  <view wx:if="{{themeName}}" class="theme-reference">
+    <text>{{themeName}}</text>
+    <image src="{{themeReferenceImage}}" mode="aspectFit"></image>
+  </view>
+  <view wx:if="{{themeResultVisible}}" class="theme-result theme-result--{{themeRevealPhase}} {{companionReducedMotion ? 'theme-result--reduced' : ''}}">
+    <text class="theme-result-close" bindtap="onCloseThemeResult" aria-role="button" aria-label="关闭">×</text>
+    <view class="theme-result-art"><image class="theme-original" src="{{themeOriginalImage}}" mode="aspectFit"></image><image wx:if="{{!themeFullFailed}}" class="theme-complete" src="{{themeFullImage}}" mode="aspectFit" bindload="onThemeFullLoad" binderror="onThemeFullError"></image></view>
+    <text wx:if="{{themeFullFailed}}" bindtap="onRetryThemeFull">重试</text>
+    <view class="theme-result-reward"><text>{{themeRewardLabel}}</text><text>{{themeRewardLine}}</text></view>
   </view>
 
   <view class="preview" bindtap="onCanvasBackdropTap">
@@ -59,7 +70,7 @@
     </view>
 
     <view class="preview-aura"></view>
-    <view class="egg-canvas-stack" style="transform:scale({{canvasScale}});">
+    <view class="egg-canvas-stack {{companionDrawing ? 'egg-canvas-stack--paper' : ''}}" style="transform:scale({{canvasScale}});">
       <canvas
         type="2d"
         id="eggBaseCanvas"

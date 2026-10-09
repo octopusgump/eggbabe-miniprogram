@@ -171,6 +171,7 @@
       <text wx:if="{{currentState.atHome}}" class="today-companion-letter__line">{{dailyMood.moodLabel}}</text>
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
+      <text wx:if="{{companionThemeInvitation}}" class="today-companion-letter__feedback">{{companionThemeInvitation.theme.name}}</text>
 
       <view class="today-companion-letter__interaction">
         <view

@@ -2,6 +2,8 @@
 
 Domain language for the IAA companion loop. No implementation detail.
 
+Canonical reading surface for IAA companion product rules: `docs/主PRD/02_蛋宝宝_IAA陪伴_PRD_v1.0.md` only (HTML previews abolished).
+
 | Term | Meaning |
 |---|---|
 | 一起 X 天 | User-visible continuous companion-day count. +1 only on the first time that natural day the letter paper becomes visible (envelope → paper). Opening the letter without doing the core action still +1 day and awards 0 stars. A natural day with no letter open resets the streak to 1 on the next open (**断开清零**). Tea party completion never +1. |

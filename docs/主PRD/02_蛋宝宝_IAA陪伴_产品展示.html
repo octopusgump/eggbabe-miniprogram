@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>蛋宝宝 · IAA 陪伴 PRD · 产品展示</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #2a332e;
+      --muted: #5c6b62;
+      --line: #ddd5c8;
+      --accent: #3d6b52;
+      --slim: #e8f4ec;
+      --slim-border: #7cb892;
+      --undef: #fff4e6;
+      --undef-border: #e6a23c;
+      --done: #eef6ff;
+      --done-border: #5b8def;
+      --pending: #fceef0;
+      --pending-border: #d86a7a;
+      --phone-w: 280px;
+      --radius: 14px;
+      --shadow: 0 12px 40px rgba(42, 51, 46, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+    a { color: var(--accent); }
+    header.hero {
+      background: linear-gradient(135deg, #2f4f3f 0%, #4a7c59 100%);
+      color: #f8f6f0;
+      padding: 2rem 1.5rem 1.5rem;
+    }
+    header.hero h1 { margin: 0 0 0.35rem; font-size: 1.55rem; font-weight: 650; }
+    header.hero p { margin: 0.25rem 0; opacity: 0.92; max-width: 52rem; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1.25rem 3rem; }
+    nav.toc {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(244, 241, 234, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-size: 0.88rem;
+    }
+    nav.toc a { text-decoration: none; color: var(--ink); font-weight: 600; }
+    nav.toc a:hover { color: var(--accent); }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin: 1.25rem 0 2rem;
+    }
+    .legend .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+    }
+    .tag-slim { background: var(--slim); border: 1px solid var(--slim-border); color: #2d5a3d; }
+    .tag-undef { background: var(--undef); border: 1px solid var(--undef-border); color: #8a4b00; }
+    .tag-done { background: var(--done); border: 1px solid var(--done-border); color: #1e4a8a; }
+    .tag-pending { background: var(--pending); border: 1px solid var(--pending-border); color: #8b2e3c; }
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--paper);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      font-size: 0.88rem;
+      margin-bottom: 2rem;
+    }
+    .audit-table th, .audit-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    .audit-table th { background: #ebe4d8; font-weight: 650; }
+    .audit-table tr:last-child td { border-bottom: none; }
+    section.block {
+      margin-bottom: 2.75rem;
+      scroll-margin-top: 4rem;
+    }
+    section.block > h2 {
+      font-size: 1.25rem;
+      margin: 0 0 0.35rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 3px solid var(--accent);
+    }
+    section.block > .block-intro {
+      color: var(--muted);
+      margin: 0 0 1.25rem;
+      font-size: 0.92rem;
+    }
+    .topic {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 340px);
+      gap: 1.25rem;
+      align-items: start;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.15rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+    }
+    @media (max-width: 860px) {
+      .topic { grid-template-columns: 1fr; }
+    }
+    .topic h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+    .topic ul { margin: 0.4rem 0; padding-left: 1.15rem; }
+    .topic table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin: 0.5rem 0;
+    }
+    .topic th, .topic td {
+      border: 1px solid var(--line);
+      padding: 0.35rem 0.45rem;
+    }
+    .topic th { background: #f0ebe3; }
+    .callout {
+      margin-top: 0.65rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+    }
+    .callout-slim { background: var(--slim); border-left: 3px solid var(--slim-border); }
+    .callout-undef { background: var(--undef); border-left: 3px solid var(--undef-border); }
+    .visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .phone {
+      width: var(--phone-w);
+      border-radius: 22px;
+      border: 3px solid #2a2a2a;
+      background: #111;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .phone-notch {
+      height: 22px;
+      background: #111;
+    }
+    .phone-screen {
+      position: relative;
+      background: #1a1a1a;
+      min-height: 420px;
+      overflow: hidden;
+    }
+    .phone-screen img.bg {
+      width: 100%;
+      height: 420px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .phone-screen img.icon {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+    }
+    .phone-screen .hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+    }
+    .hud-balance {
+      background: rgba(255,253,248,0.92);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 650;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .hud-balance .star-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .hud-balance img.star-icon { width: 22px; height: 22px; }
+    .letter-overlay {
+      position: absolute;
+      inset: 48px 14px 70px;
+      background: rgba(255,252,245,0.96);
+      border-radius: 12px;
+      padding: 12px 12px 10px;
+      font-size: 11px;
+      line-height: 1.45;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .letter-overlay .title { font-weight: 700; margin-bottom: 6px; }
+    .letter-overlay .action {
+      margin-top: 8px;
+      padding: 6px 8px;
+      background: #eef5ef;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .award-star {
+      position: absolute;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .award-star img { width: 72px; height: 72px; }
+    .award-star .plus {
+      font-size: 14px;
+      font-weight: 800;
+      color: #c99200;
+    }
+    .role-peek {
+      position: absolute;
+      right: 8px;
+      bottom: 88px;
+      width: 88px;
+    }
+    .figcap {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: var(--phone-w);
+      line-height: 1.4;
+    }
+    .figcap strong { color: var(--ink); }
+    figure.still {
+      margin: 0;
+      text-align: center;
+    }
+    figure.still img {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    figure.still img.polaroid {
+      max-width: 200px;
+      background: #fff;
+      padding: 10px 10px 28px;
+    }
+    .split-compare {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .split-compare .phone { --phone-w: 200px; }
+    .split-compare .phone-screen { min-height: 300px; }
+    .split-compare .phone-screen img.bg { height: 300px; }
+    footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>蛋宝宝 · IAA 陪伴（星星与纪念册）· 产品展示</h1>
+    <p>按<strong>推荐阅读块顺序</strong>编排，供评审与飞书对照。Canonical 规则：<code>02_蛋宝宝_IAA陪伴_PRD_v1.0.md</code>；简稿：<code>02_蛋宝宝_IAA陪伴_飞书稿_v1.0.md</code>。</p>
+    <p>版本 1.0 · 2026-10-09 · 本地模拟 ≠ 已发布 · 图侧标注：<strong>仓库素材 / CSS 示意</strong>（非 COO 手机验收成片，可替换 <code>figure</code> 内图片）。</p>
+  </header>
+
+  <nav class="toc" aria-label="阅读块导航">
+    <span>阅读顺序：</span>
+    <a href="#audit">精简与待定义总表</a>
+    <a href="#block1">块1 · 概述·边界·主流程</a>
+    <a href="#block2">块2 · 星星规则</a>
+    <a href="#block3">块3 · 房间与信件</a>
+    <a href="#block4">块4 · 一起画·纪念册·茶会</a>
+  </nav>
+
+  <div class="wrap">
+
+    <div class="legend" aria-label="标签说明">
+      <div class="card"><span class="tag tag-slim">可精简</span>对外简 PRD / 飞书正文可删或外链，不影响主闭环。</div>
+      <div class="card"><span class="tag tag-undef">待定义</span>方向已定，数值/素材/触发/持久化未收口，勿按猜测开发。</div>
+      <div class="card"><span class="tag tag-done">已交付前端</span>静态 UI + 运行内 mock，待手机视觉验收。</div>
+      <div class="card"><span class="tag tag-pending">待实现</span>产品规则已有片段，代码未完整或未发布。</div>
+    </div>
+
+    <section id="audit" class="block">
+      <h2>精简 vs 待定义 · 总览</h2>
+      <p class="block-intro">写飞书或对外稿时，优先保留无标签段落；带「可精简」进附录；带「待定义」必须链到决策清单或主 PRD 章节，不可省略为「以后再说」。</p>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>主题</th>
+            <th>阅读块</th>
+            <th>标注</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>事件扩充原则、COO 日期脚注、角色分工</td>
+            <td>块1</td>
+            <td><span class="tag tag-slim">可精简</span></td>
+            <td>保留一句「内容为主、逐步加玩法」即可；法务/CEO 行移 footnote。</td>
+          </tr>
+          <tr>
+            <td>每日信件正文从哪来、是否接模型</td>
+            <td>块1·3</td>
+            <td><span class="tag tag-undef">待定义</span></td>
+            <td>当前 fixture/mock；真实生成与审核链未交付。</td>
+          </tr>
+          <tr>
+            <td>「后续延续」跨日内容、作品挂房间</td>
+            <td>块1</td>
+            <td><span class="tag tag-undef">待定义</span></td>
+            <td>产品目标已写，前端链路未完成（主 PRD §4.4）。</td>
+          </tr>
+          <tr>
+            <td>前 7 有效日 76 星与茶会/旅行算术说明</td>
+            <td>块2</td>
+            <td><span class="tag tag-slim">可精简</span></td>
+            <td>对内经济验算保留 canonical；对外只保留阶梯表 + 36 封顶。</td>
+          </tr>
+          <tr>
+            <td>随机惊喜（画画 +3、纸条照片、33%、节气 24 张）</td>
+            <td>块2·4</td>
+            <td><span class="tag tag-undef">待定义</span> / 部分 mock</td>
+            <td>规则散见主 PRD §7.5；素材分批；持久化 CTO。</td>
+          </tr>
+          <tr>
+            <td>兑换照片 10 星、窗边午后主题</td>
+            <td>块4</td>
+            <td><span class="tag tag-pending">待实现</span></td>
+            <td>规则已定，样张/揭晓交互/验收未完成。</td>
+          </tr>
+          <tr>
+            <td>旅行 40 星、轻答题、分享带码</td>
+            <td>—</td>
+            <td><span class="tag tag-undef">待定义</span></td>
+            <td>见《后续决策清单》；HTML 正文刻意不收。</td>
+          </tr>
+          <tr>
+            <td>长期喜好 / 记忆 / 模型安全</td>
+            <td>块1</td>
+            <td><span class="tag tag-undef">待定义</span></td>
+            <td>原则在 PRD §8；存储与删除 CTO + 法务。</td>
+          </tr>
+          <tr>
+            <td>服务端字段、跨设备恢复、账户幂等</td>
+            <td>块2·4</td>
+            <td><span class="tag tag-slim">可精简</span>（产品稿）</td>
+            <td>产品展示可一句带过；技术见 §9 与接口交接。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ========== BLOCK 1 ========== -->
+    <section id="block1" class="block">
+      <h2>阅读块 1 · 产品概述 → 项目边界 → 主流程</h2>
+      <p class="block-intro">对应主 PRD §1 → §2 → §3。先建立闭环与破壳后边界，再走具体界面。</p>
+
+      <article class="topic">
+        <div>
+          <h3>1.1 核心闭环与概念 <span class="tag tag-done">已交付前端</span></h3>
+          <p><strong>今日陪伴 → 星星 → 明天呢？ → 纪念册 → 下一次活动</strong>。不做充值、抽奖、排行榜。</p>
+          <table>
+            <tr><th>概念</th><th>用户看到</th></tr>
+            <tr><td>星星</td><td>可用余额（非人民币）</td></tr>
+            <tr><td>一起 X 天</td><td>累计有效陪伴日；消费不减</td></tr>
+            <tr><td>明天呢？</td><td>线索；不是「进入聊天」按钮</td></tr>
+          </table>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>五概念表保留即可；「单个事件闭环」一句 + 四类事件枚举。</p>
+        </div>
+        <div class="visual">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="bg" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/spring_clear_day_post_hatch_panorama_v01.webp" alt="破壳后生活空间全景" />
+              <div class="hud">
+                <div class="hud-balance">
+                  <div class="star-row">
+                    <img class="star-icon" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-neutral.png" alt="陪伴星星" />
+                    <span>24 · 一起 3 天</span>
+                  </div>
+                  <span style="font-weight:500;color:#5c6b62">示意数据</span>
+                </div>
+              </div>
+              <img class="icon" style="left:12px;bottom:14px" src="../../miniprogram/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.webp" alt="信件入口" />
+            </div>
+          </div>
+          <p class="figcap"><strong>图 1-1</strong> 破壳后房间 HUD（全景素材 + 星星/信封运行时资源）。<br />真机截图：待替换。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>1.2 生命周期边界 <span class="tag tag-done">与实现对齐</span></h3>
+          <table>
+            <tr><th>阶段</th><th>IAA 闭环</th></tr>
+            <tr><td><strong>破壳前</strong></td><td><strong>不参与</strong>：无星星余额；画画=蛋壳</td></tr>
+            <tr><td><strong>破壳后</strong></td><td>信件、星星、纪念册、一起画</td></tr>
+          </table>
+          <p><code>companion_started_at</code>（环境）≠ 有效陪伴日（须完成核心动作）。</p>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>若未来「破壳前预攒星」需单独立项；当前 PRD/代码均为破壳后。</p>
+        </div>
+        <div class="visual split-compare">
+          <div>
+            <div class="phone">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <img class="bg" src="../../docs/设计素材/视觉验收/egg-rotation-sample-warm-day/runtime-sample/warm-day/preview_front.png" alt="破壳前孵化房间示意" />
+              </div>
+            </div>
+            <p class="figcap"><strong>图 1-2a</strong> 破壳前：无 IAA 余额</p>
+          </div>
+          <div>
+            <div class="phone">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <img class="bg" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/spring_clear_day_post_hatch_panorama_v01.webp" alt="破壳后" />
+              </div>
+            </div>
+            <p class="figcap"><strong>图 1-2b</strong> 破壳后：完整闭环</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>1.3 交付边界与主流程七步</h3>
+          <ul>
+            <li><span class="tag tag-done">已合并</span> 信件、明日角色、双份画画奖励、纪念册、茶会（mock）</li>
+            <li><span class="tag tag-pending">待实现</span> 兑换照片、完整随机惊喜</li>
+            <li><span class="tag tag-undef">待定义</span> 旅行、轻答题、分享、真实记忆</li>
+          </ul>
+          <ol>
+            <li>进房间 → 左上星+天数，左下信</li>
+            <li>点信读内容（不自动弹信）</li>
+            <li>完成核心动作</li>
+            <li>结算 +X 星</li>
+            <li>可选「明天呢？」→ 聊天</li>
+            <li>收下 → 纪念册</li>
+            <li>百宝箱 → 回忆 / 活动</li>
+          </ol>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>块1 对外版：2.2 交付表缩成三行（已交付 / 待实现 / 不做）。</p>
+        </div>
+        <div class="visual">
+          <figure class="still">
+            <img src="../../miniprogram/assets/ui/3d-scene-actions/runtime/ui_3d_scene_toolbox_closed_chest_96_v01.webp" alt="百宝箱图标" style="max-width:120px" />
+          </figure>
+          <p class="figcap"><strong>图 1-3</strong> 百宝箱入口图标（纪念册第一入口）。流程图可自本页导出 PDF。</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ========== BLOCK 2 ========== -->
+    <section id="block2" class="block">
+      <h2>阅读块 2 · 星星与有效陪伴日（§5）</h2>
+      <p class="block-intro">经济规则核心；简稿务必保留两张表 + 36 星封顶 + 破壳后生效。</p>
+
+      <article class="topic">
+        <div>
+          <h3>2.1 基础阶梯 <span class="tag tag-done">已交付前端</span></h3>
+          <p>按<strong>累计有效陪伴日</strong>；当天首次结算冻结基数。</p>
+          <table>
+            <tr><th>有效日</th><th>基础星</th><th>有效日</th><th>基础星</th></tr>
+            <tr><td>1–2</td><td>10</td><td>30–44</td><td>15</td></tr>
+            <tr><td>3–6</td><td>11</td><td>45–59</td><td>16</td></tr>
+            <tr><td>7–13</td><td>12</td><td>60–89</td><td>17</td></tr>
+            <tr><td>14–20</td><td>13</td><td>90+</td><td>18</td></tr>
+            <tr><td>21–29</td><td>14</td><td colspan="2"></td></tr>
+          </table>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>随机额外星是否计入「36 封顶」— 已定义部分见 §7.5.1（+3 另计）；其余惊喜未收口。</p>
+        </div>
+        <div class="visual">
+          <figure class="still">
+            <img src="../../miniprogram/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-neutral.png" alt="星星造型" style="max-width:100px" />
+            <img src="../../miniprogram/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-squeezed.png" alt="挤压帧" style="max-width:100px" />
+          </figure>
+          <p class="figcap"><strong>图 2-1</strong> 收星动效两帧（任务书 v1.1）。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>2.2 结算点摘要</h3>
+          <table>
+            <tr><th>动作</th><th>星</th><th>有效日</th></tr>
+            <tr><td>读信 / 明天呢？</td><td>无</td><td>无</td></tr>
+            <tr><td>普通核心动作</td><td>基础×1</td><td>+1（首次）</td></tr>
+            <tr><td>一起画 · 画布就绪</td><td>基础×1（共用额度）</td><td>无</td></tr>
+            <tr><td>画好了 · 导出</td><td>额外=基数</td><td>+1（首次）</td></tr>
+            <tr><td>茶会确认完成</td><td>无基础</td><td>+1（共用）</td></tr>
+          </table>
+          <p>常规日最多 <strong>两份基数 · 封顶 36</strong>。日界：Asia/Shanghai。</p>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>「76 星 / 七个有效日」算术段落 → 链 canonical §5.2。</p>
+        </div>
+        <div class="visual">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="bg" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/spring_clear_sunset_post_hatch_panorama_v01.webp" alt="房间背景" />
+              <div class="letter-overlay">
+                <div class="title">今天想和你画一会儿</div>
+                <p>「纸和笔都准备好了。」</p>
+                <div class="action">一起画</div>
+              </div>
+              <div class="award-star">
+                <img src="../../miniprogram/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-neutral.png" alt="" />
+                <div class="plus">+11</div>
+              </div>
+            </div>
+          </div>
+          <p class="figcap"><strong>图 2-2</strong> 信纸上方 +X 示意（CSS 合成，非动效录屏）。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>2.3 星星反馈</h3>
+          <ul>
+            <li>信纸上方真实 +X，~2s 挤压弹出</li>
+            <li>关信后左上余额轻量回应，不重播声震</li>
+            <li>减弱动效 → 静态数值</li>
+          </ul>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>模型对话不得口头承诺规则外奖励 — 审核策略 CTO/合规。</p>
+        </div>
+        <div class="visual">
+          <p class="figcap">替换位：COO 手机录屏「收星 + 关信回房间 pulse」→ 贴于 <code>docs/主PRD/assets/iaa-showcase/</code> 并改此处 <code>src</code>。</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ========== BLOCK 3 ========== -->
+    <section id="block3" class="block">
+      <h2>阅读块 3 · 房间与信件（§4.1–4.4）</h2>
+      <p class="block-intro">阅读顺序上在星星规则之后；展示上合并入口 + 信纸 + 明天呢？</p>
+
+      <article class="topic">
+        <div>
+          <h3>3.1 入口布局 <span class="tag tag-done">已交付前端</span></h3>
+          <ul>
+            <li>左上：星 + 一起 X 天 + 时钟</li>
+            <li>左下：信封（打开即消红点）</li>
+            <li>右下：设置 + 百宝箱 → 纪念册</li>
+          </ul>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>与 04 今日心情分工一句带过即可。</p>
+        </div>
+        <div class="visual">
+          <figure class="still">
+            <img src="../../miniprogram/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.webp" alt="信封" style="max-width:96px" />
+          </figure>
+          <p class="figcap"><strong>图 3-1</strong> 左下信件按钮素材。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>3.2 到信提示</h3>
+          <p>每日首次进房：按钮内纸飞机→信封 ~1s；不自动开信；可短音效 0.28s。</p>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>真机「到信动画 + 音效」仍标「待验收」（验收清单）。</p>
+        </div>
+        <div class="visual">
+          <p class="figcap">替换位：到信前后两帧截图并排。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>3.3 信纸 · 废止项</h3>
+          <p>无「陪伴/聊天」分栏、无「进入聊天」文字钮；信不入聊天记录。</p>
+          <p>外出示例：替它收好纸条 → 回应 + 可选照片惊喜（规则 §7.5.2）。</p>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>每日信件正文池、外出/在家切换逻辑（Story）— 当前 mock。</p>
+        </div>
+        <div class="visual">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="bg" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/spring_clear_night_post_hatch_panorama_v01.webp" alt="" />
+              <div class="letter-overlay" style="inset:40px 12px 100px">
+                <div class="title">小纸条</div>
+                <p>「我去看看风把叶子吹到了哪里。」</p>
+                <div class="action">替它收好纸条</div>
+                <p style="margin-top:8px;color:#5c6b62">明天呢？ ▾</p>
+              </div>
+            </div>
+          </div>
+          <p class="figcap"><strong>图 3-2</strong> 外出信纸结构示意。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>3.4 明天呢？与聊天</h3>
+          <table>
+            <tr><th>场景</th><th>行为</th></tr>
+            <tr><td>在家</td><td>线索 + 静态角色探出 → 点进聊天</td></tr>
+            <tr><td>外出</td><td>仅线索，无角色</td></tr>
+            <tr><td>点击明天呢？</td><td>不发星、不加日</td></tr>
+          </table>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>明日线索生成规则（兴趣/愿望）— 无远程模型授权。</p>
+        </div>
+        <div class="visual">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <img class="bg" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/scene-sets/spring_clear_day_post_hatch_panorama_v01.webp" alt="" />
+              <div class="letter-overlay" style="bottom:120px;height:auto">
+                <p>明天我们可以把画挂起来。</p>
+                <p style="color:#3d6b52;font-weight:700">明天呢？</p>
+              </div>
+              <img class="role-peek" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare.webp" alt="玉兔探出" />
+            </div>
+          </div>
+          <p class="figcap"><strong>图 3-3</strong> 明日角色使用正式 <code>stare.webp</code>（静态）。</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ========== BLOCK 4 ========== -->
+    <section id="block4" class="block">
+      <h2>阅读块 4 · 一起画 · 纪念册 · 茶会（§6 · §7.1–7.3）</h2>
+      <p class="block-intro">破壳后玩法与消费；兑换与随机惊喜细则见总表外链。</p>
+
+      <article class="topic">
+        <div>
+          <h3>4.1 一起画 <span class="tag tag-done">已交付前端</span></h3>
+          <p>复用破壳前工具；按钮「画好了」；至少一笔真实笔迹；不写入蛋壳。</p>
+          <p>开始奖 + 完成额外奖；中途退出保留开始奖与运行内草稿。</p>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>关小程序后草稿/作品恢复 — 产品目标有描述，CTO 持久化未接。</p>
+        </div>
+        <div class="visual">
+          <p class="figcap">替换位：微信开发者工具「一起画」页截图（含画好了 / 开始 +X）。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>4.2 纪念册结构</h3>
+          <p><strong>回忆</strong>｜<strong>活动</strong>；刚完成内容可直接收下，不得再花星买一遍。</p>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>活动列表文案「开始 · 需花费 X 星」保留一条示例即可。</p>
+        </div>
+        <div class="visual split-compare">
+          <figure class="still">
+            <img class="polaroid" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_outing_v01.webp" alt="小留影" />
+            <figcaption class="figcap">图 4-1 纸条惊喜 · 小留影</figcaption>
+          </figure>
+          <figure class="still">
+            <img class="polaroid" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_bailu_shared_v01.webp" alt="节气" />
+            <figcaption class="figcap">图 4-2 节气拍立得（运行素材）</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>4.3 兑换照片 <span class="tag tag-pending">待实现</span></h3>
+          <ul>
+            <li>10 星 · 窗边午后 · 兑换前只见配文</li>
+            <li>成功准备才扣星；已拥有不重复扣</li>
+          </ul>
+          <p class="callout callout-undef"><span class="tag tag-undef">待定义</span>揭晓交互终稿、样张验收 — Q29–Q36 已定向但未发布。</p>
+        </div>
+        <div class="visual">
+          <figure class="still">
+            <img class="polaroid" src="../../miniprogram/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_afternoon_v01.webp" alt="窗边午后兑换候选" />
+          </figure>
+          <p class="figcap"><strong>图 4-3</strong> 兑换主题方向素材（≠ 茶会结果图）。</p>
+        </div>
+      </article>
+
+      <article class="topic">
+        <div>
+          <h3>4.4 窗边茶会 <span class="tag tag-done">已交付前端</span></h3>
+          <ul>
+            <li>首次免费；之后 20 星；须二次确认才结算</li>
+            <li>完成计有效日，不发基础星</li>
+            <li>外出不可新开始</li>
+          </ul>
+          <p class="callout callout-slim"><span class="tag tag-slim">可精简</span>清茶/花茶两句回应可放附录。</p>
+        </div>
+        <div class="visual">
+          <p class="figcap">替换位：茶会详情 → 选茶 → 确认 → 收下 四步截图。</p>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <p><strong>打开方式</strong>：用浏览器直接打开本 HTML（需保持与 <code>miniprogram/</code> 相对路径）。从仓库根目录起本地服务示例：<code>python3 -m http.server 8765</code> → 访问 <code>/docs/主PRD/02_蛋宝宝_IAA陪伴_产品展示.html</code>。</p>
+      <p><strong>维护</strong>：产品规则变更先改 <code>02_蛋宝宝_IAA陪伴_PRD_v1.0.md</code>，再同步飞书稿与本展示页。真机截图建议目录：<code>docs/主PRD/assets/iaa-showcase/</code>（可自行创建并替换 figcap 中的占位说明）。</p>
+    </footer>
+  </div>
+</body>
+</html>

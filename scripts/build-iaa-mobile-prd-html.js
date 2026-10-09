@@ -93,8 +93,11 @@ const block1 = `
         <tr><td>明天呢？</td><td>下一次相处的线索</td><td>不是领奖励，也不是「进入聊天」文字按钮</td></tr>
       </table>
       <p><strong>单个事件闭环</strong>（COO 2026-10-04）：事情发生 → 用户参与 → 宠物回应 → 获得结果 → （可选）后续延续。</p>
-      <p>事件四类：<strong>日常陪伴、共同创作、外出牵挂、特别活动</strong>。随机惊喜是事件内额外反馈，不另建复杂分类。</p>
-      <p class="callout callout-slim"><span class="tag s">可精简</span> COO 日期脚注可删；四类事件名保留。</p>
+      <p>今日信件<strong>三类</strong>（互斥）：<strong>日常陪伴、外出牵挂、特别奖励（reward）</strong>。原共同创作与特别活动并入特别奖励（创作向：一起画；活动向：茶会等）。随机惊喜为附加层，不并列成类。</p>
+      <table><tr><th>类</th><th>一句话</th></tr>
+      <tr><td>日常陪伴</td><td>在家，信内一次选择/短互动</td></tr>
+      <tr><td>外出牵挂</td><td>外出，信内纸条/牵挂</td></tr>
+      <tr><td>特别奖励</td><td>信内核心为一起画或多步 B 类活动</td></tr></table>
       <p class="callout callout-undef"><span class="tag u">待定义</span> 「后续延续」跨日内容与作品挂房间 — 目标已写，链路未完工。</p>
     </div>
     <div class="col-pic">
@@ -167,7 +170,7 @@ const block1 = `
       <ol class="steps">
         <li>进入房间：左上 <strong>星星余额 + 一起 X 天</strong>；左下信件；当天首次进入有轻量到信提示（<strong>不自动弹信</strong>）。</li>
         <li>点击信封读信：了解今日小事。</li>
-        <li>完成核心动作：普通日一次选择；创作日「一起画」并导出；外出日回应纸条；特别活动按各自流程。</li>
+        <li>完成核心动作：普通日一次选择；外出日回应纸条；特别奖励日（一起画 / 茶会等）按各自流程。</li>
         <li>在结算点展示 <strong>+X 星</strong> 与宠物回应；同类每日额度不重复发放。</li>
         <li>用户主动点 <strong>「明天呢？」</strong>：看线索；在家时宠物探出，点角色进完整聊天。</li>
         <li>有照片或作品时点 <strong>「收下」</strong> 进纪念册；收下不决定是否已发星。</li>

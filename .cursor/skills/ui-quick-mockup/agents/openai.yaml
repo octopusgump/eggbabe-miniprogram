@@ -1,0 +1,5 @@
+interface:
+  display_name: "UI Quick Mockup"
+  short_description: "几分钟出一张和现产品一致的 UI 草图"
+policy:
+  allow_implicit_invocation: true

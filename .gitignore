@@ -17,3 +17,7 @@ project.private.config.json
 h5/birth-card/assets/fonts/Google_Sans/
 h5/birth-card/assets/fonts/Noto_Sans_SC/
 h5/birth-card/assets/fonts/ZCOOL_KuaiLe/
+
+# 第三方 Agent skills（本机 / Cloud 环境安装，不进入版本库）
+/.agents/
+/skills-lock.json

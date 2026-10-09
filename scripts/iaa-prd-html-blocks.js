@@ -91,25 +91,26 @@ module.exports = function blocks(U) {
   const block2 = `
 <div class="block-head" id="b2">阅读块 2 · §5 星星与有效陪伴日</div>
 <section class="sub" id="b2-1"><h3>§5.1 基础阶梯</h3>
-<p>按累计有效陪伴日；当天<strong>首次结算</strong>冻结基数。</p>
-<table><tr><th>有效日</th><th>基础星</th><th>有效日</th><th>基础星</th></tr>
+<p>按<strong>累计连续</strong>有效陪伴日；当天<strong>首次结算</strong>冻结基数。</p>
+<table><tr><th>连续有效日</th><th>基础星</th><th>连续有效日</th><th>基础星</th></tr>
 <tr><td>1–2</td><td>10</td><td>21–29</td><td>14</td></tr>
 <tr><td>3–6</td><td>11</td><td>30–44</td><td>15</td></tr>
 <tr><td>7–13</td><td>12</td><td>45–59</td><td>16</td></tr>
 <tr><td>14–20</td><td>13</td><td>60–89</td><td>17</td></tr>
 <tr><td colspan="2"></td><td>90+</td><td>18</td></tr></table>
-<p>未记有效日前首次结算按「已有有效日 + 今天」算基数。不生息、不按余额计息。</p>
+<p>§5.1.1（2026-10-09）：<strong>读信计日</strong>；未读信自然日<strong>断开清零</strong>；画好等另发星。不生息、不按余额计息。</p>
 <p class="callout callout-undef"><span class="tag u">待定义</span> 随机 +3 等是否计入 36 封顶 — 见 §7.5.1 / 附录</p>
 </section>
 <section class="sub" id="b2-2"><h3>§5.2 结算点</h3>
 <table><tr><th>动作</th><th>星星</th><th>有效日</th></tr>
 <tr><td>读信、关信、点「明天呢？」</td><td>无</td><td>无</td></tr>
-<tr><td>完成普通核心动作</td><td>基础×1（当日）</td><td>首次有效 +1</td></tr>
+<tr><td><strong>当日首次读信</strong></td><td>无</td><td><strong>+1</strong></td></tr>
+<tr><td>完成普通核心动作</td><td>基础×1（当日）</td><td>不重复计日</td></tr>
 <tr><td>一起画 · 画布就绪</td><td>基础×1（与普通共用额度）</td><td>无</td></tr>
-<tr><td>画好了 · 导出成功</td><td>额外=冻结基数</td><td>首次有效 +1</td></tr>
+<tr><td>画好了 · 导出成功</td><td>额外=冻结基数</td><td>不重复计日</td></tr>
 <tr><td>收下作品</td><td>无</td><td>无</td></tr>
-<tr><td>茶会确认完成 · 有照片</td><td>无基础奖</td><td>与普通/画画共用每日一次 +1</td></tr></table>
-<p>常规日最多 <strong>2 份基数 · 封顶 36</strong>。日界 Asia/Shanghai；花星不减累计日数。</p>
+<tr><td>茶会确认完成 · 有照片</td><td>无基础奖</td><td>不重复计日</td></tr></table>
+<p>常规日最多 <strong>2 份基数 · 封顶 36</strong>。日界 Asia/Shanghai；<strong>断开清零</strong>；花星只减余额。</p>
 <p class="callout callout-slim"><span class="tag s">可精简</span> 「前 7 有效日 76 星 / 茶会+旅行 60」算术 — 见 canonical §5.2</p>
 <div class="flex"><div class="col-pic"><div class="phone"><img class="room" src="${U.roomDay}"/><div class="award-mock" style="position:absolute;top:30px;left:50%;transform:translateX(-50%);text-align:center"><img src="${U.starNeutral}" width="64"/><div style="color:#c99200;font-weight:800">+11</div></div></div>
 <p class="cap">图 5-1 信纸上方 +X（示意）</p></div></div>

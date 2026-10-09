@@ -87,7 +87,7 @@ const block1 = `
       <table>
         <tr><th>概念</th><th>用户看到</th><th>含义</th></tr>
         <tr><td>星星</td><td>可用余额</td><td>陪伴获得；可兑换纪念内容或参加活动；不涉及人民币</td></tr>
-        <tr><td>一起 X 天</td><td>累计有效陪伴日数</td><td>同一天最多 +1；间断不清零；消费星星不减少天数</td></tr>
+        <tr><td>一起 X 天</td><td>累计连续有效陪伴日数</td><td>当日首次读信 +1；未读信自然日<strong>断开清零</strong>；消费不减余额</td></tr>
         <tr><td>回忆</td><td>照片、真实作品</td><td>已留下的共同经历</td></tr>
         <tr><td>活动</td><td>可参与的小事</td><td>用户实际选择或创作，得到对应结果</td></tr>
         <tr><td>明天呢？</td><td>下一次相处的线索</td><td>不是领奖励，也不是「进入聊天」文字按钮</td></tr>
@@ -120,7 +120,7 @@ const block1 = `
         <tr><td><strong>破壳前</strong>（孵化小房间）</td><td><strong>不参与</strong></td><td>左上不展示陪伴星星；「画画」= 画蛋壳，不走信件发星</td></tr>
         <tr><td><strong>破壳后</strong>（生活空间）</td><td><strong>完整闭环</strong></td><td>星星 + 一起 X 天；左下信件；百宝箱→纪念册；「一起画」</td></tr>
       </table>
-      <p class="note"><code>companion_started_at</code> 用于<strong>环境计算</strong>（破壳前季节等），<strong>不等于</strong>「累计有效陪伴日数」（须完成当日核心动作才 +1）。</p>
+      <p class="note"><code>companion_started_at</code> 用于<strong>环境计算</strong>（破壳前季节等），<strong>不等于</strong>「一起 X 天」（以 PRD §5.1.1：<strong>读信计日</strong>、<strong>断开清零</strong>为准）。</p>
       <p class="callout callout-undef"><span class="tag u">待定义</span> 若未来「破壳前预攒星」需单独立项；当前 PRD 与代码均为破壳后。</p>
     </div>
     <div class="col-pic compare">

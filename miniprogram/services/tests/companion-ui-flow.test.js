@@ -13,23 +13,41 @@ async function main() {
   for (const [day,reward] of tiers) assert.equal(rules.dailyStars(day), reward, `第 ${day} 个陪伴日`);
   assert.equal(rules.shanghaiDate(Date.parse('2026-09-25T15:59:59Z')), '2026-09-25');
   assert.equal(rules.shanghaiDate(Date.parse('2026-09-25T16:00:00Z')), '2026-09-26');
+  assert.equal(rules.previousShanghaiDate('2026-09-26'), '2026-09-25');
   adapter.configureRoom('first-pet');
   adapter.resetRoomStarView('AVAILABLE');
   const stale = (await adapter.getRoomStarView()).data;
   assert.equal((await adapter.recordCompanion(null)).ok,false,'空视图不能结算');
+  assert.equal((await adapter.recordLetterOpen(null)).ok,false,'空视图不能开信计日');
+
+  const open1 = await adapter.recordLetterOpen(stale);
+  assert.equal(open1.awardedStars,0,'开信不发星');
+  assert.equal(open1.effectiveAdded,true);
+  assert.equal(open1.data.star.companionDays,1);
+  assert.equal(open1.data.star.effectiveDone,true);
+  const openDup = await adapter.recordLetterOpen(stale);
+  assert.equal(openDup.effectiveAdded,false,'同日重复开信不加天');
+  assert.equal(openDup.data.star.companionDays,1);
+
   const first = await adapter.recordCompanion(stale);
   assert.equal(first.awardedStars,10);
-  assert.equal(first.data.star.companionDays,1);
+  assert.equal(first.data.star.companionDays,1,'普通动作不加天');
   const duplicate = await adapter.recordCompanion(stale);
   assert.equal(duplicate.awardedStars,0,'同日旧快照不重复得星');
+
   now += 86400000;
+  const open2 = await adapter.recordLetterOpen(stale);
+  assert.equal(open2.data.star.companionDays,2,'连续次日开信 +1');
   const second = await adapter.recordCompanion(stale);
   assert.equal(second.awardedStars,10,'跨上海日界后可完成新一天');
   assert.equal(second.data.star.companionDays,2);
+
   now += 86400000 * 5;
+  const openGap = await adapter.recordLetterOpen(stale);
+  assert.equal(openGap.data.star.companionDays,1,'断天后开信从 1 重计');
   const third = await adapter.recordCompanion(stale);
-  assert.equal(third.data.star.companionDays,3,'缺席不补算陪伴日');
-  assert.equal(third.awardedStars,11,'当天先增加日数，再结算阶梯');
+  assert.equal(third.data.star.companionDays,1,'缺席清零后普通动作不加天');
+  assert.equal(third.awardedStars,10,'断天后第 1 档 10 星');
   assert.equal((await adapter.recordCompanion(fixture.starUnlockViewFor('ERROR'))).ok,false);
   assert.equal(adapter.collectMemory({id:'drawing-1',image:'local.png',title:'作品'}),true);
   adapter.collectMemory({id:'drawing-1',image:'local.png',title:'作品'});
@@ -85,6 +103,6 @@ async function main() {
   assert.equal((await editor.completeCompanionDrawing()).ok,false,'空画不能算完成');assert.ok(notice);
   page.stopLetterArrival(); nextPage.stopLetterArrival();
   page.clearStarAwardFeedback();
-  console.log('九档边界、上海跨日、旧快照防重复、缺席、作品隔离、每日弹窗、外出聊天门禁和画画模式隔离通过。');
+  console.log('开信计日、断天清零、普通发星、九档边界、上海跨日、作品隔离与画画模式隔离通过。');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{Date.now=originalNow;});

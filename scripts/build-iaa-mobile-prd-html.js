@@ -212,7 +212,7 @@ const block1 = `
 </section>
 `;
 
-const { extraCss, block2, block3, block4, blockP2 } = blocks(U);
+const { extraCss, blockTaxonomy, block2, block3, block4, blockP2 } = blocks(U);
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -225,12 +225,13 @@ const html = `<!DOCTYPE html>
 <body>
 <header>
 <h1>蛋宝宝 · IAA 陪伴 PRD</h1>
-<p>阅读块 1–4 + 附录 P2 · 单文件内嵌图 · 手机 Safari / Chrome 打开</p>
+<p>三类事件 + 阅读块 1–4 + 附录 · 单文件内嵌图 · 手机 Safari / Chrome 打开</p>
 </header>
 <nav>
-<a href="#b1">块1</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3</a><a href="#b1-5">§3.2</a>
+<a href="#taxonomy">三类</a><a href="#b1">块1</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3</a><a href="#b1-5">§3.2</a>
 <a href="#b2">块2 §5</a><a href="#b3">块3 §4</a><a href="#b4">块4 §6–7</a><a href="#album-memories">纪念册</a><a href="#p2">附录</a>
 </nav>
+${blockTaxonomy}
 ${block1}
 ${block2}
 ${block3}

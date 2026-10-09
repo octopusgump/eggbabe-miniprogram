@@ -68,12 +68,25 @@ footer{padding:16px;font-size:12px;color:#5c6b62;text-align:center}
 <body>
 <header>
 <h1>蛋宝宝 · IAA 陪伴 PRD</h1>
-<p>阅读块 1–4 + 附录 P2 · 单文件内嵌图 · 手机 Safari / Chrome 打开</p>
+<p>三类事件 + 阅读块 1–4 + 附录 · 单文件内嵌图 · 手机 Safari / Chrome 打开</p>
 </header>
 <nav>
-<a href="#b1">块1</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3</a><a href="#b1-5">§3.2</a>
+<a href="#taxonomy">三类</a><a href="#b1">块1</a><a href="#b1-1">§1</a><a href="#b1-2">§2.1</a><a href="#b1-3">§2.2</a><a href="#b1-4">§3</a><a href="#b1-5">§3.2</a>
 <a href="#b2">块2 §5</a><a href="#b3">块3 §4</a><a href="#b4">块4 §6–7</a><a href="#album-memories">纪念册</a><a href="#p2">附录</a>
 </nav>
+
+<div class="block-head" id="taxonomy">§3.0 今日信件事件三类（互斥）</div>
+<section class="sub" id="taxonomy-1">
+  <p>只描述<strong>今日信件核心动作</strong>；同一封信仅属一类。原「共同创作」「特别活动」并入 <strong>特别奖励（reward）</strong>。</p>
+  <table><tr><th>类</th><th>定义</th><th>实例</th></tr>
+  <tr><td>日常陪伴</td><td>在家；一次选择或短互动</td><td>普通在家信</td></tr>
+  <tr><td>外出牵挂</td><td>外出；纸条/牵挂</td><td>收好纸条</td></tr>
+  <tr><td>特别奖励</td><td>非常规一步完成；独立流程+结果</td><td>创作向：一起画 · 活动向：茶会等</td></tr></table>
+  <h4>判据顺序（命中即停）</h4>
+  <ol class="steps"><li>外出 + 纸条核心 → 外出牵挂</li><li>信核心 = 一起画 → 特别奖励·创作向</li><li>信核心 = B 类多步活动 → 特别奖励·活动向</li><li>否则 → 日常陪伴</li></ol>
+  <p class="note"><strong>不参与分类</strong>：A 类兑换、纪念册「活动」页自选入口、随机惊喜、明天呢、收下。</p>
+  <p class="callout callout-slim"><span class="tag s">废止</span> 「事件四类」；历史 Q 号归档保留，以主 PRD §3.0 为准。</p>
+</section>
 
 <div class="block-head" id="b1">阅读块 1 · §1 产品概述 → §2 项目边界 → §3 主流程</div>
 
@@ -272,7 +285,7 @@ footer{padding:16px;font-size:12px;color:#5c6b62;text-align:center}
 </section>
 
 <div class="block-head" id="b4">阅读块 4 · §6 一起画 · §7 纪念册与活动</div>
-<section class="sub" id="b4-1"><h3>§6 一起画（破壳后）</h3>
+<section class="sub" id="b4-1"><h3>§6 一起画（破壳后）· 特别奖励·创作向</h3>
 <p><strong>路径</strong>：信邀 → 一起画 → 画布就绪（发未领基础奖）→ 创作 → 画好了导出 → 额外奖+有效日 → 信纸见作品 → 可选收下。</p>
 <ul><li>至少一笔真实非橡皮笔迹；空白/仅贴纸/仅擦除不算</li><li>不评分、不限时；不假装看懂未解释的画面</li><li>中途退出：保留开始奖与运行内草稿；不发完成奖</li><li>导出失败可重试；跨日恢复旧稿不自动发今日基础奖</li><li>破壳前蛋壳流程不变；陪伴作品<strong>不</strong>写入蛋壳</li></ul>
 <p class="callout callout-undef"><span class="tag u">待定义</span> 关小程序后草稿/作品持久化 — CTO</p>
@@ -326,11 +339,11 @@ footer{padding:16px;font-size:12px;color:#5c6b62;text-align:center}
 </div>
 </section>
 <section class="sub" id="b4-3"><h3>§7.2 星星两种用途 · 兑换照片</h3>
-<p>A 兑换指定纪念内容（首版仅照片）· B 共同活动（茶会已交付前端）</p>
+<p>A 兑换指定纪念内容（首版仅照片，<strong>非</strong>信件三类）· B 类 = 特别奖励·活动向（茶会已交付前端）</p>
 <ul><li>入口：百宝箱 → 纪念册 → 活动 → 兑换照片</li><li>主题：宠物的窗边午后 · 10 星 · 兑换前仅配文+价格</li><li>准备成功才扣星；已拥有不重复扣；余额不足「星星还不够」</li></ul>
 <p><span class="tag p">待实现</span> 样张与揭晓交互验收未完成</p>
 </section>
-<section class="sub" id="b4-4"><h3>§7.3 窗边茶会</h3>
+<section class="sub" id="b4-4"><h3>§7.3 窗边茶会 · 特别奖励·活动向</h3>
 <ol><li>首次免费；选茶后须再点确认才结算</li><li>完成才扣 20 星；开始/中途退出不扣</li><li>外出不能新开始；已有进度可继续</li><li>计有效日、不发基础星；与普通/画画共用每日一次</li></ol>
 <p><span class="tag d">已交付前端</span> 运行内 mock · 非手机视觉终验收</p>
 </section>
@@ -340,10 +353,10 @@ footer{padding:16px;font-size:12px;color:#5c6b62;text-align:center}
 
 <div class="block-head" id="p2">附录 · P2 长规则 / 关系 / 实现 / 验收（摘要）</div>
 <section class="sub appendix" id="p2-1"><h3>§7.5 随机惊喜（不进正文细则，仅索引）</h3>
-<table><tr><th>主题</th><th>状态</th><th>去哪里</th></tr>
-<tr><td>画画小回礼 +3、首次必送、33%</td><td><span class="tag u">部分 mock</span></td><td>主 PRD §7.5.1</td></tr>
-<tr><td>纸条照片、节气 24 张、去重/待收下</td><td><span class="tag u">待定义/分批素材</span></td><td>§7.5.2 · 24节气任务书</td></tr>
-<tr><td>茶会/纸条随机回礼</td><td><span class="tag u">待定义</span></td><td>主 PRD §7.5 队列</td></tr></table>
+<table><tr><th>主题</th><th>附着事件类</th><th>状态</th><th>去哪里</th></tr>
+<tr><td>画画小回礼 +3、首次必送、33%</td><td>特别奖励·创作向</td><td><span class="tag u">部分 mock</span></td><td>主 PRD §7.5.1</td></tr>
+<tr><td>纸条照片、节气 24 张、去重/待收下</td><td>外出牵挂</td><td><span class="tag u">待定义/分批素材</span></td><td>§7.5.2 · 24节气任务书</td></tr>
+<tr><td>茶会额外照片回礼</td><td>特别奖励·活动向</td><td><span class="tag u">待定义</span></td><td>主 PRD §7.5 队列</td></tr></table>
 </section>
 <section class="sub appendix" id="p2-2"><h3>§8 关系与输入原则</h3>
 <ul><li>每次一个核心动作；不要求每天说话</li><li>「今天不想画」≠「不喜欢画」</li><li>长期喜好须用户明确；无喜好列表设置页</li><li>真实记忆 → CTO · <span class="tag u">待定义</span></li></ul>

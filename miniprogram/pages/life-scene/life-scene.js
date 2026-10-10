@@ -513,32 +513,41 @@ Page({
     ]).then(([todayResult, starResult]) => {
       if (!this.pageActive) return;
       if (!todayResult.ok || !todayResult.data || !starResult.ok || !starResult.data) { this.showSystemNotice('信件没有打开，请再试一次', 'warning'); return; }
-      this.markCompanionSeen();
-      const claimed = Boolean(starResult.data.star && (this.data.currentState && !this.data.currentState.atHome ? starResult.data.star.noteCollected : starResult.data.star.effectiveDone));
-      this.stopLetterArrival();
-      const progress = this.readLetterProgress();
-      this.todayCompanionScenario = this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal';
-      if (!claimed) this.prepareStarAwardSound();
-      this.setData({
-        acceptanceToolsOpen: false,
-        todayCompanionVisible: true,
-        companionUnread: false,
-        companionLetterArriving: false,
-        companionNavigating: false,
-        toolboxVisible: false,
-        todayCompanionView: todayResult.data,
-        todayCompanionStarView: starResult.data,
-        todayCompanionInteractionPending: false,
-        todayCompanionInteractionDone: claimed,
-        todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
-        todayCompanionInteractionError: '',
-        todayCompanionAwardedStars: 0,
-        todayCompanionTomorrowVisible: Boolean(progress.tomorrow),
-        companionRoleEntering: false
-      });
-      analytics.track('companion_interaction', {
-        interaction_type: 'tomorrow_hint',
-        result: 'prompt_shown'
+      return starAdapter.recordLetterOpen(starResult.data).then(letterResult => {
+        if (!this.pageActive) return;
+        if (!letterResult.ok || !letterResult.data) { this.showSystemNotice('信件没有打开，请再试一次', 'warning'); return; }
+        this.markCompanionSeen();
+        const star = letterResult.data.star;
+        const away = Boolean(this.data.currentState && !this.data.currentState.atHome);
+        // 开信已记「一起 X 天」；信内动作完成态仍看纸条/基础星领取，不把开信当成互动完成。
+        const claimed = Boolean(star && (away ? star.noteCollected : star.baseClaimed));
+        this.stopLetterArrival();
+        const progress = this.readLetterProgress();
+        this.todayCompanionScenario = away ? 'away' : 'normal';
+        if (!claimed) this.prepareStarAwardSound();
+        this.setData({
+          acceptanceToolsOpen: false,
+          todayCompanionVisible: true,
+          companionUnread: false,
+          companionLetterArriving: false,
+          companionNavigating: false,
+          toolboxVisible: false,
+          todayCompanionView: todayResult.data,
+          todayCompanionStarView: letterResult.data,
+          companionDays: Number(star.companionDays || 0),
+          companionStarBalance: Number(star.balance || 0),
+          todayCompanionInteractionPending: false,
+          todayCompanionInteractionDone: claimed,
+          todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
+          todayCompanionInteractionError: '',
+          todayCompanionAwardedStars: 0,
+          todayCompanionTomorrowVisible: Boolean(progress.tomorrow),
+          companionRoleEntering: false
+        });
+        analytics.track('companion_interaction', {
+          interaction_type: 'tomorrow_hint',
+          result: 'prompt_shown'
+        });
       });
     }).catch(() => { if (this.pageActive) this.showSystemNotice('信件没有打开，请再试一次', 'warning'); }).finally(() => { this.companionOpening = false; });
   },
@@ -1657,7 +1666,11 @@ Page({
     }
     this.loadCompanionStar({ deferAward: true }).then(result => {
       if (!this.pageActive || !result || !result.ok) return;
-      this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.effectiveDone) });
+      this.setData({
+        todayCompanionStarView: result.data,
+        companionDays: Number(result.data.star.companionDays || 0),
+        todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.baseClaimed)
+      });
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {

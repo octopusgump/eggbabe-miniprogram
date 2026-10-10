@@ -5,7 +5,7 @@ let roomPet = null;
 const fixture = require('../fixtures/iaa-star-unlock');
 const { decideDrawingGift } = require('./companion-drawing-gift');
 
-const { dailyStars, shanghaiDate } = require('./companion-star-rules');
+const { dailyStars, shanghaiDate, previousShanghaiDate } = require('./companion-star-rules');
 let roomPreviewView = null;
 let roomPetId = '';
 let collectedMemories = [];
@@ -15,9 +15,24 @@ let completedDrawingIds = new Set();
 let firstDrawingGiftDone = false;
 let drawingGiftResults = new Map();
 let activityState = { current: null, firstResultSeen: false };
+/** Shanghai date of last letter open that counted toward 一起 X 天 (session mock). */
+let lastLetterOpenDate = null;
+
 function configureRoom(petId, pet) {
   roomPet = pet || roomPet;
-  if (String(petId || '') !== roomPetId) { roomPetId = String(petId || ''); photoState = createPhotoState(); roomPreviewView = null; collectedMemories = []; companionDraft = null; companionDraftStartDate = null; completedDrawingIds = new Set(); firstDrawingGiftDone = false; drawingGiftResults = new Map(); activityState = { current: null, firstResultSeen: false }; }
+  if (String(petId || '') !== roomPetId) {
+    roomPetId = String(petId || '');
+    photoState = createPhotoState();
+    roomPreviewView = null;
+    collectedMemories = [];
+    companionDraft = null;
+    companionDraftStartDate = null;
+    completedDrawingIds = new Set();
+    firstDrawingGiftDone = false;
+    drawingGiftResults = new Map();
+    activityState = { current: null, firstResultSeen: false };
+    lastLetterOpenDate = null;
+  }
 }
 function getMemories() { return clone(collectedMemories); }
 function collectMemory(memory) {
@@ -39,6 +54,17 @@ function getStarUnlockView(options) {
   return Promise.resolve({ ok: true, data });
 }
 
+function applyDisconnectClear(star, today) {
+  if (!lastLetterOpenDate || lastLetterOpenDate === today) return;
+  if (lastLetterOpenDate === previousShanghaiDate(today)) return;
+  star.companionDays = 0;
+}
+
+function refreshDailyBasis(star) {
+  const days = Number(star.companionDays || 0);
+  star.dailyBasis = dailyStars(star.effectiveDone ? days : days + 1);
+}
+
 // 本次运行内的静态演示账本；真实幂等与持久化由后续服务端实现。
 function ensureDaily(view) {
   const date = shanghaiDate();
@@ -50,14 +76,16 @@ function ensureDaily(view) {
     star.drawingBonusClaimed = false;
     star.effectiveDone = false;
     star.noteCollected = false;
-    star.dailyBasis = dailyStars(Number(star.companionDays || 0) + 1);
+    applyDisconnectClear(star, date);
+    refreshDailyBasis(star);
     view.newlyUnlockedMemory = null;
   }
   if (typeof star.baseClaimed !== 'boolean') star.baseClaimed = ['CLAIMED', 'UNLOCKED'].includes(star.dailyClaimStatus);
-  if (typeof star.effectiveDone !== 'boolean') star.effectiveDone = star.baseClaimed;
-  if (typeof star.noteCollected !== 'boolean') star.noteCollected = star.baseClaimed && star.effectiveDone;
+  if (typeof star.effectiveDone !== 'boolean') star.effectiveDone = false;
+  if (typeof star.noteCollected !== 'boolean') star.noteCollected = false;
   if (typeof star.drawingBonusClaimed !== 'boolean') star.drawingBonusClaimed = false;
-  if (!star.dailyBasis) star.dailyBasis = dailyStars(Number(star.companionDays || 0) + (star.effectiveDone ? 0 : 1));
+  applyDisconnectClear(star, date);
+  if (!star.dailyBasis) refreshDailyBasis(star);
   return view;
 }
 function getRoomStarView() {
@@ -70,16 +98,50 @@ function resetRoomStarView(state) {
   if (!next) return { ok: false, error: { code: 'UNKNOWN_LOCAL_STATE', message: '没有找到这个本地演示状态。' } };
   roomPreviewView = clone(next);
   roomPreviewView.dateKey = shanghaiDate();
+  lastLetterOpenDate = null;
   ensureDaily(roomPreviewView);
   return { ok: true, data: clone(roomPreviewView) };
 }
+
+/** 当日首次点开信纸：一起 X 天 +1，0 星；断天则从 1 重计。 */
+function recordLetterOpen(view) {
+  if (!view || !view.star || !view.star.dailyClaimStatus) {
+    return Promise.resolve({ ok: false, error: { code: 'INVALID_LOCAL_VIEW', message: '这次陪伴还没有准备好。' } });
+  }
+  if (view.star.dailyClaimStatus === 'ERROR') {
+    return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
+  }
+  const current = ensureDaily(clone(roomPreviewView || view));
+  const star = current.star;
+  const today = shanghaiDate();
+  applyDisconnectClear(star, today);
+  let effectiveAdded = false;
+  if (!star.effectiveDone) {
+    star.companionDays = Number(star.companionDays || 0) + 1;
+    star.effectiveDone = true;
+    lastLetterOpenDate = today;
+    effectiveAdded = true;
+    refreshDailyBasis(star);
+  }
+  current.helperText = star.effectiveDone ? '今天的陪伴已经记下。' : '打开信件记下今天的陪伴。';
+  roomPreviewView = clone(current);
+  return Promise.resolve({
+    ok: true,
+    data: current,
+    awardedStars: 0,
+    baseAwardedStars: 0,
+    giftStars: 0,
+    effectiveAdded,
+    duplicate: !effectiveAdded
+  });
+}
+
 function settle(view, kind, drawingId, options) {
   if (!view || !view.star || !view.star.dailyClaimStatus) return Promise.resolve({ ok: false, error: { code: 'INVALID_LOCAL_VIEW', message: '这次陪伴还没有准备好。' } });
   if (view.star.dailyClaimStatus === 'ERROR') return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
   const current = ensureDaily(clone(roomPreviewView || view));
   const star = current.star;
   let awardedStars = 0;
-  let effectiveAdded = false;
   let giftStars = 0;
   let drawingGift = drawingId ? drawingGiftResults.get(drawingId) || null : null;
   const alreadyCompleted = (kind === 'complete' && drawingId && completedDrawingIds.has(drawingId)) || (kind === 'ordinary' && star.noteCollected);
@@ -93,7 +155,7 @@ function settle(view, kind, drawingId, options) {
       firstDrawingGiftDone = true;
       if (drawingId) drawingGiftResults.set(drawingId, clone(drawingGift));
     }
-    if (kind !== 'start' && !star.effectiveDone) { star.companionDays = Number(star.companionDays || 0) + 1; star.effectiveDone = true; effectiveAdded = true; }
+    // 「一起 X 天」只由 recordLetterOpen 增加；完成普通/画画不 +1。
     if (kind === 'ordinary') star.noteCollected = true;
     if (kind === 'complete' && drawingId) completedDrawingIds.add(drawingId);
   }
@@ -102,9 +164,18 @@ function settle(view, kind, drawingId, options) {
   current.progress = fixture.progressPresentation(star.balance, star.nextUnlockAt);
   // 保留旧 demo 合同，不在正式纪念册自动收录其样例照片。
   current.newlyUnlockedMemory = awardedStars > 0 && star.balance >= current.nextMemory.unlockedAtStar ? clone(current.nextMemory) : null;
-  current.helperText = star.effectiveDone ? '今天的陪伴已经记下。' : '画好了再记下今天的陪伴。';
+  current.helperText = star.effectiveDone ? '今天的陪伴已经记下。' : '打开信件记下今天的陪伴。';
   roomPreviewView = clone(current);
-  return Promise.resolve({ ok: true, data: current, awardedStars: awardedStars + giftStars, baseAwardedStars: awardedStars, giftStars, drawingGift: drawingGift ? clone(drawingGift) : null, effectiveAdded, duplicate: awardedStars === 0 && giftStars === 0 && !effectiveAdded });
+  return Promise.resolve({
+    ok: true,
+    data: current,
+    awardedStars: awardedStars + giftStars,
+    baseAwardedStars: awardedStars,
+    giftStars,
+    drawingGift: drawingGift ? clone(drawingGift) : null,
+    effectiveAdded: false,
+    duplicate: awardedStars === 0 && giftStars === 0
+  });
 }
 function recordCompanion(view, options) {
   return settle(view, 'ordinary').then(result => {
@@ -177,7 +248,7 @@ function chooseTea(choice) {
 function confirmTeaActivity() {
   const current = activityState.current;
   if (!current) return { ok: false, error: { code: 'NO_ACTIVITY' } };
-  if (current.phase === 'result') return { ok: true, duplicate: true, data: getActivityState() };
+  if (current.phase === 'result') return { ok: true, duplicate: true, data: getActivityState(), effectiveAdded: false };
   if (current.phase !== 'confirming' || !current.choice) return { ok: false, error: { code: 'CHOICE_REQUIRED' } };
   ensureDaily(roomPreviewView);
   if (!current.paid) {
@@ -185,12 +256,10 @@ function confirmTeaActivity() {
     deductActivityStars(current.cost);
     current.paid = true;
   }
-  const star = roomPreviewView.star;
-  const effectiveAdded = !star.effectiveDone;
-  if (effectiveAdded) { star.companionDays = Number(star.companionDays || 0) + 1; star.effectiveDone = true; }
+  // 茶会永不因完成使「一起 X 天」+1。
   current.completedDate = shanghaiDate();
   current.phase = 'result';
-  return { ok: true, effectiveAdded, data: getActivityState() };
+  return { ok: true, effectiveAdded: false, data: getActivityState() };
 }
 function collectTeaActivity() {
   const current = activityState.current;
@@ -223,6 +292,7 @@ module.exports = {
   getStarUnlockView,
   getRoomStarView,
   resetRoomStarView,
+  recordLetterOpen,
   recordCompanion,
   recordDrawingStart,
   recordDrawingComplete,

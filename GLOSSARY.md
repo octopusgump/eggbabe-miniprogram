@@ -12,3 +12,7 @@ Canonical reading surface for IAA companion product rules: `docs/主PRD/02_蛋�
 | 特别奖励（reward） | Today's letter class whose core action is not “one tap and done”: must run an independent flow with a clear result. Includes creation (一起画) and activity (茶会, etc.). |
 | 一起画 | Post-hatch co-drawing entered only from today's letter. v1 (shipped rule): at least one non-eraser stroke completes; no quality score. v2 (rules decided, not shipped): ≥5 strokes, ≥15s active drawing, ≥5 of ~100 canvas cells touched; failed “画好了” shows one tip, no score UI. |
 | 窗边茶会 | Album activity: confirm completion yields a photo; no base stars; never +1s 一起 X 天. |
+| 陪伴事件 | One shared experience built around a concrete small thing with the pet: something happens, the user participates, the pet responds, the user gets a result, and the moment may continue into later companionship or memories. |
+| 玩法闭环 | The five ordered segments of a companion event: 事情发生 → 用户参与 → 宠物回应 → 获得结果 → 后续延续. Each event SKU must define all five before the design is complete. |
+| 后续延续 | Design intent for how an event connects to the next visit or to 回忆; may be same-day closure, a “明天呢？” clue, or cross-day content—not every event must produce cross-day material immediately, and it does not imply live memory services. |
+| 基础结果 | Guaranteed outcome of an event once the user completes the core action (e.g. stars per §5.2, a photo, an exported drawing). Random surprise adds on top of this; it never replaces it. |

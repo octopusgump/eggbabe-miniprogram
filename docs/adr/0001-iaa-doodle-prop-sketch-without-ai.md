@@ -1,3 +1,5 @@
 # 道具简笔临摹与 v2 本地门槛同批定稿、不接 AI 识图
 
 IAA「一起画」需要减少乱画灌水，同时让部分信件日绑定道具主题（如拨浪鼓）有可收藏结果。产品选择：简笔在画布上短暂闪现、用户累计三次达标导出（§6.2 v2 三门）后道具入纪念册回忆，**不**用 50/70/80 相似度分档，**不**接入远程 AI 判「画得像不像」。该规则与 v2 门槛一并写入主 PRD §6.4，标记为已定未实现，与「第二期其余道具扩展」区分；实现与素材另开任务。
+
+**Supersedes** the unmerged「主题画画」draft (60/30/10 random tier stars, square reference canvas, tier celebration copy). That draft is **abolished** on `main`; see PRD §6.5. Stars for co-drawing stay on §5.2 daily basis + §7.5.1 gift only.

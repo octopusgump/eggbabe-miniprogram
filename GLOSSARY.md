@@ -20,3 +20,17 @@ Canonical reading surface for IAA companion product rules: `docs/主PRD/02_蛋�
 | 玩法闭环 | The five ordered segments of a companion event: 事情发生 → 用户参与 → 宠物回应 → 获得结果 → 后续延续. Each event SKU must define all five before the design is complete. |
 | 后续延续 | Design intent for how an event connects to the next visit or to 回忆; may be same-day closure, a “明天呢？” clue, or cross-day content—not every event must produce cross-day material immediately, and it does not imply live memory services. |
 | 基础结果 | Guaranteed outcome of an event once the user completes the core action (e.g. stars per §5.2, a photo, an exported drawing). Random surprise adds on top of this; it never replaces it. |
+
+## Language
+
+**今日信件**：
+当天呈现给用户、承载一个核心陪伴事件的信件。不同于可逐条回看的聊天记录。
+_Avoid_: 历史消息队列、活动待办箱
+
+**信件未读**：
+用户尚未打开今日信纸的阅读状态，与是否完成信内活动无关。
+_Avoid_: 活动未完成、回忆未收下
+
+**待收下照片**：
+用户已在陪伴中获得、尚未主动收录进纪念册的照片，属于已有结果。
+_Avoid_: 未读事件、错过的活动

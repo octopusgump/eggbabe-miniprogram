@@ -22,12 +22,12 @@ async function main() {
 
   const open1 = await adapter.recordLetterOpen(stale);
   assert.equal(open1.awardedStars,0,'开信不发星');
-  assert.equal(open1.effectiveAdded,true);
-  assert.equal(open1.data.star.companionDays,1);
-  assert.equal(open1.data.star.effectiveDone,true);
+  assert.equal(open1.effectiveAdded,false);
+  assert.equal(open1.data.star.companionDays,0);
+  assert.equal(open1.data.star.effectiveDone,false);
   const openDup = await adapter.recordLetterOpen(stale);
   assert.equal(openDup.effectiveAdded,false,'同日重复开信不加天');
-  assert.equal(openDup.data.star.companionDays,1);
+  assert.equal(openDup.data.star.companionDays,0);
 
   const first = await adapter.recordCompanion(stale);
   assert.equal(first.awardedStars,10);
@@ -37,14 +37,14 @@ async function main() {
 
   now += 86400000;
   const open2 = await adapter.recordLetterOpen(stale);
-  assert.equal(open2.data.star.companionDays,2,'连续次日开信 +1');
+  assert.equal(open2.data.star.companionDays,1,'次日开信还未完成，不增加日数');
   const second = await adapter.recordCompanion(stale);
   assert.equal(second.awardedStars,10,'跨上海日界后可完成新一天');
   assert.equal(second.data.star.companionDays,2);
 
   now += 86400000 * 5;
   const openGap = await adapter.recordLetterOpen(stale);
-  assert.equal(openGap.data.star.companionDays,1,'断天后开信从 1 重计');
+  assert.equal(openGap.data.star.companionDays,0,'断天后开信不计有效陪伴');
   const third = await adapter.recordCompanion(stale);
   assert.equal(third.data.star.companionDays,1,'缺席清零后普通动作不加天');
   assert.equal(third.awardedStars,10,'断天后第 1 档 10 星');
@@ -103,6 +103,6 @@ async function main() {
   assert.equal((await editor.completeCompanionDrawing()).ok,false,'空画不能算完成');assert.ok(notice);
   page.stopLetterArrival(); nextPage.stopLetterArrival();
   page.clearStarAwardFeedback();
-  console.log('开信计日、断天清零、普通发星、九档边界、上海跨日、作品隔离与画画模式隔离通过。');
+  console.log('完成计日、断天重算、共享基础星星、九档边界、上海跨日、作品隔离与画画模式隔离通过。');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{Date.now=originalNow;});

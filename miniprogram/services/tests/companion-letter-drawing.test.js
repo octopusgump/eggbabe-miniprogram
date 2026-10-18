@@ -28,14 +28,14 @@ async function main(){
   adapter.configureRoom('two-stages');
   const input=seed(2);
   const opened=await adapter.recordLetterOpen(input);
-  assert.equal(opened.awardedStars,0);assert.equal(opened.data.star.companionDays,3,'开信加天');
-  assert.equal(opened.data.star.effectiveDone,true);
+  assert.equal(opened.awardedStars,0);assert.equal(opened.data.star.companionDays,2,'开信不加天');
+  assert.equal(opened.data.star.effectiveDone,false);
   const start=await adapter.recordDrawingStart(input);
-  assert.equal(start.awardedStars,11);assert.equal(start.data.star.companionDays,3,'进入画纸不增加日数');
+  assert.equal(start.awardedStars,0);assert.equal(start.data.star.companionDays,2,'进入画纸不增加日数');
   assert.equal((await adapter.recordDrawingStart(input)).awardedStars,0,'旧快照不重复发开始奖励');
   const done=await adapter.recordDrawingComplete(input,'work-1');
-  assert.equal(done.awardedStars,14);assert.equal(done.baseAwardedStars,11);assert.equal(done.giftStars,3);assert.equal(done.data.star.companionDays,3,'画画完成不加天');
-  assert.equal(done.data.star.balance,27);assert.equal(done.data.star.dailyBasis,11);
+  assert.equal(done.awardedStars,14);assert.equal(done.baseAwardedStars,11);assert.equal(done.giftStars,3);assert.equal(done.data.star.companionDays,3,'画画完成才加天');
+  assert.equal(done.data.star.balance,16);assert.equal(done.data.star.dailyBasis,11);
   assert.equal((await adapter.recordDrawingComplete(input,'work-1')).awardedStars,0);
   assert.equal((await adapter.recordDrawingComplete(input,'work-2')).awardedStars,0,'第二幅仍可收藏但没有额外奖励');
   assert.equal((await adapter.recordCompanion(input)).data.star.companionDays,3,'普通动作不会重复计日');
@@ -43,32 +43,32 @@ async function main(){
   adapter.configureRoom('ordinary-first');
   await adapter.recordLetterOpen(seed(6));
   const ordinary=await adapter.recordCompanion((await adapter.getRoomStarView()).data);assert.equal(ordinary.awardedStars,12);
-  assert.equal(ordinary.data.star.companionDays,7,'开信后第7天');
+  assert.equal(ordinary.data.star.companionDays,7,'完成后第7天');
   const subsequentStart=await adapter.recordDrawingStart(ordinary.data);assert.equal(subsequentStart.awardedStars,0);
-  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,15);assert.equal(bonus.baseAwardedStars,12);assert.equal(bonus.data.star.companionDays,7);
+  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,3);assert.equal(bonus.baseAwardedStars,0);assert.equal(bonus.data.star.companionDays,7);
 
   adapter.configureRoom('midnight-draft');
   await adapter.recordLetterOpen(seed(2));
-  const yesterday=await adapter.recordDrawingStart((await adapter.getRoomStarView()).data);assert.equal(yesterday.awardedStars,11);
+  const yesterday=await adapter.recordDrawingStart((await adapter.getRoomStarView()).data);assert.equal(yesterday.awardedStars,0);
   adapter.setCompanionDraft({operations:[{type:'stroke',tool:'brush',points:[{x:1,y:1}]}]});adapter.markCompanionDraftStarted();
   now+=86400000;
   await adapter.recordLetterOpen((await adapter.getRoomStarView()).data);
-  assert.equal((await adapter.getRoomStarView()).data.star.companionDays,4,'跨日开信继续累计');
+  assert.equal((await adapter.getRoomStarView()).data.star.companionDays,2,'没有完成活动，不因开信累计');
   const resumed=Object.assign({},editorDefinition,{companionDrawing:true,resumingCompanionDraft:true,pageActive:true,data:{},shellArt:adapter.getCompanionDraft(),setData(patch){Object.assign(this.data,patch);}});
   await resumed.beginCompanionDrawing();
   const todayView=(await adapter.getRoomStarView()).data;
   assert.equal(todayView.star.baseClaimed,false,'跨日继续旧草稿不自动发新一天基础奖励');
-  const nextDone=await adapter.recordDrawingComplete(todayView,'midnight-work');assert.equal(nextDone.awardedStars,14);assert.equal(nextDone.baseAwardedStars,11);assert.equal(nextDone.data.star.companionDays,4);
-  assert.equal(nextDone.data.star.baseClaimed,false);
+  const nextDone=await adapter.recordDrawingComplete(todayView,'midnight-work');assert.equal(nextDone.awardedStars,14);assert.equal(nextDone.baseAwardedStars,11);assert.equal(nextDone.data.star.companionDays,3);
+  assert.equal(nextDone.data.star.baseClaimed,true);
   assert.equal(nextDone.data.star.noteCollected,false,'完成画画不冒充已经收好纸条');
-  assert.equal((await adapter.recordDrawingStart(nextDone.data)).awardedStars,11,'之后主动进入新画作才发今日基础奖励');
+  assert.equal((await adapter.recordDrawingStart(nextDone.data)).awardedStars,0,'进入新画作仍不发奖励');
   now+=86400000;
   assert.equal((await adapter.recordDrawingComplete(nextDone.data,'midnight-work')).awardedStars,0,'旧作品回调跨日也不重复结算');
 
   adapter.configureRoom('bonus-before-note');
   await adapter.recordLetterOpen(seed());
   const priorBonus=await adapter.recordDrawingComplete((await adapter.getRoomStarView()).data,'bonus-first');
-  const followingNote=await adapter.recordCompanion(priorBonus.data);assert.equal(followingNote.awardedStars,10,'画画完成奖励不占用普通动作基础额度');assert.equal(followingNote.data.star.companionDays,1);assert.equal(followingNote.data.star.noteCollected,true);
+  const followingNote=await adapter.recordCompanion(priorBonus.data);assert.equal(followingNote.awardedStars,0,'画画完成与普通动作共用每日基础额度');assert.equal(followingNote.data.star.companionDays,1);assert.equal(followingNote.data.star.noteCollected,true);
 
   adapter.configureRoom('draft-isolation');assert.equal(adapter.getCompanionDraft(),null);
   const draft={operations:[{type:'stroke',tool:'brush'}]};adapter.setCompanionDraft(draft);draft.operations=[];
@@ -97,13 +97,14 @@ async function main(){
   now+=86400000;p.data.todayCompanionVisible=false;p.maybeShowDailyCompanion();assert.equal(p.data.todayCompanionTomorrowVisible,false,'新日收起明日内容');assert.equal(p.data.companionUnread,true);
   p.stopLetterArrival();
   adapter.configureRoom('full-drawing-chain');
+  adapter.getDailyInvitation(['drawing'], () => 0);
   const parent=page();await parent.onOpenTodayCompanion();
   parent.onTodayCompanionAction();const route=navigation;
   assert.equal((await adapter.getRoomStarView()).data.star.balance,2,'仅调用导航不发星');
   route.fail();assert.equal(parent.data.companionNavigating,false);
   const editor=Object.assign({},editorDefinition,{companionDrawing:true,pageActive:true,data:{},shellArt:{operations:[]},setData(patch){Object.assign(this.data,patch);},pageTransitionDuration:()=>20});
-  assert.equal((await adapter.getRoomStarView()).data.star.companionDays,1,'开信已记一天');
-  await editor.beginCompanionDrawing();assert.equal(editor.data.companionStartAward,10);assert.equal((await adapter.getRoomStarView()).data.star.companionDays,1,'进入画纸不加天');
+  assert.equal((await adapter.getRoomStarView()).data.star.companionDays,0,'开信不计一天');
+  await editor.beginCompanionDrawing();assert.equal(Number(editor.data.companionStartAward || 0),0);assert.equal((await adapter.getRoomStarView()).data.star.companionDays,0,'进入画纸不加天');
   editor.companionStartRequested=false;editor.resumingCompanionDraft=true;
   editor.data.companionStartAwardVisible=false;await editor.beginCompanionDrawing();assert.equal(editor.data.companionStartAwardVisible,false,'同日继续草稿不重播开始奖励');
   const canvas=require('../../utils/canvas-2d');const oldExport=canvas.exportImage;
@@ -118,7 +119,7 @@ async function main(){
   parent.startClock=()=>{};parent.refreshEnvironment=()=>{};parent.loadSnapshot=()=>{};parent.scheduleEnvironmentRefresh=()=>{};
   parent.onShow();await new Promise(resolve=>setImmediate(resolve));
   assert.equal(parent.data.pendingCompanionMemory.image,'/tmp/local-drawing.png');assert.equal(parent.data.todayCompanionAwardedStars,13);assert.equal(parent.data.todayCompanionInteractionFeedback,'一起画完啦。这三颗小星星，送给你。');
-  assert.equal(parent.data.companionStarBalance,25);assert.equal(parent.data.companionDays,1);
+  assert.equal(parent.data.companionStarBalance,15);assert.equal(parent.data.companionDays,1);
   parent.onCollectCompanionMemory();assert.equal(adapter.getMemories().length,1);assert.equal(parent.data.todayCompanionVisible,false);
   parent.clearStarAwardFeedback();editor.clearCompanionFeedback();
   adapter.configureRoom('background-note');
@@ -141,6 +142,6 @@ async function main(){
   let letterError='';const failLetter=page();failLetter.showSystemNotice=text=>letterError=text;
   todayAdapter.getTodayView=async()=>{throw new Error('fixture failed');};await failLetter.onOpenTodayCompanion();todayAdapter.getTodayView=previousToday;
   assert.ok(letterError);assert.equal(failLetter.companionOpening,false,'读信失败解除打开锁，允许再次点击');assert.equal(failLetter.data.todayCompanionVisible,false);
-  console.log('画画两段奖励、升档固定基数、普通动作共用额度、跨日草稿、有效日数、防重复、信件到达及聊天门禁通过。');
+  console.log('画画完成共享基础与独立回礼、升档固定基数、普通动作共用额度、跨日草稿、有效日数、防重复、信件到达及聊天门禁通过。');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{Date.now=originalNow;global.setTimeout=originalSetTimeout;global.clearTimeout=originalClearTimeout;});

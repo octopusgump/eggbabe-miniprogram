@@ -13,6 +13,7 @@ const { createSceneFeedbackController } = require('../../utils/scene-feedback-co
 const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
+const companionActivities = require('../../services/companion-activity-catalog');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
@@ -508,7 +509,7 @@ Page({
       result: 'opened'
     });
     return Promise.all([
-      todayCompanionAdapter.getTodayView({ scenario: this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal', state: 'ready' }),
+      todayCompanionAdapter.getTodayView({ scenario: this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal', state: 'ready', selectActivity: true, pet: this.data.pet }),
       starAdapter.getRoomStarView()
     ]).then(([todayResult, starResult]) => {
       if (!this.pageActive) return;
@@ -519,8 +520,8 @@ Page({
         this.markCompanionSeen();
         const star = letterResult.data.star;
         const away = Boolean(this.data.currentState && !this.data.currentState.atHome);
-        // 开信已记「一起 X 天」；信内动作完成态仍看纸条/基础星领取，不把开信当成互动完成。
-        const claimed = Boolean(star && (away ? star.noteCollected : star.baseClaimed));
+        // 开信仅记已读；领奖与当前活动是否完成分别判断。
+        const claimed = starAdapter.getActivityCompleted(todayResult.data.today.activityKind);
         this.stopLetterArrival();
         const progress = this.readLetterProgress();
         this.todayCompanionScenario = away ? 'away' : 'normal';
@@ -597,6 +598,7 @@ Page({
     const view = this.data.todayCompanionView;
     this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionPending: false, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: view && view.today ? view.today.interactionFeedback : '', todayCompanionInteractionError: '', todayCompanionAwardedStars: awardedStars });
     if (awardedStars > 0) this.playStarAwardFeedback();
+    if (result.streakInterrupted) this.showSystemNotice('连续天数中断了');
     return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
   },
 
@@ -1415,12 +1417,15 @@ Page({
     this.syncPendingPaperPhoto();
     if (this.data.todayCompanionInteractionPending || this.data.companionNavigating || this.data.pendingCompanionMemory) return;
     if (this.data.currentState && !this.data.currentState.atHome) return this.onTodayCompanionInteract();
+    const kind = this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || 'drawing';
+    const activity = companionActivities.byKind(kind);
+    if (!activity) return this.onTodayCompanionInteract();
     this.returningFromChild = true;
-    this.setData({ companionNavigating: true });
+    this.setData({ companionNavigating: true, todayCompanionVisible: kind !== 'listen' });
     wx.navigateTo({
-      url: '/pages/doodle/doodle?entry=companion',
+      url: activity.route,
       events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
-      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false }); this.showSystemNotice('画纸没有打开，请重试', 'warning'); }
+      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('活动没有打开，请重试', 'warning'); }
     });
   },
 
@@ -1669,7 +1674,7 @@ Page({
       this.setData({
         todayCompanionStarView: result.data,
         companionDays: Number(result.data.star.companionDays || 0),
-        todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.baseClaimed)
+        todayCompanionInteractionDone: starAdapter.getActivityCompleted(this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || (this.data.currentState && !this.data.currentState.atHome ? 'ordinary' : 'drawing'))
       });
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
@@ -1680,6 +1685,7 @@ Page({
         const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line: completion.drawingGift.line }) : memory;
         this.setData({ todayCompanionVisible: true, pendingCompanionMemory: completedMemory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: completedMemory.line, todayCompanionAwardedStars: completion.awardedStars });
         if (completion.awardedStars > 0) this.playStarAwardFeedback();
+        if (completion.streakInterrupted) this.showSystemNotice('连续天数中断了');
         return this.loadCompanionStar({ deferAward: true });
       });
     });

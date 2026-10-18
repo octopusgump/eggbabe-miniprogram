@@ -1,0 +1,40 @@
+const assert = require('assert');
+const path = require('path');
+const root = path.resolve(__dirname, '../..');
+(async () => {
+  for (const environment of ['develop', 'trial', 'release']) {
+    for (const key of Object.keys(require.cache)) if (key.startsWith(root)) delete require.cache[key];
+    const storage = new Map(); let definition, navigation;
+    global.wx = {
+      getAccountInfoSync: () => ({ miniProgram: { envVersion: environment } }),
+      getStorageSync: key => storage.get(key), setStorageSync: (key, value) => storage.set(key, structuredClone(value)),
+      getSystemInfoSync: () => ({ windowWidth: 375, windowHeight: 667 }),
+      onAppShow() {}, onAppHide() {}, onNetworkStatusChange() {}, getNetworkType() {}, showToast() {},
+      navigateTo: options => { navigation = options; }, request: () => { throw Error('不得联网'); }
+    };
+    global.getApp = () => ({ globalData: {} }); global.Component = () => {}; global.Page = value => { definition = value; };
+    require('../../pages/life-scene/life-scene');
+    const stars = require('../iaa-star-unlock-adapter');
+    const listen = require('../listen-adapter');
+    const rules = require('../listen-rules');
+    const pet = { id: 'entry-' + environment, ownerId: 'owner', prototype: '锦鲤', name: '小鲤鱼', lifecycleStage: 'HATCHED' };
+    stars.configureRoom(pet.id, pet); stars.getDailyInvitation(['listen'], () => 0);
+    const page = Object.assign({}, definition, { pageActive: true, data: Object.assign({}, definition.data, { pet, currentState: { atHome: true } }), setData(patch) { Object.assign(this.data, patch); } });
+    await page.loadCompanionStar(); await page.onOpenTodayCompanion();
+    assert.equal(page.data.todayCompanionView.today.activityKind, 'listen');
+    assert.equal(page.data.todayCompanionView.pet.name, '小鲤鱼');
+    assert.equal(page.data.companionDays, 0); assert.equal(page.data.todayCompanionInteractionDone, false);
+    page.onTodayCompanionAction(); assert.equal(navigation.url, '/pages/listen/listen');
+    assert.equal(page.data.todayCompanionVisible, false);
+    navigation.fail(); assert.equal(page.data.todayCompanionVisible, true); assert.equal(page.data.companionNavigating, false);
+    const draft = listen.startGroup('habits').data;
+    for (const q of rules.groupById(draft.groupId).group.questions) draft.answers[q.id] = { optionId: q.options[4].id, text: '' };
+    draft.questionIndex = 4; listen.saveDraft(draft); assert.equal((await listen.completeGroup(draft.groupId)).awardedStars, 10);
+    assert.equal(stars.getActivityCompleted('drawing'), false, '答题领过星不冒充画画完成');
+    page.onCloseTodayCompanion(); await page.onOpenTodayCompanion();
+    assert.equal(page.data.todayCompanionView.today.activityKind, 'listen', '同日不更换随机邀请');
+    assert.equal(page.data.todayCompanionInteractionDone, true); assert.equal(page.data.todayCompanionAwardedStars, 0);
+    page.clearStarAwardFeedback();
+  }
+  console.log('听你说真实房间入口通过：三环境一致、每日稳定邀请、正确导航、失败可重试、活动完成与领奖分开。');
+})().catch(error => { console.error(error); process.exitCode = 1; });

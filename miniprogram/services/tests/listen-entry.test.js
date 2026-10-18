@@ -1,6 +1,9 @@
 const assert = require('assert');
 const path = require('path');
 const root = path.resolve(__dirname, '../..');
+const originalNow = Date.now, originalRandom = Math.random;
+let now = Date.parse('2026-10-19T12:00:00+08:00');
+Date.now = () => now;
 (async () => {
   for (const environment of ['develop', 'trial', 'release']) {
     for (const key of Object.keys(require.cache)) if (key.startsWith(root)) delete require.cache[key];
@@ -35,6 +38,21 @@ const root = path.resolve(__dirname, '../..');
     assert.equal(page.data.todayCompanionView.today.activityKind, 'listen', '同日不更换随机邀请');
     assert.equal(page.data.todayCompanionInteractionDone, true); assert.equal(page.data.todayCompanionAwardedStars, 0);
     page.clearStarAwardFeedback();
+    page.letterDate = require('../companion-star-rules').shanghaiDate();
+    page.startClock = page.refreshEnvironment = page.loadSnapshot = () => {};
+    page.hasShownOnce = true;
+    now += 86400000; Math.random = () => 0.999;
+    page.onShow();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(page.data.todayCompanionView.dateKey, require('../companion-star-rules').shanghaiDate());
+    assert.equal(page.data.todayCompanionView.today.activityKind, 'drawing', '跨日返回重载当天随机活动');
+    assert.equal(page.data.todayCompanionAwardedStars, 0);
+    const view = page.data.todayCompanionView;
+    page.data.pendingCompanionMemory = { id: 'saved-drawing', image: '/test.webp' };
+    now += 86400000; page.onShow();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(page.data.todayCompanionView, view, '待收下作品不被跨日邀请替换');
+    page.clearStarAwardFeedback();
   }
   console.log('听你说真实房间入口通过：三环境一致、每日稳定邀请、正确导航、失败可重试、活动完成与领奖分开。');
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { Date.now = originalNow; Math.random = originalRandom; });

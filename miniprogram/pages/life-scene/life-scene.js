@@ -1401,8 +1401,10 @@ Page({
     const photo = this.data.pendingCompanionMemory;
     if (!photo) return;
     if (photo.source === 'paper') {
-      if (!this.data.companionPhotoReady || this.data.companionPhotoFailed || !starAdapter.collectPhoto(photo.id).ok) return;
-    } else if (!starAdapter.collectMemory(photo)) return;
+      if (!this.data.companionPhotoReady || this.data.companionPhotoFailed) return;
+      const result = starAdapter.collectPhoto(photo.id);
+      if (!result.ok) { this.showSystemNotice(result.error && result.error.message || '照片没有收好，请再试一次', 'warning'); return; }
+    } else if (!starAdapter.collectMemory(photo)) { this.showSystemNotice('刚才没有保存好，请再试一次。', 'warning'); return; }
     this.setData({ pendingCompanionMemory: null, memoryGuideVisible: !this.memoryGuideShown });
     this.memoryGuideShown = true;
     this.onCloseTodayCompanion();
@@ -1661,7 +1663,15 @@ Page({
     this.pageActive = true;
     this.startClock();
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    if (this.letterDate !== date) { this.letterDate = date; this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow) }); }
+    if (this.letterDate !== date) {
+      this.letterDate = date;
+      this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow) });
+      // 待收下作品仍留在原结果；普通昨日邀请改为今日活动。
+      if (this.data.todayCompanionVisible && !this.data.pendingCompanionMemory && !this.completedCompanionDrawing && !this.pendingCompanionResult) {
+        this.onCloseTodayCompanion();
+        this.onOpenTodayCompanion();
+      }
+    }
     this.setData({ companionNavigating: false, companionRoleEntering: false, todayCompanionAwardedStars: 0 });
     if (this.returnToCompanion) { this.returnToCompanion = false; this.onOpenTodayCompanion(); }
     if (this.pendingCompanionResult) {

@@ -81,11 +81,16 @@ async function main(){
   assert.equal((await blank.completeCompanionDrawing()).ok,false);assert.ok(notice);
 
   adapter.configureRoom('letter-room');
+  adapter.getDailyInvitation(['drawing'], () => 0);
   const p=page();p.maybeShowDailyCompanion();
   assert.equal(p.data.todayCompanionVisible,false,'提示到信不弹开信纸');assert.equal(p.data.companionLetterArriving,true);assert.equal(p.data.companionUnread,true);
   const timerCount=timers.size;p.maybeShowDailyCompanion();assert.equal(timers.size,timerCount,'重复刷新不重复播放到信');
   p.data.companionRoleImage='/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare.webp';
   await p.onOpenTodayCompanion();assert.equal(p.data.companionRoleImage.endsWith('/stare.webp'),true,'展开信纸不清空角色素材');assert.equal(p.data.companionLetterArriving,false,'动画期间点击立即读信');assert.equal(p.data.companionUnread,false);
+  p.onTodayCompanionRevealTomorrow();assert.equal(p.data.todayCompanionTomorrowVisible,false,'未进入小游戏时不能展开明日内容');
+  p.onTodayCompanionAction();navigation.success();
+  p.setData({companionNavigating:false,todayCompanionVisible:true});navigation=undefined;
+  assert.equal(p.data.todayCompanionTomorrowAvailable,true,'成功进入后返回才出现明天入口');
   p.onTodayCompanionRevealTomorrow();assert.equal(p.data.companionRoleEntering,true);
   p.onCloseTodayCompanion();await p.onOpenTodayCompanion();
   assert.equal(p.data.todayCompanionTomorrowVisible,true);assert.equal(p.data.companionRoleEntering,false,'同日重开不重播角色');

@@ -1,0 +1,17 @@
+const assert = require('assert');
+let component;
+const previous = global.Component;
+global.Component = value => { component = value; };
+require('../../components/button/button');
+global.Component = previous;
+assert.equal(component.properties.icon.value, '', '现有按钮不传图标时仍只有文字');
+const events = [];
+const page = { data: { disabled: false, icon: '' }, triggerEvent: name => events.push(name) };
+component.methods.onTap.call(page);
+page.data.icon = '/assets/ui/3d-actions/runtime/ui_3d_listen_speech_bubbles_128_v01.png';
+component.methods.onTap.call(page);
+assert.deepEqual(events, ['tap', 'tap'], '有无图标都只触发一次原有点击事件');
+page.data.disabled = true;
+component.methods.onTap.call(page);
+assert.equal(events.length, 2, '禁用状态不触发点击');
+console.log('共享按钮检查通过：图标可选、有无图标点击一致、禁用不触发。');

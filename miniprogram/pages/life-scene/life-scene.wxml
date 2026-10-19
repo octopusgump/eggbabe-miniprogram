@@ -171,10 +171,13 @@
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
 
-      <view class="today-companion-letter__interaction">
-        <view class="today-companion-letter__action-row">
+      <view class="today-companion-letter__interaction {{todayCompanionGameInvitation ? 'today-companion-letter__interaction--game' : ''}}">
+        <view wx:if="{{!pendingCompanionMemory}}" class="today-companion-letter__action-row">
+          <view wx:if="{{todayCompanionGameInvitation}}" class="today-companion-letter__game-action">
+            <app-button text="{{todayCompanionView.today.interactionLabel}}" icon="{{todayCompanionActivityIcon}}" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
+          </view>
           <view
-            wx:if="{{!pendingCompanionMemory}}"
+            wx:else
             class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
             aria-role="button"
             aria-label="{{todayCompanionView.today.interactionLabel}}"
@@ -196,7 +199,7 @@
       </view>
 
       <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image wx:if="{{!companionPhotoFailed}}" class="{{pendingCompanionMemory.source === 'paper' ? 'companion-polaroid' : ''}}" src="{{pendingCompanionMemory.image}}" mode="{{pendingCompanionMemory.source === 'paper' ? 'widthFix' : 'aspectFit'}}" bindload="onCompanionPhotoLoad" binderror="onCompanionPhotoError" bindtap="onPreviewCompanionMemory"></image><view wx:else class="today-companion-letter__action" bindtap="onRetryCompanionPhoto">重试</view><text wx:if="{{pendingCompanionMemory.source === 'paper'}}" class="today-companion-letter__feedback">{{pendingCompanionMemory.line}}</text><button class="today-companion-letter__action" disabled="{{pendingCompanionMemory.source === 'paper' && !companionPhotoReady}}" bindtap="onCollectCompanionMemory"><text class="button-label">收下</text></button></view>
-      <view class="today-companion-letter__tomorrow">
+      <view wx:if="{{todayCompanionTomorrowAvailable}}" class="today-companion-letter__tomorrow">
         <view
           class="today-companion-letter__question {{todayCompanionTomorrowVisible ? 'today-companion-letter__question--open' : ''}}"
           aria-role="button"

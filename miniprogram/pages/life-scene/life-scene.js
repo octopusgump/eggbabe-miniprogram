@@ -14,6 +14,7 @@ const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
+const letterActivityProgress = require('../../services/companion-letter-progress');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
@@ -327,6 +328,8 @@ Page({
     companionStarAwardVisible: false,
     todayCompanionVisible: false,
     todayCompanionView: null,
+    todayCompanionGameInvitation: false,
+    todayCompanionActivityIcon: '',
     todayCompanionStarView: null,
     todayCompanionInteractionPending: false,
     todayCompanionInteractionDone: false,
@@ -334,6 +337,7 @@ Page({
     todayCompanionInteractionFeedback: '',
     todayCompanionInteractionError: '',
     todayCompanionAwardedStars: 0,
+    todayCompanionTomorrowAvailable: true,
     todayCompanionTomorrowVisible: false,
     clockMode: 'analog',
     clockTimeText: '--:--',
@@ -524,7 +528,8 @@ Page({
         // 开信仅记已读；领奖与当前活动是否完成分别判断。
         const claimed = starAdapter.getActivityCompleted(todayResult.data.today.activityKind);
         this.stopLetterArrival();
-        const progress = this.readLetterProgress();
+        const progress = this.readLetterProgress(todayResult.data.today.activityKind);
+        const game = !away && companionActivities.byKind(todayResult.data.today.activityKind);
         this.todayCompanionScenario = away ? 'away' : 'normal';
         if (!claimed) this.prepareStarAwardSound();
         this.setData({
@@ -535,6 +540,8 @@ Page({
           companionNavigating: false,
           toolboxVisible: false,
           todayCompanionView: todayResult.data,
+          todayCompanionGameInvitation: Boolean(game),
+          todayCompanionActivityIcon: game && game.icon || '',
           todayCompanionStarView: letterResult.data,
           companionDays: Number(star.companionDays || 0),
           companionStarBalance: Number(star.balance || 0),
@@ -544,7 +551,8 @@ Page({
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
           todayCompanionInteractionError: '',
           todayCompanionAwardedStars: 0,
-          todayCompanionTomorrowVisible: Boolean(progress.tomorrow),
+          todayCompanionTomorrowAvailable: progress.available,
+          todayCompanionTomorrowVisible: progress.available && Boolean(progress.tomorrow),
           companionRoleEntering: false
         });
         analytics.track('companion_interaction', {
@@ -662,10 +670,15 @@ Page({
   },
 
   onTodayCompanionRevealTomorrow() {
-    if (!this.data.todayCompanionView || this.data.todayCompanionTomorrowVisible) return;
+    if (!this.data.todayCompanionView || !this.readLetterProgress().available || this.data.todayCompanionTomorrowVisible) return;
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    this.letterProgress = { date, tomorrow: true };
-    try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
+    const kind = this.data.todayCompanionView.today.activityKind;
+    if (this.data.currentState && this.data.currentState.atHome && companionActivities.byKind(kind)) {
+      letterActivityProgress.markExpanded(starAdapter.getRoomScope(), kind, starAdapter.getActivityCompleted(kind), date);
+    } else {
+      this.letterProgress = { date, tomorrow: true };
+      try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
+    }
     this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.reducedMotion) });
     clearTimeout(this.companionRoleTimer);
     this.companionRoleTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionRoleEntering: false }); }, 1000);
@@ -1341,9 +1354,21 @@ Page({
     try { wx.setStorageSync(this.companionSeenKey(), date); } catch (error) {}
   },
   letterProgressKey() { return `${this.companionSeenKey()}_progress`; },
-  readLetterProgress() {
+  readLetterProgress(activityKind) {
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    try { const value = wx.getStorageSync(this.letterProgressKey()) || this.letterProgress; return value && value.date === date ? value : {}; } catch (error) { return this.letterProgress && this.letterProgress.date === date ? this.letterProgress : {}; }
+    const kind = activityKind || this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind;
+    if (this.data.currentState && this.data.currentState.atHome && companionActivities.byKind(kind)) {
+      const progress = letterActivityProgress.read(starAdapter.getRoomScope(), kind, date);
+      const available = progress.entered || starAdapter.getActivityCompleted(kind);
+      return Object.assign(progress, { available, tomorrow: available && progress.tomorrow });
+    }
+    let value;
+    try { value = wx.getStorageSync(this.letterProgressKey()) || this.letterProgress; } catch (error) { value = this.letterProgress; }
+    return { available: true, tomorrow: Boolean(value && value.date === date && value.tomorrow) };
+  },
+  syncLetterProgress() {
+    const progress = this.readLetterProgress();
+    this.setData({ todayCompanionTomorrowAvailable: progress.available, todayCompanionTomorrowVisible: progress.tomorrow, companionRoleEntering: false });
   },
   stopLetterArrival() {
     clearTimeout(this.letterArrivalTimer);
@@ -1362,7 +1387,8 @@ Page({
     const date = require('../../services/companion-star-rules').shanghaiDate();
     if (this.letterDate !== date) {
       this.letterDate = date;
-      this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow), companionRoleEntering: false, todayCompanionAwardedStars: 0 });
+      this.syncLetterProgress();
+      this.setData({ todayCompanionAwardedStars: 0 });
       // 已打开的旧信跨日更新内容，但不会自动把未打开的信展开。
       if (this.data.todayCompanionVisible) { this.setData({ todayCompanionVisible: false }); this.onOpenTodayCompanion(); }
     }
@@ -1431,10 +1457,17 @@ Page({
     const kind = this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || 'drawing';
     const activity = companionActivities.byKind(kind);
     if (!activity) return this.onTodayCompanionInteract();
+    const entryScope = starAdapter.getRoomScope();
+    const entryDate = require('../../services/companion-star-rules').shanghaiDate();
     this.returningFromChild = true;
     this.setData({ companionNavigating: true, todayCompanionVisible: kind !== 'listen' });
     wx.navigateTo({
       url: activity.route,
+      success: () => {
+        if (entryScope !== starAdapter.getRoomScope() || entryDate !== require('../../services/companion-star-rules').shanghaiDate()) return;
+        letterActivityProgress.markEntered(entryScope, kind, entryDate);
+        this.syncLetterProgress();
+      },
       events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
       fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('活动没有打开，请重试', 'warning'); }
     });
@@ -1674,7 +1707,7 @@ Page({
     const date = require('../../services/companion-star-rules').shanghaiDate();
     if (this.letterDate !== date) {
       this.letterDate = date;
-      this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow) });
+      this.syncLetterProgress();
       // 待收下作品仍留在原结果；普通昨日邀请改为今日活动。
       if (this.data.todayCompanionVisible && !this.data.pendingCompanionMemory && !this.completedCompanionDrawing && !this.pendingCompanionResult) {
         this.onCloseTodayCompanion();
@@ -1695,6 +1728,7 @@ Page({
         companionDays: Number(result.data.star.companionDays || 0),
         todayCompanionInteractionDone: starAdapter.getActivityCompleted(this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || (this.data.currentState && !this.data.currentState.atHome ? 'ordinary' : 'drawing'))
       });
+      this.syncLetterProgress();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {

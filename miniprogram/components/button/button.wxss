@@ -22,6 +22,14 @@
   transform: scale(0.98);
 }
 
+.btn-icon {
+  display: block;
+  flex: none;
+  width: 44rpx;
+  height: 44rpx;
+  margin-right: 16rpx;
+}
+
 .btn-text {
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 30rpx; /* 15px */

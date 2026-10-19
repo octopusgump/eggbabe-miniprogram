@@ -1,7 +1,11 @@
 <view
   class="btn btn--{{variant}} {{disabled ? 'btn--disabled' : ''}}"
+  aria-role="button"
+  aria-label="{{text}}"
+  aria-disabled="{{disabled}}"
   hover-class="{{disabled ? '' : 'btn--pressed'}}"
   bindtap="onTap"
 >
+  <image wx:if="{{icon}}" class="btn-icon" src="{{icon}}" mode="aspectFit" aria-hidden="true"></image>
   <text class="btn-text">{{text}}</text>
 </view>

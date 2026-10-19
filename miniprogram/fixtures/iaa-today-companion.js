@@ -51,7 +51,7 @@ const TODAY_SCENARIOS = Object.freeze({
     title: '房间里留着一张小纸条',
     line: '我去看看风把叶子吹到了哪里，晚一点回来。',
     tomorrowHint: '窗边空着的位置，好像在等什么回来。',
-    interactionLabel: '替它收好纸条',
+    interactionLabel: '替他收好信件',
     interactionFeedback: '你把纸条压在杯子旁边，等它回来。',
     atHome: false,
     sceneImage: `${SCENE_ROOT}/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.webp`,

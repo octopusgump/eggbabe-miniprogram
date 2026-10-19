@@ -115,7 +115,7 @@
 .today-companion-letter__line{display:block;margin-top:18rpx;color:#5A675E;font-family:"Kaiti SC","STKaiti",serif;font-size:27rpx;line-height:1.55;overflow-wrap:anywhere}
 .today-companion-letter__interaction{margin-top:12rpx}
 .today-companion-letter__interaction--game{margin-top:36rpx}
-.today-companion-letter__game-action{flex:0 1 280rpx;min-width:0}
+.today-companion-letter__game-action,.today-companion-letter__letter-action{flex:0 1 280rpx;min-width:0}
 .today-companion-letter__action-row{display:flex;align-items:center;gap:12rpx}
 .today-companion-letter__action{min-height:72rpx;display:flex;align-items:center;color:#355A43;font-family:"Kaiti SC","STKaiti",serif;font-size:27rpx;line-height:1.55}
 .today-companion-letter__action--pending{opacity:.72}

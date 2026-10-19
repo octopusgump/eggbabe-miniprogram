@@ -176,13 +176,16 @@
           <view wx:if="{{todayCompanionGameInvitation}}" class="today-companion-letter__game-action">
             <app-button text="{{todayCompanionView.today.interactionLabel}}{{todayCompanionInteractionDone ? '已完成' : ''}}" icon="{{todayCompanionInteractionDone ? '' : todayCompanionActivityIcon}}" icon-text="{{todayCompanionInteractionDone ? '✅' : ''}}" size="small" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
           </view>
+          <view wx:elif="{{!currentState.atHome}}" class="today-companion-letter__letter-action">
+            <app-button text="{{todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}" size="small" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
+          </view>
           <view
             wx:else
             class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
             aria-role="button"
             aria-label="{{todayCompanionView.today.interactionLabel}}"
             bindtap="onTodayCompanionAction"
-          >{{!currentState.atHome && todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}</view>
+          >{{todayCompanionView.today.interactionLabel}}</view>
         </view>
         <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>

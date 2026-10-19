@@ -1,5 +1,5 @@
 .page { display: flex; flex-direction: column; height: 100vh; background: #FAFAF8; }
-.kicker { color: #809044; font-size: 20rpx; letter-spacing: 4rpx; }
+.kicker { color: #809044; font-size: 20rpx; letter-spacing: 0; }
 .title { margin-top: 18rpx; color: #17311F; font-size: 40rpx; font-weight: 600; }
 .option--selected { border-color: #91A65A; background: #F3F7EB; }
 .option-label { flex: 1; color: #374039; font-size: 25rpx; line-height: 1.45; }

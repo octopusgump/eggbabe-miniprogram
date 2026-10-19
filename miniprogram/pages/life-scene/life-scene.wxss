@@ -115,11 +115,12 @@
 .today-companion-letter__line{display:block;margin-top:18rpx;color:#5A675E;font-family:"Kaiti SC","STKaiti",serif;font-size:27rpx;line-height:1.55;overflow-wrap:anywhere}
 .today-companion-letter__interaction{margin-top:12rpx}
 .today-companion-letter__interaction--game{margin-top:36rpx}
-.today-companion-letter__game-action{flex:1;min-width:0}
+.today-companion-letter__game-action{flex:0 1 280rpx;min-width:0}
 .today-companion-letter__action-row{display:flex;align-items:center;gap:12rpx}
 .today-companion-letter__done{position:relative;flex:none;display:flex;align-items:center;justify-content:center;width:72rpx;height:72rpx}
 .today-companion-letter__done icon{display:block;line-height:1}
 .today-companion-letter__done-tooltip{position:absolute;z-index:2;right:100%;margin-right:8rpx;top:50%;transform:translateY(-50%);box-sizing:border-box;padding:8rpx 14rpx;border-radius:6rpx;background:#35483C;color:#FFF9EB;font-family:"Kaiti SC","STKaiti",serif;font-size:24rpx;line-height:1.4;white-space:nowrap;visibility:hidden;opacity:0;pointer-events:none}
+.today-companion-letter__interaction--game .today-companion-letter__done-tooltip{right:auto;left:100%;margin-right:0;margin-left:8rpx}
 .today-companion-letter__done--open .today-companion-letter__done-tooltip{visibility:visible;opacity:1}
 @media(hover:hover){.today-companion-letter__done:hover .today-companion-letter__done-tooltip{visibility:visible;opacity:1}}
 .today-companion-letter__action{min-height:72rpx;display:flex;align-items:center;color:#355A43;font-family:"Kaiti SC","STKaiti",serif;font-size:27rpx;line-height:1.55}

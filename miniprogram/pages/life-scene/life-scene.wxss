@@ -215,3 +215,6 @@ to{left:var(--scene-origin-left,0);top:var(--scene-origin-top,0);width:var(--sce
 .today-companion-letter--game .today-companion-letter__question--open{min-height:72rpx;align-items:center}
 .today-companion-letter--game .today-companion-letter__hint{margin-top:12rpx}
 .companion-letter-role--game{right:-16rpx;bottom:-20rpx;width:160rpx;height:160rpx;animation:none;transition:none;transform:none}
+
+/* 收下作品/纸条照片与邀请按钮共用已确认的窄胶囊。 */
+.companion-memory-result__collect{width:280rpx;max-width:100%;margin-top:16rpx}

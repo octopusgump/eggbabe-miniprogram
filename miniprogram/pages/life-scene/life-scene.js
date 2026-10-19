@@ -330,6 +330,7 @@ Page({
     todayCompanionStarView: null,
     todayCompanionInteractionPending: false,
     todayCompanionInteractionDone: false,
+    todayCompanionDoneHintVisible: false,
     todayCompanionInteractionFeedback: '',
     todayCompanionInteractionError: '',
     todayCompanionAwardedStars: 0,
@@ -539,6 +540,7 @@ Page({
           companionStarBalance: Number(star.balance || 0),
           todayCompanionInteractionPending: false,
           todayCompanionInteractionDone: claimed,
+          todayCompanionDoneHintVisible: false,
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
           todayCompanionInteractionError: '',
           todayCompanionAwardedStars: 0,
@@ -558,7 +560,7 @@ Page({
     this.clearStarAwardFeedback();
     const showRoomAward = false;
     this.companionStarAwardPending = false;
-    const patch = { todayCompanionVisible: false };
+    const patch = { todayCompanionVisible: false, todayCompanionDoneHintVisible: false };
     if (showRoomAward) patch.companionStarAwardVisible = true;
     this.setData(patch);
     clearTimeout(this.companionStarAwardTimer);
@@ -569,7 +571,14 @@ Page({
     }
   },
 
-  onTodayCompanionLetterTap() {},
+  onToggleTodayCompanionDoneHint() {
+    if (!this.data.todayCompanionVisible || !this.data.todayCompanionInteractionDone || this.data.pendingCompanionMemory || !this.data.currentState || !this.data.currentState.atHome) return;
+    this.setData({ todayCompanionDoneHintVisible: !this.data.todayCompanionDoneHintVisible });
+  },
+
+  onTodayCompanionLetterTap() {
+    if (this.data.todayCompanionDoneHintVisible) this.setData({ todayCompanionDoneHintVisible: false });
+  },
 
   onTodayCompanionOverlayTouchMove() {},
 
@@ -1733,7 +1742,7 @@ Page({
     this.clearPanoramaTransition();
     this.needsInitialViewport = true;
     this.initialViewportToken = (this.initialViewportToken || 0) + 1;
-    this.setData({ sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: '', dailyWindowVisible: false, magicWindowVisible: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+    this.setData({ todayCompanionDoneHintVisible: false, sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: '', dailyWindowVisible: false, magicWindowVisible: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
   },
   clearPresentationTimers() {
     if (this.sceneFeedbackController) this.sceneFeedbackController.clear();

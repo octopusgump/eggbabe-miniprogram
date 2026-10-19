@@ -25,12 +25,17 @@
   </block>
   <block wx:elif="{{view === 'feedback'}}">
     <scroll-view class="feedback-scroll" scroll-y>
-      <view class="feedback-main"><text class="kicker">{{title}}</text><text class="title">我听见啦</text>
-        <view class="feedback-stage">
-          <view wx:if="{{awardVisible}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-live="polite" aria-label="获得 {{awardedStars}} 颗星星"><companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star><text class="today-companion-award__plus">+{{awardedStars}}</text></view>
-          <view class="reply-card"><view class="pet-photo"><image class="pet-image" src="{{petImage}}" mode="aspectFit" aria-label="{{petName}}"></image></view><text class="reply-copy" aria-live="polite">{{feedback}}</text></view>
+      <view class="feedback-main">
+        <text class="kicker">{{title}}</text>
+        <view class="feedback-quote">
+          <text class="quote-mark" aria-hidden="true">“</text>
+          <text class="feedback-quote-copy" aria-live="polite">{{feedback}}</text>
         </view>
         <text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text>
+        <view class="feedback-pet-stage">
+          <view wx:if="{{awardVisible}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-live="polite" aria-label="获得 {{awardedStars}} 颗星星"><companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star><text class="today-companion-award__plus">+{{awardedStars}}</text></view>
+          <image class="feedback-pet-image" src="{{petImage}}" mode="aspectFit" aria-label="{{petName}}"></image>
+        </view>
       </view>
     </scroll-view>
     <view class="feedback-footer"><button wx:if="{{categories.length}}" class="primary" bindtap="onContinue"><text class="button-label">继续回答</text></button><button class="return" bindtap="onReturnRoom"><text class="button-label">回到房间</text></button></view>

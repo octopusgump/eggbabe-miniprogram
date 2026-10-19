@@ -41,7 +41,6 @@
 .pet-photo { position: relative; width: 140rpx; height: 170rpx; margin: 0 auto 32rpx; }
 .pet-photo .pet-image { position: absolute; width: 202rpx; height: 202rpx; left: -33rpx; top: -13rpx; }
 .reply-copy { display: block; color: #647064; font-size: 23rpx; line-height: 1.55; overflow-wrap: anywhere; }
-.thanks { position: absolute; bottom: 100%; left: 0; right: 0; margin-bottom: 76rpx; text-align: center; color: #858A81; font-size: 24rpx; }
 .feedback-footer { flex: none; display: flex; flex-direction: column; gap: 26rpx; padding: 36rpx 42rpx calc(40rpx + env(safe-area-inset-bottom)); }
 .feedback-footer .primary { width: 100%; }
 .return { margin: 0; padding: 12rpx 0; background: transparent; color: #777B75; font-size: 24rpx; line-height: normal; }

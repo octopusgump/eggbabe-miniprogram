@@ -67,7 +67,7 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   const root = path.resolve(__dirname, '../..');
   const template = fs.readFileSync(path.join(root, 'pages/listen/listen.wxml'), 'utf8');
   assert.ok(template.includes('写下你的想法...')); assert.ok(!template.includes('我想自己说'));
-  assert.ok(template.includes('谢谢回答！')); assert.ok(template.includes('我听见啦'));
+  assert.ok(!template.includes('谢谢回答'), '反馈页不再额外显示答谢提示'); assert.ok(template.includes('我听见啦'));
   assert.ok(JSON.parse(fs.readFileSync(path.join(root, 'app.json'))).pages.includes('pages/listen/listen'));
   assert.equal(adapter.getState().data.draft.questionIndex, 0);
   let navDefinition; global.Component = value => { navDefinition = value; };

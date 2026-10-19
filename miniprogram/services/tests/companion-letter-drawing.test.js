@@ -91,7 +91,7 @@ async function main(){
   p.onTodayCompanionAction();navigation.success();
   p.setData({companionNavigating:false,todayCompanionVisible:true});navigation=undefined;
   assert.equal(p.data.todayCompanionTomorrowAvailable,true,'成功进入后返回才出现明天入口');
-  p.onTodayCompanionRevealTomorrow();assert.equal(p.data.companionRoleEntering,true);
+  p.onTodayCompanionRevealTomorrow();assert.equal(p.data.companionRoleEntering,false,'小游戏宠物固定显示，不滑入');
   p.onCloseTodayCompanion();await p.onOpenTodayCompanion();
   assert.equal(p.data.todayCompanionTomorrowVisible,true);assert.equal(p.data.companionRoleEntering,false,'同日重开不重播角色');
   p.data.snapshot.chatAccess={status:'limited'};p.showSystemNotice=()=>{};p.onCompanionChatTap();assert.equal(navigation,undefined);assert.equal(p.data.todayCompanionVisible,true);

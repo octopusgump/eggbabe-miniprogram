@@ -333,7 +333,6 @@ Page({
     todayCompanionStarView: null,
     todayCompanionInteractionPending: false,
     todayCompanionInteractionDone: false,
-    todayCompanionDoneHintVisible: false,
     todayCompanionInteractionFeedback: '',
     todayCompanionInteractionError: '',
     todayCompanionAwardedStars: 0,
@@ -547,7 +546,6 @@ Page({
           companionStarBalance: Number(star.balance || 0),
           todayCompanionInteractionPending: false,
           todayCompanionInteractionDone: claimed,
-          todayCompanionDoneHintVisible: false,
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
           todayCompanionInteractionError: '',
           todayCompanionAwardedStars: 0,
@@ -568,7 +566,7 @@ Page({
     this.clearStarAwardFeedback();
     const showRoomAward = false;
     this.companionStarAwardPending = false;
-    const patch = { todayCompanionVisible: false, todayCompanionDoneHintVisible: false };
+    const patch = { todayCompanionVisible: false };
     if (showRoomAward) patch.companionStarAwardVisible = true;
     this.setData(patch);
     clearTimeout(this.companionStarAwardTimer);
@@ -579,14 +577,8 @@ Page({
     }
   },
 
-  onToggleTodayCompanionDoneHint() {
-    if (!this.data.todayCompanionVisible || !this.data.todayCompanionInteractionDone || this.data.pendingCompanionMemory || !this.data.currentState || !this.data.currentState.atHome) return;
-    this.setData({ todayCompanionDoneHintVisible: !this.data.todayCompanionDoneHintVisible });
-  },
-
-  onTodayCompanionLetterTap() {
-    if (this.data.todayCompanionDoneHintVisible) this.setData({ todayCompanionDoneHintVisible: false });
-  },
+  // 保留信纸内点击的冒泡边界，避免点正文触发遮罩关闭。
+  onTodayCompanionLetterTap() {},
 
   onTodayCompanionOverlayTouchMove() {},
 
@@ -679,7 +671,7 @@ Page({
       this.letterProgress = { date, tomorrow: true };
       try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
     }
-    this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.reducedMotion) });
+    this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.todayCompanionGameInvitation && !this.data.reducedMotion) });
     clearTimeout(this.companionRoleTimer);
     this.companionRoleTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionRoleEntering: false }); }, 1000);
     analytics.track('companion_interaction', {
@@ -1776,7 +1768,7 @@ Page({
     this.clearPanoramaTransition();
     this.needsInitialViewport = true;
     this.initialViewportToken = (this.initialViewportToken || 0) + 1;
-    this.setData({ todayCompanionDoneHintVisible: false, sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: '', dailyWindowVisible: false, magicWindowVisible: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
+    this.setData({ sceneFeedbackText: '', sceneFeedbackVisible: false, sceneFeedbackSystemBehind: false, sceneFeedbackPromoting: false, playedActionKind: '', dailyWindowVisible: false, magicWindowVisible: false, characterWarming: false, sceneTransitionError: false, initialViewportReady: false, sceneEntered: false });
   },
   clearPresentationTimers() {
     if (this.sceneFeedbackController) this.sceneFeedbackController.clear();

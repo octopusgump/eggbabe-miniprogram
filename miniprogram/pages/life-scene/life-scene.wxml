@@ -166,7 +166,7 @@
       <companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star>
       <text class="today-companion-award__plus" aria-hidden="true">+{{todayCompanionAwardedStars}}</text>
     </view>
-    <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">
+    <view class="today-companion-letter {{todayCompanionGameInvitation ? 'today-companion-letter--game' : ''}}" catchtap="onTodayCompanionLetterTap">
       <view class="companion-close" aria-role="button" aria-label="关闭陪伴" bindtap="onCloseTodayCompanion">×</view>
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
@@ -174,7 +174,7 @@
       <view class="today-companion-letter__interaction {{todayCompanionGameInvitation ? 'today-companion-letter__interaction--game' : ''}}">
         <view wx:if="{{!pendingCompanionMemory}}" class="today-companion-letter__action-row">
           <view wx:if="{{todayCompanionGameInvitation}}" class="today-companion-letter__game-action">
-            <app-button text="{{todayCompanionView.today.interactionLabel}}" icon="{{todayCompanionActivityIcon}}" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
+            <app-button text="{{todayCompanionView.today.interactionLabel}}{{todayCompanionInteractionDone ? '已完成' : ''}}" icon="{{todayCompanionInteractionDone ? '' : todayCompanionActivityIcon}}" icon-text="{{todayCompanionInteractionDone ? '✅' : ''}}" size="small" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
           </view>
           <view
             wx:else
@@ -183,16 +183,6 @@
             aria-label="{{todayCompanionView.today.interactionLabel}}"
             bindtap="onTodayCompanionAction"
           >{{!currentState.atHome && todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}</view>
-          <view
-            wx:if="{{todayCompanionInteractionDone && !pendingCompanionMemory && currentState.atHome}}"
-            class="today-companion-letter__done {{todayCompanionDoneHintVisible ? 'today-companion-letter__done--open' : ''}}"
-            aria-role="button"
-            aria-label="今日已陪伴"
-            catchtap="onToggleTodayCompanionDoneHint"
-          >
-            <icon type="success_no_circle" size="16" color="#657567" aria-hidden="true"></icon>
-            <text class="today-companion-letter__done-tooltip" aria-hidden="true">今日已陪伴</text>
-          </view>
         </view>
         <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
@@ -209,7 +199,7 @@
         <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint {{currentState.atHome ? 'today-companion-letter__hint--with-role' : ''}}">{{todayCompanionView.today.tomorrowHint}}</text>
       </view>
     </view>
-    <view wx:if="{{todayCompanionTomorrowVisible && currentState.atHome}}" class="companion-letter-role {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><image src="{{companionRoleImage}}" mode="aspectFit"></image></view>
+    <view wx:if="{{currentState.atHome && ((todayCompanionGameInvitation && !pendingCompanionMemory) || todayCompanionTomorrowVisible)}}" class="companion-letter-role {{todayCompanionGameInvitation ? 'companion-letter-role--game' : ''}} {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><image src="{{companionRoleImage}}" mode="aspectFit"></image></view>
     </view>
   </view>
 

@@ -31,10 +31,11 @@ assert.equal(/<canvas|\.gif/i.test(`${starTemplate}\n${starLogic}`), false, '星
 // 信件：星星宽 20vw，浮在信纸上方居中；信纸正文里不再有“✦ +1”行，overlay 内仍不直接渲染图片，也不新增文案。
 const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayTemplate = roomTemplate.slice(overlayStart, roomTemplate.indexOf('<daily-window-detail', overlayStart));
-const letterTemplate = overlayTemplate.slice(overlayTemplate.indexOf('class="today-companion-letter"'));
+const letterStart = overlayTemplate.search(/class="today-companion-letter(?:\s|")/);
+const letterTemplate = overlayTemplate.slice(letterStart);
 assert.equal(overlayTemplate.includes('<companion-star mode="award" size="150"'), true, '收星星星宽 150rpx，即屏幕宽度 20%');
 assert.equal(overlayTemplate.includes('wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award'), true, '收星动效只在真实获得星星时挂载');
-assert.equal(overlayTemplate.indexOf('today-companion-award') < overlayTemplate.indexOf('class="today-companion-letter"'), true, '星星在信纸之外，不进入正文流');
+assert.equal(overlayTemplate.indexOf('today-companion-award') < letterStart, true, '星星在信纸之外，不进入正文流');
 assert.equal(/todayCompanionAwardedStars|companion-star|✦/.test(letterTemplate), false, '信纸正文内不再显示星星或“✦ +1”');
 assert.equal(overlayTemplate.includes('+{{todayCompanionAwardedStars}}'), true, '保留 +1 数字');
 assert.equal((starTemplate.match(/companion-star__spark--\d/g) || []).length, 7, '光点保持 7 个（5–8 范围内）');

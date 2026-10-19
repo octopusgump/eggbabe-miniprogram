@@ -6,6 +6,9 @@
 Component({
   properties: {
     text: { type: String, value: '' },
+    icon: { type: String, value: '' },
+    iconText: { type: String, value: '' },
+    size: { type: String, value: 'default' },
     variant: { type: String, value: 'primary' },
     disabled: { type: Boolean, value: false }
   },

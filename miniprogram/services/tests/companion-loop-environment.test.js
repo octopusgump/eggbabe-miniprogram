@@ -23,7 +23,7 @@ for (const tester of ['class="stage-tester"', 'class="scene-tester', 'class="moo
 }
 assert.equal(app.pages[0], 'pages/welcome/welcome', '正式启动页保持欢迎页');
 assert.equal(/tabBar[\s\S]*iaa-core-review/.test(JSON.stringify(app.tabBar)), false, '开发验收页不得进入正式 tabBar');
-assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(|getStorage|setStorage|Math\.random|Date\.now/.test(`${todayAdapterSource}\n${starAdapterSource}`), false, '本次不得新增网络、数据库、存储或服务端成功模拟');
+assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(/.test(`${todayAdapterSource}\n${starAdapterSource}`), false, '不得新增真实网络、数据库或服务端成功模拟；本机记录与随机邀请已获授权');
 assert.equal(roomLogic.includes('已经留下') || roomLogic.includes('还差 ${remaining}'), false, '纪念册暂停期间房间不得宣称纪念进度或纪念已可进入');
 assert.equal(roomLogic.includes('/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room'), true, '房间不得渲染纪念解锁结果或跳转到暂停中的纪念册');
 
@@ -72,7 +72,7 @@ function loadRoomPage(envVersion) {
   starAdapter.resetRoomStarView('AVAILABLE');
   const page = Object.assign({}, definition, {
     pageActive: true,
-    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' } }),
+    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' }, currentState: { atHome: false, key: 'travel' } }),
     setData(patch) { Object.assign(this.data, patch); }
   });
   return { page, config: require('../../config/v2') };

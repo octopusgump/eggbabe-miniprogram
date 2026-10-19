@@ -1,10 +1,10 @@
-// 前端运行内状态；不代表真实账户持久化。
+// 本机前端照片状态；不代表真实账户或跨设备持久化。
 const { shanghaiDate } = require('./companion-star-rules');
 function copy(value) { return JSON.parse(JSON.stringify(value)); }
-function createPhotoState() {
-  const offered = new Map();
-  const days = new Map();
-  let firstDone = false;
+function createPhotoState(saved) {
+  const offered = new Map(saved && saved.offered || []);
+  const days = new Map(saved && saved.days || []);
+  let firstDone = Boolean(saved && saved.firstDone);
   function getPending() { return [...offered.values()].filter(item => !item.collected).map(copy); }
   function find(id) { return offered.has(id) ? copy(offered.get(id)) : null; }
   function receive(id) {
@@ -33,6 +33,7 @@ function createPhotoState() {
     offered.set(item.id, item);
     return copy(item);
   }
-  return { getPending, find, receive, offer, purchase };
+  function snapshot() { return copy({ offered: [...offered], days: [...days], firstDone }); }
+  return { getPending, find, receive, offer, purchase, snapshot };
 }
 module.exports = { createPhotoState };

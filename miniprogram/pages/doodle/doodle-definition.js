@@ -182,29 +182,10 @@ const doodleDefinition = {
   beginCompanionDrawing() {
     if (this.companionStartRequested) return Promise.resolve();
     this.companionStartRequested = true;
-    // 跨日继续旧草稿不自动领取新一天的开始奖励。
-    if (this.resumingCompanionDraft && companionAdapter.getCompanionDraftStartDate() && companionAdapter.getCompanionDraftStartDate() !== require('../../services/companion-star-rules').shanghaiDate()) return Promise.resolve();
     companionAdapter.setCompanionDraft(this.shellArt);
-    return companionAdapter.getRoomStarView().then(view => companionAdapter.recordDrawingStart(view.data)).then(result => {
-      if (!result.ok) { this.companionStartRequested = false; if (this.pageActive) this.showCanvasNotice(result.error.message, 'warning'); return result; }
-      companionAdapter.markCompanionDraftStarted();
-      if (!this.pageActive || !result.awardedStars) return result;
-      this.setData({ companionStartAward: result.awardedStars, companionStartAwardVisible: true, companionReducedMotion: this.pageTransitionDuration() <= 20 });
-      clearTimeout(this.companionStartAwardTimer);
-      this.companionStartAwardTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionStartAwardVisible: false }); }, 1700);
-      try {
-        if (wx.createInnerAudioContext) {
-          const audio = wx.createInnerAudioContext();
-          audio.src = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
-          audio.volume = 0.32; audio.obeyMuteSwitch = true;
-          this.companionStartAudio = audio;
-          if (audio.onError) audio.onError(() => this.clearCompanionFeedback());
-          this.companionStartSoundTimer = setTimeout(() => { if (this.pageActive && this.companionStartAudio) { try { this.companionStartAudio.play(); } catch (error) {} } }, 520);
-        }
-      } catch (error) {}
-      if (this.pageTransitionDuration() > 20) this.companionStartHapticTimer = setTimeout(() => { if (this.pageActive && wx.vibrateShort) { try { wx.vibrateShort({ type: 'light' }); } catch (error) {} } }, 840);
-      return result;
-    });
+    companionAdapter.markCompanionDraftStarted();
+    // 仅画布就绪，不算活动完成；星星与日数在“画好了”成功导出后统一结算。
+    return Promise.resolve({ ok: true, awardedStars: 0, effectiveAdded: false });
   },
   clearCompanionFeedback() {
     clearTimeout(this.companionStartAwardTimer); clearTimeout(this.companionStartSoundTimer); clearTimeout(this.companionStartHapticTimer);

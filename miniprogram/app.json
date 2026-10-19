@@ -6,6 +6,7 @@
     "pages/add-device/add-device",
     "pages/wish/wish",
     "pages/lesson/lesson",
+    "pages/listen/listen",
     "pages/doodle/doodle",
     "pages/hatch/hatch",
     "pages/collection-card/collection-card",

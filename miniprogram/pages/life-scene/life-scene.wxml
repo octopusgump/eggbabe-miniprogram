@@ -166,27 +166,33 @@
       <companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star>
       <text class="today-companion-award__plus" aria-hidden="true">+{{todayCompanionAwardedStars}}</text>
     </view>
-    <view class="today-companion-letter" catchtap="onTodayCompanionLetterTap">
+    <view class="today-companion-letter {{todayCompanionGameInvitation ? 'today-companion-letter--game' : ''}}" catchtap="onTodayCompanionLetterTap">
       <view class="companion-close" aria-role="button" aria-label="关闭陪伴" bindtap="onCloseTodayCompanion">×</view>
-      <text wx:if="{{currentState.atHome}}" class="today-companion-letter__line">{{dailyMood.moodLabel}}</text>
       <text class="today-companion-letter__title">{{todayCompanionView.today.title}}</text>
       <text class="today-companion-letter__line">“{{todayCompanionView.today.line}}”</text>
 
-      <view class="today-companion-letter__interaction">
-        <view
-          wx:if="{{!pendingCompanionMemory}}"
-          class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
-          aria-role="button"
-          aria-label="{{todayCompanionView.today.interactionLabel}}"
-          bindtap="onTodayCompanionAction"
-        >{{!currentState.atHome && todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}</view>
+      <view class="today-companion-letter__interaction {{todayCompanionGameInvitation ? 'today-companion-letter__interaction--game' : ''}} {{!currentState.atHome && !pendingCompanionMemory ? 'today-companion-letter__interaction--letter' : ''}}">
+        <view wx:if="{{!pendingCompanionMemory}}" class="today-companion-letter__action-row">
+          <view wx:if="{{todayCompanionGameInvitation}}" class="today-companion-letter__game-action">
+            <app-button text="{{todayCompanionView.today.interactionLabel}}{{todayCompanionInteractionDone ? '已完成' : ''}}" icon="{{todayCompanionInteractionDone ? '' : todayCompanionActivityIcon}}" icon-text="{{todayCompanionInteractionDone ? '✅' : ''}}" size="small" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
+          </view>
+          <view wx:elif="{{!currentState.atHome}}" class="today-companion-letter__letter-action">
+            <app-button text="{{todayCompanionInteractionDone ? '已收好' : todayCompanionView.today.interactionLabel}}" size="small" variant="secondary" disabled="{{todayCompanionInteractionPending || companionNavigating}}" bind:tap="onTodayCompanionAction"></app-button>
+          </view>
+          <view
+            wx:else
+            class="today-companion-letter__action {{todayCompanionInteractionPending ? 'today-companion-letter__action--pending' : ''}}"
+            aria-role="button"
+            aria-label="{{todayCompanionView.today.interactionLabel}}"
+            bindtap="onTodayCompanionAction"
+          >{{todayCompanionView.today.interactionLabel}}</view>
+        </view>
         <text wx:if="{{todayCompanionInteractionFeedback}}" class="today-companion-letter__feedback">{{todayCompanionInteractionFeedback}}</text>
         <text wx:if="{{todayCompanionInteractionError}}" class="today-companion-letter__error">{{todayCompanionInteractionError}}</text>
       </view>
 
-      <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image wx:if="{{!companionPhotoFailed}}" class="{{pendingCompanionMemory.source === 'paper' ? 'companion-polaroid' : ''}}" src="{{pendingCompanionMemory.image}}" mode="{{pendingCompanionMemory.source === 'paper' ? 'widthFix' : 'aspectFit'}}" bindload="onCompanionPhotoLoad" binderror="onCompanionPhotoError" bindtap="onPreviewCompanionMemory"></image><view wx:else class="today-companion-letter__action" bindtap="onRetryCompanionPhoto">重试</view><text wx:if="{{pendingCompanionMemory.source === 'paper'}}" class="today-companion-letter__feedback">{{pendingCompanionMemory.line}}</text><button class="today-companion-letter__action" disabled="{{pendingCompanionMemory.source === 'paper' && !companionPhotoReady}}" bindtap="onCollectCompanionMemory"><text class="button-label">收下</text></button></view>
-      <text wx:if="{{todayCompanionInteractionDone && !pendingCompanionMemory && currentState.atHome}}" class="today-companion-letter__feedback">今天已陪伴</text>
-      <view class="today-companion-letter__tomorrow">
+      <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image wx:if="{{!companionPhotoFailed}}" class="{{pendingCompanionMemory.source === 'paper' ? 'companion-polaroid' : ''}}" src="{{pendingCompanionMemory.image}}" mode="{{pendingCompanionMemory.source === 'paper' ? 'widthFix' : 'aspectFit'}}" bindload="onCompanionPhotoLoad" binderror="onCompanionPhotoError" bindtap="onPreviewCompanionMemory"></image><view wx:else class="today-companion-letter__action" bindtap="onRetryCompanionPhoto">重试</view><text wx:if="{{pendingCompanionMemory.source === 'paper'}}" class="today-companion-letter__feedback">{{pendingCompanionMemory.line}}</text><view class="companion-memory-result__collect"><app-button text="收下" size="small" variant="secondary" disabled="{{pendingCompanionMemory.source === 'paper' && !companionPhotoReady}}" bind:tap="onCollectCompanionMemory"></app-button></view></view>
+      <view wx:if="{{todayCompanionTomorrowAvailable}}" class="today-companion-letter__tomorrow {{!currentState.atHome && !pendingCompanionMemory ? 'today-companion-letter__tomorrow--letter' : ''}}">
         <view
           class="today-companion-letter__question {{todayCompanionTomorrowVisible ? 'today-companion-letter__question--open' : ''}}"
           aria-role="button"
@@ -196,7 +202,7 @@
         <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint {{currentState.atHome ? 'today-companion-letter__hint--with-role' : ''}}">{{todayCompanionView.today.tomorrowHint}}</text>
       </view>
     </view>
-    <view wx:if="{{todayCompanionTomorrowVisible && currentState.atHome}}" class="companion-letter-role {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><image src="{{companionRoleImage}}" mode="aspectFit"></image></view>
+    <view wx:if="{{currentState.atHome && ((todayCompanionGameInvitation && !pendingCompanionMemory) || todayCompanionTomorrowVisible)}}" class="companion-letter-role {{todayCompanionGameInvitation ? 'companion-letter-role--game' : ''}} {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><image src="{{companionRoleImage}}" mode="aspectFit"></image></view>
     </view>
   </view>
 

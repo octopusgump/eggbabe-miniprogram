@@ -7,7 +7,6 @@
     </view>
     <scroll-view class="question-scroll" scroll-y scroll-top="{{scrollTop}}" scroll-into-view="{{scrollTarget}}" scroll-with-animation="{{!reducedMotion}}">
       <view class="question-content">
-        <text wx:if="{{contextNote}}" class="context-note">{{contextNote}}</text>
         <text class="title question-title">{{question.text}}</text>
         <view class="options" aria-role="radiogroup" aria-label="{{question.text}}">
           <view wx:for="{{question.options}}" wx:key="id" class="option {{selected === item.id ? 'option--selected' : ''}}" data-id="{{item.id}}" aria-role="radio" aria-checked="{{selected === item.id}}" bindtap="onSelect">

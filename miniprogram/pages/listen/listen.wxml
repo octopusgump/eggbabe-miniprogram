@@ -20,7 +20,6 @@
     </scroll-view>
     <view class="question-footer">
       <view class="next-slot"><button class="primary {{!selected || busy ? 'primary--disabled' : ''}}" disabled="{{!selected || busy}}" bindtap="onNext"><text class="button-label">{{busy ? '正在保存…' : questionNumber === 5 ? '完成回答' : '下一题'}}</text></button></view>
-      <button class="skip" aria-label="跳过本次，保留回答并回到房间" bindtap="onReturnRoom"><text class="button-label skip-arrow">→</text><text>跳过</text></button>
     </view>
   </block>
   <block wx:elif="{{view === 'feedback'}}">

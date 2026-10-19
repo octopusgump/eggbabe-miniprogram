@@ -27,14 +27,12 @@
 .supplement { display: block; width: 100%; height: 180rpx; box-sizing: border-box; padding: 24rpx 28rpx; margin-top: 28rpx; border: 2rpx solid #CBD7B6; border-radius: 30rpx; background: #F2F6EB; color: #374039; font-size: 25rpx; line-height: 1.55; }
 .supplement-placeholder { color: #858A81; }
 .add-note { margin: 22rpx 0 0; padding: 0; background: transparent; color: #647064; font-size: 24rpx; text-align: left; line-height: normal; }
-.add-note::after, .skip::after, .return::after { border: none; }
+.add-note::after, .return::after { border: none; }
 .question-footer { flex: none; display: flex; align-items: center; gap: 28rpx; padding: 28rpx 42rpx calc(40rpx + env(safe-area-inset-bottom)); }
 .next-slot { flex: 1; min-width: 0; }
 .question-footer .primary { width: 100%; margin: 0; }
 .primary--disabled { background: #AEB9AE !important; color: rgba(255,255,255,.86) !important; }
 .button-label { display: block; line-height: 1; transform: translateY(-2rpx); }
-.skip { flex: 0 0 80rpx; min-width: 0; width: 80rpx !important; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; padding: 0; background: transparent; color: #777B75; font-size: 20rpx; line-height: 1.2; }
-.skip-arrow { font-size: 46rpx; line-height: 1.1; margin-bottom: 6rpx; }
 .feedback-main { display: flex; flex-direction: column; box-sizing: border-box; min-height: 100%; padding: 56rpx 42rpx 0; }
 .feedback-quote { flex: none; width: 100%; max-width: 640rpx; margin: 44rpx auto 0; text-align: left; }
 .quote-mark { display: block; height: 76rpx; color: #91A65A; font-family: Georgia, serif; font-size: 112rpx; line-height: 1; }

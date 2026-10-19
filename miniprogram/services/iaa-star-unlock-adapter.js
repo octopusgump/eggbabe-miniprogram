@@ -175,6 +175,13 @@ function settle(view, kind, completionId, options) {
   if (!alreadyCompleted && kind === 'listen') {
     const record = options.listeningResult;
     if (!listeningState.draft || listeningState.draft.groupId !== completionId) return Promise.resolve({ ok: false, error: { code: 'DRAFT_CHANGED', message: '这组回答已更新，请重新打开。' } });
+    const rules = require('./listen-rules');
+    const entry = rules.groupById(completionId);
+    if (!entry || record.groupId !== completionId || record.categoryId !== entry.category.id ||
+      listeningState.draft.categoryId !== entry.category.id ||
+      !rules.complete(entry.group, listeningState.draft.answers || {}) || !rules.complete(entry.group, record.answers || {})) {
+      return Promise.resolve({ ok: false, error: { code: 'ANSWERS_REQUIRED', message: '先把这组五个答案选好吧。' } });
+    }
     if (listeningState.day && listeningState.day.date === today && listeningState.day.categories.includes(record.categoryId)) return Promise.resolve({ ok: false, error: { code: 'CATEGORY_COMPLETED_TODAY', message: '今天已经聊过这个话题啦。' } });
   }
   if (!alreadyCompleted) {

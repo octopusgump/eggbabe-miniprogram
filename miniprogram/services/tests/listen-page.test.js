@@ -27,11 +27,13 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   const p = page(); p.onLoad(); p.onShow();
   assert.equal(p.data.view, 'question'); assert.equal(p.data.questionNumber, 1);
   assert.match(p.data.petImage, /boon-koi\/stare.webp$/);
+  await p.onNext(); assert.equal(p.data.questionNumber, 1, '未选答案不能进入下一题');
+  assert.equal(navigatedBack, 0);
   select(p, 4); assert.equal(p.data.noteOpen, true); assert.equal(p.data.scrollTarget, 'listen-supplement');
   p.onSupplement({ detail: { value: '只保存的补充' } });
   await p.onNext(); assert.equal(p.data.questionNumber, 2);
   p.onReturnRoom(); assert.equal(navigatedBack, 1);
-  const resumed = page(); resumed.onLoad(); assert.equal(resumed.data.questionNumber, 2, '跳过本次退出，重进仍在第二题');
+  const resumed = page(); resumed.onLoad(); assert.equal(resumed.data.questionNumber, 2, '中途主动返回，重进仍在第二题');
   assert.equal(Object.values(resumed.draft.answers)[0].text, '只保存的补充');
   for (let i = 2; i <= 5; i++) { select(resumed); await resumed.onNext(); }
   assert.equal(resumed.data.view, 'feedback'); assert.ok(resumed.data.feedback);
@@ -77,5 +79,5 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   assert.equal(navigatedBack, beforeCustomBack, '只对选择接管返回的页面停止自动导航');
   nav.properties.customBack = false; navDefinition.methods.onBack.call(nav);
   assert.equal(navigatedBack, beforeCustomBack + 1, '其他页面保留原返回行为');
-  console.log('听你说页面行为通过：跳过恢复、可选文字、五题反馈、原声震时点、重开不重播、后续组零星、写失败保留。');
+  console.log('听你说页面行为通过：中途退出恢复、可选文字、五题反馈、原声震时点、重开不重播、后续组零星、写失败保留。');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { global.setTimeout = savedTimeout; global.clearTimeout = savedClear; });

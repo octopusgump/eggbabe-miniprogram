@@ -47,6 +47,8 @@ assert.match(
 );
 assert.match(roomStyles, /\.companion-memory-result__collect\{width:500rpx;/, '收下按钮与邀请信主按钮同宽 500rpx');
 assert.match(read('components/button/button.wxss'), /\.btn--small \{ height: 80rpx;/, '邀请信 small 按钮高度保持 80rpx');
+assert.match(read('components/button/button.wxss'), /\.btn--secondary-soft \{[^}]*rgba\(0, 41, 0, 0\.24\)/, '邀请信 CTA 使用浅色描边 variant');
+assert.equal(roomTemplate.includes('variant="secondary-soft"'), true, '房间信件按钮必须走 secondary-soft');
 assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-companion-award-plus \.85s [^}]*\.88s both/, '+X 在弹出后约 0.88s 开始翻滚、约 2s 内落定');
 assert.match(starStyles, /companion-star-neutral-show 2s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
 assert.match(starStyles, /companion-star--award .companion-star__pose--neutral\{[^}]*2s/, '收星挤压弹出主节奏约 2 秒');

@@ -53,6 +53,15 @@
   color: #002900; /* --ink */
 }
 
+/* 邀请信/收下：Figma 活动入口 1.5px 描边，浅色半透明墨绿，避免深 #002900 粗描边。 */
+.btn--secondary-soft {
+  background: transparent;
+  border: 3rpx solid rgba(0, 41, 0, 0.24);
+}
+.btn--secondary-soft .btn-text {
+  color: #002900;
+}
+
 .btn--danger {
   background: #D9463C; /* --error */
 }

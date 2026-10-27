@@ -525,13 +525,13 @@ Page({
         this.markCompanionSeen();
         const star = letterResult.data.star;
         const away = Boolean(this.data.currentState && !this.data.currentState.atHome);
-        // 开信仅记已读；领奖与当前活动是否完成分别判断。
+        const letterStars = Number(letterResult.awardedStars || 0);
         const claimed = starAdapter.getActivityCompleted(todayResult.data.today.activityKind);
         this.stopLetterArrival();
         const progress = this.readLetterProgress(todayResult.data.today.activityKind);
         const game = !away && companionActivities.byKind(todayResult.data.today.activityKind);
         this.todayCompanionScenario = away ? 'away' : 'normal';
-        if (!claimed) this.prepareStarAwardSound();
+        if (letterStars > 0) this.prepareStarAwardSound();
         this.setData({
           acceptanceToolsOpen: false,
           todayCompanionVisible: true,
@@ -549,7 +549,7 @@ Page({
           todayCompanionInteractionDone: claimed,
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
           todayCompanionInteractionError: '',
-          todayCompanionAwardedStars: 0,
+          todayCompanionAwardedStars: letterStars,
           todayCompanionTomorrowAvailable: progress.available,
           todayCompanionTomorrowVisible: progress.available && Boolean(progress.tomorrow),
           companionRoleEntering: false
@@ -558,6 +558,7 @@ Page({
           interaction_type: 'tomorrow_hint',
           result: 'prompt_shown'
         });
+        if (letterStars > 0) this.playStarAwardFeedback();
       });
     }).catch(() => { if (this.pageActive) this.showSystemNotice('信件没有打开，请再试一次', 'warning'); }).finally(() => { this.companionOpening = false; });
   },

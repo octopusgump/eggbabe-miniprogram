@@ -9,7 +9,7 @@ let now = Date.parse('2026-09-26T00:00:00+08:00');
 Date.now = () => now;
 
 async function main() {
-  const tiers = [[0,0],[1,10],[2,10],[3,11],[6,11],[7,12],[13,12],[14,13],[20,13],[21,14],[29,14],[30,15],[44,15],[45,16],[59,16],[60,17],[89,17],[90,18],[900,18]];
+  const tiers = [[0, 0], [1, 11], [2, 12], [3, 13], [4, 14], [5, 15], [6, 16], [7, 17], [8, 17], [11, 17], [900, 17]];
   for (const [day,reward] of tiers) assert.equal(rules.dailyStars(day), reward, `第 ${day} 个陪伴日`);
   assert.equal(rules.shanghaiDate(Date.parse('2026-09-25T15:59:59Z')), '2026-09-25');
   assert.equal(rules.shanghaiDate(Date.parse('2026-09-25T16:00:00Z')), '2026-09-26');
@@ -21,33 +21,38 @@ async function main() {
   assert.equal((await adapter.recordLetterOpen(null)).ok,false,'空视图不能开信计日');
 
   const open1 = await adapter.recordLetterOpen(stale);
-  assert.equal(open1.awardedStars,0,'开信不发星');
-  assert.equal(open1.effectiveAdded,false);
-  assert.equal(open1.data.star.companionDays,0);
-  assert.equal(open1.data.star.effectiveDone,false);
-  const openDup = await adapter.recordLetterOpen(stale);
-  assert.equal(openDup.effectiveAdded,false,'同日重复开信不加天');
-  assert.equal(openDup.data.star.companionDays,0);
+  assert.equal(open1.awardedStars, 11, '开信发当日基础星');
+  assert.equal(open1.effectiveAdded, false);
+  assert.equal(open1.data.star.companionDays, 0);
+  assert.equal(open1.data.star.effectiveDone, false);
+  const openDup = await adapter.recordLetterOpen(open1.data);
+  assert.equal(openDup.awardedStars, 0, '同日重复开信不重复发基础');
+  assert.equal(openDup.effectiveAdded, false, '同日重复开信不加天');
+  assert.equal(openDup.data.star.companionDays, 0);
 
-  const first = await adapter.recordCompanion(stale);
-  assert.equal(first.awardedStars,10);
-  assert.equal(first.data.star.companionDays,1,'普通动作不加天');
+  const first = await adapter.recordCompanion(open1.data);
+  assert.equal(first.awardedStars, 0, '基础已在开信发放');
+  assert.equal(first.data.star.companionDays, 1, '完成活动 +1 天');
   const duplicate = await adapter.recordCompanion(stale);
   assert.equal(duplicate.awardedStars,0,'同日旧快照不重复得星');
 
   now += 86400000;
   const open2 = await adapter.recordLetterOpen(stale);
   assert.equal(open2.data.star.companionDays,1,'次日开信还未完成，不增加日数');
-  const second = await adapter.recordCompanion(stale);
-  assert.equal(second.awardedStars,10,'跨上海日界后可完成新一天');
-  assert.equal(second.data.star.companionDays,2);
+  assert.equal(open2.baseAwardedStars, 12, '次日开信发第二档基础星');
+  const secondOpen = await adapter.recordLetterOpen((await adapter.getRoomStarView()).data);
+  assert.equal(secondOpen.baseAwardedStars, 0, '同日重复开信不重复发基础');
+  const second = await adapter.recordCompanion(secondOpen.data);
+  assert.equal(second.awardedStars, 0, '基础已在开信发放');
+  assert.equal(second.data.star.companionDays, 2);
 
   now += 86400000 * 5;
   const openGap = await adapter.recordLetterOpen(stale);
   assert.equal(openGap.data.star.companionDays,0,'断天后开信不计有效陪伴');
   const third = await adapter.recordCompanion(stale);
   assert.equal(third.data.star.companionDays,1,'缺席清零后普通动作不加天');
-  assert.equal(third.awardedStars,10,'断天后第 1 档 10 星');
+  assert.equal(openGap.baseAwardedStars, 11, '断天后按第 1 天基础 11 星');
+  assert.equal(third.awardedStars, 0, '基础已在开信发放');
   assert.equal((await adapter.recordCompanion(fixture.starUnlockViewFor('ERROR'))).ok,false);
   assert.equal(adapter.collectMemory({id:'drawing-1',image:'local.png',title:'作品'}),true);
   adapter.collectMemory({id:'drawing-1',image:'local.png',title:'作品'});

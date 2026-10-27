@@ -86,7 +86,7 @@ Date.now = () => now;
     assert.equal(page.data.todayCompanionTomorrowAvailable, false, '新一天重新等待进入小游戏');
     assert.equal(page.data.todayCompanionTomorrowVisible, false);
 
-    assert.equal(page.data.todayCompanionAwardedStars, 0);
+    assert.equal(page.data.todayCompanionAwardedStars, 12, '跨日自动重开信发放当日基础星动效');
     const view = page.data.todayCompanionView;
     page.data.pendingCompanionMemory = { id: 'saved-drawing', image: '/test.webp' };
     now += 86400000; page.onShow();

@@ -8,7 +8,7 @@ const SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-s
 
 Page({
   data: { view: 'loading', title: '', question: null, questionNumber: 1, progress: 0, selected: '', supplement: '', noteOpen: false,
-    error: '', busy: false, categories: [], petImage: '', petName: '', feedback: '', awardedStars: 0, awardVisible: false, reducedMotion: false },
+    error: '', busy: false, categories: [], petImage: '', petName: '', feedback: '', awardedStars: 0, awardVisible: false, rewardLabel: '', reducedMotion: false },
   currentPet() {
     const stored = petStore.getPet();
     if (stored && petStore.getStage(stored) === 'hatched') return stored;
@@ -107,9 +107,13 @@ Page({
   },
   showFeedback(result, awardedStars) {
     this.clearAward(); this.resultId = result.groupId;
-    this.setData({ view: 'feedback', title: result.title, feedback: result.feedback.petFeedback, awardedStars: Number(awardedStars || 0),
-      awardVisible: Number(awardedStars || 0) > 0, categories: adapter.getState().data.categories, error: '', busy: false });
-    if (awardedStars > 0) this.playAward();
+    const stars = Number(awardedStars || 0);
+    this.setData({
+      view: 'feedback', title: result.title, feedback: result.feedback.petFeedback, awardedStars: stars,
+      awardVisible: stars > 0, rewardLabel: stars > 0 ? '' : '谢谢回答！',
+      categories: adapter.getState().data.categories, error: '', busy: false
+    });
+    if (stars > 0) this.playAward();
   },
   onContinue() {
     if (this.resultId) {

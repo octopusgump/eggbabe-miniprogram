@@ -13,8 +13,8 @@ const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一�
   const first = await stars.recordDrawingComplete(start.data, 'first-work', { random: () => { calls++; return 1; } });
   assert.equal(first.giftStars, 3, '首次必得，不读取随机数');
   assert.equal(calls, 0);
-  assert.equal(first.awardedStars, 13);
-  assert.equal(first.data.star.balance, 15, '初始2星，完成时基础10、回礼3，进入画纸不发星');
+  assert.equal(first.awardedStars, 3);
+  assert.equal(first.data.star.balance, 16, '初始2星，开信基础11、画好回礼3，进入画纸不发星');
   assert.equal(first.data.star.companionDays, 1, '完成活动记一天');
   const repeated = await stars.recordDrawingComplete(start.data, 'first-work', { random: () => { throw Error('重复不应重抽'); } });
   assert.equal(repeated.awardedStars, 0);
@@ -25,7 +25,7 @@ const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一�
   await stars.recordLetterOpen(await day());
   const miss = await stars.recordDrawingComplete(await day(), 'next-day-work', { random: () => 0.33 });
   assert.equal(miss.giftStars, 0, '33%的上边界不命中');
-  assert.equal(miss.baseAwardedStars, 10);
+  assert.equal(miss.baseAwardedStars, 0);
   assert.equal(miss.drawingGift.kind, 'ordinary');
   const secondToday = await stars.recordDrawingComplete(miss.data, 'next-day-second', { random: () => { throw Error('同日第二幅不能重抽'); } });
   assert.equal(secondToday.awardedStars, 0);
@@ -33,7 +33,7 @@ const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一�
   await stars.recordLetterOpen(await day());
   const hit = await stars.recordDrawingComplete(await day(), 'later-hit', { random: () => 0.329999 });
   assert.equal(hit.giftStars, 3);
-  assert.equal(hit.baseAwardedStars, 11, '第三个有效日升档，回礼仍固定3');
+  assert.equal(hit.baseAwardedStars, 0, '基础已在开信发放');
   assert.equal(hit.drawingGift.kind, 'gift');
   for (let index = 0; index < 4; index++) {
     now += 86400000;
@@ -71,6 +71,7 @@ const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一�
   await stars.recordDrawingComplete(view, 'fund-tea');
   assert.equal((await day()).star.companionDays, 1, '完成画画才记天');
   now += 86400000;
+  await stars.recordLetterOpen(await day());
   await stars.recordCompanion(await day());
   const funded = (await day()).star.balance;
   stars.beginTeaActivity({ id: 'paid-tea', photo });

@@ -7,6 +7,7 @@ const { decideDrawingGift } = require('./companion-drawing-gift');
 const localCache = require('./companion-local-cache');
 
 const { dailyStars, shanghaiDate, previousShanghaiDate } = require('./companion-star-rules');
+const LISTEN_EXTRA_STARS = 10;
 let roomPreviewView = null;
 let roomPetId = '';
 let collectedMemories = [];
@@ -151,13 +152,29 @@ function resetRoomStarView(state) {
   return { ok: true, data: clone(roomPreviewView) };
 }
 
-/** 开信只记已读（由页面保存），不增加日数，也不发星。 */
+/** 打开信封：发放当日基础星一次（§5.1）；不增加「一起 X 天」。 */
 function recordLetterOpen(view) {
   if (!view || !view.star || !view.star.dailyClaimStatus) return Promise.resolve({ ok: false, error: { code: 'INVALID_LOCAL_VIEW', message: '这次陪伴还没有准备好。' } });
   if (view.star.dailyClaimStatus === 'ERROR') return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
+  const previous = snapshot();
   const current = ensureDaily(clone(roomPreviewView || view));
+  const star = current.star;
+  refreshDailyBasis(star);
+  let baseAwardedStars = 0;
+  if (!star.baseClaimed) {
+    baseAwardedStars = star.dailyBasis;
+    star.baseClaimed = true;
+    star.balance = Number(star.balance || 0) + baseAwardedStars;
+    star.dailyClaimStatus = star.balance >= current.nextMemory.unlockedAtStar ? 'UNLOCKED' : 'CLAIMED';
+    current.progress = fixture.progressPresentation(star.balance, star.nextUnlockAt);
+    current.newlyUnlockedMemory = baseAwardedStars > 0 && star.balance >= current.nextMemory.unlockedAtStar ? clone(current.nextMemory) : null;
+  }
   roomPreviewView = clone(current);
-  return Promise.resolve({ ok: true, data: current, awardedStars: 0, baseAwardedStars: 0, giftStars: 0, effectiveAdded: false, duplicate: false });
+  if (!persist()) { restore(previous); return Promise.resolve(saveFailure()); }
+  return Promise.resolve({
+    ok: true, data: current, awardedStars: baseAwardedStars, baseAwardedStars, giftStars: 0, listenExtraStars: 0,
+    effectiveAdded: false, duplicate: baseAwardedStars === 0
+  });
 }
 
 function settle(view, kind, completionId, options) {
@@ -170,7 +187,7 @@ function settle(view, kind, completionId, options) {
   const star = current.star;
   const alreadyCompleted = kind === 'complete' ? completedDrawingIds.has(completionId)
     : kind === 'listen' ? Boolean(listeningState.results[completionId]) : star.noteCollected;
-  let baseAwardedStars = 0, giftStars = 0, effectiveAdded = false, streakInterrupted = false;
+  let baseAwardedStars = 0, giftStars = 0, listenExtraStars = 0, effectiveAdded = false, streakInterrupted = false;
   let drawingGift = kind === 'complete' ? drawingGiftResults.get(completionId) || null : null;
   if (!alreadyCompleted && kind === 'listen') {
     const record = options.listeningResult;
@@ -194,7 +211,11 @@ function settle(view, kind, completionId, options) {
       effectiveAdded = true;
       refreshDailyBasis(star);
     }
-    if (!star.baseClaimed) { baseAwardedStars = star.dailyBasis; star.baseClaimed = true; }
+    if (kind === 'listen') {
+      const firstGroupToday = !listeningState.day || listeningState.day.date !== today || !listeningState.day.categories.length;
+      listenExtraStars = firstGroupToday ? LISTEN_EXTRA_STARS : 0;
+    }
+    // 当日基础星仅在 recordLetterOpen 发放；完成活动只记有效日与专属奖励（听你说 +10、画画回礼等）。
     if (kind === 'complete') {
       if (!star.drawingGiftChecked) {
         drawingGift = decideDrawingGift(!firstDrawingGiftDone, options && options.random);
@@ -211,7 +232,7 @@ function settle(view, kind, completionId, options) {
       const record = clone(options.listeningResult);
       record.completedAt = completedAt;
       record.completedDate = today;
-      record.reward = { baseAwardedStars, giftStars: 0, effectiveAdded, streakInterrupted, date: today };
+      record.reward = { baseAwardedStars: 0, listenExtraStars, giftStars: 0, effectiveAdded, streakInterrupted, date: today };
       if (!listeningState.day || listeningState.day.date !== today) listeningState.day = { date: today, categories: [] };
       listeningState.day.categories.push(record.categoryId);
       listeningState.cursors[record.categoryId] = (listeningState.cursors[record.categoryId] || 0) + 1;
@@ -220,7 +241,7 @@ function settle(view, kind, completionId, options) {
       listeningState.pendingResult = completionId;
     }
   }
-  const awardedStars = baseAwardedStars + giftStars;
+  const awardedStars = baseAwardedStars + giftStars + listenExtraStars;
   star.balance = Number(star.balance || 0) + awardedStars;
   star.dailyClaimStatus = star.baseClaimed ? (star.balance >= current.nextMemory.unlockedAtStar ? 'UNLOCKED' : 'CLAIMED') : 'AVAILABLE';
   current.progress = fixture.progressPresentation(star.balance, star.nextUnlockAt);
@@ -229,7 +250,7 @@ function settle(view, kind, completionId, options) {
   roomPreviewView = clone(current);
   const paperPhoto = kind === 'ordinary' && options && options.paper ? photoState.offer(photoCatalog.eligiblePhotos(roomPet, today), options) : null;
   if (!persist()) { restore(previous); return Promise.resolve(saveFailure()); }
-  return Promise.resolve({ ok: true, data: current, awardedStars, baseAwardedStars, giftStars,
+  return Promise.resolve({ ok: true, data: current, awardedStars, baseAwardedStars, giftStars, listenExtraStars,
     drawingGift: drawingGift ? clone(drawingGift) : null, effectiveAdded, streakInterrupted, duplicate: Boolean(alreadyCompleted),
     paperPhoto,
     listeningResult: kind === 'listen' ? clone(listeningState.results[completionId]) : null });

@@ -118,14 +118,14 @@ function contextFor() {
   const rapidRepeat = pageDefinition.onInteract.call(page);
   const firstResult = await firstInteraction;
   await rapidRepeat;
-  assert.equal(firstResult.awardedStars, 10, '首次有效陪伴必须在同页获得 +1');
+  assert.equal(firstResult.awardedStars, 0, '隔离演示页轻互动只记有效日，基础星在开信发放');
   assert.equal(page.data.interactionDone, true, '轻互动必须在当前页面给出完成反馈');
   assert.equal(page.data.tomorrowHintVisible, true, '完成陪伴不得把用户已经展开的明日正文重新折叠');
-  assert.equal(page.data.starAwardVisible, true, '首次有效陪伴必须显示 +1 反馈');
-  assert.equal(page.data.awardedStars, 10);
-  assert.equal(page.data.starView.star.balance, 12, '完成陪伴后累计星星必须立即更新');
-  assert.equal(page.data.starView.progress.remaining, 0, '达到门槛后距离下一段纪念必须归零');
-  assert.equal(page.data.starView.star.dailyClaimStatus, 'UNLOCKED', '达到纪念门槛时仍须标记今日已经领取');
+  assert.equal(page.data.starAwardVisible, false, '未发星时不展示收星反馈');
+  assert.equal(page.data.awardedStars, 0);
+  assert.equal(page.data.starView.star.balance, 2, '完成陪伴不加基础星');
+  assert.equal(page.data.starView.progress.remaining, 1, '未加星时纪念进度不变');
+  assert.equal(page.data.starView.star.dailyClaimStatus, 'AVAILABLE', '未开信时基础仍为待领取');
   assert.deepEqual(trackedEvents.filter(item => item.properties.interaction_type === 'tomorrow_hint').map(item => item.properties.result), ['prompt_shown', 'revealed', 'prompt_shown', 'revealed'], '切换场景后入口重新露出，但完成陪伴不得重复记录曝光或展开');
 
   pageDefinition.onRevealTomorrow.call(page);
@@ -139,7 +139,7 @@ function contextFor() {
 
   const reopenedPage = contextFor();
   await pageDefinition.onLoad.call(reopenedPage, { entry: 'isolated-test', scenario: 'normal', state: 'ready' });
-  assert.equal(reopenedPage.data.starView.star.balance, 12, '从房间再次进入今日陪伴必须读取同一份星星状态');
+  assert.equal(reopenedPage.data.starView.star.balance, 2, '从房间再次进入今日陪伴必须读取同一份星星状态');
   assert.equal(reopenedPage.data.interactionDone, true, '同日再次进入不得重新出现可领取的陪伴操作');
 
   await pageDefinition.onViewStateSelect.call(page, { currentTarget: { dataset: { key: 'error' } } });

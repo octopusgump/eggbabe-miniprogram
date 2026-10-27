@@ -1,4 +1,5 @@
 const rules = require('./listen-rules');
+const feedbackAdapter = require('./listen-feedback-adapter');
 const stars = require('./iaa-star-unlock-adapter');
 const { shanghaiDate } = require('./companion-star-rules');
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -38,20 +39,26 @@ function saveDraft(draft) {
   const saved = stars.saveListeningState(state);
   return saved.ok ? { ok: true, data: clone(state.draft) } : saved;
 }
-function completeGroup(groupId) {
+async function completeGroup(groupId, options) {
   const state = stars.getListeningState();
-  if (state.results[groupId]) return Promise.resolve({ ok: true, duplicate: true, data: clone(state.results[groupId]), awardedStars: 0 });
+  if (state.results[groupId]) return { ok: true, duplicate: true, data: clone(state.results[groupId]), awardedStars: 0 };
   const draft = state.draft;
   const entry = rules.groupById(groupId);
-  if (!draft || draft.groupId !== groupId || !entry || !rules.complete(entry.group, draft.answers)) return Promise.resolve(failure('ANSWERS_REQUIRED', '先把这组五个答案选好吧。'));
-  const feedback = rules.selectFeedback(entry.group, draft.answers);
-  if (!feedback) return Promise.resolve(failure('FEEDBACK_UNAVAILABLE', '这次回应还没有准备好，请再试一次。'));
+  if (!draft || draft.groupId !== groupId || !entry || !rules.complete(entry.group, draft.answers)) return failure('ANSWERS_REQUIRED', '先把这组五个答案选好吧。');
+  const generated = await feedbackAdapter.generateFeedback(entry.group, draft.answers, options && options.feedback);
+  const petFeedback = generated.petFeedback || feedbackAdapter.FALLBACK;
   const scope = stars.getRoomScope();
-  const record = { groupId, categoryId: draft.categoryId, title: entry.group.title, answers: clone(draft.answers), feedback, contentVersion: draft.contentVersion };
-  // 在共享结算中统一取完成日期；不在异步等待前决定“今天”。
-  return stars.getRoomStarView().then(view => scope === stars.getRoomScope() ? stars.recordListeningComplete(view.data, groupId, record) : failure('CONTEXT_CHANGED', '当前宠物已切换，请重新打开。')).then(result =>
-    result.ok ? { ok: true, data: result.listeningResult, duplicate: result.duplicate, awardedStars: result.awardedStars, streakInterrupted: result.streakInterrupted } : result
-  );
+  const record = {
+    groupId, categoryId: draft.categoryId, title: entry.group.title, answers: clone(draft.answers),
+    feedback: { id: `ai-${groupId}`, type: generated.type || 'ai', petFeedback, source: generated.source || 'mock' },
+    contentVersion: draft.contentVersion
+  };
+  const view = await stars.getRoomStarView();
+  if (scope !== stars.getRoomScope()) return failure('CONTEXT_CHANGED', '当前宠物已切换，请重新打开。');
+  const result = await stars.recordListeningComplete(view.data, groupId, record);
+  return result.ok
+    ? { ok: true, data: result.listeningResult, duplicate: result.duplicate, awardedStars: result.awardedStars, listenExtraStars: result.listenExtraStars, streakInterrupted: result.streakInterrupted }
+    : result;
 }
 function getResult(groupId) {
   const result = stars.getListeningState().results[groupId];

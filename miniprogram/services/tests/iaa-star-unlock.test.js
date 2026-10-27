@@ -18,19 +18,21 @@ fixture.STATE_OPTIONS.forEach(option => {
   const roomBefore = await adapter.getRoomStarView();
   assert.equal(roomBefore.data.star.balance, 2, '房间左上角初始显示两颗星');
 
-  const first = await adapter.recordCompanion(roomBefore.data);
+  const opened = await adapter.recordLetterOpen(roomBefore.data);
+  assert.equal(opened.awardedStars, 11, '开信发当日基础星');
+  const first = await adapter.recordCompanion(opened.data);
   assert.equal(first.ok, true);
-  assert.equal(first.awardedStars, 10, '首次有效互动必须 +10 星');
-  assert.equal(first.data.star.balance, 12);
+  assert.equal(first.awardedStars, 0, '基础已在开信发放');
+  assert.equal(first.data.star.balance, 13);
   assert.equal(first.data.star.dailyClaimStatus, 'UNLOCKED', '达到门槛必须进入已解锁状态');
 
   const roomAfter = await adapter.getRoomStarView();
-  assert.equal(roomAfter.data.star.balance, 12, '互动结果必须回到房间常驻星星状态');
+  assert.equal(roomAfter.data.star.balance, 13, '互动结果必须回到房间常驻星星状态');
   assert.equal(roomAfter.data.progress.remaining, 0);
 
   const repeated = await adapter.recordCompanion(roomAfter.data);
   assert.equal(repeated.awardedStars, 0, '重复互动不得重复加星');
-  assert.equal((await adapter.getRoomStarView()).data.star.balance, 12);
+  assert.equal((await adapter.getRoomStarView()).data.star.balance, 13);
 
   const failed = await adapter.recordCompanion(fixture.starUnlockViewFor('ERROR'));
   assert.equal(failed.ok, false, '失败状态必须诚实返回失败');

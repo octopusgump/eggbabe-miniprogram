@@ -1,4 +1,5 @@
 const petStore = require('../../utils/pet-store');
+const companionPetImage = require('../../utils/companion-pet-image');
 const config = require('../../config/v2');
 const adapter = require('../../services/listen-adapter');
 const rules = require('../../services/listen-rules');
@@ -21,8 +22,7 @@ Page({
     this.scope = stars.getRoomScope();
     let reducedMotion = false;
     try { const system = wx.getSystemSetting ? wx.getSystemSetting() : wx.getSystemInfoSync(); reducedMotion = Boolean(system.reducedMotion || system.enableReduceMotion); } catch (error) {}
-    const kind = petStore.normalizePrototype(pet.prototype) === '锦鲤' ? 'boon-koi' : 'jade-rabbit';
-    this.setData({ petImage: `/assets/scenes/lifecycle/post-hatch/30-character/${kind}/stare.webp`, petName: pet.name || pet.nickname || pet.prototype || '蛋宝宝', reducedMotion });
+    this.setData({ petImage: companionPetImage.resolveCompanionPetImage(pet), petName: pet.name || pet.nickname || pet.prototype || '蛋宝宝', reducedMotion });
     this.openCurrent();
   },
   onShow() {

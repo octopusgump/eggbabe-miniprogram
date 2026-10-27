@@ -15,6 +15,7 @@ const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
 const letterActivityProgress = require('../../services/companion-letter-progress');
+const companionPetImage = require('../../utils/companion-pet-image');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
@@ -725,7 +726,7 @@ Page({
         panelSceneSetId: panorama.sceneSetId,
         windowHotspots: panorama.windowHotspots,
         contextActionIcon: LETTER_ICON_SRC,
-        companionRoleImage: `/assets/scenes/lifecycle/post-hatch/30-character/${['锦鲤', 'KOI'].includes(String(this.data.pet && this.data.pet.prototype)) ? 'boon-koi' : 'jade-rabbit'}/stare.webp`,
+        companionRoleImage: companionPetImage.resolveCompanionPetImage(this.data.pet),
         contextActionLabel: contextAction.label,
         contextActionHint: contextAction.hint,
         contextActionDisabled: contextAction.disabled,
@@ -1348,9 +1349,11 @@ Page({
   letterProgressKey() { return `${this.companionSeenKey()}_progress`; },
   readLetterProgress(activityKind) {
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    const kind = activityKind || this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind;
-    if (this.data.currentState && this.data.currentState.atHome && companionActivities.byKind(kind)) {
-      const progress = letterActivityProgress.read(starAdapter.getRoomScope(), kind, date);
+    const kind = activityKind || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind);
+    const game = kind && companionActivities.byKind(kind);
+    const scope = starAdapter.getRoomScope();
+    if (game && scope) {
+      const progress = letterActivityProgress.read(scope, kind, date);
       const available = progress.entered || starAdapter.getActivityCompleted(kind);
       return Object.assign(progress, { available, tomorrow: available && progress.tomorrow });
     }
@@ -1452,7 +1455,7 @@ Page({
     const entryScope = starAdapter.getRoomScope();
     const entryDate = require('../../services/companion-star-rules').shanghaiDate();
     this.returningFromChild = true;
-    this.setData({ companionNavigating: true, todayCompanionVisible: kind !== 'listen' });
+    this.setData({ companionNavigating: true });
     wx.navigateTo({
       url: activity.route,
       success: () => {

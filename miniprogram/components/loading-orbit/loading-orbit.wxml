@@ -1,0 +1,11 @@
+<view
+  class="loading-orbit loading-orbit--{{sizeClass}} loading-orbit--{{toneClass}} {{reducedMotion ? 'loading-orbit--reduced' : ''}}"
+  aria-hidden="{{ariaHidden}}"
+  role="img"
+  aria-label="{{label}}"
+>
+  <view class="loading-orbit__track" aria-hidden="true"></view>
+  <view class="loading-orbit__spin" aria-hidden="true">
+    <view class="loading-orbit__dot"></view>
+  </view>
+</view>

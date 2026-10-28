@@ -5,7 +5,7 @@
   </view>
 
   <scroll-view class="conversation" scroll-y enhanced enable-flex show-scrollbar="{{false}}" scroll-into-view="{{scrollTarget}}" bindscroll="onConversationScroll" bindscrolltolower="onConversationScrollToLower" bindscrolltoupper="onLoadMoreHistory">
-    <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在打开对话…</text></view>
+    <view wx:if="{{loading}}" class="page-state"><loading-orbit size="M" reduced-motion="{{reducedMotion}}"></loading-orbit><text>正在打开对话…</text></view>
     <view wx:elif="{{error && !snapshot}}" class="page-state"><text>{{error}}</text><view class="retry" aria-role="button" aria-label="{{fatalErrorActionLabel}}" hover-class="pressable--pressed" hover-stay-time="80" bindtap="onFatalErrorAction">{{fatalErrorActionLabel}}</view></view>
     <view wx:else class="message-list">
       <view wx:if="{{historyLoading}}" class="history-loading" aria-live="polite">正在加载聊天记录…</view>

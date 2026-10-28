@@ -1,7 +1,7 @@
 <view class="page">
   <nav-bar title="许愿池"></nav-bar>
   <view class="content">
-    <view wx:if="{{loading}}" class="center-note">愿望正在轻轻浮上来…</view>
+    <view wx:if="{{loading}}" class="page-loading"><loading-orbit size="M"></loading-orbit><text>愿望正在轻轻浮上来…</text></view>
     <view wx:elif="{{error && !question}}" class="center-note">{{error}}</view>
     <block wx:else>
       <text class="kicker">A LITTLE WISH</text>

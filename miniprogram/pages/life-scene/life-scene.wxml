@@ -145,7 +145,7 @@
     </view>
     <view wx:if="{{memoryGuideVisible}}" class="companion-memory-guide" bindtap="onToggleToolbox">打开百宝箱，看看回忆</view>
     <view class="scene-action-dock">
-      <view class="scene-action-button companion-toolbox-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox"><image class="scene-action-icon-image" src="{{toolboxIcon}}" mode="aspectFit"></image></view>
+      <view class="scene-action-button companion-toolbox-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox"><toolbox-chest-icon class="scene-action-icon-image" menu-open="{{toolboxVisible}}" reduced-motion="{{reducedMotion}}" bind:animatingchange="onChestAnimatingChange"></toolbox-chest-icon></view>
       <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开我的和设置" bindtap="onOpenMySettings">
         <image class="scene-action-icon-image" src="{{mySettingsIcon}}" mode="aspectFit"></image>
       </view>

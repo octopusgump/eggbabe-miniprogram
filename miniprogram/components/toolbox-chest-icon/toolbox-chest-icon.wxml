@@ -1,0 +1,10 @@
+<view class="toolbox-chest {{scaleClass}} {{animating ? 'toolbox-chest--animating' : ''}}">
+  <image
+    wx:for="{{frameSrcs}}"
+    wx:key="*this"
+    class="toolbox-chest__frame {{activeFrame === index ? 'toolbox-chest__frame--active' : ''}}"
+    src="{{item}}"
+    mode="aspectFit"
+    aria-hidden="{{activeFrame !== index}}"
+  />
+</view>

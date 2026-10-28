@@ -319,7 +319,7 @@ Page({
     pendingCompanionMemory: null,
     memoryGuideVisible: false,
     toolboxVisible: false,
-    toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
+    chestAnimating: false,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
     companionStarClaimed: false,
     companionStarProgressText: '',
@@ -1375,7 +1375,14 @@ Page({
     } catch (error) { this.releaseLetterSound(); }
     this.letterArrivalTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionLetterArriving: false }); this.releaseLetterSound(); }, 1050);
   },
-  onToggleToolbox() { this.setData({ toolboxVisible: !this.data.toolboxVisible }); },
+  onChestAnimatingChange(event) {
+    const animating = event && event.detail && event.detail.animating;
+    this.setData({ chestAnimating: Boolean(animating) });
+  },
+  onToggleToolbox() {
+    if (this.data.chestAnimating) return;
+    this.setData({ toolboxVisible: !this.data.toolboxVisible });
+  },
   onOpenMemoryAlbum() {
     this.setData({ toolboxVisible: false, memoryGuideVisible: false });
     this.returningFromChild = true;

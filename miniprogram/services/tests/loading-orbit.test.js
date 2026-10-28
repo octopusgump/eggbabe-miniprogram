@@ -10,20 +10,24 @@ const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 
 assert.equal(app.usingComponents['loading-orbit'], '/components/loading-orbit/loading-orbit', 'Loading / Orbit 必须在 app.json 全局注册');
 
-assert.equal(template.includes('loading-orbit__track') && template.includes('loading-orbit__spinner') && template.includes('loading-orbit__dot'), true, '组件必须用轨道、旋转层与点三层结构绘制绕轨动效');
+assert.equal(template.includes('loading-orbit__track') && template.includes('loading-orbit__spin') && template.includes('loading-orbit__dot'), true, '组件必须为固定 Track + 可旋转 Spin（点挂在 Spin）');
+assert.equal(!template.includes('loading-orbit__spinner'), true, '旋转层命名应对齐 Figma Spin，而非 spinner');
+assert.match(styles, /614:2861[\s\S]*2s linear[\s\S]*1\.1s/, '样式应记录 Figma 2s 导出与 1.1s 交接差异');
 assert.equal(template.includes('loading-orbit--reduced'), true, '组件必须支持减少动态时的静态退化 class');
 
 assert.match(styles, /\.loading-orbit--S\s*\{[^}]*width:\s*60rpx/s, 'S 号外框必须为 30px → 60rpx');
 assert.match(styles, /\.loading-orbit--M\s*\{[^}]*width:\s*96rpx/s, 'M 号外框必须为 48px → 96rpx');
 assert.match(styles, /\.loading-orbit--L\s*\{[^}]*width:\s*168rpx/s, 'L 号外框必须为 84px → 168rpx');
-assert.match(styles, /\.loading-orbit--S \.loading-orbit__track,\s*\n\.loading-orbit--S \.loading-orbit__spinner[\s\S]*width:\s*48rpx/s, 'S 号轨道直径必须为 24px → 48rpx');
+assert.match(styles, /\.loading-orbit--S \.loading-orbit__track,\s*\n\.loading-orbit--S \.loading-orbit__spin[\s\S]*width:\s*48rpx/s, 'S 号轨道直径必须为 24px → 48rpx');
+assert.equal(!/\.loading-orbit__track\s*\{[^}]*animation:/s.test(styles), true, 'Track 环必须固定、不得参与旋转动画');
+assert.match(styles, /\.loading-orbit__spin[\s\S]*animation:\s*loading-orbit-spin/, '仅 Spin 层应绑定绕轨旋转');
 assert.match(styles, /\.loading-orbit--S \.loading-orbit__track\s*\{[^}]*border-width:\s*4rpx/s, 'S 号线宽必须为 2px → 4rpx');
 assert.match(styles, /\.loading-orbit--M \.loading-orbit__dot[^}]*width:\s*16rpx/, 'M 号点径必须为 8px → 16rpx');
 assert.match(styles, /\.loading-orbit--light \.loading-orbit__track[^}]*#E5E3DF/, '浅色轨道必须使用 Border/Default');
 assert.match(styles, /\.loading-orbit--light \.loading-orbit__dot[^}]*#9DB65B/, '浅色点必须使用 Brand/Leaf');
 assert.match(styles, /animation:\s*loading-orbit-spin\s+1\.1s\s+linear\s+infinite/, '绕轨动画必须为 1.1s linear 无限循环');
-assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.loading-orbit__spinner[\s\S]*animation:\s*none/, '系统减少动态时必须停在 12 点静帧');
-assert.match(styles, /\.loading-orbit--reduced \.loading-orbit__spinner[\s\S]*animation:\s*none/, '页面传入 reducedMotion 时必须停止旋转');
+assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.loading-orbit__spin[\s\S]*animation:\s*none/, '系统减少动态时必须停在 12 点静帧');
+assert.match(styles, /\.loading-orbit--reduced \.loading-orbit__spin[\s\S]*animation:\s*none/, '页面传入 reducedMotion 时必须停止旋转');
 
 const chatWxml = fs.readFileSync(path.join(root, 'pages/chat/chat.wxml'), 'utf8');
 const journeyWxml = fs.readFileSync(path.join(root, 'pages/journey-scene/journey-scene.wxml'), 'utf8');

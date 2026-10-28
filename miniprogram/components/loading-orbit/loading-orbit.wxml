@@ -5,7 +5,7 @@
   aria-label="{{label}}"
 >
   <view class="loading-orbit__track" aria-hidden="true"></view>
-  <view class="loading-orbit__spinner" aria-hidden="true">
+  <view class="loading-orbit__spin" aria-hidden="true">
     <view class="loading-orbit__dot"></view>
   </view>
 </view>

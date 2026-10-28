@@ -21,7 +21,7 @@
 }
 
 .loading-orbit__track,
-.loading-orbit__spinner {
+.loading-orbit__spin {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -44,7 +44,7 @@
 }
 
 .loading-orbit--S .loading-orbit__track,
-.loading-orbit--S .loading-orbit__spinner {
+.loading-orbit--S .loading-orbit__spin {
   width: 48rpx;
   height: 48rpx;
 }
@@ -59,7 +59,7 @@
 }
 
 .loading-orbit--M .loading-orbit__track,
-.loading-orbit--M .loading-orbit__spinner {
+.loading-orbit--M .loading-orbit__spin {
   width: 80rpx;
   height: 80rpx;
 }
@@ -74,7 +74,7 @@
 }
 
 .loading-orbit--L .loading-orbit__track,
-.loading-orbit--L .loading-orbit__spinner {
+.loading-orbit--L .loading-orbit__spin {
   width: 144rpx;
   height: 144rpx;
 }
@@ -88,7 +88,10 @@
   height: 24rpx;
 }
 
-.loading-orbit__spinner {
+/* Track 固定；仅 Spin 层旋转（点挂在 Spin 顶缘，静帧 12 点）。
+   Figma Spin 614:2861 / 614:2866 / 614:2870 导出 2s linear infinite；
+   设计师交接周期约 1.1s — 实现以 1.1s 为准。 */
+.loading-orbit__spin {
   animation: loading-orbit-spin 1.1s linear infinite;
 }
 
@@ -119,11 +122,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-orbit__spinner {
+  .loading-orbit__spin {
     animation: none;
   }
 }
 
-.loading-orbit--reduced .loading-orbit__spinner {
+.loading-orbit--reduced .loading-orbit__spin {
   animation: none;
 }

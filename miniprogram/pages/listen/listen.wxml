@@ -27,7 +27,7 @@
       <view class="feedback-main">
         <text class="kicker">{{title}}</text>
         <view class="feedback-quote">
-          <text class="quote-mark" aria-hidden="true">“</text>
+          <image class="quote-mark" src="/assets/icons/listen-quote-mark.svg" mode="aspectFit" aria-hidden="true" />
           <text class="feedback-quote-copy" aria-live="polite">{{feedback}}</text>
         </view>
         <text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text>

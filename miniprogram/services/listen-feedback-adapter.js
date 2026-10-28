@@ -25,7 +25,7 @@ function sanitizeModelText(text) {
 function mockFeedback(group, answers) {
   const block = buildAnswerBlock(group, answers);
   if (!block.trim()) return FALLBACK;
-  return '和你聊下来，感觉你是个愿意把日常小事讲清楚的人。';
+  return '白天忙过了，睡前这点时间，你还想留给喜欢的小事。我先不催着把它收起来。';
 }
 
 function requestChat(apiUrl, apiKey, body) {

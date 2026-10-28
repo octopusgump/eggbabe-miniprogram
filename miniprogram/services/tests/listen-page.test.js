@@ -68,6 +68,7 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   reopened.onHide(); Date.now = previousNow;
   const root = path.resolve(__dirname, '../..');
   const template = fs.readFileSync(path.join(root, 'pages/listen/listen.wxml'), 'utf8');
+  assert.ok(template.includes('listen-quote-mark.svg'), '反馈 Quote 须使用 Figma 双引号 SVG');
   assert.ok(template.includes('写下你的想法...')); assert.ok(!template.includes('我想自己说'));
   assert.ok(!template.includes('谢谢回答'), '反馈页不再额外显示答谢提示'); assert.ok(template.includes('{{feedback}}')); assert.ok(!template.includes('我听见啦'));
   assert.ok(JSON.parse(fs.readFileSync(path.join(root, 'app.json'))).pages.includes('pages/listen/listen'));

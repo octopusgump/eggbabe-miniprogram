@@ -36,10 +36,8 @@
 .sample-orientation-label { color: #36513c; font-size: 22rpx; font-weight: 600; }
 .sample-state { position: absolute; z-index: 30; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22rpx; background: rgba(249,246,237,.76); color: #526052; font-size: 24rpx; backdrop-filter: blur(8rpx); }
 .sample-state--error { padding: 60rpx; text-align: center; line-height: 1.7; }
-.sample-loading-orbit { width: 58rpx; height: 58rpx; border: 5rpx solid rgba(54,81,60,.18); border-top-color: #36513c; border-radius: 50%; animation: sample-spin .9s linear infinite; }
 .sample-retry { min-width: 240rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; padding: 0 34rpx; border-radius: 999rpx; background: #36513c; color: #fff; font-weight: 600; }
 .sample-home { color: #596959; text-decoration: underline; }
-@keyframes sample-spin { to { transform: rotate(360deg); } }
 @keyframes sample-exit-left { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(-12rpx) scale(.988); } }
 @keyframes sample-enter-left { from { opacity: .18; transform: translateX(12rpx) scale(.988); } to { opacity: 1; transform: translateX(0) scale(1); } }
 @keyframes sample-exit-right { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(12rpx) scale(.988); } }
@@ -49,5 +47,5 @@
 @keyframes sample-mode-egg-exit { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.975); } }
 @keyframes sample-mode-egg-enter { from { opacity: .12; transform: scale(.975); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
-  .sample-background, .sample-egg, .sample-dot, .sample-loading-orbit { animation: none !important; transition: none !important; }
+  .sample-background, .sample-egg, .sample-dot { animation: none !important; transition: none !important; }
 }

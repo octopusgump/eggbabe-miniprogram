@@ -36,7 +36,8 @@ assert.equal(wxss.includes('.pressable--pressed') && wxss.includes('#001F00'), t
 assert.equal(wxss.includes('.message-date') && wxss.includes('.message-time') && wxss.includes('.history-complete'), true, '聊天记录时间线必须有独立视觉样式');
 assert.equal(wxss.includes('.message-date{min-height:96rpx'), true, '日期切换区在 360px 小屏上也必须满足至少 44px 触控高度');
 assert.equal(wxml.includes('bindscroll="onConversationScroll"') && wxml.includes('bindscrolltolower="onConversationScrollToLower"'), true, '聊天页必须记录用户是否正在阅读历史，前台刷新不得强制跳底');
-assert.equal(wxss.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}') && wxss.includes('.page--reduced .message-status__pending-dot{animation:none}'), true, '减少动态时必须停止全部聊天等待动效');
+const loadingOrbitStyles = fs.readFileSync(path.join(root, 'components/loading-orbit/loading-orbit.wxss'), 'utf8');
+assert.equal(wxml.includes('reduced-motion="{{reducedMotion}}"') && loadingOrbitStyles.includes('.loading-orbit--reduced .loading-orbit__spinner') && wxss.includes('.page--reduced .typing-bubble__dots view{animation:none}') && wxss.includes('.page--reduced .message-status__pending-dot{animation:none}'), true, '减少动态时必须停止全部聊天等待动效');
 assert.equal(/好感度|在线|关系等级|继续聊天/.test(`${wxml}\n${wxss}`), false, '聊天页不得加入关系等级、在线或催促表达');
 assert.equal(wxml.includes('chat-identity__dot'), false, '顶部状态不得使用容易被理解为在线状态的绿点');
 

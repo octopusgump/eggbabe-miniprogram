@@ -47,5 +47,8 @@
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "loading-orbit": "/components/loading-orbit/loading-orbit"
+  },
   "sitemapLocation": "sitemap.json"
 }

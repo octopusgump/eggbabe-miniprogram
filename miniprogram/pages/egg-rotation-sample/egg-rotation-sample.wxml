@@ -28,7 +28,7 @@
   </view>
 
   <view wx:if="{{loading}}" class="sample-state">
-    <view class="sample-loading-orbit"></view>
+    <loading-orbit size="M"></loading-orbit>
     <text>正在准备日间和夜晚图层…</text>
   </view>
 

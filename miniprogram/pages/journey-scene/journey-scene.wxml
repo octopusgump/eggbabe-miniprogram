@@ -22,7 +22,7 @@
   </view>
 
   <view wx:if="{{loading && !error}}" class="journey-state journey-state--loading" aria-live="polite">
-    <view class="journey-loader" aria-hidden="true"></view>
+    <loading-orbit size="L" tone="dark" reduced-motion="{{reducedMotion}}"></loading-orbit>
     <text>正在展开这段旅程…</text>
   </view>
 

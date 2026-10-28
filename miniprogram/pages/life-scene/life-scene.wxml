@@ -56,7 +56,7 @@
     </scroll-view>
   </view>
   <view wx:if="{{(!sceneEntered || !initialViewportReady) && !error}}" class="state-layer">
-    <view class="loading-orbit"></view><text>{{loading ? '正在确认 ta 此刻状态…' : '正在加载房间…'}}</text>
+    <loading-orbit size="S" tone="light" reduced-motion="{{reducedMotion}}"></loading-orbit><text>{{loading ? '正在确认 ta 此刻状态…' : '正在加载房间…'}}</text>
   </view>
   <view wx:if="{{!loading && error}}" class="state-layer state-layer--error">
     <text class="state-error-title">暂时没看见 ta 此刻的状态</text><text>{{error}}</text>
@@ -250,7 +250,7 @@
     <text wx:if="{{!magicWindowLoading && !magicWindowFailed}}" class="magic-window__hint">轻触锦鲤</text>
 
     <view wx:if="{{magicWindowLoading && !magicWindowFailed}}" class="magic-window__state">
-      <view class="magic-window__loader"></view>
+      <loading-orbit size="S" tone="dark" reduced-motion="{{reducedMotion}}"></loading-orbit>
       <text>正在推开{{magicWindowLabel}}的窗…</text>
     </view>
     <view wx:elif="{{magicWindowFailed}}" class="magic-window__state magic-window__state--error">

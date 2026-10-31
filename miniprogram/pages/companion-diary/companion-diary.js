@@ -29,6 +29,7 @@ Page({
     signOffName: '',
     pet: null,
     shareSheetVisible: false,
+    shareQrImageUrl: '',
     systemNoticeText: '',
     systemNoticeTone: 'info',
     systemNoticeVisible: false
@@ -80,7 +81,8 @@ Page({
           detail,
           paragraphs: splitParagraphs(detail.body),
           signOffLine: signOff.signOffLine,
-          signOffName: signOff.signOffName
+          signOffName: signOff.signOffName,
+          shareQrImageUrl: diaryAdapter.resolveShareQrImageUrl(detail)
         });
       });
   },

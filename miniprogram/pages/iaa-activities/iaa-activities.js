@@ -51,7 +51,8 @@ Page({
   refresh() {
     return pageModel.buildViewAsync().then(view => {
       if (!this) return;
-      this.setData(view);
+      const { wishBursts, wishPressKey } = this.data;
+      this.setData({ ...view, wishBursts, wishPressKey });
     });
   },
 
@@ -93,9 +94,11 @@ Page({
     const key = event.currentTarget.dataset.key;
     const item = this.data.comingSoon.find(row => row.key === key);
     if (!item || !item.comingSoon) return;
+    const fromTap = event.changedTouches && event.changedTouches[0];
     const cached = this.lastWishTouch;
-    if (cached && Number.isFinite(cached.clientX) && Number.isFinite(cached.clientY)) {
-      this.playWishPlusOne(key, cached.clientX, cached.clientY);
+    const touch = fromTap || (cached && { clientX: cached.clientX, clientY: cached.clientY });
+    if (touch && Number.isFinite(touch.clientX) && Number.isFinite(touch.clientY)) {
+      this.playWishPlusOne(key, touch.clientX, touch.clientY);
       return;
     }
     const localX = Number(event.detail && event.detail.x);
@@ -131,13 +134,14 @@ Page({
       id,
       key,
       clientX: Number.isFinite(clientX) ? clientX : 0,
-      clientY: Number.isFinite(clientY) ? clientY : 0
+      clientY: Number.isFinite(clientY) ? clientY : 0,
+      anim: ''
     };
     const restartShake = () => {
       this.setData({
         wishBursts: this.data.wishBursts.concat(burst),
         wishPressKey: key
-      });
+      }, () => this.runWishBurstAnimation(id));
     };
     if (this.data.wishPressKey === key) {
       this.setData({ wishPressKey: '' }, restartShake);
@@ -153,6 +157,23 @@ Page({
       this.setData({ wishBursts: this.data.wishBursts.filter(burst => burst.id !== id) });
     }, 820);
     this.wishBurstTimers.push(burstTimer);
+  },
+
+  runWishBurstAnimation(id) {
+    const anim = wx.createAnimation({
+      duration: 800,
+      timingFunction: 'cubic-bezier(0.2, 0.9, 0.3, 1)',
+      transformOrigin: '50% 50%'
+    });
+    anim.opacity(0).scale(0.45).translateY(8).step({ duration: 0 });
+    anim.opacity(1).scale(1.12).translateY(-4).step({ duration: 80 });
+    anim.opacity(1).scale(1).translateY(-8).step({ duration: 80 });
+    anim.opacity(0).translateY(-140).step({ duration: 640 });
+    const animExport = anim.export();
+    const wishBursts = this.data.wishBursts.map(row => (
+      row.id === id ? { ...row, anim: animExport } : row
+    ));
+    this.setData({ wishBursts });
   },
 
   openComingSoonModal(item) {

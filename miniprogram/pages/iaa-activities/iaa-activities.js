@@ -16,10 +16,15 @@ Page({
     comingSoonModalTitle: '',
     comingSoonModalIcon: '',
     comingSoonModalTag: '下期',
-    comingSoonModalLines: []
+    comingSoonModalLines: [],
+    wishBursts: [],
+    wishPressKey: ''
   },
 
   onLoad() {
+    this.wishBurstSeq = 0;
+    this.wishPressTimers = {};
+    this.wishBurstTimers = [];
     const pet = this.currentPet();
     if (!pet || petStore.getStage(pet) !== 'hatched') {
       this.setData({ playable: [], comingSoon: [] });
@@ -64,10 +69,7 @@ Page({
     const list = section === 'soon' ? this.data.comingSoon : this.data.playable;
     const item = list.find(row => row.key === key);
     if (!item || item.disabled) return;
-    if (item.comingSoon) {
-      this.openComingSoonModal(item);
-      return;
-    }
+    if (item.comingSoon) return;
     if (!item.route) {
       this.showNotice('这个玩法还在准备中。', 'info');
       return;
@@ -76,6 +78,38 @@ Page({
       url: item.route,
       fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
     });
+  },
+
+  onTapComingSoonWish(event) {
+    const key = event.currentTarget.dataset.key;
+    const item = this.data.comingSoon.find(row => row.key === key);
+    if (!item || !item.comingSoon) return;
+    this.playWishPlusOne(key);
+  },
+
+  onTapComingSoonCta(event) {
+    const key = event.currentTarget.dataset.key;
+    const item = this.data.comingSoon.find(row => row.key === key);
+    if (!item || !item.comingSoon) return;
+    this.openComingSoonModal(item);
+  },
+
+  playWishPlusOne(key) {
+    this.wishBurstSeq = (this.wishBurstSeq || 0) + 1;
+    const id = `wish-${Date.now()}-${this.wishBurstSeq}`;
+    this.setData({
+      wishBursts: this.data.wishBursts.concat({ id, key }),
+      wishPressKey: key
+    });
+    clearTimeout(this.wishPressTimers[key]);
+    this.wishPressTimers[key] = setTimeout(() => {
+      if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
+    }, 800);
+    const burstTimer = setTimeout(() => {
+      if (!this) return;
+      this.setData({ wishBursts: this.data.wishBursts.filter(burst => burst.id !== id) });
+    }, 820);
+    this.wishBurstTimers.push(burstTimer);
   },
 
   openComingSoonModal(item) {
@@ -103,5 +137,7 @@ Page({
 
   onUnload() {
     clearTimeout(this.noticeTimer);
+    Object.keys(this.wishPressTimers || {}).forEach(timerKey => clearTimeout(this.wishPressTimers[timerKey]));
+    (this.wishBurstTimers || []).forEach(timer => clearTimeout(timer));
   }
 });

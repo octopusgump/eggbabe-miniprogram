@@ -23,7 +23,7 @@ const pageModel = require('../companion-activities-page');
   assert.equal(wxml.includes('app-button'), false, '弹窗不得复用全局大按钮组件以免字号与高度偏离 Figma');
   assert.equal(wxml.includes('activities-coming-soon-icon-wrap'), false, '弹窗图标不得再套额外米色底框，应直接展示 80 资源');
   assert.equal(logic.includes('openComingSoonModal(item)'), true, '点击想玩必须打开下期说明弹窗');
-  assert.match(logic, /if \(item\.comingSoon\)[\s\S]*openComingSoonModal\(item\)/, '即将上线行必须走弹窗而非 toast');
+  assert.match(logic, /onTapComingSoonCta[\s\S]*openComingSoonModal\(item\)/, '想玩按钮必须打开弹窗');
 
   assert.match(
     wxss,

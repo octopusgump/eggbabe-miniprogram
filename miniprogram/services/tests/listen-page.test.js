@@ -1,18 +1,22 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-let definition, navigatedBack = 0, failWrite = false;
+let definition, navigatedBack = 0, reLaunchCount = 0, failWrite = false;
 const storage = new Map(), timers = new Map(), sound = [], haptics = [];
 let timerIndex = 0;
 global.wx = {
   getAccountInfoSync: () => ({ miniProgram: { envVersion: 'release' } }),
   getStorageSync: key => storage.get(key), setStorageSync: (key, value) => { if (failWrite) throw Error('quota'); storage.set(key, structuredClone(value)); },
-  getSystemInfoSync: () => ({}), navigateBack: () => navigatedBack++, showToast() {},
+  getSystemInfoSync: () => ({}),
+  navigateBack: () => { navigatedBack += 1; },
+  reLaunch: () => { reLaunchCount += 1; },
+  redirectTo: () => {},
+  showToast() {},
   createInnerAudioContext: () => ({ play() { sound.push('played'); }, stop() {}, destroy() {}, onError() {} }),
   vibrateShort: () => haptics.push('light')
 };
 global.Page = value => { definition = value; };
-global.getCurrentPages = () => [{}, {}];
+global.getCurrentPages = () => [{ route: 'pages/life-scene/life-scene' }, { route: 'pages/listen/listen' }];
 const petStore = require('../../utils/pet-store');
 const pet = { id: 'listen-page', ownerId: 'owner', lifecycleStage: 'HATCHED', prototype: '锦鲤' };
 petStore.getPet = () => pet;
@@ -82,6 +86,9 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   assert.match(feedbackStyles, /\.feedback-reward-label[\s\S]*?width:\s*300rpx/, '谢谢回答容器须对齐 Figma 150×100');
   assert.match(feedbackStyles, /\.feedback-reward-label__copy[\s\S]*?color:\s*#17311F/, '谢谢你说给我听须为墨绿正文色');
   assert.match(feedbackStyles, /\.feedback-footer[\s\S]*?align-items:\s*stretch/, '反馈页底栏按钮须同宽对齐');
+  assert.match(feedbackStyles, /\.return[\s\S]*?font-weight:\s*400/, '回到房间须对齐 Figma 听你说/Regular/14');
+  assert.match(feedbackStyles, /\.return[\s\S]*?border:\s*3rpx solid #002900/, '回到房间 Secondary 须 1.5px 墨绿描边');
+  assert.match(fs.readFileSync(path.join(root, 'pages/listen/listen.js'), 'utf8'), /goToLifeScene/, '回到房间导航须落到 life-scene');
   assert.ok(!template.includes('谢谢回答'), '不得再使用旧版谢谢回答文案');
   assert.ok(template.includes('{{feedback}}')); assert.ok(!template.includes('我听见啦'));
   assert.ok(JSON.parse(fs.readFileSync(path.join(root, 'app.json'))).pages.includes('pages/listen/listen'));

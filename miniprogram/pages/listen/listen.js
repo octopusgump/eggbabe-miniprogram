@@ -152,16 +152,29 @@ Page({
     }
     this.clearAward(); return true;
   },
-  onReturnRoom() {
-    if (!this.onBack()) return;
+  goToLifeScene() {
+    const roomRoute = 'pages/life-scene/life-scene';
     const pages = getCurrentPages();
-    if (pages.length > 1) {
+    let roomIndex = -1;
+    for (let i = pages.length - 1; i >= 0; i -= 1) {
+      const route = pages[i] && (pages[i].route || pages[i].__route__ || '');
+      if (route === roomRoute) { roomIndex = i; break; }
+    }
+    if (roomIndex >= 0 && roomIndex < pages.length - 1) {
       wx.navigateBack({
-        fail: () => wx.redirectTo({ url: '/pages/iaa-activities/iaa-activities' })
+        delta: pages.length - 1 - roomIndex,
+        fail: () => wx.reLaunch({ url: '/pages/life-scene/life-scene' })
       });
       return;
     }
-    wx.redirectTo({ url: '/pages/life-scene/life-scene' });
+    wx.reLaunch({
+      url: '/pages/life-scene/life-scene',
+      fail: () => wx.redirectTo({ url: '/pages/life-scene/life-scene' })
+    });
+  },
+  onReturnRoom() {
+    if (!this.onBack()) return;
+    this.goToLifeScene();
   },
   playAward() {
     this.awardTimer = setTimeout(() => { if (this.pageActive) this.setData({ awardVisible: false }); }, 2100);

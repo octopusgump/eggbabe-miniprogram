@@ -11,11 +11,22 @@ function splitParagraphs(body) {
     .filter(Boolean);
 }
 
+function parseSignOff(signOff) {
+  const raw = String(signOff || '').trim();
+  const commaMatch = raw.match(/^(.+[，,])\s*(.*)$/);
+  if (commaMatch) {
+    return { signOffLine: commaMatch[1], signOffName: commaMatch[2] || '' };
+  }
+  return { signOffLine: raw, signOffName: '' };
+}
+
 Page({
   data: {
     screenState: 'loading',
     detail: null,
     paragraphs: [],
+    signOffLine: '',
+    signOffName: '',
     pet: null,
     shareSheetVisible: false,
     systemNoticeText: '',
@@ -63,10 +74,13 @@ Page({
           return;
         }
         const detail = result.data;
+        const signOff = parseSignOff(detail.signOff);
         this.setData({
           screenState: 'ready',
           detail,
-          paragraphs: splitParagraphs(detail.body)
+          paragraphs: splitParagraphs(detail.body),
+          signOffLine: signOff.signOffLine,
+          signOffName: signOff.signOffName
         });
       });
   },

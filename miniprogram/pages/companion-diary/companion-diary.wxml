@@ -1,18 +1,5 @@
 <view class="diary-page">
-  <view class="diary-topbar">
-    <nav-bar title="" show-back="{{true}}" fallback-url="/pages/life-scene/life-scene"></nav-bar>
-    <view
-      wx:if="{{screenState === 'ready'}}"
-      class="diary-share-pill"
-      hover-class="diary-share-pill--pressed"
-      aria-role="button"
-      aria-label="分享日记"
-      bindtap="onOpenShareSheet"
-    >
-      <view class="diary-share-pill__icon" aria-hidden="true"></view>
-      <text class="diary-share-pill__label">分享</text>
-    </view>
-  </view>
+  <nav-bar title="" show-back="{{true}}" fallback-url="/pages/life-scene/life-scene"></nav-bar>
 
   <view class="system-notice-anchor">
     <inline-notice
@@ -22,13 +9,16 @@
     ></inline-notice>
   </view>
 
-  <scroll-view wx:if="{{screenState === 'ready' && detail}}" class="diary-scroll" scroll-y>
+  <scroll-view wx:if="{{screenState === 'ready' && detail}}" class="diary-scroll diary-scroll--with-dock" scroll-y>
     <view class="diary-content">
       <image class="diary-hero" src="{{detail.imageUrl}}" mode="aspectFill"></image>
       <view class="diary-letter">
         <text class="diary-salutation">{{detail.salutation}}</text>
         <text wx:for="{{paragraphs}}" wx:key="*this" class="diary-paragraph">{{item}}</text>
-        <text class="diary-signoff">{{detail.signOff}}</text>
+        <view class="diary-signoff">
+          <text wx:if="{{signOffLine}}" class="diary-signoff__line">{{signOffLine}}</text>
+          <text wx:if="{{signOffName}}" class="diary-signoff__name">{{signOffName}}</text>
+        </view>
       </view>
     </view>
   </scroll-view>
@@ -40,6 +30,19 @@
 
   <view wx:else class="diary-state">
     <text class="diary-state__copy">这一页还没有写好</text>
+  </view>
+
+  <view wx:if="{{screenState === 'ready' && detail && !shareSheetVisible}}" class="diary-share-dock">
+    <view
+      class="diary-share-dock__button"
+      hover-class="diary-share-dock__button--pressed"
+      aria-role="button"
+      aria-label="分享这篇日记"
+      bindtap="onOpenShareSheet"
+    >
+      <view class="diary-share-dock__plane" aria-hidden="true"></view>
+      <text class="diary-share-dock__label">分享这篇日记</text>
+    </view>
   </view>
 
   <view
@@ -58,7 +61,10 @@
         <view class="diary-share-card__body">
           <text class="diary-salutation">{{detail.salutation}}</text>
           <text class="diary-share-card__excerpt">{{paragraphs[0]}}</text>
-          <text class="diary-signoff diary-signoff--card">{{detail.signOff}}</text>
+          <view class="diary-signoff diary-signoff--card">
+            <text wx:if="{{signOffLine}}" class="diary-signoff__line">{{signOffLine}}</text>
+            <text wx:if="{{signOffName}}" class="diary-signoff__name">{{signOffName}}</text>
+          </view>
         </view>
         <view class="diary-share-card__footer">
           <view class="diary-share-card__user">

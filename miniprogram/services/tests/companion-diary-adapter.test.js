@@ -26,5 +26,10 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   const appJson = fs.readFileSync(path.join(root, 'app.json'), 'utf8');
   assert.match(appJson, /pages\/companion-diary\/companion-diary/);
 
+  const diaryWxml = fs.readFileSync(path.join(root, 'pages/companion-diary/companion-diary.wxml'), 'utf8');
+  assert.match(diaryWxml, /diary-share-dock/);
+  assert.match(diaryWxml, /分享这篇日记/);
+  assert.equal(/diary-share-pill/.test(diaryWxml), false, '顶栏不得放置与胶囊冲突的分享按钮');
+
   console.log('companion-diary adapter 与房间路由校验通过。');
 });

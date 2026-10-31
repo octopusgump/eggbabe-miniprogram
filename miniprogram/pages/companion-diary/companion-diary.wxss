@@ -1,51 +1,8 @@
 .diary-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: #f6f5ef;
   display: flex;
   flex-direction: column;
-}
-
-.diary-topbar {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.diary-share-pill {
-  position: absolute;
-  right: calc(24rpx + env(safe-area-inset-right));
-  bottom: 18rpx;
-  z-index: 210;
-  min-width: 132rpx;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10rpx;
-  padding: 0 22rpx;
-  border: 1rpx solid #d8dfd3;
-  border-radius: 999rpx;
-  background: #ffffff;
-  box-sizing: border-box;
-  transition: transform 180ms ease-out, background 180ms ease-out;
-}
-
-.diary-share-pill--pressed {
-  background: #f3f7e7;
-  transform: scale(0.98);
-}
-
-.diary-share-pill__icon {
-  width: 22rpx;
-  height: 22rpx;
-  border-top: 3rpx solid #002900;
-  border-right: 3rpx solid #002900;
-  transform: rotate(45deg) translate(-2rpx, 2rpx);
-}
-
-.diary-share-pill__label {
-  color: #002900;
-  font-size: 26rpx;
-  font-weight: 600;
 }
 
 .system-notice-anchor {
@@ -64,8 +21,12 @@
   height: calc(100vh - 112rpx - env(safe-area-inset-top));
 }
 
+.diary-scroll--with-dock {
+  height: calc(100vh - 112rpx - env(safe-area-inset-top) - 168rpx - env(safe-area-inset-bottom));
+}
+
 .diary-content {
-  padding: 24rpx 40rpx 80rpx;
+  padding: 24rpx 40rpx 32rpx;
   box-sizing: border-box;
 }
 
@@ -97,16 +58,95 @@
 }
 
 .diary-signoff {
-  display: block;
   margin-top: 48rpx;
-  color: #303b33;
-  font-size: 28rpx;
-  line-height: 1.7;
   text-align: right;
 }
 
 .diary-signoff--card {
   margin-top: 24rpx;
+}
+
+.diary-signoff__line {
+  display: block;
+  color: #303b33;
+  font-size: 28rpx;
+  line-height: 1.7;
+}
+
+.diary-signoff__name {
+  display: block;
+  margin-top: 8rpx;
+  color: #002900;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.diary-share-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  padding: 20rpx 40rpx calc(20rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(246, 245, 239, 0) 0%, #f6f5ef 28%);
+}
+
+.diary-share-dock__button {
+  min-height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rpx;
+  border: 1rpx solid #1a1a1a;
+  border-radius: 999rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+  transition: transform 180ms ease-out, background 180ms ease-out;
+}
+
+.diary-share-dock__button--pressed {
+  background: #f3f7e7;
+  transform: scale(0.99);
+}
+
+.diary-share-dock__plane {
+  width: 28rpx;
+  height: 28rpx;
+  position: relative;
+  transform: rotate(-12deg);
+}
+
+.diary-share-dock__plane::before {
+  content: '';
+  position: absolute;
+  left: 2rpx;
+  top: 10rpx;
+  width: 0;
+  height: 0;
+  border-top: 8rpx solid transparent;
+  border-bottom: 8rpx solid transparent;
+  border-right: 18rpx solid #002900;
+}
+
+.diary-share-dock__plane::after {
+  content: '';
+  position: absolute;
+  left: 8rpx;
+  top: 4rpx;
+  width: 16rpx;
+  height: 20rpx;
+  border: 2rpx solid #002900;
+  border-left: 0;
+  box-sizing: border-box;
+  transform: skewY(-18deg);
+}
+
+.diary-share-dock__label {
+  color: #002900;
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .diary-state {
@@ -283,10 +323,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .diary-share-pill {
+  .diary-share-dock__button {
     transition: none;
   }
-  .diary-share-pill--pressed {
+  .diary-share-dock__button--pressed {
     transform: none;
   }
   .diary-state__loader {

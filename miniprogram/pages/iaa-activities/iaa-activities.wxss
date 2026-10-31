@@ -13,8 +13,9 @@
 
 .system-notice-anchor {
   position: fixed;
-  z-index: 120;
-  top: calc(148rpx + env(safe-area-inset-top));
+  /* 高于 nav-bar（z-index: 200），toast 须完整露在导航下方 */
+  z-index: 220;
+  top: calc(env(safe-area-inset-top) + 112rpx + 20rpx);
   left: 72rpx;
   right: 72rpx;
   display: flex;

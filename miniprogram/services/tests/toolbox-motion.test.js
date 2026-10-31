@@ -18,6 +18,8 @@ assert.match(wxml, /companion-toolbox--\{\{toolboxMotion\}\}/, '面板须绑定 
 assert.match(wxml, /toolboxIconOpen/, '须渲染开盖 crossfade 图层');
 assert.match(wxss, /transform-origin:100% 100%/, '面板 transform-origin 须在右下角');
 assert.match(wxss, /cubic-bezier\(\.34,1\.56,\.64,1\)/, '打开须使用 Motion Note 弹簧缓动');
+assert.match(wxss, /\.companion-toolbox--opening\{[^}]*animation:toolbox-panel-open/, '打开阶段须用关键帧，不得被 settled 样式覆盖');
+assert.match(wxss, /\.companion-toolbox--open\{[^}]*transform:scale\(1\)/, '落定 open 态才写死 scale(1)');
 assert.match(wxss, /@keyframes toolbox-panel-close/, '收起须使用 scale+opacity 关键帧');
 assert.match(wxss, /toolbox-panel-close \.16s ease-in/, '收起时长约 160ms ease-in');
 assert.match(wxss, /page--reduced .companion-toolbox/, '减少动效须关闭百宝箱动画');

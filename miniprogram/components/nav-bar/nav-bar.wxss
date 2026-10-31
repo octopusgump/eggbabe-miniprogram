@@ -1,4 +1,6 @@
 .navbar-root {
+  position: relative;
+  z-index: 200;
   background: #FFFFFF; /* --canvas */
   flex-shrink: 0;
 }

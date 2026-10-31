@@ -1,0 +1,98 @@
+<view class="activities-page">
+  <nav-bar title="" show-back="{{true}}" fallback-url="/pages/life-scene/life-scene"></nav-bar>
+  <view class="system-notice-anchor">
+    <inline-notice text="{{noticeText}}" tone="{{noticeTone}}" visible="{{noticeVisible}}"></inline-notice>
+  </view>
+  <scroll-view class="activities-scroll" scroll-y>
+    <view class="activities-header">
+      <view class="activities-balance" aria-label="星星余额 {{starBalance}}">
+        <image class="activities-balance__star" src="{{starBalanceIcon}}" mode="aspectFit"></image>
+        <text class="activities-balance__count">{{starBalance}}</text>
+      </view>
+      <text class="activities-balance__label">我的星星</text>
+    </view>
+
+    <view class="activities-section">
+      <text class="activities-section__title">可玩</text>
+      <view class="activities-card">
+        <block wx:for="{{playable}}" wx:key="key">
+          <view wx:if="{{index > 0}}" class="activities-card__divider"></view>
+          <view class="activities-row {{item.dimmed ? 'activities-row--dimmed' : ''}}" data-key="{{item.key}}" data-section="play" bindtap="onTapRow" aria-role="button" aria-label="{{item.title}}">
+            <image class="activities-row__icon" src="{{item.icon}}" mode="aspectFill"></image>
+            <text class="activities-row__title">{{item.title}}</text>
+            <view class="activities-cta {{item.disabled ? 'activities-cta--disabled' : ''}} {{item.ctaWide ? 'activities-cta--wide' : ''}}">
+              <block wx:if="{{item.ctaText}}">
+                <text class="activities-cta__text">{{item.ctaText}}</text>
+              </block>
+              <block wx:else>
+                <text class="activities-cta__text">{{item.ctaPrefix}} {{item.ctaSuffix}}</text>
+                <text class="activities-cta__star" aria-hidden="true">✦</text>
+              </block>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <view class="activities-section">
+      <text class="activities-section__title">即将上线</text>
+      <view class="activities-card">
+        <view wx:for="{{comingSoon}}" wx:key="key" class="activities-row activities-row--dimmed activities-row--coming-soon">
+          <view
+            class="activities-row__wish {{wishPressKey === item.key ? 'activities-row__wish--active' : ''}}"
+            data-key="{{item.key}}"
+            catchtap="onTapComingSoonWish"
+            aria-role="button"
+            aria-label="{{item.title}}想玩反馈"
+          >
+            <image class="activities-row__icon activities-row__icon--dimmed" src="{{item.icon}}" mode="aspectFill"></image>
+            <text class="activities-row__title activities-row__title--dimmed">{{item.title}}</text>
+            <block wx:for="{{wishBursts}}" wx:key="id" wx:for-item="burst">
+              <view wx:if="{{burst.key === item.key}}" class="activities-wish-float" aria-hidden="true">
+                <text class="activities-wish-float__plus">+1</text>
+                <view class="activities-wish-float__spark activities-wish-float__spark--1"></view>
+                <view class="activities-wish-float__spark activities-wish-float__spark--2"></view>
+                <view class="activities-wish-float__spark activities-wish-float__spark--3"></view>
+                <view class="activities-wish-float__spark activities-wish-float__spark--4"></view>
+              </view>
+            </block>
+          </view>
+          <view
+            class="activities-cta"
+            data-key="{{item.key}}"
+            catchtap="onTapComingSoonCta"
+            aria-role="button"
+            aria-label="{{item.title}}{{item.ctaText}}"
+          >
+            <text class="activities-cta__text">{{item.ctaText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view
+    wx:if="{{comingSoonModalVisible}}"
+    class="activities-coming-soon-overlay"
+    aria-role="dialog"
+    aria-label="{{comingSoonModalTitle}}玩法说明"
+    catchtap="onComingSoonOverlayTap"
+  >
+    <view class="activities-coming-soon-dialog" catchtap="onComingSoonDialogTap">
+      <image class="activities-coming-soon-icon" src="{{comingSoonModalIcon}}" mode="aspectFit"></image>
+      <view class="activities-coming-soon-heading">
+        <text class="activities-coming-soon-title">{{comingSoonModalTitle}}</text>
+        <text class="activities-coming-soon-tag">{{comingSoonModalTag}}</text>
+      </view>
+      <view class="activities-coming-soon-copy">
+        <text wx:for="{{comingSoonModalLines}}" wx:key="*this" class="activities-coming-soon-line">{{item}}</text>
+      </view>
+      <view
+        class="activities-coming-soon-btn"
+        aria-role="button"
+        aria-label="知道了"
+        bindtap="onCloseComingSoonModal"
+      >知道了</view>
+    </view>
+  </view>
+</view>

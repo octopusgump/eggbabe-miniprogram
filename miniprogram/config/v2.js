@@ -28,5 +28,8 @@ module.exports = {
   birthCardH5Url: '',
   birthCardApiBase: '',
   miniProgramCodeUrl: '',
-  subscriptionTemplateIds: { hatchDay: '', hatchSoon: '' }
+  subscriptionTemplateIds: { hatchDay: '', hatchSoon: '' },
+  // 听你说 DeepSeek：仅在有配置时真调；密钥走环境/本地覆盖，勿提交仓库。
+  listenFeedbackApiUrl: '',
+  listenFeedbackApiKey: ''
 };

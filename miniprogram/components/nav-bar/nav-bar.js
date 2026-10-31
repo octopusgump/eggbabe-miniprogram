@@ -11,6 +11,8 @@ Component({
     titleInteractive: { type: Boolean, value: false },
     titleAriaLabel: { type: String, value: '' },
     showBack: { type: Boolean, value: true },
+    // 需要先成功保存输入的页面可接管返回；默认保留原自动返回行为。
+    customBack: { type: Boolean, value: false },
     fallbackUrl: { type: String, value: '' }
   },
   data: {
@@ -29,6 +31,7 @@ Component({
     },
     onBack() {
       this.triggerEvent('back');
+      if (this.properties.customBack) return;
       const pages = getCurrentPages();
       if (pages.length > 1) {
         wx.navigateBack();

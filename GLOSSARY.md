@@ -6,9 +6,9 @@ Canonical reading surface for IAA companion product rules: `docs/主PRD/02_蛋�
 
 | Term | Meaning |
 |---|---|
-| 一起 X 天 | User-visible continuous companion-day count. +1 only on the first time that natural day the letter paper becomes visible (envelope → paper). Opening the letter without doing the core action still +1 day and awards 0 stars. A natural day with no letter open resets the streak to 1 on the next open (**断开清零**). Tea party completion never +1. |
-| 断开清零 | If a Shanghai natural day passes without opening the letter paper, the continuous day streak and §5.1 ladder restart from day 1. Spending stars only lowers balance. |
-| 点开信纸 | The UI moment the envelope opens and the letter paper is visible. This is the only trigger that +1s 一起 X 天. |
+| 一起 X 天 | 用户看到的连续有效陪伴日数。上海自然日内第一次完成有效活动 +1；只开信或进入画纸不计日。缺一天未完成则中断，下次完成从 1 天重新算。茶会不计日。 |
+| 断开清零 | 上海自然日没有完成有效活动时，连续陪伴日数中断。下一次完成从第 1 天重新算；已完成题库进度与已得星星不清零。 |
+| 点开信纸 | 从信封打开到信纸可见的时刻，只表示读过今日信，不表示完成活动，也不发基础星星或计日。 |
 | 特别奖励（reward） | Today's letter class whose core action is not “one tap and done”: must run an independent flow with a clear result. Includes creation (一起画) and activity (茶会, etc.). |
 | 一起画 | Post-hatch co-drawing entered only from today's letter. v1 (shipped rule): at least one non-eraser stroke completes; no quality score. v2 (rules decided, not shipped): ≥5 strokes, ≥15s active drawing, ≥5 of ~100 canvas cells touched; failed “画好了” shows one tip, no score UI. |
 | 道具临摹挑战 | A letter-bound co-drawing challenge: simplified prop sketch flashes briefly on the egg canvas; user has 3 “看一看” glimpses; must accumulate 3 successful “画好了” exports each meeting v2 local gates; then the prop unlocks in album **回忆**. Rules decided, not shipped (PRD §6.4). |
@@ -34,3 +34,27 @@ _Avoid_: 活动未完成、回忆未收下
 **待收下照片**：
 用户已在陪伴中获得、尚未主动收录进纪念册的照片，属于已有结果。
 _Avoid_: 未读事件、错过的活动
+
+| Term | Meaning |
+|---|---|
+| 听你说 | 破壳后由宠物用生活小事邀请用户选择答案的活动，每组五题，完成后有一条宠物反馈。首组未完成从左下邀请信进入；首组完成后继续/回看 **仅** 从房间百宝箱「活动」进入（一律 `/pages/listen/listen`）。 |
+| 百宝箱（房间） | 右下橙色木箱；展开 2×2：**纪念册 · 日记 · 活动 · 设置**，四格始终显示。「活动」→ Figma 全量玩法 list（`iaa-activities`）；听你说从列表内进入。 |
+| 题组 | 同一类别里按预设顺序编写的五道题，完整回答后推进到下一组。 |
+| 匹配反馈 | 用户所选答案满足全部指定要求时可使用的预写完整反馈；不拼接句子。 |
+| 保底文案 | 没有合适匹配反馈，或最高支持题数并列时使用的本组完整回应，不猜测未表达的想法。 |
+| 支持题数 | 一条反馈全部要求满足后，要求中涉及的不同题目数；排除项不计数。 |
+| 每日基础星星 | 当天第一次完成有效活动领取的一份星星，答题、一起画和普通信件互动共用，不重复领取。 |
+| 画画小回礼 | 实际完成画画后独立判定的 +3 星回礼，保留首次必送、之后每天一次 33% 机会，不是另一份基础星星。 |
+| 跳过本次 | 本次先退出答题，保留未完成组和输入；不算完成，也不领取星星。 |
+
+**出题备注**：
+供内容编写与审核使用的情境边界和编写要求，不属于宠物向用户说的话。
+_Avoid_: 用户提示、题干说明
+
+**已进入活动**：
+用户已从当天的信件成功打开对应小游戏。只表示进入过，不表示完成或领奖。听你说/一起画邀请信不含「明天呢？」；普通在家信展开「明天呢？」规则见主 PRD §4.3。
+_Avoid_: 已完成活动、今日已陪伴、左下继续听你说
+
+**已完成活动**：
+用户完成了该活动要求的核心动作，例如答完一组五题或成功画好作品。进入页面、中途退出和展开“明天呢？”都不算完成。
+_Avoid_: 已进入活动、已读信件

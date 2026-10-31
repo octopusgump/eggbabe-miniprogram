@@ -33,9 +33,10 @@ const exchange = { id: 'exchange', kind: 'exchange', image: '/afternoon.webp', a
   assert.equal(catalog.eligiblePhotos({},'2026-09-23').some(item=>item.kind==='solar'), true);
   stars.configureRoom('paper-a', {prototype:'玉兔'});
   let view=(await stars.getRoomStarView()).data;
+  view=(await stars.recordLetterOpen(view)).data;
   const result=await stars.recordCompanion(view,{paper:true,random:()=>1});
   assert.equal(result.paperPhoto.id, 'outing');
-  assert.equal(result.awardedStars,10,'照片不改基础奖励');
+  assert.equal(result.awardedStars,0,'基础已在开信发放，纸条只附带照片');
   assert.equal(stars.getPendingPhotos().length,1);
   stars.collectPhoto('outing'); stars.collectPhoto('outing');
   assert.equal(stars.getMemories().length,1);

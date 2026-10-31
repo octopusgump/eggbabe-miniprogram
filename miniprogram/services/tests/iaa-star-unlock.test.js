@@ -18,19 +18,21 @@ fixture.STATE_OPTIONS.forEach(option => {
   const roomBefore = await adapter.getRoomStarView();
   assert.equal(roomBefore.data.star.balance, 2, '房间左上角初始显示两颗星');
 
-  const first = await adapter.recordCompanion(roomBefore.data);
+  const opened = await adapter.recordLetterOpen(roomBefore.data);
+  assert.equal(opened.awardedStars, 11, '开信发当日基础星');
+  const first = await adapter.recordCompanion(opened.data);
   assert.equal(first.ok, true);
-  assert.equal(first.awardedStars, 10, '首次有效互动必须 +10 星');
-  assert.equal(first.data.star.balance, 12);
+  assert.equal(first.awardedStars, 0, '基础已在开信发放');
+  assert.equal(first.data.star.balance, 13);
   assert.equal(first.data.star.dailyClaimStatus, 'UNLOCKED', '达到门槛必须进入已解锁状态');
 
   const roomAfter = await adapter.getRoomStarView();
-  assert.equal(roomAfter.data.star.balance, 12, '互动结果必须回到房间常驻星星状态');
+  assert.equal(roomAfter.data.star.balance, 13, '互动结果必须回到房间常驻星星状态');
   assert.equal(roomAfter.data.progress.remaining, 0);
 
   const repeated = await adapter.recordCompanion(roomAfter.data);
   assert.equal(repeated.awardedStars, 0, '重复互动不得重复加星');
-  assert.equal((await adapter.getRoomStarView()).data.star.balance, 12);
+  assert.equal((await adapter.getRoomStarView()).data.star.balance, 13);
 
   const failed = await adapter.recordCompanion(fixture.starUnlockViewFor('ERROR'));
   assert.equal(failed.ok, false, '失败状态必须诚实返回失败');
@@ -49,7 +51,10 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomLogic.includes("require('../../services/iaa-star-unlock-adapter')") && roomLogic.includes('loadCompanionStar()'), true, '房间页必须从统一 adapter 读取星星');
   assert.equal(roomLogic.includes("query.entry === 'iaa-core-review'") && roomLogic.includes('coreReviewPreviewPet()'), true, '开发验收入口必须能用内存 fixture 直达房间，不写入绑定数据');
   assert.ok(roomTemplate.includes('companion-balance__stars') && roomTemplate.includes('companionDays'), '左上角只显示星星与一起 X 天');
-  assert.ok(roomTemplate.includes('bindtap="onContextActionTap"') && roomLogic.includes('onContextActionTap() { return this.onOpenTodayCompanion(); }'), '左下头像打开陪伴浮层');
+  assert.ok(roomTemplate.includes('bindtap="onContextActionTap"') && roomLogic.includes('contextEntryOpensChat') && roomLogic.includes('onOpenListenFromRoom'), '左下：未首组完成开信；听你说首组完成后左下宠物进聊天；继续听你说走百宝箱');
+  assert.ok(roomTemplate.includes('onOpenToolboxActivity') && roomLogic.includes('iaa-activities/iaa-activities'), '百宝箱「活动」进入 Figma 全量玩法 list，听你说从列表内进入');
+  assert.ok(roomLogic.includes('toolboxItems.activities') && roomTemplate.includes('catchtap="onOpenToolboxActivity"'), '百宝箱「活动」使用 Figma 星星图标且可点透 dismiss 层');
+  assert.ok(roomTemplate.includes('companion-toolbox__grid') && roomTemplate.includes('onOpenToolboxSettings') && !roomTemplate.includes('bindtap="onOpenMySettings"'), '设置收入百宝箱，右下不再单独挂齿轮');
   assert.equal(roomLogic.includes("require('../../services/iaa-today-companion-adapter')") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须在原场景读取今日陪伴内容并记录入口点击');
   assert.equal(roomLogic.includes('todayCompanionVisible: true') && roomLogic.includes('starAdapter.recordCompanion(starView,'), true, '房间 overlay 必须承接陪伴操作与同一份星星状态');
   assert.equal(roomLogic.includes('starAdapter.recordLetterOpen'), true, '开信必须调用 recordLetterOpen 记一起 X 天');
@@ -59,11 +64,12 @@ fixture.STATE_OPTIONS.forEach(option => {
   const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
   const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);
   const overlayTemplate = roomTemplate.slice(overlayStart, overlayEnd);
-  assert.equal(overlayStart >= 0 && overlayTemplate.includes('today-companion-letter__title') && overlayTemplate.includes('明天呢？'), true, '当前房间上方必须渲染极简信纸内容');
+  assert.equal(overlayStart >= 0 && overlayTemplate.includes('today-companion-letter__title'), true, '当前房间上方必须渲染极简信纸内容');
+  assert.equal(overlayTemplate.includes('明天呢？'), false, '信件 overlay 不再展示明天呢');
   assert.equal(overlayTemplate.includes('src="{{panoramaImage}}"'), false, '信纸 overlay 内不得重复渲染第二张场景图');
   assert.equal(/窗边的小纸条|这一会儿，收好了。|房间左上角，多了一颗星星。|♡|✓/.test(overlayTemplate), false, '信纸 overlay 不得增加未经确认的小标题、完成文案、说明或装饰图标');
   assert.equal(roomStyles.includes('.today-companion-overlay{position:fixed;z-index:400') && roomStyles.includes('.today-companion-letter__title') && roomStyles.includes('font-size:42rpx'), true, 'overlay 必须覆盖原房间并保持标题与正文两级层次');
-  assert.ok(!roomTemplate.includes('companion-tabs') && roomTemplate.includes('companion-letter-role') && roomTemplate.includes('onCompanionChatTap'), '取消分栏，聊天通过信纸边缘角色进入');
+  assert.ok(!roomTemplate.includes('companion-tabs') && !roomTemplate.includes('companion-letter-role'), '信件 overlay 不再挂信纸角标宠物');
   assert.equal(moodTemplate.includes('pet-mood-tab__star-summary') && moodTemplate.includes('今日已收下') && moodTemplate.includes('今日待收下'), true, '今日心情区域必须展示星星数量和今日状态');
   assert.equal(moodTemplate.includes('starProgressText') && moodStyles.includes('.pet-mood-tab__star-progress'), true, '今日心情组件保留进度文字位，供纪念册恢复或服务端累计接入时使用');
   assert.ok(roomLogic.includes('onOpenMemoryAlbum') && roomTemplate.includes('纪念册'), '百宝箱可以打开纪念册');

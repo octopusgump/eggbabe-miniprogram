@@ -4,21 +4,42 @@
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
     <view class="doodle-nav-row">
       <view class="doodle-nav-leading">
-        <view class="doodle-back" aria-role="button" aria-label="返回" bindtap="onBack">
+        <view class="doodle-back" aria-hidden="true">
           <view class="doodle-chevron"></view>
         </view>
         <text
           class="save-status save-status--{{saveStatus}}"
-          aria-role="button"
-          aria-label="{{companionDrawing ? '画好了' : saveStatusText}}"
-          aria-disabled="{{!companionDrawing && (saveStatus === 'saved' || saveStatus === 'saving')}}"
-          bindtap="onManualSave"
+          aria-hidden="true"
         >{{companionDrawing ? '画好了' : saveStatusText}}</text>
       </view>
       <text class="doodle-title">{{companionDrawing ? '一起画' : '画我的蛋壳'}}</text>
       <view class="doodle-nav-safe"></view>
     </view>
   </view>
+
+  <root-portal>
+    <cover-view class="doodle-nav-cover" style="padding-top: {{statusBarHeight}}px; height: {{navCoverHeightPx}}px;">
+      <cover-view class="doodle-nav-cover-row">
+        <cover-view class="doodle-back-cover" catchtap="onBack" aria-role="button" aria-label="返回">
+          <cover-view class="doodle-chevron-cover"></cover-view>
+        </cover-view>
+        <cover-view
+          wx:if="{{companionDrawing}}"
+          class="doodle-save-cover"
+          catchtap="onManualSave"
+          aria-role="button"
+          aria-label="画好了"
+        >画好了</cover-view>
+        <cover-view
+          wx:elif="{{saveStatus === 'unsaved' || saveStatus === 'error'}}"
+          class="doodle-save-cover doodle-save-cover--{{saveStatus}}"
+          catchtap="onManualSave"
+          aria-role="button"
+          aria-label="{{saveStatusText}}"
+        >{{saveStatusText}}</cover-view>
+      </cover-view>
+    </cover-view>
+  </root-portal>
 
   <view class="preview" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor">

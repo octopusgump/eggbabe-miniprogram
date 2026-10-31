@@ -150,8 +150,9 @@ assert.equal(chatWxml.includes('class="conversation"') && chatWxml.includes('cla
 assert.equal(chatWxml.includes('id="message-typing"') && chatWxml.includes('aria-label="蛋宝宝正在回复"') && chatLogic.includes("this.setScrollTarget('message-typing')"), true, '等待回复时必须显示可访问的三点气泡并自动滚入视野');
 assert.equal(chatStyles.includes('animation:typing .5s ease-in-out infinite') && chatStyles.includes('animation-delay:.08s') && chatStyles.includes('animation-delay:.16s'), true, '正在回复的三点微动效必须按 0.5 秒完整循环依次跳动');
 assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatStyles.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
-assert.equal(lifeSceneWxml.includes('aria-label="打开我的和设置"') && lifeSceneWxml.includes('bindtap="onOpenMySettings"') && lifeSceneWxml.includes('src="{{mySettingsIcon}}"'), true, '右下角必须使用我的/设置图标并直接打开我的页');
-assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '我的/设置入口不得经过中间弹层');
+assert.equal(lifeSceneWxml.includes('onOpenToolboxSettings') && lifeSceneWxml.includes('src="{{mySettingsIcon}}"'), true, '设置入口收入百宝箱');
+assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '设置仍跳转我的页');
+assert.equal(!lifeSceneWxml.includes('bindtap="onOpenMySettings"'), true, '右下不再单独挂设置按钮');
 assert.equal(/scene-action-unread-dot|contextActionHasNewMessage|toolboxHasNewMessage/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}`), false, '停用的明信片不得在生活场景显示不可处理的未读提示');
 assert.equal(Boolean(postHatchAssets.POST_HATCH.sceneActions.toolbox) && ['card', 'postcards', 'keepsakes'].every(key => postHatchAssets.POST_HATCH.sceneActions.toolboxItems[key]), true, '已完成的百宝箱与复杂内容图片配置必须保留供后续版本使用');
 assert.equal(/sendLetter|sendPostHatchLetter|onSendLetter|onLetterInput|scene-composer--letter|composer-send--paper-plane|write_letter|scene_letter_button/.test(`${lifeSceneLogic}\n${lifeSceneWxml}\n${lifeSceneStyles}\n${postHatchCompanionLogic}\n${cloudApiLogic}`), false, '写信的界面、事件、服务与云接口必须完全移除');

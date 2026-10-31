@@ -13,6 +13,9 @@ const { createSceneFeedbackController } = require('../../utils/scene-feedback-co
 const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
+const companionActivities = require('../../services/companion-activity-catalog');
+const letterActivityProgress = require('../../services/companion-letter-progress');
+const companionPetImage = require('../../utils/companion-pet-image');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
@@ -234,6 +237,43 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
+// 听你说首组完成后：左下仅宠物聊天；继续/回看听你说统一从百宝箱进入（当天答完仍保留入口，页内展示「明天再来」）。
+function listenToolboxEntryVisibleForRoom(atHome, todayActivityKind, listenDone) {
+  return Boolean(atHome && todayActivityKind === 'listen' && listenDone);
+}
+
+function roomContextEntry(pet, chatAccess, options) {
+  const input = options || {};
+  const atHome = Boolean(input.atHome);
+  const kind = input.todayActivityKind;
+  const listenCompleted = kind === 'listen' && input.listenCompleted;
+  if (atHome && listenCompleted) {
+    const chat = contextActionPresentation(pet, chatAccess);
+    return {
+      icon: companionPetImage.resolveCompanionPetImage(pet),
+      label: chat.label,
+      hint: chat.hint,
+      disabled: chat.disabled,
+      badge: chat.badge,
+      opensChat: true,
+      opensListen: false,
+      flatEnvelope: false,
+      entryAriaLabel: '和蛋宝宝说话'
+    };
+  }
+  return {
+    icon: LETTER_ICON_SRC,
+    label: '读今日陪伴',
+    hint: '',
+    disabled: false,
+    badge: '',
+    opensChat: false,
+    opensListen: false,
+    flatEnvelope: true,
+    entryAriaLabel: '读信'
+  };
+}
+
 function statusBubbleFor(currentState, previousText) {
   const pool = STATUS_BUBBLE_POOL[currentState && currentState.key] || STATUS_BUBBLE_POOL[currentState && currentState.major] || [];
   const candidates = pool.filter(text => text !== previousText);
@@ -319,19 +359,28 @@ Page({
     pendingCompanionMemory: null,
     memoryGuideVisible: false,
     toolboxVisible: false,
+    toolboxMotion: 'closed',
+    toolboxChestOpen: false,
     toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
+    toolboxIconClosed: assets.POST_HATCH.sceneActions.toolbox,
+    toolboxIconOpen: assets.POST_HATCH.sceneActions.toolboxOpen,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
+    toolboxDiaryIcon: assets.POST_HATCH.sceneActions.toolboxItems.card,
+    toolboxActivityIcon: assets.POST_HATCH.sceneActions.toolboxItems.activities,
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
     todayCompanionVisible: false,
     todayCompanionView: null,
+    todayCompanionGameInvitation: false,
+    todayCompanionActivityIcon: '',
     todayCompanionStarView: null,
     todayCompanionInteractionPending: false,
     todayCompanionInteractionDone: false,
     todayCompanionInteractionFeedback: '',
     todayCompanionInteractionError: '',
     todayCompanionAwardedStars: 0,
+    todayCompanionTomorrowAvailable: false,
     todayCompanionTomorrowVisible: false,
     clockMode: 'analog',
     clockTimeText: '--:--',
@@ -345,6 +394,12 @@ Page({
     contextActionHint: '',
     contextActionDisabled: true,
     contextActionBadge: '',
+    contextEntryOpensChat: false,
+    contextEntryOpensListen: false,
+    listenToolboxEntryVisible: false,
+    listenToolboxIcon: companionActivities.byKind('listen') && companionActivities.byKind('listen').icon || '',
+    contextEntryFlatEnvelope: true,
+    contextEntryAriaLabel: '读信',
     mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
     characterPanel: -1,
     characterStyle: '',
@@ -502,13 +557,16 @@ Page({
   onOpenTodayCompanion() {
     this.syncPendingPaperPhoto();
     if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
+    if (this.data.currentState && this.data.currentState.atHome && starAdapter.getTodayInvitationKind() === 'listen' && starAdapter.getActivityCompleted('listen')) {
+      return Promise.resolve(this.onCompanionChatTap({ fromRoomEntry: true }));
+    }
     this.companionOpening = true;
     analytics.track('room_element_interaction', {
       element_id: 'today_companion_entry',
       result: 'opened'
     });
     return Promise.all([
-      todayCompanionAdapter.getTodayView({ scenario: this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal', state: 'ready' }),
+      todayCompanionAdapter.getTodayView({ scenario: this.data.currentState && !this.data.currentState.atHome ? 'away' : 'normal', state: 'ready', selectActivity: true, pet: this.data.pet }),
       starAdapter.getRoomStarView()
     ]).then(([todayResult, starResult]) => {
       if (!this.pageActive) return;
@@ -519,12 +577,13 @@ Page({
         this.markCompanionSeen();
         const star = letterResult.data.star;
         const away = Boolean(this.data.currentState && !this.data.currentState.atHome);
-        // 开信已记「一起 X 天」；信内动作完成态仍看纸条/基础星领取，不把开信当成互动完成。
-        const claimed = Boolean(star && (away ? star.noteCollected : star.baseClaimed));
+        const letterStars = Number(letterResult.awardedStars || 0);
+        const claimed = starAdapter.getActivityCompleted(todayResult.data.today.activityKind);
         this.stopLetterArrival();
-        const progress = this.readLetterProgress();
+        const progress = this.readLetterProgress(todayResult.data.today.activityKind);
+        const game = !away && companionActivities.byKind(todayResult.data.today.activityKind);
         this.todayCompanionScenario = away ? 'away' : 'normal';
-        if (!claimed) this.prepareStarAwardSound();
+        if (letterStars > 0) this.prepareStarAwardSound();
         this.setData({
           acceptanceToolsOpen: false,
           todayCompanionVisible: true,
@@ -532,7 +591,11 @@ Page({
           companionLetterArriving: false,
           companionNavigating: false,
           toolboxVisible: false,
+          toolboxMotion: 'closed',
+          toolboxChestOpen: false,
           todayCompanionView: todayResult.data,
+          todayCompanionGameInvitation: Boolean(game),
+          todayCompanionActivityIcon: game && game.icon || '',
           todayCompanionStarView: letterResult.data,
           companionDays: Number(star.companionDays || 0),
           companionStarBalance: Number(star.balance || 0),
@@ -540,14 +603,17 @@ Page({
           todayCompanionInteractionDone: claimed,
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
           todayCompanionInteractionError: '',
-          todayCompanionAwardedStars: 0,
-          todayCompanionTomorrowVisible: Boolean(progress.tomorrow),
+          todayCompanionAwardedStars: letterStars,
+          todayCompanionTomorrowAvailable: progress.available,
+          todayCompanionTomorrowVisible: progress.available && Boolean(progress.tomorrow),
           companionRoleEntering: false
         });
         analytics.track('companion_interaction', {
           interaction_type: 'tomorrow_hint',
           result: 'prompt_shown'
         });
+        if (letterStars > 0) this.playStarAwardFeedback();
+        this.syncRoomContextEntry();
       });
     }).catch(() => { if (this.pageActive) this.showSystemNotice('信件没有打开，请再试一次', 'warning'); }).finally(() => { this.companionOpening = false; });
   },
@@ -568,6 +634,7 @@ Page({
     }
   },
 
+  // 保留信纸内点击的冒泡边界，避免点正文触发遮罩关闭。
   onTodayCompanionLetterTap() {},
 
   onTodayCompanionOverlayTouchMove() {},
@@ -597,6 +664,7 @@ Page({
     const view = this.data.todayCompanionView;
     this.setData({ todayCompanionStarView: result.data, todayCompanionInteractionPending: false, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: view && view.today ? view.today.interactionFeedback : '', todayCompanionInteractionError: '', todayCompanionAwardedStars: awardedStars });
     if (awardedStars > 0) this.playStarAwardFeedback();
+    if (result.streakInterrupted) this.showSystemNotice('连续天数中断了');
     return this.loadCompanionStar({ deferAward: awardedStars > 0 }).then(() => result);
   },
 
@@ -651,11 +719,16 @@ Page({
   },
 
   onTodayCompanionRevealTomorrow() {
-    if (!this.data.todayCompanionView || this.data.todayCompanionTomorrowVisible) return;
+    if (!this.data.todayCompanionView || !this.readLetterProgress().available || this.data.todayCompanionTomorrowVisible) return;
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    this.letterProgress = { date, tomorrow: true };
-    try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
-    this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.reducedMotion) });
+    const kind = this.data.todayCompanionView.today.activityKind;
+    if (this.data.currentState && this.data.currentState.atHome && companionActivities.byKind(kind)) {
+      letterActivityProgress.markExpanded(starAdapter.getRoomScope(), kind, starAdapter.getActivityCompleted(kind), date);
+    } else {
+      this.letterProgress = { date, tomorrow: true };
+      try { wx.setStorageSync(this.letterProgressKey(), this.letterProgress); } catch (error) {}
+    }
+    this.setData({ todayCompanionTomorrowVisible: true, companionRoleEntering: Boolean(this.data.currentState && this.data.currentState.atHome && !this.data.todayCompanionGameInvitation && !this.data.reducedMotion) });
     clearTimeout(this.companionRoleTimer);
     this.companionRoleTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionRoleEntering: false }); }, 1000);
     analytics.track('companion_interaction', {
@@ -691,7 +764,15 @@ Page({
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
       const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
-      const contextAction = contextActionPresentation(this.data.pet, snapshot.chatAccess);
+      const listenDone = starAdapter.getActivityCompleted('listen');
+      const todayActivityKind = starAdapter.getTodayInvitationKind()
+        || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind)
+        || (listenDone ? 'listen' : null);
+      const contextEntry = roomContextEntry(this.data.pet, snapshot.chatAccess, {
+        atHome: currentState.atHome,
+        todayActivityKind,
+        listenCompleted: listenDone && todayActivityKind === 'listen'
+      });
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
@@ -708,12 +789,17 @@ Page({
         currentState,
         panelSceneSetId: panorama.sceneSetId,
         windowHotspots: panorama.windowHotspots,
-        contextActionIcon: LETTER_ICON_SRC,
-        companionRoleImage: `/assets/scenes/lifecycle/post-hatch/30-character/${['锦鲤', 'KOI'].includes(String(this.data.pet && this.data.pet.prototype)) ? 'boon-koi' : 'jade-rabbit'}/stare.webp`,
-        contextActionLabel: contextAction.label,
-        contextActionHint: contextAction.hint,
-        contextActionDisabled: contextAction.disabled,
-        contextActionBadge: contextAction.badge,
+        contextActionIcon: contextEntry.icon,
+        companionRoleImage: companionPetImage.resolveCompanionPetImage(this.data.pet),
+        contextActionLabel: contextEntry.label,
+        contextActionHint: contextEntry.hint,
+        contextActionDisabled: contextEntry.disabled,
+        contextActionBadge: contextEntry.badge,
+        contextEntryOpensChat: contextEntry.opensChat,
+        contextEntryOpensListen: false,
+        contextEntryFlatEnvelope: contextEntry.flatEnvelope,
+        listenToolboxEntryVisible: listenToolboxEntryVisibleForRoom(currentState.atHome, todayActivityKind, listenDone),
+        contextEntryAriaLabel: contextEntry.entryAriaLabel,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
         initialViewportReady: preparingInitialViewport ? false : this.data.initialViewportReady,
@@ -1308,17 +1394,101 @@ Page({
 
   noop() {},
 
-  onContextActionTap() { return this.onOpenTodayCompanion(); },
+  syncRoomContextEntry(extra) {
+    if (!this.data.pet) return;
+    const currentState = this.data.currentState;
+    const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
+    const listenDone = starAdapter.getActivityCompleted('listen');
+    const todayActivityKind = starAdapter.getTodayInvitationKind()
+      || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind)
+      || (listenDone ? 'listen' : null);
+    const atHome = Boolean(currentState && currentState.atHome);
+    const entry = roomContextEntry(this.data.pet, chatAccess, {
+      atHome,
+      todayActivityKind,
+      listenCompleted: listenDone && todayActivityKind === 'listen'
+    });
+    this.setData(Object.assign({
+      contextActionIcon: entry.icon,
+      contextActionLabel: entry.label,
+      contextActionHint: entry.hint,
+      contextActionDisabled: entry.disabled,
+      contextActionBadge: entry.badge,
+      contextEntryOpensChat: entry.opensChat,
+      contextEntryOpensListen: false,
+      contextEntryFlatEnvelope: entry.flatEnvelope,
+      contextEntryAriaLabel: entry.entryAriaLabel,
+      listenToolboxEntryVisible: listenToolboxEntryVisibleForRoom(atHome, todayActivityKind, listenDone)
+    }, extra || {}));
+  },
 
-  onCompanionChatTap() {
+  onOpenListenFromRoom() {
     if (this.data.companionNavigating) return;
+    this.returningFromChild = true;
+    this.setData({ companionNavigating: true });
+    wx.navigateTo({
+      url: '/pages/listen/listen',
+      success: () => { this.setData({ companionNavigating: false }); },
+      fail: () => {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false });
+        this.showSystemNotice('听你说没有打开，请重试', 'warning');
+      }
+    });
+  },
+
+  onOpenListenFromToolbox() {
+    this.onOpenToolboxActivity();
+  },
+
+  onOpenToolboxActivity() {
+    if (this.data.companionNavigating) return;
+    this.closeToolbox({ instant: true });
+    this.setData({ companionNavigating: true });
+    this.returningFromChild = true;
+    wx.navigateTo({
+      url: '/pages/iaa-activities/iaa-activities?entry=room',
+      success: () => { this.setData({ companionNavigating: false }); },
+      fail: () => {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false });
+        this.showSystemNotice('活动页没有打开，请重试', 'warning');
+      }
+    });
+  },
+
+  onOpenToolboxDiary() {
+    this.closeToolbox({ instant: true });
+    this.returningFromChild = true;
+    wx.navigateTo({
+      url: '/pages/collection-card/collection-card',
+      fail: () => {
+        this.returningFromChild = false;
+        this.showSystemNotice('日记没有打开，请重试', 'warning');
+      }
+    });
+  },
+
+  onOpenToolboxSettings() {
+    this.closeToolbox({ instant: true });
+    this.onOpenMySettings();
+  },
+
+  onContextActionTap() {
+    if (this.data.contextEntryOpensChat) return this.onCompanionChatTap({ fromRoomEntry: true });
+    return this.onOpenTodayCompanion();
+  },
+
+  onCompanionChatTap(event) {
+    if (this.data.companionNavigating) return;
+    const fromLetter = !(event && event.fromRoomEntry);
     const current = this.data.currentState;
     const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
     if (!current || !current.atHome) { this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info'); return; }
     if (!chatAccess || chatAccess.status !== 'available') { this.showSystemNotice(chatAccess && chatAccess.message || '聊天权限正在同步，请稍后再试。', 'warning'); return; }
     clearTimeout(this.companionRoleTimer);
     this.setData({ companionRoleEntering: false, companionNavigating: true });
-    this.returnToCompanion = true;
+    if (fromLetter) this.returnToCompanion = true;
     this.onCloseTodayCompanion();
     this.openChatPage(current);
   },
@@ -1330,9 +1500,24 @@ Page({
     try { wx.setStorageSync(this.companionSeenKey(), date); } catch (error) {}
   },
   letterProgressKey() { return `${this.companionSeenKey()}_progress`; },
-  readLetterProgress() {
+  readLetterProgress(activityKind) {
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    try { const value = wx.getStorageSync(this.letterProgressKey()) || this.letterProgress; return value && value.date === date ? value : {}; } catch (error) { return this.letterProgress && this.letterProgress.date === date ? this.letterProgress : {}; }
+    const kind = activityKind || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind);
+    const game = kind && companionActivities.byKind(kind);
+    const scope = starAdapter.getRoomScope();
+    if (game && scope) {
+      const progress = letterActivityProgress.read(scope, kind, date);
+      if (kind === 'listen') return Object.assign(progress, { available: false, tomorrow: false });
+      const available = progress.entered || starAdapter.getActivityCompleted(kind);
+      return Object.assign(progress, { available, tomorrow: available && progress.tomorrow });
+    }
+    let value;
+    try { value = wx.getStorageSync(this.letterProgressKey()) || this.letterProgress; } catch (error) { value = this.letterProgress; }
+    return { available: true, tomorrow: Boolean(value && value.date === date && value.tomorrow) };
+  },
+  syncLetterProgress() {
+    const progress = this.readLetterProgress();
+    this.setData({ todayCompanionTomorrowAvailable: progress.available, todayCompanionTomorrowVisible: progress.tomorrow, companionRoleEntering: false });
   },
   stopLetterArrival() {
     clearTimeout(this.letterArrivalTimer);
@@ -1351,7 +1536,8 @@ Page({
     const date = require('../../services/companion-star-rules').shanghaiDate();
     if (this.letterDate !== date) {
       this.letterDate = date;
-      this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow), companionRoleEntering: false, todayCompanionAwardedStars: 0 });
+      this.syncLetterProgress();
+      this.setData({ todayCompanionAwardedStars: 0 });
       // 已打开的旧信跨日更新内容，但不会自动把未打开的信展开。
       if (this.data.todayCompanionVisible) { this.setData({ todayCompanionVisible: false }); this.onOpenTodayCompanion(); }
     }
@@ -1375,11 +1561,62 @@ Page({
     } catch (error) { this.releaseLetterSound(); }
     this.letterArrivalTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionLetterArriving: false }); this.releaseLetterSound(); }, 1050);
   },
-  onToggleToolbox() { this.setData({ toolboxVisible: !this.data.toolboxVisible }); },
-  onOpenMemoryAlbum() {
-    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+  clearToolboxMotionTimer() {
+    clearTimeout(this.toolboxMotionTimer);
+    clearTimeout(this.toolboxChestTimer);
+    this.toolboxMotionTimer = null;
+    this.toolboxChestTimer = null;
+  },
+  closeToolbox(options) {
+    const instant = Boolean(options && options.instant) || this.data.reducedMotion;
+    this.clearToolboxMotionTimer();
+    if (!this.data.toolboxVisible && this.data.toolboxMotion === 'closed') return;
+    if (instant) {
+      this.setData({ toolboxVisible: false, toolboxMotion: 'closed', toolboxChestOpen: false, memoryGuideVisible: false });
+      return;
+    }
+    this.setData({ toolboxMotion: 'closing', toolboxChestOpen: false, memoryGuideVisible: false });
+    this.toolboxMotionTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxVisible: false, toolboxMotion: 'closed' });
+      this.toolboxMotionTimer = null;
+    }, 200);
+  },
+  startToolboxOpen() {
+    this.clearToolboxMotionTimer();
+    this.setData({ toolboxVisible: true, toolboxMotion: 'opening', toolboxChestOpen: false, memoryGuideVisible: false });
+    this.toolboxChestTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxChestOpen: true });
+      this.toolboxChestTimer = null;
+    }, 80);
+    this.toolboxMotionTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxMotion: 'open' });
+      this.toolboxMotionTimer = null;
+    }, 360);
+  },
+  onToggleToolbox() {
+    if (this.data.reducedMotion) {
+      const next = !this.data.toolboxVisible;
+      this.clearToolboxMotionTimer();
+      this.setData({
+        toolboxVisible: next,
+        toolboxMotion: next ? 'open' : 'closed',
+        toolboxChestOpen: next,
+        memoryGuideVisible: false
+      });
+      return;
+    }
+    if (this.data.toolboxMotion === 'opening' || this.data.toolboxMotion === 'closing') return;
+    if (this.data.toolboxVisible && this.data.toolboxMotion === 'open') this.closeToolbox();
+    else if (!this.data.toolboxVisible) this.startToolboxOpen();
+  },
+  onOpenMemoryAlbum(section) {
+    this.closeToolbox({ instant: true });
     this.returningFromChild = true;
-    wx.navigateTo({ url: '/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room',
+    const tab = section === 'activities' ? '&section=activities' : '';
+    wx.navigateTo({ url: `/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room${tab}`,
       success: result => {
         const photo = assets.resolveActionPanorama(this.data.pet, { atHome: true, key: 'window' }, this.data.dailyWindowEnvironment || {}, '');
         if (result && result.eventChannel) result.eventChannel.emit('roomActivityContext', { atHome: Boolean(this.data.currentState && this.data.currentState.atHome), teaImage: photo && photo.panorama || '' });
@@ -1399,8 +1636,10 @@ Page({
     const photo = this.data.pendingCompanionMemory;
     if (!photo) return;
     if (photo.source === 'paper') {
-      if (!this.data.companionPhotoReady || this.data.companionPhotoFailed || !starAdapter.collectPhoto(photo.id).ok) return;
-    } else if (!starAdapter.collectMemory(photo)) return;
+      if (!this.data.companionPhotoReady || this.data.companionPhotoFailed) return;
+      const result = starAdapter.collectPhoto(photo.id);
+      if (!result.ok) { this.showSystemNotice(result.error && result.error.message || '照片没有收好，请再试一次', 'warning'); return; }
+    } else if (!starAdapter.collectMemory(photo)) { this.showSystemNotice('刚才没有保存好，请再试一次。', 'warning'); return; }
     this.setData({ pendingCompanionMemory: null, memoryGuideVisible: !this.memoryGuideShown });
     this.memoryGuideShown = true;
     this.onCloseTodayCompanion();
@@ -1415,12 +1654,22 @@ Page({
     this.syncPendingPaperPhoto();
     if (this.data.todayCompanionInteractionPending || this.data.companionNavigating || this.data.pendingCompanionMemory) return;
     if (this.data.currentState && !this.data.currentState.atHome) return this.onTodayCompanionInteract();
+    const kind = this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || 'drawing';
+    const activity = companionActivities.byKind(kind);
+    if (!activity) return this.onTodayCompanionInteract();
+    const entryScope = starAdapter.getRoomScope();
+    const entryDate = require('../../services/companion-star-rules').shanghaiDate();
     this.returningFromChild = true;
     this.setData({ companionNavigating: true });
     wx.navigateTo({
-      url: '/pages/doodle/doodle?entry=companion',
+      url: activity.route,
+      success: () => {
+        if (entryScope !== starAdapter.getRoomScope() || entryDate !== require('../../services/companion-star-rules').shanghaiDate()) return;
+        letterActivityProgress.markEntered(entryScope, kind, entryDate);
+        this.syncLetterProgress();
+      },
       events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
-      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false }); this.showSystemNotice('画纸没有打开，请重试', 'warning'); }
+      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('活动没有打开，请重试', 'warning'); }
     });
   },
 
@@ -1656,7 +1905,15 @@ Page({
     this.pageActive = true;
     this.startClock();
     const date = require('../../services/companion-star-rules').shanghaiDate();
-    if (this.letterDate !== date) { this.letterDate = date; this.setData({ todayCompanionTomorrowVisible: Boolean(this.readLetterProgress().tomorrow) }); }
+    if (this.letterDate !== date) {
+      this.letterDate = date;
+      this.syncLetterProgress();
+      // 待收下作品仍留在原结果；普通昨日邀请改为今日活动。
+      if (this.data.todayCompanionVisible && !this.data.pendingCompanionMemory && !this.completedCompanionDrawing && !this.pendingCompanionResult) {
+        this.onCloseTodayCompanion();
+        this.onOpenTodayCompanion();
+      }
+    }
     this.setData({ companionNavigating: false, companionRoleEntering: false, todayCompanionAwardedStars: 0 });
     if (this.returnToCompanion) { this.returnToCompanion = false; this.onOpenTodayCompanion(); }
     if (this.pendingCompanionResult) {
@@ -1669,8 +1926,10 @@ Page({
       this.setData({
         todayCompanionStarView: result.data,
         companionDays: Number(result.data.star.companionDays || 0),
-        todayCompanionInteractionDone: Boolean(this.data.currentState && !this.data.currentState.atHome ? result.data.star.noteCollected : result.data.star.baseClaimed)
+        todayCompanionInteractionDone: starAdapter.getActivityCompleted(this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || (this.data.currentState && !this.data.currentState.atHome ? 'ordinary' : 'drawing'))
       });
+      this.syncLetterProgress();
+      this.syncRoomContextEntry();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {
@@ -1680,6 +1939,7 @@ Page({
         const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line: completion.drawingGift.line }) : memory;
         this.setData({ todayCompanionVisible: true, pendingCompanionMemory: completedMemory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: completedMemory.line, todayCompanionAwardedStars: completion.awardedStars });
         if (completion.awardedStars > 0) this.playStarAwardFeedback();
+        if (completion.streakInterrupted) this.showSystemNotice('连续天数中断了');
         return this.loadCompanionStar({ deferAward: true });
       });
     });
@@ -1687,6 +1947,10 @@ Page({
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
       this.returningFromChild = false;
+      const listenDone = starAdapter.getActivityCompleted('listen');
+      const listenKind = (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind === 'listen')
+        || starAdapter.getTodayInvitationKind() === 'listen';
+      if (listenDone && listenKind && this.data.todayCompanionVisible) this.onCloseTodayCompanion();
       this.loadSnapshot();
       return;
     }
@@ -1724,6 +1988,7 @@ Page({
   },
   onUnload() {
     this.pageActive = false;
+    this.clearToolboxMotionTimer();
     this.stopClock();
     clearTimeout(this.companionStarAwardTimer);
     this.releaseStarAwardSound();

@@ -98,7 +98,9 @@ Page({
           this.setData({ screenState: 'error', errorMessage: starResult.error.message, view: null, starView: null });
           return;
         }
-        const interactionDone = starResult.data.star.dailyClaimStatus !== 'AVAILABLE';
+        const kind = result.data.today && result.data.today.activityKind;
+        const star = starResult.data.star;
+        const interactionDone = Boolean(star.effectiveDone) || starAdapter.getActivityCompleted(kind || (this.data.selectedScenario === 'normal' ? 'drawing' : 'ordinary'));
         this.setData({
           screenState: 'ready',
           view: result.data,

@@ -31,14 +31,24 @@ assert.equal(/<canvas|\.gif/i.test(`${starTemplate}\n${starLogic}`), false, '星
 // 信件：星星宽 20vw，浮在信纸上方居中；信纸正文里不再有“✦ +1”行，overlay 内仍不直接渲染图片，也不新增文案。
 const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayTemplate = roomTemplate.slice(overlayStart, roomTemplate.indexOf('<daily-window-detail', overlayStart));
-const letterTemplate = overlayTemplate.slice(overlayTemplate.indexOf('class="today-companion-letter"'));
-assert.equal(overlayTemplate.includes('<companion-star mode="award" size="150"'), true, '收星星星宽 150rpx，即屏幕宽度 20%');
+const letterStart = overlayTemplate.search(/class="today-companion-letter(?:\s|")/);
+const letterTemplate = overlayTemplate.slice(letterStart);
+assert.equal(overlayTemplate.includes('<companion-star mode="award" size="280"'), true, '开信收星星星宽约 140px（280rpx）');
 assert.equal(overlayTemplate.includes('wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award'), true, '收星动效只在真实获得星星时挂载');
-assert.equal(overlayTemplate.indexOf('today-companion-award') < overlayTemplate.indexOf('class="today-companion-letter"'), true, '星星在信纸之外，不进入正文流');
+assert.equal(overlayTemplate.indexOf('today-companion-award') < letterStart, true, '星星在信纸之外，不进入正文流');
 assert.equal(/todayCompanionAwardedStars|companion-star|✦/.test(letterTemplate), false, '信纸正文内不再显示星星或“✦ +1”');
 assert.equal(overlayTemplate.includes('+{{todayCompanionAwardedStars}}'), true, '保留 +1 数字');
 assert.equal((starTemplate.match(/companion-star__spark--\d/g) || []).length, 7, '光点保持 7 个（5–8 范围内）');
-assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:150rpx;/, '星星绝对定位在信纸上方居中，不改变信纸排版');
+assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:280rpx;/, '开信星星绝对定位在信纸上方居中');
+assert.match(
+  roomStyles,
+  /\.today-companion-letter__game-action,.today-companion-letter__letter-action\{flex:0 1 560rpx;/,
+  '邀请信活动入口宽约 280px → 560rpx'
+);
+assert.match(roomStyles, /\.companion-memory-result__collect\{width:500rpx;/, '收下按钮保持 500rpx');
+assert.match(read('components/button/button.wxss'), /\.btn--small \{ height: 80rpx;/, '邀请信 small 按钮高度保持 80rpx');
+assert.match(read('components/button/button.wxss'), /\.btn--secondary \{[^}]*border: 3rpx solid #002900/, '邀请信 CTA 使用实线 #002900 描边');
+assert.equal(roomTemplate.includes('variant="secondary"'), true, '小游戏邀请信按钮走 secondary 实线描边');
 assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-companion-award-plus \.85s [^}]*\.88s both/, '+X 在弹出后约 0.88s 开始翻滚、约 2s 内落定');
 assert.match(starStyles, /companion-star-neutral-show 2s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
 assert.match(starStyles, /companion-star--award .companion-star__pose--neutral\{[^}]*2s/, '收星挤压弹出主节奏约 2 秒');
@@ -109,13 +119,14 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
     assert.equal(log.created, 1, '可收星时打开信件即预加载音效');
+    assert.equal(page.data.todayCompanionAwardedStars, 11, '开信发放当日基础星动效');
     const startedAt = Date.now();
-    await page.onTodayCompanionInteract();
-    assert.equal(page.data.todayCompanionAwardedStars, 10);
-    await page.onTodayCompanionInteract();
     await wait(950);
-    assert.equal(log.plays.length, 1, '成功收星只播放一次音效');
-    assert.equal(log.vibrations.length, 1, '成功收星只轻震一次');
+    assert.equal(log.plays.length, 1, '开信收星只播放一次音效');
+    assert.equal(log.vibrations.length, 1, '开信收星只轻震一次');
+    await page.onTodayCompanionInteract();
+    assert.equal(page.data.todayCompanionAwardedStars, 0, '外出收信互动不再重复发星');
+    await page.onTodayCompanionInteract();
     assert.equal(log.vibrations[0].type, 'light', '只使用轻档短震');
     assert.equal(log.plays[0].volume, 0.2, '初始音量 0.2，由 COO 真机调整');
     assert.equal(log.plays[0].src.endsWith('/companion-star/companion-star-award.mp3'), true);
@@ -147,6 +158,9 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page, fixture } = loadRoomPage(log);
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
+    page.clearStarAwardFeedback();
+    log.plays.length = 0;
+    log.vibrations.length = 0;
     page.setData({ todayCompanionStarView: fixture.starUnlockViewFor('ERROR') });
     const result = await page.onTodayCompanionInteract();
     assert.equal(result.ok, false);
@@ -162,7 +176,6 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page } = loadRoomPage(log);
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
-    await page.onTodayCompanionInteract();
     page.onHide();
     await wait(520);
     assert.equal(log.plays.length + log.vibrations.length, 0, '切后台后不得补播');
@@ -177,9 +190,8 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page } = loadRoomPage(log, { reducedMotion: true });
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
-    await page.onTodayCompanionInteract();
     await wait(520);
-    assert.equal(page.data.todayCompanionAwardedStars, 10);
+    assert.equal(page.data.todayCompanionAwardedStars, 11);
     assert.equal(log.plays.length, 1, '减少动态效果时仍按系统静音规则播放音效');
     assert.equal(log.vibrations.length, 0, '减少动态效果时不震动');
     page.onUnload();

@@ -1,0 +1,6 @@
+<image
+  class="companion-pet-portrait companion-pet-portrait--{{variant}}"
+  src="{{src}}"
+  mode="aspectFit"
+  aria-label="{{name}}"
+></image>

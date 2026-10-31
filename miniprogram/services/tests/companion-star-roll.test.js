@@ -20,6 +20,7 @@ assert.match(roomTemplate, /<companion-roll-number[^>]+value="\{\{companionStarR
 assert.match(roomTemplate, /companionStarGainLabel/, '滚变时须展示实际增量 +N');
 assert.match(roomLogic, /maybePlayRoomStarRoll/, '须在房间桌面就绪后再播滚变');
 assert.match(roomLogic, /canShowRoomStarRoll/, '滚变前须检查 overlay 与场景就绪');
-assert.equal(roomTemplate.includes('companion-balance__gain') && roomStyles.includes('#FFDD79'), true, '增量须为活动同款黄色');
+assert.match(roomStyles, /\.companion-balance__gain[\s\S]*?color:\s*#35483C/, '增量文字与余额数字同色，保证浅底可读');
+assert.match(roomStyles, /\.companion-balance__amount[\s\S]*?color:\s*#35483C/, '余额数字色');
 
 console.log('companion-star-roll 校验通过：加减余额滚变、房间模板与触发逻辑。');

@@ -61,6 +61,7 @@ assert.match(homeStyles, /\.home-status-stack \{[^}]*left: 24rpx;[^}]*align-item
 assert.match(homeStyles, /\.home-status-tab \{[^}]*margin-left: 0;/, '破壳前名字卡不得再单独向右偏移');
 assert.match(lifeSceneStyles, /\.life-status-stack\{[^}]*left:24rpx;[^}]*align-items:flex-start/, '破壳后名字卡与时钟必须继续共用 24rpx 左对齐线');
 assert.equal(componentTemplate.includes('pet-mood-tab__room-stars') && componentTemplate.includes('companion-roll-number'), true, '破壳后陪伴卡顶部必须使用滚变星星行');
+assert.equal(componentStyles.includes('pet-mood-tab__room-detail') && componentStyles.includes('pet-mood-tab__room-detail--open'), true, '破壳后名字与心情须用过渡收起而非瞬间移除');
 assert.equal(homeTemplate.includes('isDemo && pet && stage !== \'hatched\'') && lifeSceneTemplate.includes('class="mood-tester"'), true, '八种心情切换器必须限制在开发态');
 assert.equal(homeTemplate.includes('acceptanceToolsOpen') && homeTemplate.includes('onAcceptanceToolsToggle'), true, '首页开发态验收器必须默认收进单一入口');
 assert.equal(lifeSceneTemplate.includes('isDemo && acceptanceToolsOpen && currentState') && lifeSceneTemplate.includes('onAcceptanceToolsToggle'), true, '破壳后开发态验收器也必须默认收进单一入口');

@@ -13,14 +13,14 @@
       </view>
       <text class="pet-mood-tab__room-days">一起 {{companionDays}} 天</text>
     </view>
-    <block wx:if="{{roomCardPhase !== 'minimal'}}">
+    <view class="pet-mood-tab__room-detail {{roomCardPhase === 'minimal' ? '' : 'pet-mood-tab__room-detail--open'}}">
       <text class="pet-mood-tab__name">{{petName}}</text>
       <view class="pet-mood-tab__mood-summary pet-mood-tab__mood-summary--post-hatch">
         <text class="pet-mood-tab__eyebrow">今日心情：</text>
         <text class="pet-mood-tab__icon">{{mood.icon}}</text>
         <text class="pet-mood-tab__mood-label">{{mood.moodLabel}}</text>
       </view>
-    </block>
+    </view>
     <view wx:if="{{roomCardPhase === 'expanded'}}" class="pet-mood-tab__sentence {{contentVisible ? 'pet-mood-tab__sentence--visible' : ''}}" aria-hidden="{{!contentVisible}}">
       <text class="pet-mood-tab__text">{{mood.text}}</text>
       <text class="pet-mood-tab__ai-label">内容由 AI 生成</text>

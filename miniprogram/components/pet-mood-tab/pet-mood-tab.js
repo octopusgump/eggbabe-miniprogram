@@ -3,6 +3,7 @@ const CONTENT_REVEAL_DELAY_MS = 90;
 const COLLAPSE_WIDTH_DELAY_MS = 160;
 const POST_HATCH_SUMMARY_HOLD_MS = 7000;
 const POST_HATCH_EXPANDED_HOLD_MS = 7000;
+const POST_HATCH_COLLAPSE_MS = 460;
 
 function appGlobalData() {
   try {
@@ -128,7 +129,7 @@ Component({
         this.postHatchSummaryTimer = null;
         if (!this.componentAttached || this.properties.overlayLocked) return;
         if (this.data.roomCardPhase !== 'summary') return;
-        this.collapsePostHatchToMinimal(true);
+        this.collapsePostHatchToMinimal(false);
       }, POST_HATCH_SUMMARY_HOLD_MS);
     },
 
@@ -153,7 +154,7 @@ Component({
           if (this.componentAttached) {
             this.setData({ roomCardPhase: 'minimal', expanded: false });
           }
-        }, COLLAPSE_WIDTH_DELAY_MS);
+        }, POST_HATCH_COLLAPSE_MS);
         return;
       }
       this.setData({
@@ -274,5 +275,6 @@ module.exports = {
   CONTENT_REVEAL_DELAY_MS,
   COLLAPSE_WIDTH_DELAY_MS,
   POST_HATCH_SUMMARY_HOLD_MS,
-  POST_HATCH_EXPANDED_HOLD_MS
+  POST_HATCH_EXPANDED_HOLD_MS,
+  POST_HATCH_COLLAPSE_MS
 };

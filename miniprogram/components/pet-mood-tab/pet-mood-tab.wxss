@@ -26,22 +26,25 @@
 @media (max-width:340px){.pet-mood-tab--expanded{width:352rpx}.pet-mood-tab--compact{width:218rpx}.pet-mood-tab__text{font-size:20rpx}}
 @media (prefers-reduced-motion:reduce){.pet-mood-tab{transition:none}}
 @keyframes pet-mood-star-rise{from{opacity:0;transform:translateY(7rpx) scale(.86)}to{opacity:1;transform:translateY(0) scale(1)}}
-.pet-mood-tab--post-hatch{width:auto;min-width:160rpx;max-width:408rpx;padding:22rpx 26rpx;border:1rpx solid rgba(225,229,215,.95);border-radius:28rpx;background:rgba(255,253,247,.92);box-shadow:0 6rpx 18rpx rgba(37,46,35,.08),inset 0 1rpx 0 rgba(255,255,255,.58);transform-origin:left center}
+.pet-mood-tab--post-hatch{width:auto;min-width:160rpx;max-width:408rpx;padding:22rpx 26rpx;border:1rpx solid rgba(225,229,215,.95);border-radius:28rpx;background:rgba(255,253,247,.92);box-shadow:0 6rpx 18rpx rgba(37,46,35,.08),inset 0 1rpx 0 rgba(255,255,255,.58);transform-origin:left top;overflow:hidden;transition:max-width 480ms cubic-bezier(.16,1,.3,1),padding 480ms cubic-bezier(.16,1,.3,1),border-radius 360ms cubic-bezier(.16,1,.3,1),box-shadow 360ms ease}
 .pet-mood-tab--post-hatch.pet-mood-tab--compact{max-width:320rpx}
 .pet-mood-tab--post-hatch.pet-mood-tab--expanded{width:408rpx;max-width:408rpx;padding:22rpx 26rpx 20rpx}
 .pet-mood-tab--post-hatch.pet-mood-tab--star-award{animation:pet-mood-room-award 520ms ease-out both}
-.pet-mood-tab__room-header{margin-bottom:14rpx}
+.pet-mood-tab__room-header{margin-bottom:14rpx;transition:margin-bottom 420ms cubic-bezier(.16,1,.3,1)}
 .pet-mood-tab__room-header--minimal{margin-bottom:0}
 .pet-mood-tab--post-hatch.pet-mood-tab--room-minimal{max-width:220rpx;padding:16rpx 22rpx}
 .pet-mood-tab--post-hatch.pet-mood-tab--room-summary{max-width:320rpx}
+.pet-mood-tab__room-detail{max-height:0;opacity:0;overflow:hidden;transform:translate3d(0,-10rpx,0);transition:max-height 460ms cubic-bezier(.16,1,.3,1),opacity 340ms cubic-bezier(.16,1,.3,1),transform 460ms cubic-bezier(.16,1,.3,1),margin-top 420ms cubic-bezier(.16,1,.3,1)}
+.pet-mood-tab__room-detail--open{max-height:160rpx;opacity:1;transform:translate3d(0,0,0)}
 .pet-mood-tab__room-stars{display:flex;align-items:center;gap:12rpx;font-size:42rpx;font-weight:600;color:#35483C}
 .pet-mood-tab__room-amount{font-size:42rpx;font-weight:600;color:#35483C}
 .pet-mood-tab__room-gain{margin-left:4rpx;font-size:28rpx;font-weight:600;line-height:1;color:#35483C;animation:pet-mood-room-gain-pop .72s ease-out both}
 .pet-mood-tab__room-days{display:block;margin-top:8rpx;font-size:23rpx;color:#5A675E}
 .pet-mood-tab--post-hatch .pet-mood-tab__name{margin-top:0;font-size:32rpx;color:#002900}
 .pet-mood-tab--post-hatch .pet-mood-tab__mood-summary--post-hatch{margin-top:6rpx}
-.pet-mood-tab--post-hatch .pet-mood-tab__sentence{width:0;max-height:0;margin-top:0}
+.pet-mood-tab--post-hatch .pet-mood-tab__sentence{width:0;max-height:0;margin-top:0;opacity:0;transform:translate3d(0,-8rpx,0);transition:max-height 420ms cubic-bezier(.16,1,.3,1),margin-top 420ms cubic-bezier(.16,1,.3,1),opacity 320ms cubic-bezier(.16,1,.3,1),transform 420ms cubic-bezier(.16,1,.3,1)}
 .pet-mood-tab--post-hatch.pet-mood-tab--expanded .pet-mood-tab__sentence{width:auto;max-width:100%}
-.pet-mood-tab--post-hatch .pet-mood-tab__sentence--visible{margin-top:12rpx;max-height:120rpx}
+.pet-mood-tab--post-hatch .pet-mood-tab__sentence--visible{max-height:140rpx;margin-top:12rpx;opacity:1;transform:translate3d(0,0,0)}
+.pet-mood-tab--post-hatch.pet-mood-tab--reduced,.pet-mood-tab--post-hatch.pet-mood-tab--reduced .pet-mood-tab__room-detail,.pet-mood-tab--post-hatch.pet-mood-tab--reduced .pet-mood-tab__room-header,.pet-mood-tab--post-hatch.pet-mood-tab--reduced .pet-mood-tab__sentence{transition:none}
 @keyframes pet-mood-room-gain-pop{0%{opacity:0;transform:translate3d(0,8rpx,0) scale(.88)}40%{opacity:1;transform:translate3d(0,-4rpx,0) scale(1.04)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
 @keyframes pet-mood-room-award{0%{transform:scale(1)}35%{transform:scale(1.02)}100%{transform:scale(1)}}

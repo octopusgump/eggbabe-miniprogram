@@ -7,7 +7,7 @@ const stars = require('../../services/iaa-star-unlock-adapter');
 const SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
 Page({
-  data: { view: 'loading', title: '', question: null, questionNumber: 1, progress: 0, selected: '', supplement: '', noteOpen: false,
+  data: { view: 'loading', navTitle: '听你说', title: '', question: null, questionNumber: 1, progress: 0, selected: '', supplement: '', noteOpen: false,
     error: '', busy: false, categories: [], petImage: '', petName: '', feedback: '', awardedStars: 0, awardVisible: false, rewardLabel: '', reducedMotion: false },
   currentPet() {
     const stored = petStore.getPet();
@@ -24,6 +24,13 @@ Page({
     try { const system = wx.getSystemSetting ? wx.getSystemSetting() : wx.getSystemInfoSync(); reducedMotion = Boolean(system.reducedMotion || system.enableReduceMotion); } catch (error) {}
     this.setData({ petImage: companionPetImage.resolveCompanionPetImage(pet), petName: pet.name || pet.nickname || pet.prototype || '蛋宝宝', reducedMotion });
     this.openCurrent();
+    this.syncNavTitle();
+  },
+  syncNavTitle() {
+    if (!this.scope) return;
+    const state = adapter.getState().data;
+    const navTitle = !state.categories.length && state.completedToday ? '明天再来' : '听你说';
+    if (this.data.navTitle !== navTitle) this.setData({ navTitle });
   },
   onShow() {
     this.pageActive = true;
@@ -36,6 +43,7 @@ Page({
     if (this.data.view === 'choices') this.showChoices();
     if (this.data.view === 'feedback') this.setData({ categories: adapter.getState().data.categories });
     if (this.data.view === 'end' && adapter.getState().data.categories.length) this.openCurrent();
+    this.syncNavTitle();
   },
   openCurrent() {
     const state = adapter.getState().data;
@@ -66,6 +74,7 @@ Page({
     this.setData({ view: 'question', title: entry.group.title, contextNote: entry.group.contextNote, question,
       questionNumber: this.draft.questionIndex + 1, progress: this.draft.questionIndex * 20,
       selected: answer.optionId || '', supplement: answer.text || '', noteOpen: Boolean(answer.text || answer.optionId && question.options[4].id === answer.optionId), scrollTarget: '', error: '', busy: false, scrollTop: 0 });
+    this.syncNavTitle();
   },
   saveCurrent() {
     if (!this.draft || this.data.view !== 'question' || stars.getRoomScope() !== this.scope) return { ok: true };
@@ -117,6 +126,7 @@ Page({
       awardVisible: stars > 0, rewardLabel: stars > 0 ? '' : '谢谢你说给我听',
       categories: adapter.getState().data.categories, error: '', busy: false
     });
+    this.syncNavTitle();
     if (stars > 0) this.playAward();
   },
   onContinue() {
@@ -131,6 +141,7 @@ Page({
     if (!state.categories.length) { this.showEnd(state); return; }
     if (!state.completedToday) { this.startGroup(); return; }
     this.setData({ view: 'choices', categories: state.categories, error: '' });
+    this.syncNavTitle();
   },
   showEnd(state) {
     let title = '今天先聊到这里';
@@ -143,6 +154,7 @@ Page({
       endText = '';
     }
     this.setData({ view: 'end', title, endText, error: '', busy: false });
+    this.syncNavTitle();
   },
   onBack() {
     if (!this.saveCurrent().ok) return false;

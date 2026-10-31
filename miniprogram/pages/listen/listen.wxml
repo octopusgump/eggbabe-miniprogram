@@ -1,5 +1,5 @@
 <view class="page">
-  <nav-bar title="听你说" fallback-url="/pages/home/home" custom-back="{{true}}" bind:back="onReturnRoom"></nav-bar>
+  <nav-bar title="{{navTitle}}" fallback-url="/pages/home/home" custom-back="{{true}}" bind:back="onReturnRoom"></nav-bar>
   <block wx:if="{{view === 'question'}}">
     <view class="progress-area">
       <view class="meta"><text class="kicker">{{title}}</text><text class="count">{{questionNumber}} / 5</text></view>
@@ -37,7 +37,7 @@
             <image class="feedback-reward-spark feedback-reward-spark--1" src="/assets/icons/listen-thank-spark-1-v02.png" mode="aspectFit" aria-hidden="true"></image>
             <image class="feedback-reward-spark feedback-reward-spark--2" src="/assets/icons/listen-thank-spark-2-v02.png" mode="aspectFit" aria-hidden="true"></image>
             <image class="feedback-reward-spark feedback-reward-spark--3" src="/assets/icons/listen-thank-spark-3-v02.png" mode="aspectFit" aria-hidden="true"></image>
-            <text class="feedback-reward-label__copy">{{rewardLabel}}</text>
+            <text class="feedback-reward-label__copy">{{rewardLabel}}<text class="feedback-reward-dots" aria-hidden="true"> ✦</text></text>
           </view>
           <companion-pet-portrait src="{{petImage}}" name="{{petName}}" variant="feedback"></companion-pet-portrait>
         </view>

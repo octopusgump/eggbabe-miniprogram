@@ -15,6 +15,7 @@ const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
 const letterActivityProgress = require('../../services/companion-letter-progress');
+const listenAdapter = require('../../services/listen-adapter');
 const companionPetImage = require('../../utils/companion-pet-image');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
@@ -237,20 +238,42 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
+function listenRoomHasMoreCategories() {
+  const kind = starAdapter.getTodayInvitationKind();
+  if (kind !== 'listen' || !starAdapter.getActivityCompleted('listen')) return false;
+  const state = listenAdapter.getState();
+  return Boolean(state.ok && state.data && state.data.categories.length && !state.data.exhausted);
+}
+
 function roomContextEntry(pet, chatAccess, options) {
   const input = options || {};
   const atHome = Boolean(input.atHome);
   const kind = input.todayActivityKind;
   const listenCompleted = kind === 'listen' && input.listenCompleted;
   if (atHome && listenCompleted) {
+    const petIcon = companionPetImage.resolveCompanionPetImage(pet);
+    if (input.listenHasMoreCategories) {
+      return {
+        icon: petIcon,
+        label: '继续听你说',
+        hint: '',
+        disabled: false,
+        badge: '',
+        opensChat: false,
+        opensListen: true,
+        flatEnvelope: false,
+        entryAriaLabel: '继续听你说'
+      };
+    }
     const chat = contextActionPresentation(pet, chatAccess);
     return {
-      icon: companionPetImage.resolveCompanionPetImage(pet),
+      icon: petIcon,
       label: chat.label,
       hint: chat.hint,
       disabled: chat.disabled,
       badge: chat.badge,
       opensChat: true,
+      opensListen: false,
       flatEnvelope: false,
       entryAriaLabel: '和蛋宝宝说话'
     };
@@ -262,6 +285,7 @@ function roomContextEntry(pet, chatAccess, options) {
     disabled: false,
     badge: '',
     opensChat: false,
+    opensListen: false,
     flatEnvelope: true,
     entryAriaLabel: '读信'
   };
@@ -382,6 +406,7 @@ Page({
     contextActionDisabled: true,
     contextActionBadge: '',
     contextEntryOpensChat: false,
+    contextEntryOpensListen: false,
     contextEntryFlatEnvelope: true,
     contextEntryAriaLabel: '读信',
     mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
@@ -541,6 +566,10 @@ Page({
   onOpenTodayCompanion() {
     this.syncPendingPaperPhoto();
     if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
+    if (this.data.currentState && this.data.currentState.atHome && starAdapter.getTodayInvitationKind() === 'listen' && starAdapter.getActivityCompleted('listen')) {
+      if (listenRoomHasMoreCategories()) return Promise.resolve(this.onOpenListenFromRoom());
+      return Promise.resolve(this.onCompanionChatTap());
+    }
     this.companionOpening = true;
     analytics.track('room_element_interaction', {
       element_id: 'today_companion_entry',
@@ -750,7 +779,8 @@ Page({
       const contextEntry = roomContextEntry(this.data.pet, snapshot.chatAccess, {
         atHome: currentState.atHome,
         todayActivityKind,
-        listenCompleted: listenDone && todayActivityKind === 'listen'
+        listenCompleted: listenDone && todayActivityKind === 'listen',
+        listenHasMoreCategories: listenDone && todayActivityKind === 'listen' && listenRoomHasMoreCategories()
       });
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
@@ -775,6 +805,7 @@ Page({
         contextActionDisabled: contextEntry.disabled,
         contextActionBadge: contextEntry.badge,
         contextEntryOpensChat: contextEntry.opensChat,
+        contextEntryOpensListen: contextEntry.opensListen,
         contextEntryFlatEnvelope: contextEntry.flatEnvelope,
         contextEntryAriaLabel: contextEntry.entryAriaLabel,
         currentScreen: screen,
@@ -1382,7 +1413,8 @@ Page({
     const entry = roomContextEntry(this.data.pet, chatAccess, {
       atHome: currentState && currentState.atHome,
       todayActivityKind,
-      listenCompleted: listenDone && todayActivityKind === 'listen'
+      listenCompleted: listenDone && todayActivityKind === 'listen',
+      listenHasMoreCategories: listenDone && todayActivityKind === 'listen' && listenRoomHasMoreCategories()
     });
     this.setData(Object.assign({
       contextActionIcon: entry.icon,
@@ -1391,12 +1423,29 @@ Page({
       contextActionDisabled: entry.disabled,
       contextActionBadge: entry.badge,
       contextEntryOpensChat: entry.opensChat,
+      contextEntryOpensListen: entry.opensListen,
       contextEntryFlatEnvelope: entry.flatEnvelope,
       contextEntryAriaLabel: entry.entryAriaLabel
     }, extra || {}));
   },
 
+  onOpenListenFromRoom() {
+    if (this.data.companionNavigating) return;
+    this.returningFromChild = true;
+    this.setData({ companionNavigating: true });
+    wx.navigateTo({
+      url: '/pages/listen/listen',
+      success: () => { this.setData({ companionNavigating: false }); },
+      fail: () => {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false });
+        this.showSystemNotice('听你说没有打开，请重试', 'warning');
+      }
+    });
+  },
+
   onContextActionTap() {
+    if (this.data.contextEntryOpensListen) return this.onOpenListenFromRoom();
     if (this.data.contextEntryOpensChat) return this.onCompanionChatTap();
     return this.onOpenTodayCompanion();
   },

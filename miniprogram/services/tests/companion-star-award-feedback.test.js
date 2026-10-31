@@ -119,13 +119,14 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
     assert.equal(log.created, 1, '可收星时打开信件即预加载音效');
+    assert.equal(page.data.todayCompanionAwardedStars, 11, '开信发放当日基础星动效');
     const startedAt = Date.now();
-    await page.onTodayCompanionInteract();
-    assert.equal(page.data.todayCompanionAwardedStars, 10);
-    await page.onTodayCompanionInteract();
     await wait(950);
-    assert.equal(log.plays.length, 1, '成功收星只播放一次音效');
-    assert.equal(log.vibrations.length, 1, '成功收星只轻震一次');
+    assert.equal(log.plays.length, 1, '开信收星只播放一次音效');
+    assert.equal(log.vibrations.length, 1, '开信收星只轻震一次');
+    await page.onTodayCompanionInteract();
+    assert.equal(page.data.todayCompanionAwardedStars, 0, '外出收信互动不再重复发星');
+    await page.onTodayCompanionInteract();
     assert.equal(log.vibrations[0].type, 'light', '只使用轻档短震');
     assert.equal(log.plays[0].volume, 0.2, '初始音量 0.2，由 COO 真机调整');
     assert.equal(log.plays[0].src.endsWith('/companion-star/companion-star-award.mp3'), true);
@@ -157,6 +158,9 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page, fixture } = loadRoomPage(log);
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
+    page.clearStarAwardFeedback();
+    log.plays.length = 0;
+    log.vibrations.length = 0;
     page.setData({ todayCompanionStarView: fixture.starUnlockViewFor('ERROR') });
     const result = await page.onTodayCompanionInteract();
     assert.equal(result.ok, false);
@@ -172,7 +176,6 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page } = loadRoomPage(log);
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
-    await page.onTodayCompanionInteract();
     page.onHide();
     await wait(520);
     assert.equal(log.plays.length + log.vibrations.length, 0, '切后台后不得补播');
@@ -187,9 +190,8 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
     const { page } = loadRoomPage(log, { reducedMotion: true });
     await page.loadCompanionStar();
     await page.onOpenTodayCompanion();
-    await page.onTodayCompanionInteract();
     await wait(520);
-    assert.equal(page.data.todayCompanionAwardedStars, 10);
+    assert.equal(page.data.todayCompanionAwardedStars, 11);
     assert.equal(log.plays.length, 1, '减少动态效果时仍按系统静音规则播放音效');
     assert.equal(log.vibrations.length, 0, '减少动态效果时不震动');
     page.onUnload();

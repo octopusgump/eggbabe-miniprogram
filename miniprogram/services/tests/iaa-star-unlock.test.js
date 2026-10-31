@@ -51,7 +51,7 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomLogic.includes("require('../../services/iaa-star-unlock-adapter')") && roomLogic.includes('loadCompanionStar()'), true, '房间页必须从统一 adapter 读取星星');
   assert.equal(roomLogic.includes("query.entry === 'iaa-core-review'") && roomLogic.includes('coreReviewPreviewPet()'), true, '开发验收入口必须能用内存 fixture 直达房间，不写入绑定数据');
   assert.ok(roomTemplate.includes('companion-balance__stars') && roomTemplate.includes('companionDays'), '左上角只显示星星与一起 X 天');
-  assert.ok(roomTemplate.includes('bindtap="onContextActionTap"') && roomLogic.includes('onContextActionTap() { return this.onOpenTodayCompanion(); }'), '左下头像打开陪伴浮层');
+  assert.ok(roomTemplate.includes('bindtap="onContextActionTap"') && roomLogic.includes('contextEntryOpensListen') && roomLogic.includes('onOpenListenFromRoom'), '左下入口按状态开信、继续听你说或进聊天');
   assert.equal(roomLogic.includes("require('../../services/iaa-today-companion-adapter')") && roomLogic.includes("element_id: 'today_companion_entry'"), true, '房间入口必须在原场景读取今日陪伴内容并记录入口点击');
   assert.equal(roomLogic.includes('todayCompanionVisible: true') && roomLogic.includes('starAdapter.recordCompanion(starView,'), true, '房间 overlay 必须承接陪伴操作与同一份星星状态');
   assert.equal(roomLogic.includes('starAdapter.recordLetterOpen'), true, '开信必须调用 recordLetterOpen 记一起 X 天');

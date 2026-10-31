@@ -94,6 +94,7 @@ async function runLoop(envVersion) {
   snapshot.opened = page.data.todayCompanionVisible === true && Boolean(page.data.todayCompanionView);
   snapshot.tomorrowVisibleInitially = page.data.todayCompanionTomorrowVisible;
   snapshot.tomorrowQuestionAvailable = Boolean(page.data.todayCompanionView && page.data.todayCompanionView.today.tomorrowHint);
+  snapshot.letterOpenAward = page.data.todayCompanionAwardedStars;
 
   await page.onTodayCompanionInteract();
   snapshot.letterAward = page.data.todayCompanionAwardedStars;
@@ -132,10 +133,11 @@ async function runLoop(envVersion) {
     assert.equal(result.balanceBefore, 2, `${result.envVersion} 房间左上角显示当前星星`);
     assert.equal(result.tomorrowVisibleInitially, false, `${result.envVersion} 明日内容初始不展开`);
     assert.equal(result.tomorrowQuestionAvailable, true, `${result.envVersion} “明天呢？”初始可见`);
-    assert.equal(result.letterAward, 10, `${result.envVersion} 完成陪伴后信件显示 +10`);
+    assert.equal(result.letterOpenAward, 11, `${result.envVersion} 开信显示当日基础星动效`);
+    assert.equal(result.letterAward, 0, `${result.envVersion} 外出收信互动不再重复发星`);
     assert.equal(result.roomAwardWhileOpen, false, `${result.envVersion} 信件未关闭前房间 +1 先保留`);
     assert.equal(result.tomorrowAfterInteract, false, `${result.envVersion} 完成陪伴不得自动展开明日内容`);
-    assert.equal(result.balanceAfter, 12, `${result.envVersion} 星星累计更新`);
+    assert.equal(result.balanceAfter, 13, `${result.envVersion} 星星累计更新`);
     assert.equal(result.closed, true);
     assert.equal(result.roomAwardAfterClose, false, `${result.envVersion} 关闭信件不再重复播放得星效果`);
     assert.equal(result.tomorrowRevealed, true, `${result.envVersion} 点击“明天呢？”展开一句明日内容`);

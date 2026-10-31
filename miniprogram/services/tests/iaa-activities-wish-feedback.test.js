@@ -15,7 +15,8 @@ assert.match(logic, /onTapComingSoonCta[\s\S]*openComingSoonModal\(item\)/, '想
 assert.match(logic, /onTapComingSoonWish\(event\)\s*\{[\s\S]*playWishPlusOne\(key\)/, '白区点击必须触发 +1 动画');
 
 assert.match(wxss, /\.activities-row__wish--active\s*\{[^}]*background:\s*#E6EED0/, '按下时白区必须变为浅绿底');
-assert.match(wxss, /\.activities-wish-float\s*\{[^}]*animation:\s*activities-wish-float 800ms/, '+1 上浮动画总时长约 800ms');
-assert.match(wxss, /@keyframes activities-wish-plus-flash/, '+1 上浮过程中必须闪烁');
+assert.equal(wxml.includes('activities-wish-float__spark--1">✦'), true, '+1 须带 Figma 03.04 星光 ✦ 点缀');
+assert.match(wxss, /\.activities-wish-float__plus[\s\S]*activities-wish-plus-0304 800ms/, '+1 动效总时长约 800ms');
+assert.match(wxss, /@keyframes activities-wish-plus-0304[\s\S]*12%[\s\S]*80%[\s\S]*opacity:\s*0\.35/, '160–640ms 须三次闪烁关帧');
 
 console.log('活动页 03.04 想玩 +1 关帧校验通过。');

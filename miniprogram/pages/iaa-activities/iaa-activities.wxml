@@ -50,10 +50,8 @@
             <block wx:for="{{wishBursts}}" wx:key="id" wx:for-item="burst">
               <view wx:if="{{burst.key === item.key}}" class="activities-wish-float" aria-hidden="true">
                 <text class="activities-wish-float__plus">+1</text>
-                <view class="activities-wish-float__spark activities-wish-float__spark--1"></view>
-                <view class="activities-wish-float__spark activities-wish-float__spark--2"></view>
-                <view class="activities-wish-float__spark activities-wish-float__spark--3"></view>
-                <view class="activities-wish-float__spark activities-wish-float__spark--4"></view>
+                <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
+                <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
               </view>
             </block>
           </view>

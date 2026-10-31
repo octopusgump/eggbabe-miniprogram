@@ -238,6 +238,7 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
+// 听你说首组完成后：左下改为宠物入口；当天仍有未答类别时，再次点击进听你说页（不展开已完成信卡）。
 function listenRoomHasMoreCategories() {
   const kind = starAdapter.getTodayInvitationKind();
   if (kind !== 'listen' || !starAdapter.getActivityCompleted('listen')) return false;

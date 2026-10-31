@@ -238,7 +238,7 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
-// 听你说首组完成后：左下改为宠物入口；当天仍有未答类别时，再次点击进听你说页（不展开已完成信卡）。
+// 听你说首组完成后：左下仅宠物聊天；当天仍有未答类别时，从百宝箱再进听你说页。
 function listenRoomHasMoreCategories() {
   const kind = starAdapter.getTodayInvitationKind();
   if (kind !== 'listen' || !starAdapter.getActivityCompleted('listen')) return false;
@@ -252,23 +252,9 @@ function roomContextEntry(pet, chatAccess, options) {
   const kind = input.todayActivityKind;
   const listenCompleted = kind === 'listen' && input.listenCompleted;
   if (atHome && listenCompleted) {
-    const petIcon = companionPetImage.resolveCompanionPetImage(pet);
-    if (input.listenHasMoreCategories) {
-      return {
-        icon: petIcon,
-        label: '继续听你说',
-        hint: '',
-        disabled: false,
-        badge: '',
-        opensChat: false,
-        opensListen: true,
-        flatEnvelope: false,
-        entryAriaLabel: '继续听你说'
-      };
-    }
     const chat = contextActionPresentation(pet, chatAccess);
     return {
-      icon: petIcon,
+      icon: companionPetImage.resolveCompanionPetImage(pet),
       label: chat.label,
       hint: chat.hint,
       disabled: chat.disabled,
@@ -408,6 +394,8 @@ Page({
     contextActionBadge: '',
     contextEntryOpensChat: false,
     contextEntryOpensListen: false,
+    listenToolboxEntryVisible: false,
+    listenToolboxIcon: companionActivities.byKind('listen') && companionActivities.byKind('listen').icon || '',
     contextEntryFlatEnvelope: true,
     contextEntryAriaLabel: '读信',
     mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
@@ -568,7 +556,6 @@ Page({
     this.syncPendingPaperPhoto();
     if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
     if (this.data.currentState && this.data.currentState.atHome && starAdapter.getTodayInvitationKind() === 'listen' && starAdapter.getActivityCompleted('listen')) {
-      if (listenRoomHasMoreCategories()) return Promise.resolve(this.onOpenListenFromRoom());
       return Promise.resolve(this.onCompanionChatTap({ fromRoomEntry: true }));
     }
     this.companionOpening = true;
@@ -780,8 +767,7 @@ Page({
       const contextEntry = roomContextEntry(this.data.pet, snapshot.chatAccess, {
         atHome: currentState.atHome,
         todayActivityKind,
-        listenCompleted: listenDone && todayActivityKind === 'listen',
-        listenHasMoreCategories: listenDone && todayActivityKind === 'listen' && listenRoomHasMoreCategories()
+        listenCompleted: listenDone && todayActivityKind === 'listen'
       });
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
@@ -806,8 +792,9 @@ Page({
         contextActionDisabled: contextEntry.disabled,
         contextActionBadge: contextEntry.badge,
         contextEntryOpensChat: contextEntry.opensChat,
-        contextEntryOpensListen: contextEntry.opensListen,
+        contextEntryOpensListen: false,
         contextEntryFlatEnvelope: contextEntry.flatEnvelope,
+        listenToolboxEntryVisible: currentState.atHome && todayActivityKind === 'listen' && listenDone && listenRoomHasMoreCategories(),
         contextEntryAriaLabel: contextEntry.entryAriaLabel,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
@@ -1411,11 +1398,11 @@ Page({
     const todayActivityKind = starAdapter.getTodayInvitationKind()
       || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind)
       || (listenDone ? 'listen' : null);
+    const atHome = Boolean(currentState && currentState.atHome);
     const entry = roomContextEntry(this.data.pet, chatAccess, {
-      atHome: currentState && currentState.atHome,
+      atHome,
       todayActivityKind,
-      listenCompleted: listenDone && todayActivityKind === 'listen',
-      listenHasMoreCategories: listenDone && todayActivityKind === 'listen' && listenRoomHasMoreCategories()
+      listenCompleted: listenDone && todayActivityKind === 'listen'
     });
     this.setData(Object.assign({
       contextActionIcon: entry.icon,
@@ -1424,9 +1411,10 @@ Page({
       contextActionDisabled: entry.disabled,
       contextActionBadge: entry.badge,
       contextEntryOpensChat: entry.opensChat,
-      contextEntryOpensListen: entry.opensListen,
+      contextEntryOpensListen: false,
       contextEntryFlatEnvelope: entry.flatEnvelope,
-      contextEntryAriaLabel: entry.entryAriaLabel
+      contextEntryAriaLabel: entry.entryAriaLabel,
+      listenToolboxEntryVisible: atHome && todayActivityKind === 'listen' && listenDone && listenRoomHasMoreCategories()
     }, extra || {}));
   },
 
@@ -1445,8 +1433,12 @@ Page({
     });
   },
 
+  onOpenListenFromToolbox() {
+    this.setData({ toolboxVisible: false });
+    this.onOpenListenFromRoom();
+  },
+
   onContextActionTap() {
-    if (this.data.contextEntryOpensListen) return this.onOpenListenFromRoom();
     if (this.data.contextEntryOpensChat) return this.onCompanionChatTap({ fromRoomEntry: true });
     return this.onOpenTodayCompanion();
   },

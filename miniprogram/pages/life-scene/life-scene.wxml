@@ -140,15 +140,18 @@
     </view>
 
     <view wx:if="{{toolboxVisible}}" class="toolbox-dismiss" bindtap="onToggleToolbox"></view>
-    <view wx:if="{{toolboxVisible}}" class="companion-toolbox" catchtap="noop">
-      <view wx:if="{{listenToolboxEntryVisible}}" class="companion-toolbox__item" aria-role="button" aria-label="听你说" bindtap="onOpenListenFromToolbox"><image src="{{listenToolboxIcon}}" mode="aspectFit"></image><text>听你说</text></view>
-      <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
-    </view>
     <view wx:if="{{memoryGuideVisible}}" class="companion-memory-guide" bindtap="onToggleToolbox">打开百宝箱，看看回忆</view>
     <view class="scene-action-dock">
-      <view class="scene-action-button companion-toolbox-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开百宝箱" bindtap="onToggleToolbox"><image class="scene-action-icon-image" src="{{toolboxIcon}}" mode="aspectFit"></image></view>
-      <view class="scene-action-button" hover-class="scene-action-button--pressed" aria-role="button" aria-label="打开我的和设置" bindtap="onOpenMySettings">
-        <image class="scene-action-icon-image" src="{{mySettingsIcon}}" mode="aspectFit"></image>
+      <view class="companion-toolbox-stack">
+        <view class="companion-toolbox {{toolboxVisible ? 'companion-toolbox--open' : ''}}" catchtap="noop" aria-hidden="{{!toolboxVisible}}">
+          <view class="companion-toolbox__grid">
+            <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
+            <view class="companion-toolbox__item" aria-role="button" aria-label="打开日记" bindtap="onOpenToolboxDiary"><image src="{{toolboxDiaryIcon}}" mode="aspectFit"></image><text>日记</text></view>
+            <view class="companion-toolbox__item" aria-role="button" aria-label="打开活动" bindtap="onOpenToolboxActivity"><image src="{{toolboxActivityIcon}}" mode="aspectFit"></image><text>活动</text></view>
+            <view class="companion-toolbox__item" aria-role="button" aria-label="打开设置" bindtap="onOpenToolboxSettings"><image src="{{mySettingsIcon}}" mode="aspectFit"></image><text>设置</text></view>
+          </view>
+        </view>
+        <view class="scene-action-button companion-toolbox-button {{toolboxVisible ? 'companion-toolbox-button--open' : ''}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{toolboxVisible ? '收起百宝箱' : '打开百宝箱'}}" aria-expanded="{{toolboxVisible}}" bindtap="onToggleToolbox"><image class="scene-action-icon-image" src="{{toolboxIcon}}" mode="aspectFit"></image></view>
       </view>
     </view>
     </view>
@@ -193,17 +196,7 @@
       </view>
 
       <view wx:if="{{pendingCompanionMemory}}" class="companion-memory-result"><image wx:if="{{!companionPhotoFailed}}" class="{{pendingCompanionMemory.source === 'paper' ? 'companion-polaroid' : ''}}" src="{{pendingCompanionMemory.image}}" mode="{{pendingCompanionMemory.source === 'paper' ? 'widthFix' : 'aspectFit'}}" bindload="onCompanionPhotoLoad" binderror="onCompanionPhotoError" bindtap="onPreviewCompanionMemory"></image><view wx:else class="today-companion-letter__action" bindtap="onRetryCompanionPhoto">重试</view><text wx:if="{{pendingCompanionMemory.source === 'paper'}}" class="today-companion-letter__feedback">{{pendingCompanionMemory.line}}</text><view class="companion-memory-result__collect"><app-button text="收下" size="small" variant="secondary-soft" disabled="{{pendingCompanionMemory.source === 'paper' && !companionPhotoReady}}" bind:tap="onCollectCompanionMemory"></app-button></view></view>
-      <view wx:if="{{todayCompanionTomorrowAvailable && todayCompanionView.today.activityKind !== 'listen'}}" class="today-companion-letter__tomorrow {{!currentState.atHome && !pendingCompanionMemory ? 'today-companion-letter__tomorrow--letter' : ''}}">
-        <view
-          class="today-companion-letter__question {{todayCompanionTomorrowVisible ? 'today-companion-letter__question--open' : ''}}"
-          aria-role="button"
-          aria-label="{{todayCompanionTomorrowVisible ? '明日内容已展开' : '看看明天'}}"
-          bindtap="onTodayCompanionRevealTomorrow"
-        ><text>明天呢？</text></view>
-        <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint {{currentState.atHome ? 'today-companion-letter__hint--with-role' : ''}}">{{todayCompanionView.today.tomorrowHint}}</text>
-      </view>
     </view>
-    <view wx:if="{{currentState.atHome && todayCompanionTomorrowVisible && !todayCompanionGameInvitation && !pendingCompanionMemory}}" class="companion-letter-role {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><companion-pet-portrait src="{{companionRoleImage}}" name="{{pet.name || '蛋宝宝'}}" variant="letter-badge"></companion-pet-portrait></view>
     </view>
   </view>
 

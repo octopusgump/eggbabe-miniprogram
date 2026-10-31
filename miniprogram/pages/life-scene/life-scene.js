@@ -361,6 +361,8 @@ Page({
     toolboxVisible: false,
     toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
+    toolboxDiaryIcon: assets.POST_HATCH.sceneActions.toolboxItems.card,
+    toolboxActivityIcon: assets.POST_HATCH.sceneActions.toolboxItems.keepsakes,
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
@@ -374,7 +376,7 @@ Page({
     todayCompanionInteractionFeedback: '',
     todayCompanionInteractionError: '',
     todayCompanionAwardedStars: 0,
-    todayCompanionTomorrowAvailable: true,
+    todayCompanionTomorrowAvailable: false,
     todayCompanionTomorrowVisible: false,
     clockMode: 'analog',
     clockTimeText: '--:--',
@@ -1434,6 +1436,34 @@ Page({
     this.onOpenListenFromRoom();
   },
 
+  onOpenToolboxDiary() {
+    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.returningFromChild = true;
+    wx.navigateTo({
+      url: '/pages/collection-card/collection-card',
+      fail: () => {
+        this.returningFromChild = false;
+        this.showSystemNotice('日记没有打开，请重试', 'warning');
+      }
+    });
+  },
+
+  onOpenToolboxActivity() {
+    const kind = starAdapter.getTodayInvitationKind()
+      || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind);
+    if (kind === 'listen') {
+      if (this.data.listenToolboxEntryVisible) return this.onOpenListenFromToolbox();
+      this.setData({ toolboxVisible: false });
+      return this.onOpenTodayCompanion();
+    }
+    this.onOpenMemoryAlbum('activities');
+  },
+
+  onOpenToolboxSettings() {
+    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.onOpenMySettings();
+  },
+
   onContextActionTap() {
     if (this.data.contextEntryOpensChat) return this.onCompanionChatTap({ fromRoomEntry: true });
     return this.onOpenTodayCompanion();
@@ -1522,10 +1552,11 @@ Page({
     this.letterArrivalTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionLetterArriving: false }); this.releaseLetterSound(); }, 1050);
   },
   onToggleToolbox() { this.setData({ toolboxVisible: !this.data.toolboxVisible }); },
-  onOpenMemoryAlbum() {
+  onOpenMemoryAlbum(section) {
     this.setData({ toolboxVisible: false, memoryGuideVisible: false });
     this.returningFromChild = true;
-    wx.navigateTo({ url: '/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room',
+    const tab = section === 'activities' ? '&section=activities' : '';
+    wx.navigateTo({ url: `/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room${tab}`,
       success: result => {
         const photo = assets.resolveActionPanorama(this.data.pet, { atHome: true, key: 'window' }, this.data.dailyWindowEnvironment || {}, '');
         if (result && result.eventChannel) result.eventChannel.emit('roomActivityContext', { atHome: Boolean(this.data.currentState && this.data.currentState.atHome), teaImage: photo && photo.panorama || '' });

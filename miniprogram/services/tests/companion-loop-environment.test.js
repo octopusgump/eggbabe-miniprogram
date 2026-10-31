@@ -31,8 +31,8 @@ const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);
 const overlayTemplate = roomTemplate.slice(overlayStart, overlayEnd);
 assert.equal(overlayStart > 0 && !overlayTemplate.includes('src="{{panoramaImage}}"') && !overlayTemplate.includes('navigateTo'), true, 'overlay 留在原房间，不渲染第二张场景图');
-assert.equal(overlayTemplate.includes('<text>明天呢？</text>') && !/wx:if="\{\{todayCompanionInteractionDone\}\}"[^>]*today-companion-letter__tomorrow/.test(overlayTemplate), true, '“明天呢？”必须初始可见，不依赖完成陪伴');
-assert.equal((overlayTemplate.match(/wx:if="\{\{todayCompanionTomorrowVisible\}\}"/g) || []).length, 1, '点击“明天呢？”后只展开一句明日内容');
+assert.equal(overlayTemplate.includes('明天呢？'), false, '信件 overlay 已移除明天呢');
+assert.equal(overlayTemplate.includes('companion-letter-role'), false, '信件 overlay 不再挂角标宠物');
 
 function stubWx(envVersion) {
   return {
@@ -108,8 +108,6 @@ async function runLoop(envVersion) {
   snapshot.roomAwardAfterClose = page.data.companionStarAwardVisible;
 
   await page.onOpenTodayCompanion();
-  page.onTodayCompanionRevealTomorrow();
-  snapshot.tomorrowRevealed = page.data.todayCompanionTomorrowVisible;
   snapshot.doneOnReopen = page.data.todayCompanionInteractionDone;
   page.onCloseTodayCompanion();
   clearTimeout(page.companionStarAwardTimer);
@@ -132,7 +130,7 @@ async function runLoop(envVersion) {
     assert.equal(result.opened, true, `${result.envVersion} 必须能从房间头像打开陪伴`);
     assert.equal(result.balanceBefore, 2, `${result.envVersion} 房间左上角显示当前星星`);
     assert.equal(result.tomorrowVisibleInitially, false, `${result.envVersion} 明日内容初始不展开`);
-    assert.equal(result.tomorrowQuestionAvailable, true, `${result.envVersion} “明天呢？”初始可见`);
+    assert.equal(result.tomorrowQuestionAvailable, true, `${result.envVersion} 数据仍保留 tomorrowHint，UI 不再展示明天呢`);
     assert.equal(result.letterOpenAward, 11, `${result.envVersion} 开信显示当日基础星动效`);
     assert.equal(result.letterAward, 0, `${result.envVersion} 外出收信互动不再重复发星`);
     assert.equal(result.roomAwardWhileOpen, false, `${result.envVersion} 信件未关闭前房间 +1 先保留`);
@@ -140,7 +138,6 @@ async function runLoop(envVersion) {
     assert.equal(result.balanceAfter, 13, `${result.envVersion} 星星累计更新`);
     assert.equal(result.closed, true);
     assert.equal(result.roomAwardAfterClose, false, `${result.envVersion} 关闭信件不再重复播放得星效果`);
-    assert.equal(result.tomorrowRevealed, true, `${result.envVersion} 点击“明天呢？”展开一句明日内容`);
     assert.equal(result.doneOnReopen, true, `${result.envVersion} 同日再次进入不得重复领取`);
     assert.equal(result.progressText, '', `${result.envVersion} 房间不显示纪念进度`);
     assert.equal(result.progressAfter, '', `${result.envVersion} 满星后不得宣称纪念已可进入`);

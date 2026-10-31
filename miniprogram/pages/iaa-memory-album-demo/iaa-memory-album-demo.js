@@ -45,7 +45,8 @@ Page({
 
   onLoad(query) {
     this.roomEntry = Boolean(query && query.entry === 'room');
-    this.setData({ roomEntry: this.roomEntry });
+    const section = query && query.section === 'activities' ? 'activities' : 'memories';
+    this.setData({ roomEntry: this.roomEntry, section });
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.on) channel.on('roomActivityContext', context => { this.activityContext = context; });
     this.refreshTea();

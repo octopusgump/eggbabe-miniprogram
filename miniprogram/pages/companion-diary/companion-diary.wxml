@@ -40,7 +40,7 @@
       aria-label="分享这篇日记"
       bindtap="onOpenShareSheet"
     >
-      <view class="diary-share-dock__plane" aria-hidden="true"></view>
+      <image class="diary-share-dock__icon" src="/assets/icons/send-ink.svg" mode="aspectFit" aria-hidden="true"></image>
       <text class="diary-share-dock__label">分享这篇日记</text>
     </view>
   </view>

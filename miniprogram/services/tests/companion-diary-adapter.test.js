@@ -29,6 +29,7 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   const diaryWxml = fs.readFileSync(path.join(root, 'pages/companion-diary/companion-diary.wxml'), 'utf8');
   assert.match(diaryWxml, /diary-share-dock/);
   assert.match(diaryWxml, /分享这篇日记/);
+  assert.match(diaryWxml, /\/assets\/icons\/send-ink\.svg/);
   assert.equal(/diary-share-pill/.test(diaryWxml), false, '顶栏不得放置与胶囊冲突的分享按钮');
 
   const diaryWxss = fs.readFileSync(path.join(root, 'pages/companion-diary/companion-diary.wxss'), 'utf8');

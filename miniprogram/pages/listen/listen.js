@@ -154,8 +154,14 @@ Page({
   },
   onReturnRoom() {
     if (!this.onBack()) return;
-    if (getCurrentPages().length > 1) wx.navigateBack();
-    else wx.switchTab({ url: '/pages/home/home' });
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack({
+        fail: () => wx.redirectTo({ url: '/pages/iaa-activities/iaa-activities' })
+      });
+      return;
+    }
+    wx.redirectTo({ url: '/pages/life-scene/life-scene' });
   },
   playAward() {
     this.awardTimer = setTimeout(() => { if (this.pageActive) this.setData({ awardVisible: false }); }, 2100);

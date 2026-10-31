@@ -1,5 +1,5 @@
 <view class="activities-page">
-  <nav-bar title="" show-back="{{true}}"></nav-bar>
+  <nav-bar title="" show-back="{{true}}" fallback-url="/pages/life-scene/life-scene"></nav-bar>
   <view class="system-notice-anchor">
     <inline-notice text="{{noticeText}}" tone="{{noticeTone}}" visible="{{noticeVisible}}"></inline-notice>
   </view>

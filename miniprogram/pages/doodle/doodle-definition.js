@@ -790,8 +790,12 @@ const doodleDefinition = {
     this.backInProgress = true;
     this.setData({ exitConfirmVisible: false });
     await this.waitForPageExit();
-    if (this.pageDisposed) return;
+    if (this.pageDisposed) {
+      this.backInProgress = false;
+      return;
+    }
     if (this.properties && this.properties.embedded) {
+      this.backInProgress = false;
       this.triggerEvent('close', { saved });
       return;
     }

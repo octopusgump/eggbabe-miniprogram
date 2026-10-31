@@ -568,7 +568,7 @@ Page({
     if (!this.data.todayCompanionEnabled || this.data.todayCompanionVisible || this.companionOpening) return Promise.resolve();
     if (this.data.currentState && this.data.currentState.atHome && starAdapter.getTodayInvitationKind() === 'listen' && starAdapter.getActivityCompleted('listen')) {
       if (listenRoomHasMoreCategories()) return Promise.resolve(this.onOpenListenFromRoom());
-      return Promise.resolve(this.onCompanionChatTap());
+      return Promise.resolve(this.onCompanionChatTap({ fromRoomEntry: true }));
     }
     this.companionOpening = true;
     analytics.track('room_element_interaction', {
@@ -1446,19 +1446,20 @@ Page({
 
   onContextActionTap() {
     if (this.data.contextEntryOpensListen) return this.onOpenListenFromRoom();
-    if (this.data.contextEntryOpensChat) return this.onCompanionChatTap();
+    if (this.data.contextEntryOpensChat) return this.onCompanionChatTap({ fromRoomEntry: true });
     return this.onOpenTodayCompanion();
   },
 
-  onCompanionChatTap() {
+  onCompanionChatTap(event) {
     if (this.data.companionNavigating) return;
+    const fromLetter = !(event && event.fromRoomEntry);
     const current = this.data.currentState;
     const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
     if (!current || !current.atHome) { this.showSystemNotice('蛋宝宝正在外出，稍后再来看看吧。', 'info'); return; }
     if (!chatAccess || chatAccess.status !== 'available') { this.showSystemNotice(chatAccess && chatAccess.message || '聊天权限正在同步，请稍后再试。', 'warning'); return; }
     clearTimeout(this.companionRoleTimer);
     this.setData({ companionRoleEntering: false, companionNavigating: true });
-    this.returnToCompanion = true;
+    if (fromLetter) this.returnToCompanion = true;
     this.onCloseTodayCompanion();
     this.openChatPage(current);
   },

@@ -33,7 +33,7 @@
         <text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text>
         <view class="feedback-pet-stage">
           <view wx:if="{{awardVisible}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-live="polite" aria-label="获得 {{awardedStars}} 颗星星"><companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star><text class="today-companion-award__plus">+{{awardedStars}}</text></view>
-          <text wx:elif="{{rewardLabel}}" class="feedback-reward-label" aria-live="polite">{{rewardLabel}}</text>
+          <view wx:elif="{{rewardLabel}}" class="feedback-reward-label" aria-live="polite"><text>{{rewardLabel}}</text><text class="feedback-reward-dots" aria-hidden="true"> ✦ ✦ ✦</text></view>
           <companion-pet-portrait src="{{petImage}}" name="{{petName}}" variant="feedback"></companion-pet-portrait>
         </view>
       </view>
@@ -41,11 +41,11 @@
     <view class="feedback-footer"><button wx:if="{{categories.length}}" class="primary" bindtap="onContinue"><text class="button-label">继续回答</text></button><button class="return" bindtap="onReturnRoom"><text class="button-label">回到房间</text></button></view>
   </block>
   <block wx:elif="{{view === 'choices'}}">
-    <scroll-view class="question-scroll" scroll-y><view class="question-content"><text class="title">接着聊哪件小事？</text><view class="options"><view wx:for="{{categories}}" wx:key="id" class="option topic-option" data-id="{{item.id}}" bindtap="startGroup" aria-role="button"><text class="option-label">{{item.title}}</text></view></view><text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text></view></scroll-view>
+    <scroll-view class="question-scroll" scroll-y><view class="question-content"><text class="title">接着聊哪件小事？</text><view class="options"><view wx:for="{{categories}}" wx:key="id" class="option topic-option" data-id="{{item.id}}" bindtap="startGroup" aria-role="button"><text class="option-label">{{item.title}}</text><view class="radio" aria-hidden="true"></view></view></view><text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text></view></scroll-view>
     <view class="feedback-footer"><button class="return" bindtap="onReturnRoom"><text class="button-label">回到房间</text></button></view>
   </block>
   <block wx:else>
-    <view class="empty-content"><text class="title">{{view === 'loading' ? '话题正在过来' : view === 'end' ? title : error}}</text><text wx:if="{{view === 'end'}}" class="reply-copy">{{endText}}</text></view>
+    <view class="empty-content"><text class="title">{{view === 'loading' ? '话题正在过来' : view === 'end' ? title : error}}</text><text wx:if="{{view === 'end'}}" class="reply-copy">{{endText}}</text><companion-pet-portrait wx:if="{{view === 'end'}}" src="{{petImage}}" name="{{petName}}" variant="feedback"></companion-pet-portrait></view>
     <view class="feedback-footer"><button class="return" bindtap="onReturnRoom"><text class="button-label">回到房间</text></button></view>
   </block>
 </view>

@@ -237,6 +237,36 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
+function roomContextEntry(pet, chatAccess, options) {
+  const input = options || {};
+  const atHome = Boolean(input.atHome);
+  const kind = input.todayActivityKind;
+  const listenCompleted = kind === 'listen' && input.listenCompleted;
+  if (atHome && listenCompleted) {
+    const chat = contextActionPresentation(pet, chatAccess);
+    return {
+      icon: companionPetImage.resolveCompanionPetImage(pet),
+      label: chat.label,
+      hint: chat.hint,
+      disabled: chat.disabled,
+      badge: chat.badge,
+      opensChat: true,
+      flatEnvelope: false,
+      entryAriaLabel: '和蛋宝宝说话'
+    };
+  }
+  return {
+    icon: LETTER_ICON_SRC,
+    label: '读今日陪伴',
+    hint: '',
+    disabled: false,
+    badge: '',
+    opensChat: false,
+    flatEnvelope: true,
+    entryAriaLabel: '读信'
+  };
+}
+
 function statusBubbleFor(currentState, previousText) {
   const pool = STATUS_BUBBLE_POOL[currentState && currentState.key] || STATUS_BUBBLE_POOL[currentState && currentState.major] || [];
   const candidates = pool.filter(text => text !== previousText);
@@ -351,6 +381,9 @@ Page({
     contextActionHint: '',
     contextActionDisabled: true,
     contextActionBadge: '',
+    contextEntryOpensChat: false,
+    contextEntryFlatEnvelope: true,
+    contextEntryAriaLabel: '读信',
     mySettingsIcon: assets.POST_HATCH.sceneActions && assets.POST_HATCH.sceneActions.toolboxItems && assets.POST_HATCH.sceneActions.toolboxItems.my || '',
     characterPanel: -1,
     characterStyle: '',
@@ -559,6 +592,7 @@ Page({
           result: 'prompt_shown'
         });
         if (letterStars > 0) this.playStarAwardFeedback();
+        this.syncRoomContextEntry();
       });
     }).catch(() => { if (this.pageActive) this.showSystemNotice('信件没有打开，请再试一次', 'warning'); }).finally(() => { this.companionOpening = false; });
   },
@@ -709,7 +743,15 @@ Page({
       const actionScene = assets.resolveActionPanorama(this.data.pet, currentState, this.data.dailyWindowEnvironment, cdnBase);
       const panorama = panoramaPresentation(this.data.dailyWindowEnvironment.period, this.data.panelWidth, this.data.panelHeight, cdnBase, actionScene);
       const panoramaChanged = Boolean(panorama.panoramaImage && panorama.panoramaImage !== this.data.panoramaImage);
-      const contextAction = contextActionPresentation(this.data.pet, snapshot.chatAccess);
+      const listenDone = starAdapter.getActivityCompleted('listen');
+      const todayActivityKind = starAdapter.getTodayInvitationKind()
+        || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind)
+        || (listenDone ? 'listen' : null);
+      const contextEntry = roomContextEntry(this.data.pet, snapshot.chatAccess, {
+        atHome: currentState.atHome,
+        todayActivityKind,
+        listenCompleted: listenDone && todayActivityKind === 'listen'
+      });
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
       const nextStatusBubble = shouldShowStatusBubble ? statusBubbleFor(currentState, this.lastStatusBubble) : '';
@@ -726,12 +768,15 @@ Page({
         currentState,
         panelSceneSetId: panorama.sceneSetId,
         windowHotspots: panorama.windowHotspots,
-        contextActionIcon: LETTER_ICON_SRC,
+        contextActionIcon: contextEntry.icon,
         companionRoleImage: companionPetImage.resolveCompanionPetImage(this.data.pet),
-        contextActionLabel: contextAction.label,
-        contextActionHint: contextAction.hint,
-        contextActionDisabled: contextAction.disabled,
-        contextActionBadge: contextAction.badge,
+        contextActionLabel: contextEntry.label,
+        contextActionHint: contextEntry.hint,
+        contextActionDisabled: contextEntry.disabled,
+        contextActionBadge: contextEntry.badge,
+        contextEntryOpensChat: contextEntry.opensChat,
+        contextEntryFlatEnvelope: contextEntry.flatEnvelope,
+        contextEntryAriaLabel: contextEntry.entryAriaLabel,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
         initialViewportReady: preparingInitialViewport ? false : this.data.initialViewportReady,
@@ -1326,7 +1371,35 @@ Page({
 
   noop() {},
 
-  onContextActionTap() { return this.onOpenTodayCompanion(); },
+  syncRoomContextEntry(extra) {
+    if (!this.data.pet) return;
+    const currentState = this.data.currentState;
+    const chatAccess = this.data.snapshot && this.data.snapshot.chatAccess;
+    const listenDone = starAdapter.getActivityCompleted('listen');
+    const todayActivityKind = starAdapter.getTodayInvitationKind()
+      || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind)
+      || (listenDone ? 'listen' : null);
+    const entry = roomContextEntry(this.data.pet, chatAccess, {
+      atHome: currentState && currentState.atHome,
+      todayActivityKind,
+      listenCompleted: listenDone && todayActivityKind === 'listen'
+    });
+    this.setData(Object.assign({
+      contextActionIcon: entry.icon,
+      contextActionLabel: entry.label,
+      contextActionHint: entry.hint,
+      contextActionDisabled: entry.disabled,
+      contextActionBadge: entry.badge,
+      contextEntryOpensChat: entry.opensChat,
+      contextEntryFlatEnvelope: entry.flatEnvelope,
+      contextEntryAriaLabel: entry.entryAriaLabel
+    }, extra || {}));
+  },
+
+  onContextActionTap() {
+    if (this.data.contextEntryOpensChat) return this.onCompanionChatTap();
+    return this.onOpenTodayCompanion();
+  },
 
   onCompanionChatTap() {
     if (this.data.companionNavigating) return;
@@ -1355,6 +1428,7 @@ Page({
     const scope = starAdapter.getRoomScope();
     if (game && scope) {
       const progress = letterActivityProgress.read(scope, kind, date);
+      if (kind === 'listen') return Object.assign(progress, { available: false, tomorrow: false });
       const available = progress.entered || starAdapter.getActivityCompleted(kind);
       return Object.assign(progress, { available, tomorrow: available && progress.tomorrow });
     }
@@ -1725,6 +1799,7 @@ Page({
         todayCompanionInteractionDone: starAdapter.getActivityCompleted(this.data.todayCompanionView && this.data.todayCompanionView.today.activityKind || (this.data.currentState && !this.data.currentState.atHome ? 'ordinary' : 'drawing'))
       });
       this.syncLetterProgress();
+      this.syncRoomContextEntry();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {
@@ -1742,6 +1817,10 @@ Page({
     this.refreshEnvironment();
     if (this.returningFromChild || resuming) {
       this.returningFromChild = false;
+      const listenDone = starAdapter.getActivityCompleted('listen');
+      const listenKind = (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind === 'listen')
+        || starAdapter.getTodayInvitationKind() === 'listen';
+      if (listenDone && listenKind && this.data.todayCompanionVisible) this.onCloseTodayCompanion();
       this.loadSnapshot();
       return;
     }

@@ -63,13 +63,14 @@ global.clearTimeout = global.clearInterval = () => {};
       await new Promise(resolve => setImmediate(resolve));
       assert.equal(page.data.todayCompanionVisible, true);
       assert.equal(page.data.todayCompanionView, sameLetter);
-      assert.equal(page.data.todayCompanionTomorrowAvailable, true, '返回时立即出现明天入口');
+      assert.equal(page.data.todayCompanionTomorrowAvailable, false, '听你说邀请信不展示明天呢');
       assert.equal(page.data.todayCompanionTomorrowVisible, false);
+      assert.equal(page.data.contextEntryOpensChat, false, '未完成时左下仍为读信入口');
       assert.equal(page.data.companionNavigating, false);
       page.onUnload();
     }
   }
-  console.log('听你说中退直接返回通过：信件保持展开，明天入口可见且未展开，与一起画返回对齐。');
+  console.log('听你说中退直接返回通过：信件保持展开，不含明天呢，与一起画返回对齐。');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => {
   Date.now = originalNow;
   Object.assign(global, originalTimers);

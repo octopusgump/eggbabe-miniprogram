@@ -110,7 +110,7 @@ Page({
     const stars = Number(awardedStars || 0);
     this.setData({
       view: 'feedback', title: result.title, feedback: result.feedback.petFeedback, awardedStars: stars,
-      awardVisible: stars > 0, rewardLabel: stars > 0 ? '' : '谢谢回答！',
+      awardVisible: stars > 0, rewardLabel: stars > 0 ? '' : '谢谢你说给我听',
       categories: adapter.getState().data.categories, error: '', busy: false
     });
     if (stars > 0) this.playAward();

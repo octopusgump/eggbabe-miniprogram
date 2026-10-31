@@ -70,7 +70,10 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   const template = fs.readFileSync(path.join(root, 'pages/listen/listen.wxml'), 'utf8');
   assert.ok(template.includes('listen-quote-mark.svg'), '反馈 Quote 须使用 Figma 双引号 SVG');
   assert.ok(template.includes('写下你的想法...')); assert.ok(!template.includes('我想自己说'));
-  assert.ok(!template.includes('谢谢回答'), '反馈页不再额外显示答谢提示'); assert.ok(template.includes('{{feedback}}')); assert.ok(!template.includes('我听见啦'));
+  assert.ok(template.includes('谢谢你说给我听') || template.includes('rewardLabel'), '第 2 组起展示谢谢你说给我听');
+  assert.ok(template.includes('feedback-reward-dots'), '非收星反馈须展示黄色 ✦ 点缀');
+  assert.ok(!template.includes('谢谢回答'), '不得再使用旧版谢谢回答文案');
+  assert.ok(template.includes('{{feedback}}')); assert.ok(!template.includes('我听见啦'));
   assert.ok(JSON.parse(fs.readFileSync(path.join(root, 'app.json'))).pages.includes('pages/listen/listen'));
   assert.equal(adapter.getState().data.draft.questionIndex, 0);
   let navDefinition; global.Component = value => { navDefinition = value; };

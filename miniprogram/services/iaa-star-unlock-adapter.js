@@ -60,6 +60,10 @@ function saveListeningState(value) {
   if (!persist()) { restore(previous); return saveFailure(); }
   return { ok: true, data: getListeningState() };
 }
+function getTodayInvitationKind() {
+  const date = shanghaiDate();
+  return invitation && invitation.date === date ? invitation.kind : null;
+}
 function getDailyInvitation(activities, random) {
   const date = shanghaiDate();
   if (invitation && invitation.date === date) return { ok: true, data: clone(invitation) };
@@ -380,6 +384,7 @@ module.exports = {
   resetRoomStarView,
   recordLetterOpen,
   getDailyInvitation,
+  getTodayInvitationKind,
   getActivityCompleted,
   getListeningState,
   saveListeningState,

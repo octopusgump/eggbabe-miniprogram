@@ -5,7 +5,7 @@ const styles = fs.readFileSync(path.join(__dirname, '../../components/button/but
 assert.match(styles, /\.btn--secondary \{[^}]*border: 3rpx solid #002900;/, '全局 secondary 仍保留深墨描边');
 assert.match(styles, /\.btn--secondary-soft \{[^}]*border: 3rpx solid rgba\(0, 41, 0, 0\.24\);/, '信件 CTA 使用浅色半透明描边');
 const roomTemplate = fs.readFileSync(path.join(__dirname, '../../pages/life-scene/life-scene.wxml'), 'utf8');
-assert.equal(/variant="secondary-soft"/.test(roomTemplate) && !/variant="secondary"/.test(roomTemplate), true, '房间信件按钮只用 secondary-soft，不误伤其它 secondary');
+assert.equal(/variant="secondary-soft"/.test(roomTemplate) && /variant="secondary"/.test(roomTemplate), true, '小游戏邀请用实线 secondary，外出收信与收下仍用 secondary-soft');
 let component;
 const previous = global.Component;
 global.Component = value => { component = value; };

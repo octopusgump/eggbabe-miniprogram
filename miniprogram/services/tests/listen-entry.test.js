@@ -41,7 +41,7 @@ Date.now = () => now;
     page.onTodayCompanionAction();
     assert.equal(navigation, inFlight, '导航期间重复点按不再进入一次');
     navigation.success();
-    assert.equal(page.data.todayCompanionTomorrowAvailable, true, '成功进入小游戏后解锁明天入口');
+    assert.equal(page.data.todayCompanionTomorrowAvailable, false, '听你说邀请信不含明天呢入口');
     assert.equal(page.data.todayCompanionTomorrowVisible, false, '进入不自动展开明日内容');
     assert.equal(page.data.todayCompanionInteractionDone, false, '进入不算完成');
     assert.deepEqual((await stars.getRoomStarView()).data.star, beforeEnter, '进入不改星星或有效陪伴日');
@@ -52,28 +52,34 @@ Date.now = () => now;
     await new Promise(resolve => setImmediate(resolve));
     page.loadSnapshot = loadSnapshot;
     assert.equal(page.data.todayCompanionVisible, true, '中途返回信件仍展开');
-    assert.equal(page.data.todayCompanionTomorrowAvailable, true, '中途返回仍显示明天入口');
+    assert.equal(page.data.todayCompanionTomorrowAvailable, false, '中途返回仍不展示明天呢');
     assert.equal(page.data.todayCompanionTomorrowVisible, false);
     assert.equal(page.data.companionNavigating, false);
-    page.onTodayCompanionRevealTomorrow();
-    assert.equal(page.data.todayCompanionTomorrowVisible, true, '再点明天入口才展开内容');
-    assert.equal(page.data.companionRoleEntering, false, '小游戏宠物不播放滑入动画');
-    clearTimeout(page.companionRoleTimer);
-    page.onCloseTodayCompanion();
-    await page.onOpenTodayCompanion();
-    assert.equal(page.data.todayCompanionTomorrowVisible, true, '同日关闭再开保留展开状态');
 
     const draft = listen.startGroup('habits').data;
     for (const q of rules.groupById(draft.groupId).group.questions) draft.answers[q.id] = { optionId: q.options[4].id, text: '' };
     draft.questionIndex = 4; listen.saveDraft(draft); assert.equal((await listen.completeGroup(draft.groupId)).awardedStars, 10);
     assert.equal(stars.getActivityCompleted('drawing'), false, '答题领过星不冒充画画完成');
-    page.onCloseTodayCompanion(); await page.onOpenTodayCompanion();
     assert.equal(page.data.todayCompanionView.today.activityKind, 'listen', '同日不更换随机邀请');
-    assert.equal(page.data.todayCompanionInteractionDone, true); assert.equal(page.data.todayCompanionAwardedStars, 0);
     const balanceBeforeReopen = (await stars.getRoomStarView()).data.star.balance;
-    page.onCloseTodayCompanion(); await page.onOpenTodayCompanion();
-    assert.equal(page.data.todayCompanionInteractionDone, true, '完成后重开保留完成状态');
-    assert.equal((await stars.getRoomStarView()).data.star.balance, balanceBeforeReopen, '完成后重开不重复发星');
+    assert.equal(stars.getActivityCompleted('listen'), true, '首组答完即记为听你说完成');
+    page.setData({
+      todayCompanionVisible: true,
+      todayCompanionInteractionDone: true,
+      snapshot: { chatAccess: { status: 'available' } },
+      currentState: { atHome: true }
+    });
+    page.returningFromChild = true;
+    const snapshotLoader = page.loadSnapshot;
+    page.loadSnapshot = () => Promise.resolve();
+    page.onShow();
+    page.loadSnapshot = snapshotLoader;
+    page.syncRoomContextEntry();
+    assert.equal(page.data.todayCompanionVisible, false, '听你说完成后回到房间仅展示场景');
+    assert.equal(page.data.contextEntryOpensChat, true, '完成后左下改为陪伴聊天头像');
+    page.onContextActionTap();
+    assert.match(navigation && navigation.url, /pages\/chat\/chat/, '完成后左下入口进入聊天而非已完成卡片');
+    assert.equal((await stars.getRoomStarView()).data.star.balance, balanceBeforeReopen, '完成后不重复发星');
     page.clearStarAwardFeedback();
     page.letterDate = require('../companion-star-rules').shanghaiDate();
     page.startClock = page.refreshEnvironment = page.loadSnapshot = () => {};

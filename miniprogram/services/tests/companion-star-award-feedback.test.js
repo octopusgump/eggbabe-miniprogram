@@ -33,22 +33,22 @@ const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayTemplate = roomTemplate.slice(overlayStart, roomTemplate.indexOf('<daily-window-detail', overlayStart));
 const letterStart = overlayTemplate.search(/class="today-companion-letter(?:\s|")/);
 const letterTemplate = overlayTemplate.slice(letterStart);
-assert.equal(overlayTemplate.includes('<companion-star mode="award" size="150"'), true, '收星星星宽 150rpx，即屏幕宽度 20%');
+assert.equal(overlayTemplate.includes('<companion-star mode="award" size="280"'), true, '开信收星星星宽约 140px（280rpx）');
 assert.equal(overlayTemplate.includes('wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award'), true, '收星动效只在真实获得星星时挂载');
 assert.equal(overlayTemplate.indexOf('today-companion-award') < letterStart, true, '星星在信纸之外，不进入正文流');
 assert.equal(/todayCompanionAwardedStars|companion-star|✦/.test(letterTemplate), false, '信纸正文内不再显示星星或“✦ +1”');
 assert.equal(overlayTemplate.includes('+{{todayCompanionAwardedStars}}'), true, '保留 +1 数字');
 assert.equal((starTemplate.match(/companion-star__spark--\d/g) || []).length, 7, '光点保持 7 个（5–8 范围内）');
-assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:150rpx;/, '星星绝对定位在信纸上方居中，不改变信纸排版');
+assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:280rpx;/, '开信星星绝对定位在信纸上方居中');
 assert.match(
   roomStyles,
-  /\.today-companion-letter__game-action,.today-companion-letter__letter-action\{flex:0 1 500rpx;/,
-  '邀请信活动入口与外出收信按钮容器对齐 Figma 250px → 500rpx'
+  /\.today-companion-letter__game-action,.today-companion-letter__letter-action\{flex:0 1 560rpx;/,
+  '邀请信活动入口宽约 280px → 560rpx'
 );
-assert.match(roomStyles, /\.companion-memory-result__collect\{width:500rpx;/, '收下按钮与邀请信主按钮同宽 500rpx');
+assert.match(roomStyles, /\.companion-memory-result__collect\{width:500rpx;/, '收下按钮保持 500rpx');
 assert.match(read('components/button/button.wxss'), /\.btn--small \{ height: 80rpx;/, '邀请信 small 按钮高度保持 80rpx');
-assert.match(read('components/button/button.wxss'), /\.btn--secondary-soft \{[^}]*rgba\(0, 41, 0, 0\.24\)/, '邀请信 CTA 使用浅色描边 variant');
-assert.equal(roomTemplate.includes('variant="secondary-soft"'), true, '房间信件按钮必须走 secondary-soft');
+assert.match(read('components/button/button.wxss'), /\.btn--secondary \{[^}]*border: 3rpx solid #002900/, '邀请信 CTA 使用实线 #002900 描边');
+assert.equal(roomTemplate.includes('variant="secondary"'), true, '小游戏邀请信按钮走 secondary 实线描边');
 assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-companion-award-plus \.85s [^}]*\.88s both/, '+X 在弹出后约 0.88s 开始翻滚、约 2s 内落定');
 assert.match(starStyles, /companion-star-neutral-show 2s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
 assert.match(starStyles, /companion-star--award .companion-star__pose--neutral\{[^}]*2s/, '收星挤压弹出主节奏约 2 秒');

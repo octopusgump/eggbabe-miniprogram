@@ -1,4 +1,4 @@
-<view class="navbar-root">
+<view class="navbar-root {{surface === 'canvas' ? 'navbar-root--canvas' : ''}}">
   <view class="status-bar" style="height:{{statusBarHeight}}px"></view>
   <view class="nav-row">
     <view wx:if="{{showBack}}" class="nav-side nav-side--back" hover-class="nav-side--pressed" aria-role="button" aria-label="返回上一页" bindtap="onBack">

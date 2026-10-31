@@ -11,6 +11,8 @@ Component({
     titleInteractive: { type: Boolean, value: false },
     titleAriaLabel: { type: String, value: '' },
     showBack: { type: Boolean, value: true },
+    // canvas：与 #FAFAF8 页面同底，圆形白底返回按钮（纪念册等轻页面）
+    surface: { type: String, value: 'default' },
     // 需要先成功保存输入的页面可接管返回；默认保留原自动返回行为。
     customBack: { type: Boolean, value: false },
     fallbackUrl: { type: String, value: '' }

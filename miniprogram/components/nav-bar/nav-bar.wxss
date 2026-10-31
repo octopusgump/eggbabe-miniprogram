@@ -5,6 +5,19 @@
   flex-shrink: 0;
 }
 
+.navbar-root--canvas {
+  background: #FAFAF8;
+}
+
+.navbar-root--canvas .nav-row {
+  border-bottom: none;
+}
+
+.navbar-root--canvas .nav-side--back {
+  background: #FFF;
+  box-shadow: 0 8rpx 28rpx rgba(0, 41, 0, 0.08);
+}
+
 .status-bar {
   width: 100%;
 }

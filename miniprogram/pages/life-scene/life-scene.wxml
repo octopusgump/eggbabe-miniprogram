@@ -94,6 +94,7 @@
       aria-role="button"
       aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
       catchtap="onClockTap"
+      hover-class="room-clock--rebound"
     >
       <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
         <text class="clock-number clock-number--twelve">12</text>
@@ -141,7 +142,7 @@
 
     <view class="screen-dots"><view wx:for="{{screens}}" wx:key="*this" class="screen-dot {{currentScreen === item ? 'screen-dot--active' : ''}}"></view></view>
     <view wx:if="{{currentState}}" class="scene-context-entry">
-      <view class="scene-action-button {{contextEntryFlatEnvelope ? 'scene-action-button--flat-envelope' : 'scene-action-button--companion-chat'}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{contextEntryAriaLabel}}" bindtap="onContextActionTap">
+      <view class="scene-action-button {{contextEntryFlatEnvelope ? 'scene-action-button--flat-envelope' : 'scene-action-button--companion-chat'}}" hover-class="scene-action-button--rebound" aria-role="button" aria-label="{{contextEntryAriaLabel}}" bindtap="onContextActionTap">
         <view wx:if="{{companionLetterArriving && contextEntryFlatEnvelope}}" class="companion-letter-plane" aria-hidden="true"></view>
         <image class="scene-action-icon-image scene-action-icon-image--companion {{contextEntryFlatEnvelope ? 'scene-action-icon-image--flat-envelope' : 'scene-action-icon-image--companion-chat'}} {{companionLetterArriving && contextEntryFlatEnvelope ? 'companion-letter-envelope--arriving' : ''}}" src="{{contextActionIcon}}" mode="aspectFit"></image>
         <view wx:if="{{companionUnread && !contextEntryOpensChat}}" class="companion-unread-dot"></view>
@@ -162,7 +163,7 @@
           </view>
           </view>
         </view>
-        <view class="scene-action-button companion-toolbox-button" hover-class="{{toolboxMotion === 'opening' || toolboxMotion === 'closing' ? 'none' : 'scene-action-button--pressed'}}" aria-role="button" aria-label="{{toolboxVisible ? '收起百宝箱' : '打开百宝箱'}}" aria-expanded="{{toolboxVisible}}" bindtap="onToggleToolbox">
+        <view class="scene-action-button companion-toolbox-button" hover-class="{{toolboxMotion === 'opening' || toolboxMotion === 'closing' ? 'none' : 'scene-action-button--rebound'}}" aria-role="button" aria-label="{{toolboxVisible ? '收起百宝箱' : '打开百宝箱'}}" aria-expanded="{{toolboxVisible}}" bindtap="onToggleToolbox">
           <view class="companion-toolbox-button__motion companion-toolbox-button--{{toolboxMotion}}" bindanimationend="onToolboxButtonAnimEnd">
             <view class="companion-toolbox-button__icons" aria-hidden="true">
               <image class="companion-toolbox-button__lid {{toolboxChestOpen ? '' : 'companion-toolbox-button__lid--visible'}}" src="{{toolboxIconClosed}}" mode="aspectFit"></image>

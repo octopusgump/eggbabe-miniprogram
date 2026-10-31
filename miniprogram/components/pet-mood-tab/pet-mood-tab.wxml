@@ -4,6 +4,7 @@
     aria-role="button"
     aria-label="{{roomCardPhase === 'expanded' ? (petName + '，星星 ' + starRollValue + '，一起 ' + companionDays + ' 天，今日心情，' + mood.moodLabel + '，' + mood.text + '，点击收起') : (roomCardPhase === 'summary' ? (petName + '，星星 ' + starRollValue + '，一起 ' + companionDays + ' 天，今日心情，' + mood.moodLabel + '，点击查看详情') : ('星星 ' + starRollValue + '，一起 ' + companionDays + ' 天，点击查看今日陪伴详情'))}}"
     bindtap="onToggle"
+    hover-class="scene-status-chip--rebound"
   >
     <view class="pet-mood-tab__room-header {{roomCardPhase === 'minimal' ? 'pet-mood-tab__room-header--minimal' : ''}}">
       <view class="pet-mood-tab__room-stars">

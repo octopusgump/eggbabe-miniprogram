@@ -22,6 +22,8 @@
 
 /* 房间左上角：常驻极轻呼吸光；关信件时光晕亮一下并落入 3 粒光尘，星体不位移、不放大。 */
 .companion-star--room{margin:0 -2rpx}
+.companion-star--accent{display:inline-block;vertical-align:middle}
+.companion-star--accent .companion-star__halo{display:none}
 .companion-star--room .companion-star__halo{animation:companion-star-breathe 3.8s ease-in-out infinite}
 .companion-star--room.companion-star--pulse .companion-star__halo{animation:companion-star-room-pulse 1.2s ease-out both}
 .companion-star--room.companion-star--pulse .companion-star__pose--neutral{animation:companion-star-room-brighten 1.2s ease-out both}

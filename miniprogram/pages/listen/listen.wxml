@@ -33,7 +33,14 @@
         <text wx:if="{{error}}" class="error" aria-role="alert">{{error}}</text>
         <view class="feedback-pet-stage">
           <view wx:if="{{awardVisible}}" class="today-companion-award {{reducedMotion ? 'today-companion-award--reduced' : ''}}" aria-live="polite" aria-label="获得 {{awardedStars}} 颗星星"><companion-star mode="award" size="150" reduced-motion="{{reducedMotion}}"></companion-star><text class="today-companion-award__plus">+{{awardedStars}}</text></view>
-          <view wx:elif="{{rewardLabel}}" class="feedback-reward-label" aria-live="polite"><text>{{rewardLabel}}</text><text class="feedback-reward-dots" aria-hidden="true"> ✦ ✦ ✦</text></view>
+          <view wx:elif="{{rewardLabel}}" class="feedback-reward-label" aria-live="polite">
+            <text class="feedback-reward-label__copy">{{rewardLabel}}</text>
+            <view class="feedback-reward-stars" aria-hidden="true">
+              <companion-star mode="accent" size="28"></companion-star>
+              <companion-star mode="accent" size="28"></companion-star>
+              <companion-star mode="accent" size="28"></companion-star>
+            </view>
+          </view>
           <companion-pet-portrait src="{{petImage}}" name="{{petName}}" variant="feedback"></companion-pet-portrait>
         </view>
       </view>

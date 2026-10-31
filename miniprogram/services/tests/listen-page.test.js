@@ -71,10 +71,10 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   assert.ok(template.includes('listen-quote-mark.svg'), '反馈 Quote 须使用 Figma 双引号 SVG');
   assert.ok(template.includes('写下你的想法...')); assert.ok(!template.includes('我想自己说'));
   assert.ok(template.includes('谢谢你说给我听') || template.includes('rewardLabel'), '第 2 组起展示谢谢你说给我听');
-  assert.ok(template.includes('feedback-reward-dots'), '非收星反馈须展示黄色 ✦ 点缀');
+  assert.ok(template.includes('feedback-reward-stars') && template.includes('mode="accent"'), '非收星反馈须展示三颗陪伴星星 PNG');
   const feedbackStyles = fs.readFileSync(path.join(root, 'pages/listen/listen.wxss'), 'utf8');
   assert.match(feedbackStyles, /\.feedback-reward-label[\s\S]*?color:\s*#17311F/, '谢谢你说给我听须为墨绿正文色');
-  assert.match(feedbackStyles, /\.feedback-reward-dots[\s\S]*?color:\s*#FFDD79/, '✦ 点缀仍为黄色');
+  assert.match(feedbackStyles, /\.feedback-reward-stars[\s\S]*?gap:\s*8rpx/, '三颗星星间距须与稿面一致');
   assert.match(feedbackStyles, /\.feedback-footer[\s\S]*?align-items:\s*stretch/, '反馈页底栏按钮须同宽对齐');
   assert.ok(!template.includes('谢谢回答'), '不得再使用旧版谢谢回答文案');
   assert.ok(template.includes('{{feedback}}')); assert.ok(!template.includes('我听见啦'));

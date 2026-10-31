@@ -3,7 +3,7 @@
   style="width:{{size}}rpx;height:{{size}}rpx;"
   aria-hidden="true"
 >
-  <view wx:if="{{!reducedMotion}}" class="companion-star__halo"></view>
+  <view wx:if="{{!reducedMotion && mode !== 'accent'}}" class="companion-star__halo"></view>
   <view class="companion-star__body">
     <image class="companion-star__pose companion-star__pose--neutral" src="{{neutralSrc}}" mode="aspectFit"></image>
     <image wx:if="{{mode === 'award' && !reducedMotion}}" class="companion-star__pose companion-star__pose--squeezed" src="{{squeezedSrc}}" mode="aspectFit"></image>

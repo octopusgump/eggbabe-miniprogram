@@ -1432,8 +1432,22 @@ Page({
   },
 
   onOpenListenFromToolbox() {
-    this.setData({ toolboxVisible: false });
-    this.onOpenListenFromRoom();
+    this.onOpenToolboxActivity();
+  },
+
+  onOpenToolboxActivity() {
+    if (this.data.companionNavigating) return;
+    this.setData({ toolboxVisible: false, memoryGuideVisible: false, companionNavigating: true });
+    this.returningFromChild = true;
+    wx.navigateTo({
+      url: '/pages/iaa-activities/iaa-activities?entry=room',
+      success: () => { this.setData({ companionNavigating: false }); },
+      fail: () => {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false });
+        this.showSystemNotice('活动页没有打开，请重试', 'warning');
+      }
+    });
   },
 
   onOpenToolboxDiary() {
@@ -1446,10 +1460,6 @@ Page({
         this.showSystemNotice('日记没有打开，请重试', 'warning');
       }
     });
-  },
-
-  onOpenToolboxActivity() {
-    this.onOpenListenFromToolbox();
   },
 
   onOpenToolboxSettings() {

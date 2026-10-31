@@ -1,0 +1,156 @@
+.activities-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #FAFAF8;
+  color: #002900;
+}
+
+.activities-page .navbar-root {
+  background: #FAFAF8;
+  border-bottom: none;
+}
+
+.activities-notice {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(env(safe-area-inset-top) + 112rpx);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.activities-scroll {
+  flex: 1;
+  height: 0;
+  box-sizing: border-box;
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.activities-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 48rpx 32rpx;
+}
+
+.activities-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.activities-balance__star {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.activities-balance__count {
+  font-size: 72rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #002900;
+}
+
+.activities-balance__label {
+  font-size: 26rpx;
+  line-height: 1.2;
+  color: #6B6B66;
+}
+
+.activities-section {
+  padding: 8rpx 32rpx 0;
+}
+
+.activities-section__title {
+  display: block;
+  padding: 8rpx 8rpx 16rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #374039;
+}
+
+.activities-card {
+  border: 1rpx solid #E5E3DF;
+  border-radius: 32rpx;
+  background: #FFF;
+  overflow: hidden;
+}
+
+.activities-card__divider {
+  height: 1rpx;
+  background: #E8E8E4;
+  margin: 0 2rpx;
+}
+
+.activities-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 24rpx 24rpx 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+.activities-row__icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  flex-shrink: 0;
+}
+
+.activities-row__icon--dimmed {
+  opacity: 0.5;
+}
+
+.activities-row__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #002900;
+}
+
+.activities-row__title--dimmed {
+  opacity: 0.55;
+}
+
+.activities-cta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  min-width: 160rpx;
+  height: 64rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: #002900;
+  box-sizing: border-box;
+}
+
+.activities-cta--wide {
+  min-width: 184rpx;
+}
+
+.activities-cta--disabled {
+  background: #AEB9AE;
+}
+
+.activities-cta__text {
+  font-size: 28rpx;
+  font-weight: 400;
+  line-height: 1;
+  color: #FFF;
+}
+
+.activities-cta--disabled .activities-cta__text {
+  opacity: 0.86;
+}
+
+.activities-cta__star {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #FFDD79;
+}

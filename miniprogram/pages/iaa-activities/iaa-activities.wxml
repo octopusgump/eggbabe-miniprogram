@@ -1,0 +1,50 @@
+<view class="activities-page">
+  <nav-bar title="" show-back="{{true}}"></nav-bar>
+  <view class="activities-notice">
+    <inline-notice text="{{noticeText}}" tone="{{noticeTone}}" visible="{{noticeVisible}}"></inline-notice>
+  </view>
+  <scroll-view class="activities-scroll" scroll-y>
+    <view class="activities-header">
+      <view class="activities-balance" aria-label="星星余额 {{starBalance}}">
+        <image class="activities-balance__star" src="{{starBalanceIcon}}" mode="aspectFit"></image>
+        <text class="activities-balance__count">{{starBalance}}</text>
+      </view>
+      <text class="activities-balance__label">我的星星</text>
+    </view>
+
+    <view class="activities-section">
+      <text class="activities-section__title">可玩</text>
+      <view class="activities-card">
+        <block wx:for="{{playable}}" wx:key="key">
+          <view wx:if="{{index > 0}}" class="activities-card__divider"></view>
+          <view class="activities-row {{item.dimmed ? 'activities-row--dimmed' : ''}}" data-key="{{item.key}}" data-section="play" bindtap="onTapRow" aria-role="button" aria-label="{{item.title}}">
+            <image class="activities-row__icon" src="{{item.icon}}" mode="aspectFill"></image>
+            <text class="activities-row__title">{{item.title}}</text>
+            <view class="activities-cta {{item.disabled ? 'activities-cta--disabled' : ''}} {{item.ctaWide ? 'activities-cta--wide' : ''}}">
+              <block wx:if="{{item.ctaText}}">
+                <text class="activities-cta__text">{{item.ctaText}}</text>
+              </block>
+              <block wx:else>
+                <text class="activities-cta__text">{{item.ctaPrefix}} {{item.ctaSuffix}}</text>
+                <text class="activities-cta__star" aria-hidden="true">✦</text>
+              </block>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <view class="activities-section">
+      <text class="activities-section__title">即将上线</text>
+      <view class="activities-card">
+        <view wx:for="{{comingSoon}}" wx:key="key" class="activities-row activities-row--dimmed" data-key="{{item.key}}" data-section="soon" bindtap="onTapRow" aria-role="button" aria-label="{{item.title}}">
+          <image class="activities-row__icon activities-row__icon--dimmed" src="{{item.icon}}" mode="aspectFill"></image>
+          <text class="activities-row__title activities-row__title--dimmed">{{item.title}}</text>
+          <view class="activities-cta">
+            <text class="activities-cta__text">{{item.ctaText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

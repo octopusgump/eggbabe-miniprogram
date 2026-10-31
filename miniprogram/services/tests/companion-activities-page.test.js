@@ -1,0 +1,17 @@
+const assert = require('assert');
+const pageModel = require('../companion-activities-page');
+const stars = require('../iaa-star-unlock-adapter');
+const listenAdapter = require('../listen-adapter');
+
+stars.resetRoomStarView('AVAILABLE');
+
+(async () => {
+  const view = await pageModel.buildViewAsync();
+  assert.equal(view.playable.length, 5);
+  assert.equal(view.comingSoon.length, 1);
+  assert.equal(view.comingSoon[0].title, '交友');
+  assert.equal(view.playable.find(row => row.key === 'listen').route, '/pages/listen/listen');
+  assert.equal(view.playable.find(row => row.key === 'drawing').route, '/pages/doodle/doodle?entry=companion');
+  assert.ok(view.starBalanceIcon.includes('/assets/ui/activity-list/runtime/'));
+  console.log('活动页列表与路由口径校验通过。');
+})();

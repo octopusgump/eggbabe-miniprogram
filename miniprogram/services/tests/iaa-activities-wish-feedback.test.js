@@ -13,6 +13,7 @@ assert.equal(wxml.includes('catchtouchstart="onWishTouchStart"'), true, '须记�
 assert.equal(wxml.includes('root-portal') || wxml.includes('cover-view'), false, '+1 须用行内 view 渲染，不用 cover-view');
 assert.equal(wxml.includes('bindtap="onTapRow"') && wxml.includes('data-section="soon"'), false, '即将上线行不得整行绑定单一 tap');
 assert.equal(logic.includes('playWishPlusOne') && logic.includes('wishBursts'), true, '必须支持可叠加的 +1 实例');
+assert.match(logic, /pulseWishRowShake\(key\)/, '点击白区须立刻触发 tab 晃动');
 assert.match(logic, /resolveWishBurstOrigin\(key/, '须把触点换算为行内坐标');
 assert.match(logic, /originX:\s*Number\.isFinite\(originX\)/, '+1 实例须记录行内 origin');
 assert.match(logic, /this\.setData\(\{ \.\.\.view, wishBursts, wishPressKey \}\)/, 'refresh 须保留进行中的 +1');

@@ -109,10 +109,24 @@ Page({
     });
   },
 
+  pulseWishRowShake(key) {
+    const apply = () => this.setData({ wishPressKey: key });
+    if (this.data.wishPressKey === key) {
+      this.setData({ wishPressKey: '' }, apply);
+    } else {
+      apply();
+    }
+    clearTimeout(this.wishPressTimers[key]);
+    this.wishPressTimers[key] = setTimeout(() => {
+      if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
+    }, 420);
+  },
+
   onTapComingSoonWish(event) {
     const key = event.currentTarget.dataset.key;
     const item = this.data.comingSoon.find(row => row.key === key);
     if (!item || !item.comingSoon) return;
+    this.pulseWishRowShake(key);
     const fromTap = event.changedTouches && event.changedTouches[0];
     const cached = this.lastWishTouch;
     const touch = fromTap || (cached && { clientX: cached.clientX, clientY: cached.clientY });
@@ -159,21 +173,9 @@ Page({
       originX: Number.isFinite(originX) ? originX : 0,
       originY: Number.isFinite(originY) ? originY : 0
     };
-    const restartShake = () => {
-      this.setData({
-        wishBursts: this.data.wishBursts.concat(burst),
-        wishPressKey: key
-      });
-    };
-    if (this.data.wishPressKey === key) {
-      this.setData({ wishPressKey: '' }, restartShake);
-    } else {
-      restartShake();
-    }
-    clearTimeout(this.wishPressTimers[key]);
-    this.wishPressTimers[key] = setTimeout(() => {
-      if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
-    }, 800);
+    this.setData({
+      wishBursts: this.data.wishBursts.concat(burst)
+    });
     const burstTimer = setTimeout(() => {
       if (!this) return;
       this.setData({ wishBursts: this.data.wishBursts.filter(burst => burst.id !== id) });

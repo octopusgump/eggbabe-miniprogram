@@ -88,18 +88,18 @@ Page({
     const localY = Number(event.detail && event.detail.y);
     const query = wx.createSelectorQuery().in(this);
     query.select(`#wish-area-${key}`).boundingClientRect();
-    query.select(`#wish-row-${key}`).boundingClientRect();
     query.exec(rects => {
       if (!this) return;
       const wishRect = rects && rects[0];
-      const rowRect = rects && rects[1];
-      let originX = localX;
-      let originY = localY;
-      if (wishRect && rowRect && Number.isFinite(localX) && Number.isFinite(localY)) {
-        originX = localX + (wishRect.left - rowRect.left);
-        originY = localY + (wishRect.top - rowRect.top);
+      let clientX = 0;
+      let clientY = 0;
+      if (wishRect) {
+        const x = Number.isFinite(localX) ? localX : wishRect.width / 2;
+        const y = Number.isFinite(localY) ? localY : wishRect.height / 2;
+        clientX = wishRect.left + x;
+        clientY = wishRect.top + y;
       }
-      this.playWishPlusOne(key, originX, originY);
+      this.playWishPlusOne(key, clientX, clientY);
     });
   },
 
@@ -110,14 +110,14 @@ Page({
     this.openComingSoonModal(item);
   },
 
-  playWishPlusOne(key, originX, originY) {
+  playWishPlusOne(key, clientX, clientY) {
     this.wishBurstSeq = (this.wishBurstSeq || 0) + 1;
     const id = `wish-${Date.now()}-${this.wishBurstSeq}`;
     const burst = {
       id,
       key,
-      originX: Number.isFinite(originX) ? originX : 0,
-      originY: Number.isFinite(originY) ? originY : 0
+      clientX: Number.isFinite(clientX) ? clientX : 0,
+      clientY: Number.isFinite(clientY) ? clientY : 0
     };
     const restartShake = () => {
       this.setData({

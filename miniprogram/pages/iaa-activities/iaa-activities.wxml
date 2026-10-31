@@ -63,22 +63,24 @@
           >
             <text class="activities-cta__text">{{item.ctaText}}</text>
           </view>
-          <block wx:for="{{wishBursts}}" wx:key="id" wx:for-item="burst">
-            <view
-              wx:if="{{burst.key === item.key}}"
-              class="activities-wish-float"
-              style="left: {{burst.originX}}px; top: {{burst.originY}}px;"
-              aria-hidden="true"
-            >
-              <text class="activities-wish-float__plus">+1</text>
-              <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
-              <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
-            </view>
-          </block>
         </view>
       </view>
     </view>
   </scroll-view>
+
+  <block wx:for="{{wishBursts}}" wx:key="id">
+    <view
+      class="activities-wish-float"
+      style="left: {{item.clientX}}px; top: {{item.clientY}}px;"
+      aria-hidden="true"
+    >
+      <view class="activities-wish-float__motion">
+        <text class="activities-wish-float__plus">+1</text>
+        <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
+        <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
+      </view>
+    </view>
+  </block>
 
   <view
     wx:if="{{comingSoonModalVisible}}"

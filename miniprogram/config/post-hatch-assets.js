@@ -208,7 +208,8 @@ module.exports = {
     defaultStateAnchors: DEFAULT_STATE_ANCHORS,
     characterStateAnchors: CHARACTER_STATE_ANCHORS,
     sceneActions: {
-      toolbox: `${SCENE_ACTION_ROOT}/ui_3d_scene_toolbox_closed_chest_96_v01_p8_v01.png`,
+      toolbox: `${SCENE_ACTION_ROOT}/ui_3d_scene_toolbox_closed_chest_96_v02_p8_v01.png`,
+      toolboxOpen: `${SCENE_ACTION_ROOT}/ui_3d_scene_toolbox_open_chest_96_v01_p8_v01.png`,
       // 百宝箱四个入口的图标；页面不再自行写死路径。
       toolboxItems: {
         my: '/assets/ui/3d-actions/runtime/ui_3d_tabbar_interaction_gear_flat_96_v04_p8_v01.png',

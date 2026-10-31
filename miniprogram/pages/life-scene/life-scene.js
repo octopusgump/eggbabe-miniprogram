@@ -359,7 +359,11 @@ Page({
     pendingCompanionMemory: null,
     memoryGuideVisible: false,
     toolboxVisible: false,
+    toolboxMotion: 'closed',
+    toolboxChestOpen: false,
     toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
+    toolboxIconClosed: assets.POST_HATCH.sceneActions.toolbox,
+    toolboxIconOpen: assets.POST_HATCH.sceneActions.toolboxOpen,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
     toolboxDiaryIcon: assets.POST_HATCH.sceneActions.toolboxItems.card,
     toolboxActivityIcon: assets.POST_HATCH.sceneActions.toolboxItems.activities,
@@ -587,6 +591,8 @@ Page({
           companionLetterArriving: false,
           companionNavigating: false,
           toolboxVisible: false,
+          toolboxMotion: 'closed',
+          toolboxChestOpen: false,
           todayCompanionView: todayResult.data,
           todayCompanionGameInvitation: Boolean(game),
           todayCompanionActivityIcon: game && game.icon || '',
@@ -1437,7 +1443,8 @@ Page({
 
   onOpenToolboxActivity() {
     if (this.data.companionNavigating) return;
-    this.setData({ toolboxVisible: false, memoryGuideVisible: false, companionNavigating: true });
+    this.closeToolbox({ instant: true });
+    this.setData({ companionNavigating: true });
     this.returningFromChild = true;
     wx.navigateTo({
       url: '/pages/iaa-activities/iaa-activities?entry=room',
@@ -1451,7 +1458,7 @@ Page({
   },
 
   onOpenToolboxDiary() {
-    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.closeToolbox({ instant: true });
     this.returningFromChild = true;
     wx.navigateTo({
       url: '/pages/collection-card/collection-card',
@@ -1463,7 +1470,7 @@ Page({
   },
 
   onOpenToolboxSettings() {
-    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.closeToolbox({ instant: true });
     this.onOpenMySettings();
   },
 
@@ -1554,9 +1561,59 @@ Page({
     } catch (error) { this.releaseLetterSound(); }
     this.letterArrivalTimer = setTimeout(() => { if (this.pageActive) this.setData({ companionLetterArriving: false }); this.releaseLetterSound(); }, 1050);
   },
-  onToggleToolbox() { this.setData({ toolboxVisible: !this.data.toolboxVisible }); },
+  clearToolboxMotionTimer() {
+    clearTimeout(this.toolboxMotionTimer);
+    clearTimeout(this.toolboxChestTimer);
+    this.toolboxMotionTimer = null;
+    this.toolboxChestTimer = null;
+  },
+  closeToolbox(options) {
+    const instant = Boolean(options && options.instant) || this.data.reducedMotion;
+    this.clearToolboxMotionTimer();
+    if (!this.data.toolboxVisible && this.data.toolboxMotion === 'closed') return;
+    if (instant) {
+      this.setData({ toolboxVisible: false, toolboxMotion: 'closed', toolboxChestOpen: false, memoryGuideVisible: false });
+      return;
+    }
+    this.setData({ toolboxMotion: 'closing', toolboxChestOpen: false, memoryGuideVisible: false });
+    this.toolboxMotionTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxVisible: false, toolboxMotion: 'closed' });
+      this.toolboxMotionTimer = null;
+    }, 200);
+  },
+  startToolboxOpen() {
+    this.clearToolboxMotionTimer();
+    this.setData({ toolboxVisible: true, toolboxMotion: 'opening', toolboxChestOpen: false, memoryGuideVisible: false });
+    this.toolboxChestTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxChestOpen: true });
+      this.toolboxChestTimer = null;
+    }, 80);
+    this.toolboxMotionTimer = setTimeout(() => {
+      if (!this.pageActive) return;
+      this.setData({ toolboxMotion: 'open' });
+      this.toolboxMotionTimer = null;
+    }, 360);
+  },
+  onToggleToolbox() {
+    if (this.data.reducedMotion) {
+      const next = !this.data.toolboxVisible;
+      this.clearToolboxMotionTimer();
+      this.setData({
+        toolboxVisible: next,
+        toolboxMotion: next ? 'open' : 'closed',
+        toolboxChestOpen: next,
+        memoryGuideVisible: false
+      });
+      return;
+    }
+    if (this.data.toolboxMotion === 'opening' || this.data.toolboxMotion === 'closing') return;
+    if (this.data.toolboxVisible && this.data.toolboxMotion === 'open') this.closeToolbox();
+    else if (!this.data.toolboxVisible) this.startToolboxOpen();
+  },
   onOpenMemoryAlbum(section) {
-    this.setData({ toolboxVisible: false, memoryGuideVisible: false });
+    this.closeToolbox({ instant: true });
     this.returningFromChild = true;
     const tab = section === 'activities' ? '&section=activities' : '';
     wx.navigateTo({ url: `/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room${tab}`,
@@ -1931,6 +1988,7 @@ Page({
   },
   onUnload() {
     this.pageActive = false;
+    this.clearToolboxMotionTimer();
     this.stopClock();
     clearTimeout(this.companionStarAwardTimer);
     this.releaseStarAwardSound();

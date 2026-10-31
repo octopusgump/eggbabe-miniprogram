@@ -45,7 +45,8 @@ Page({
 
   onLoad(query) {
     this.roomEntry = Boolean(query && query.entry === 'room');
-    this.setData({ roomEntry: this.roomEntry });
+    const section = query && query.section === 'activities' ? 'activities' : 'memories';
+    this.setData({ roomEntry: this.roomEntry, section });
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.on) channel.on('roomActivityContext', context => { this.activityContext = context; });
     this.refreshTea();
@@ -153,7 +154,9 @@ Page({
   onRetrySelectedPhoto() { this.setData({ selectedPhotoFailed: false, selectedPhotoReady: false }); },
   onCollectPendingPhoto() {
     const photo = this.data.selectedMemory;
-    if (!photo || !this.data.selectedPhotoReady || !stars.collectPhoto(photo.id).ok) return;
+    if (!photo || !this.data.selectedPhotoReady) return;
+    const result = stars.collectPhoto(photo.id);
+    if (!result.ok) { wx.showToast({ title: result.error && result.error.message || '照片没有收好，请再试一次', icon: 'none' }); return; }
     this.setData({ selectedMemory: null, selectedGridKey: '' });
     this.loadAlbum(ALBUM_MODES.READY);
   },
@@ -170,7 +173,7 @@ Page({
       if (!context.atHome) { wx.showToast({ title: '等它回家，再一起喝茶吧', icon: 'none' }); return; }
       if (!context.teaImage) { wx.showToast({ title: '茶会还没准备好，请稍后再试', icon: 'none' }); return; }
       const result = stars.beginTeaActivity({ id: `tea-${Date.now()}-${++teaSequence}`, photo: { image: context.teaImage, title: '窗边茶会', line: '一起在窗边喝了一杯茶。' } });
-      if (!result.ok) { wx.showToast({ title: '星星还不够，先陪它一会儿吧', icon: 'none' }); return; }
+      if (!result.ok) { wx.showToast({ title: result.error && result.error.message || '星星还不够，先陪它一会儿吧', icon: 'none' }); return; }
     }
     this.setData({ teaVisible: true, selectedActivity: null, teaPhotoReady: false, teaPhotoFailed: false });
     this.refreshTea();
@@ -178,7 +181,8 @@ Page({
   onChooseTea(event) {
     const key = event.currentTarget.dataset.key;
     if (!this.data.teaOptions.some(item => item.key === key)) return;
-    stars.chooseTea(key);
+    const result = stars.chooseTea(key);
+    if (!result.ok) { wx.showToast({ title: result.error && result.error.message || '刚才没有记下来，请再试一次', icon: 'none' }); return; }
     this.refreshTea();
   },
   onTeaPhotoLoad() { this.setData({ teaPhotoReady: true, teaPhotoFailed: false }); },
@@ -187,12 +191,14 @@ Page({
   onConfirmTea() {
     if (!this.data.teaPhotoReady || this.data.teaPhotoFailed) return;
     const result = stars.confirmTeaActivity();
-    if (!result.ok) { wx.showToast({ title: '星星还不够，先陪它一会儿吧', icon: 'none' }); return; }
+    if (!result.ok) { wx.showToast({ title: result.error && result.error.message || '星星还不够，先陪它一会儿吧', icon: 'none' }); return; }
     this.refreshTea();
   },
   onCloseTea() { this.setData({ teaVisible: false }); },
   onCollectTea() {
-    if (!this.data.teaPhotoReady || this.data.teaPhotoFailed || !stars.collectTeaActivity().ok) return;
+    if (!this.data.teaPhotoReady || this.data.teaPhotoFailed) return;
+    const result = stars.collectTeaActivity();
+    if (!result.ok) { wx.showToast({ title: result.error && result.error.message || '照片没有收好，请再试一次', icon: 'none' }); return; }
     this.setData({ teaVisible: false, section: 'memories' });
     this.refreshTea();
     this.loadAlbum(ALBUM_MODES.READY);

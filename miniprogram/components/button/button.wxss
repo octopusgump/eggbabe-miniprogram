@@ -22,6 +22,14 @@
   transform: scale(0.98);
 }
 
+.btn-icon {
+  display: block;
+  flex: none;
+  width: 44rpx;
+  height: 44rpx;
+  margin-right: 16rpx;
+}
+
 .btn-text {
   font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 30rpx; /* 15px */
@@ -45,6 +53,15 @@
   color: #002900; /* --ink */
 }
 
+/* 邀请信/收下：Figma 活动入口 1.5px 描边，浅色半透明墨绿，避免深 #002900 粗描边。 */
+.btn--secondary-soft {
+  background: transparent;
+  border: 3rpx solid rgba(0, 41, 0, 0.24);
+}
+.btn--secondary-soft .btn-text {
+  color: #002900;
+}
+
 .btn--danger {
   background: #D9463C; /* --error */
 }
@@ -60,3 +77,9 @@
   .btn { transition: none; }
   .btn--pressed { transform: none; }
 }
+
+/* 邀请信件的小按钮；未指定 size 的原有按钮保持原样。 */
+.btn--small { height: 80rpx; padding: 0 36rpx; }
+.btn--small .btn-text { font-size: 28rpx; font-weight: 500; letter-spacing: 0; }
+.btn--small.btn--text-icon { padding: 0 20rpx; }
+.btn-icon--text { display: flex; align-items: center; justify-content: center; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: 36rpx; font-weight: 400; line-height: 1; }

@@ -1,6 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "companion-star": "../companion-star/companion-star"
+    "companion-star": "../companion-star/companion-star",
+    "companion-roll-number": "../companion-roll-number/companion-roll-number"
   }
 }

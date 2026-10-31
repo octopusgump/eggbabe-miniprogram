@@ -33,13 +33,13 @@ const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayTemplate = roomTemplate.slice(overlayStart, roomTemplate.indexOf('<daily-window-detail', overlayStart));
 const letterStart = overlayTemplate.search(/class="today-companion-letter(?:\s|")/);
 const letterTemplate = overlayTemplate.slice(letterStart);
-assert.equal(overlayTemplate.includes('<companion-star mode="award" size="280"'), true, '开信收星星星宽约 140px（280rpx）');
+assert.equal(overlayTemplate.includes('<companion-star mode="award" size="150"'), true, '开信收星星星宽 150rpx（约屏宽 20%，对齐 Figma / 听你说页）');
 assert.equal(overlayTemplate.includes('wx:if="{{todayCompanionAwardedStars > 0}}" class="today-companion-award'), true, '收星动效只在真实获得星星时挂载');
 assert.equal(overlayTemplate.indexOf('today-companion-award') < letterStart, true, '星星在信纸之外，不进入正文流');
 assert.equal(/todayCompanionAwardedStars|companion-star|✦/.test(letterTemplate), false, '信纸正文内不再显示星星或“✦ +1”');
 assert.equal(overlayTemplate.includes('+{{todayCompanionAwardedStars}}'), true, '保留 +1 数字');
 assert.equal((starTemplate.match(/companion-star__spark--\d/g) || []).length, 7, '光点保持 7 个（5–8 范围内）');
-assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:280rpx;/, '开信星星绝对定位在信纸上方居中');
+assert.match(roomStyles, /\.today-companion-award\{position:absolute;left:50%;bottom:100%;width:150rpx;/, '开信星星绝对定位在信纸上方居中，尺寸 150rpx');
 assert.match(
   roomStyles,
   /\.today-companion-letter__game-action,.today-companion-letter__letter-action\{flex:0 1 560rpx;/,

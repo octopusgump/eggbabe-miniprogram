@@ -109,7 +109,7 @@
 .today-companion-overlay{position:fixed;z-index:400;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(80rpx + env(safe-area-inset-top)) 30rpx calc(48rpx + env(safe-area-inset-bottom));background:rgba(29,34,30,.38)}
 /* 收星：开信星星约 140px（280rpx），与 +N 同轴浮在信纸上方；反馈页仍用 150rpx。 */
 .today-companion-stage{position:relative;width:100%}
-.today-companion-award{position:absolute;left:50%;bottom:100%;width:280rpx;height:280rpx;margin-bottom:24rpx;transform:translateX(-50%);pointer-events:none}
+.today-companion-award{position:absolute;left:50%;bottom:100%;width:150rpx;height:150rpx;margin-bottom:20rpx;transform:translateX(-50%);pointer-events:none}
 .today-companion-award__plus{position:absolute;left:100%;top:50%;margin-left:26rpx;margin-top:-34rpx;color:#FFDD79;font-size:44rpx;font-weight:700;line-height:68rpx;white-space:nowrap;text-shadow:0 2rpx 8rpx rgba(72,50,12,.35);transform-origin:30% 60%;animation:today-companion-award-plus .85s cubic-bezier(.2,.9,.3,1) .88s both}
 .today-companion-award--reduced .today-companion-award__plus{animation:none}
 @media (prefers-reduced-motion:reduce){.today-companion-award__plus{animation:none}}

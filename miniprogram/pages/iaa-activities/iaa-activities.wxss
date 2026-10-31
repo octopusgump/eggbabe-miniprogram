@@ -11,12 +11,14 @@
   border-bottom: none;
 }
 
-.activities-notice {
+.system-notice-anchor {
   position: fixed;
-  left: 0;
-  right: 0;
-  top: calc(env(safe-area-inset-top) + 112rpx);
-  z-index: 20;
+  z-index: 120;
+  top: calc(148rpx + env(safe-area-inset-top));
+  left: 72rpx;
+  right: 72rpx;
+  display: flex;
+  justify-content: center;
   pointer-events: none;
 }
 

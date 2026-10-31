@@ -1,6 +1,6 @@
 <view class="activities-page">
   <nav-bar title="" show-back="{{true}}"></nav-bar>
-  <view class="activities-notice">
+  <view class="system-notice-anchor">
     <inline-notice text="{{noticeText}}" tone="{{noticeTone}}" visible="{{noticeVisible}}"></inline-notice>
   </view>
   <scroll-view class="activities-scroll" scroll-y>

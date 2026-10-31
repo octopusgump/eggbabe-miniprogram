@@ -83,5 +83,23 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   assert.equal(navigatedBack, beforeCustomBack, '只对选择接管返回的页面停止自动导航');
   nav.properties.customBack = false; navDefinition.methods.onBack.call(nav);
   assert.equal(navigatedBack, beforeCustomBack + 1, '其他页面保留原返回行为');
+  const dailyPet = { id: 'listen-daily-done', ownerId: 'owner', lifecycleStage: 'HATCHED', prototype: '锦鲤' };
+  stars.configureRoom(dailyPet.id, dailyPet);
+  stars.getDailyInvitation(['listen'], () => 0);
+  await stars.recordLetterOpen((await stars.getRoomStarView()).data);
+  const rules = require('../listen-rules');
+  const todayKey = require('../companion-star-rules').shanghaiDate();
+  stars.saveListeningState({
+    cursors: {},
+    day: { date: todayKey, categories: rules.bank.categories.map(category => category.id) },
+    draft: null,
+    pendingResult: null,
+    results: {}
+  });
+  const dailyDone = page();
+  dailyDone.onLoad();
+  assert.equal(dailyDone.data.view, 'end');
+  assert.equal(dailyDone.data.title, '明天再来', '当天额度用尽须与 Figma 一致展示明天再来');
+  assert.equal(dailyDone.data.endText, '');
   console.log('听你说页面行为通过：中途退出恢复、可选文字、五题反馈、原声震时点、重开不重播、后续组零星、写失败保留。');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { global.setTimeout = savedTimeout; global.clearTimeout = savedClear; });

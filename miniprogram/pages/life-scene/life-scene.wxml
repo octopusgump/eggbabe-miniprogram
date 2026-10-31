@@ -141,7 +141,7 @@
 
     <view wx:if="{{toolboxVisible}}" class="toolbox-dismiss" bindtap="onToggleToolbox"></view>
     <view wx:if="{{toolboxVisible}}" class="companion-toolbox" catchtap="noop">
-      <view wx:if="{{listenToolboxEntryVisible}}" class="companion-toolbox__item" aria-role="button" aria-label="继续听你说" bindtap="onOpenListenFromToolbox"><image src="{{listenToolboxIcon}}" mode="aspectFit"></image><text>听你说</text></view>
+      <view wx:if="{{listenToolboxEntryVisible}}" class="companion-toolbox__item" aria-role="button" aria-label="听你说" bindtap="onOpenListenFromToolbox"><image src="{{listenToolboxIcon}}" mode="aspectFit"></image><text>听你说</text></view>
       <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
     </view>
     <view wx:if="{{memoryGuideVisible}}" class="companion-memory-guide" bindtap="onToggleToolbox">打开百宝箱，看看回忆</view>

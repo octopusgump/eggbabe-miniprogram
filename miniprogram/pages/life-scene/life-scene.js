@@ -15,7 +15,6 @@ const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
 const letterActivityProgress = require('../../services/companion-letter-progress');
-const listenAdapter = require('../../services/listen-adapter');
 const companionPetImage = require('../../utils/companion-pet-image');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
@@ -238,12 +237,9 @@ function contextActionPresentation(pet, chatAccess) {
   };
 }
 
-// 听你说首组完成后：左下仅宠物聊天；当天仍有未答类别时，从百宝箱再进听你说页。
-function listenRoomHasMoreCategories() {
-  const kind = starAdapter.getTodayInvitationKind();
-  if (kind !== 'listen' || !starAdapter.getActivityCompleted('listen')) return false;
-  const state = listenAdapter.getState();
-  return Boolean(state.ok && state.data && state.data.categories.length && !state.data.exhausted);
+// 听你说首组完成后：左下仅宠物聊天；继续/回看听你说统一从百宝箱进入（当天答完仍保留入口，页内展示「明天再来」）。
+function listenToolboxEntryVisibleForRoom(atHome, todayActivityKind, listenDone) {
+  return Boolean(atHome && todayActivityKind === 'listen' && listenDone);
 }
 
 function roomContextEntry(pet, chatAccess, options) {
@@ -794,7 +790,7 @@ Page({
         contextEntryOpensChat: contextEntry.opensChat,
         contextEntryOpensListen: false,
         contextEntryFlatEnvelope: contextEntry.flatEnvelope,
-        listenToolboxEntryVisible: currentState.atHome && todayActivityKind === 'listen' && listenDone && listenRoomHasMoreCategories(),
+        listenToolboxEntryVisible: listenToolboxEntryVisibleForRoom(currentState.atHome, todayActivityKind, listenDone),
         contextEntryAriaLabel: contextEntry.entryAriaLabel,
         currentScreen: screen,
         scrollLeft: screen * this.data.panelWidth,
@@ -1414,7 +1410,7 @@ Page({
       contextEntryOpensListen: false,
       contextEntryFlatEnvelope: entry.flatEnvelope,
       contextEntryAriaLabel: entry.entryAriaLabel,
-      listenToolboxEntryVisible: atHome && todayActivityKind === 'listen' && listenDone && listenRoomHasMoreCategories()
+      listenToolboxEntryVisible: listenToolboxEntryVisibleForRoom(atHome, todayActivityKind, listenDone)
     }, extra || {}));
   },
 

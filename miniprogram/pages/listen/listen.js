@@ -128,7 +128,18 @@ Page({
     if (!state.completedToday) { this.startGroup(); return; }
     this.setData({ view: 'choices', categories: state.categories, error: '' });
   },
-  showEnd(state) { this.setData({ view: 'end', title: state.exhausted ? '这些小事都听你说过啦' : '今天先聊到这里', endText: state.exhausted ? '等有新的小事，我们再慢慢聊。' : '明天再接着说。', error: '', busy: false }); },
+  showEnd(state) {
+    let title = '今天先聊到这里';
+    let endText = '明天再接着说。';
+    if (state.exhausted) {
+      title = '这些小事都听你说过啦';
+      endText = '等有新的小事，我们再慢慢聊。';
+    } else if (!state.categories.length && state.completedToday) {
+      title = '明天再来';
+      endText = '';
+    }
+    this.setData({ view: 'end', title, endText, error: '', busy: false });
+  },
   onBack() {
     if (!this.saveCurrent().ok) return false;
     if (this.resultId && stars.getRoomScope() === this.scope) {

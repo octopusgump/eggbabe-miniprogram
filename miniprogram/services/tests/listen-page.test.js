@@ -75,6 +75,10 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   assert.ok(template.includes('listen-quote-mark.svg'), '反馈 Quote 须使用 Figma 双引号 SVG');
   assert.ok(template.includes('写下你的想法...')); assert.ok(!template.includes('我想自己说'));
   assert.ok(template.includes('谢谢你说给我听') || template.includes('rewardLabel'), '第 2 组起展示谢谢你说给我听');
+  assert.ok(template.includes('feedback-reward-dots'), '非收星反馈须含黄色 ✦ 标记类名');
+  const styles = fs.readFileSync(path.join(root, 'pages/listen/listen.wxss'), 'utf8');
+  assert.match(styles, /\.feedback-reward-dots\s*\{[^}]*color:\s*#FFDD79/, '✦ 须为 #FFDD79');
+  assert.ok(template.includes('title="{{navTitle}}"'), '导航栏须绑定 navTitle');
   assert.ok(template.includes('listen-thank-spark-1-v02.png') && template.includes('listen-thank-spark-3-v02.png'), '非收星反馈须使用 Figma 星点 PNG 三处定位');
   for (const file of ['listen-thank-spark-1-v02.png', 'listen-thank-spark-2-v02.png', 'listen-thank-spark-3-v02.png']) {
     const sparkPath = path.join(root, 'assets/icons', file);
@@ -118,6 +122,7 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   dailyDone.onLoad();
   assert.equal(dailyDone.data.view, 'end');
   assert.equal(dailyDone.data.title, '明天再来', '当天额度用尽须与 Figma 一致展示明天再来');
+  assert.equal(dailyDone.data.navTitle, '明天再来', '五类答完须同步导航栏标题为明天再来');
   assert.equal(dailyDone.data.endText, '');
   console.log('听你说页面行为通过：中途退出恢复、可选文字、五题反馈、原声震时点、重开不重播、后续组零星、写失败保留。');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { global.setTimeout = savedTimeout; global.clearTimeout = savedClear; });

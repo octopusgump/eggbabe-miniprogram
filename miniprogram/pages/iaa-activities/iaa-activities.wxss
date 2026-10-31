@@ -109,7 +109,7 @@
 
 .activities-row--coming-soon.activities-row--wish-shake {
   z-index: 2;
-  animation: activities-row-wish-shake 420ms ease-in-out;
+  animation: activities-row-wish-shake 280ms ease-out;
 }
 
 @keyframes activities-row-wish-shake {
@@ -117,17 +117,11 @@
   100% {
     transform: translateX(0);
   }
-  18% {
-    transform: translateX(-6rpx);
+  35% {
+    transform: translateX(-3rpx);
   }
-  36% {
-    transform: translateX(6rpx);
-  }
-  54% {
-    transform: translateX(-4rpx);
-  }
-  72% {
-    transform: translateX(4rpx);
+  70% {
+    transform: translateX(3rpx);
   }
 }
 

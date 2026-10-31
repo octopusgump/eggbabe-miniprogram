@@ -160,7 +160,7 @@ Page({
     clearTimeout(this.wishPressTimers[key]);
     this.wishPressTimers[key] = setTimeout(() => {
       if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
-    }, 420);
+    }, 280);
   },
 
   onTapComingSoonWish(event) {

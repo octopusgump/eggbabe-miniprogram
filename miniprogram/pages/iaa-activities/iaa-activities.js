@@ -90,6 +90,25 @@ Page({
     };
   },
 
+  resolveWishBurstOrigin(key, clientX, clientY, callback) {
+    const query = wx.createSelectorQuery().in(this);
+    query.select(`#wish-row-${key}`).boundingClientRect();
+    query.exec(rects => {
+      if (!this) return;
+      const rowRect = rects && rects[0];
+      let originX = Number.isFinite(clientX) ? clientX : 0;
+      let originY = Number.isFinite(clientY) ? clientY : 0;
+      if (rowRect && Number.isFinite(clientX) && Number.isFinite(clientY)) {
+        originX = clientX - rowRect.left;
+        originY = clientY - rowRect.top;
+      } else if (rowRect) {
+        originX = rowRect.width * 0.45;
+        originY = rowRect.height * 0.35;
+      }
+      callback(originX, originY);
+    });
+  },
+
   onTapComingSoonWish(event) {
     const key = event.currentTarget.dataset.key;
     const item = this.data.comingSoon.find(row => row.key === key);
@@ -98,25 +117,29 @@ Page({
     const cached = this.lastWishTouch;
     const touch = fromTap || (cached && { clientX: cached.clientX, clientY: cached.clientY });
     if (touch && Number.isFinite(touch.clientX) && Number.isFinite(touch.clientY)) {
-      this.playWishPlusOne(key, touch.clientX, touch.clientY);
+      this.resolveWishBurstOrigin(key, touch.clientX, touch.clientY, (originX, originY) => {
+        this.playWishPlusOne(key, originX, originY);
+      });
       return;
     }
     const localX = Number(event.detail && event.detail.x);
     const localY = Number(event.detail && event.detail.y);
     const query = wx.createSelectorQuery().in(this);
     query.select(`#wish-area-${key}`).boundingClientRect();
+    query.select(`#wish-row-${key}`).boundingClientRect();
     query.exec(rects => {
       if (!this) return;
       const wishRect = rects && rects[0];
-      let clientX = 0;
-      let clientY = 0;
-      if (wishRect) {
+      const rowRect = rects && rects[1];
+      let originX = 0;
+      let originY = 0;
+      if (wishRect && rowRect) {
         const x = Number.isFinite(localX) ? localX : wishRect.width / 2;
         const y = Number.isFinite(localY) ? localY : wishRect.height / 2;
-        clientX = wishRect.left + x;
-        clientY = wishRect.top + y;
+        originX = wishRect.left - rowRect.left + x;
+        originY = wishRect.top - rowRect.top + y;
       }
-      this.playWishPlusOne(key, clientX, clientY);
+      this.playWishPlusOne(key, originX, originY);
     });
   },
 
@@ -127,21 +150,20 @@ Page({
     this.openComingSoonModal(item);
   },
 
-  playWishPlusOne(key, clientX, clientY) {
+  playWishPlusOne(key, originX, originY) {
     this.wishBurstSeq = (this.wishBurstSeq || 0) + 1;
     const id = `wish-${Date.now()}-${this.wishBurstSeq}`;
     const burst = {
       id,
       key,
-      clientX: Number.isFinite(clientX) ? clientX : 0,
-      clientY: Number.isFinite(clientY) ? clientY : 0,
-      anim: ''
+      originX: Number.isFinite(originX) ? originX : 0,
+      originY: Number.isFinite(originY) ? originY : 0
     };
     const restartShake = () => {
       this.setData({
         wishBursts: this.data.wishBursts.concat(burst),
         wishPressKey: key
-      }, () => this.runWishBurstAnimation(id));
+      });
     };
     if (this.data.wishPressKey === key) {
       this.setData({ wishPressKey: '' }, restartShake);
@@ -157,23 +179,6 @@ Page({
       this.setData({ wishBursts: this.data.wishBursts.filter(burst => burst.id !== id) });
     }, 820);
     this.wishBurstTimers.push(burstTimer);
-  },
-
-  runWishBurstAnimation(id) {
-    const anim = wx.createAnimation({
-      duration: 800,
-      timingFunction: 'cubic-bezier(0.2, 0.9, 0.3, 1)',
-      transformOrigin: '50% 50%'
-    });
-    anim.opacity(0).scale(0.45).translateY(8).step({ duration: 0 });
-    anim.opacity(1).scale(1.12).translateY(-4).step({ duration: 80 });
-    anim.opacity(1).scale(1).translateY(-8).step({ duration: 80 });
-    anim.opacity(0).translateY(-140).step({ duration: 640 });
-    const animExport = anim.export();
-    const wishBursts = this.data.wishBursts.map(row => (
-      row.id === id ? { ...row, anim: animExport } : row
-    ));
-    this.setData({ wishBursts });
   },
 
   openComingSoonModal(item) {

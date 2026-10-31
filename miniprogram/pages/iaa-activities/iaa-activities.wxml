@@ -64,6 +64,20 @@
           >
             <text class="activities-cta__text">{{item.ctaText}}</text>
           </view>
+          <block wx:for="{{wishBursts}}" wx:for-item="burst" wx:key="id">
+            <view
+              wx:if="{{burst.key === item.key}}"
+              class="activities-wish-float"
+              style="left: {{burst.originX}}px; top: {{burst.originY}}px;"
+              aria-hidden="true"
+            >
+              <view class="activities-wish-float__motion">
+                <text class="activities-wish-float__plus">+1</text>
+                <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
+                <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
+              </view>
+            </view>
+          </block>
         </view>
       </view>
     </view>
@@ -94,19 +108,3 @@
     </view>
   </view>
 </view>
-
-<root-portal>
-  <cover-view wx:if="{{wishBursts.length}}" class="activities-wish-cover-layer" aria-hidden="true">
-    <cover-view
-      wx:for="{{wishBursts}}"
-      wx:key="id"
-      class="activities-wish-cover-burst"
-      style="left: {{item.clientX}}px; top: {{item.clientY}}px;"
-      animation="{{item.anim}}"
-    >
-      <cover-view class="activities-wish-cover-burst__plus">+1</cover-view>
-      <cover-view class="activities-wish-cover-burst__spark activities-wish-cover-burst__spark--1">✦</cover-view>
-      <cover-view class="activities-wish-cover-burst__spark activities-wish-cover-burst__spark--2">✦</cover-view>
-    </cover-view>
-  </cover-view>
-</root-portal>

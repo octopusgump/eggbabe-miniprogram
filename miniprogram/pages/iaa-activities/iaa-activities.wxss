@@ -144,38 +144,108 @@
   box-sizing: border-box;
 }
 
-/* +1 必须用 cover-view + root-portal，才能盖过原生 scroll-view */
-.activities-wish-cover-layer {
-  position: fixed;
+/* 行内 +1：与 tab 同层渲染，避免 cover-view 在开发者工具不显示 */
+.activities-wish-float {
+  position: absolute;
+  z-index: 40;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.activities-wish-float__motion {
+  position: absolute;
   left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 10000;
+  animation: activities-wish-float-motion 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
-.activities-wish-cover-burst {
-  position: fixed;
-  width: 48px;
-  height: 28px;
-  margin-left: -24px;
-  margin-top: -14px;
-  overflow: visible;
-}
-
-.activities-wish-cover-burst__plus {
+.activities-wish-float__plus {
+  display: block;
   color: #FFDD79;
-  font-size: 20px;
+  font-size: 40rpx;
   font-weight: 700;
-  line-height: 22px;
-  text-align: center;
+  line-height: 1;
   white-space: nowrap;
+  text-shadow: 0 0 16rpx rgba(255, 191, 26, 0.45);
+  transform: translate(-50%, -50%);
+}
+
+.activities-wish-float__spark {
+  position: absolute;
+  color: #FFDD79;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+
+.activities-wish-float__spark--1 {
+  left: -20rpx;
+  top: 8rpx;
+  font-size: 18rpx;
+}
+
+.activities-wish-float__spark--2 {
+  left: 16rpx;
+  top: -12rpx;
+  font-size: 14rpx;
+}
+
+@keyframes activities-wish-float-motion {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(16rpx) scale(0.45);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-8rpx) scale(1.14);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-4rpx) scale(1);
+  }
+  22% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) translateY(-56rpx) scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-80rpx) scale(1);
+  }
+  40% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) translateY(-112rpx) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-136rpx) scale(1);
+  }
+  60% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) translateY(-168rpx) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-192rpx) scale(1);
+  }
+  80% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) translateY(-216rpx) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-280rpx) scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .activities-row--wish-shake {
     animation: none;
+  }
+  .activities-wish-float__motion {
+    animation: none;
+    opacity: 0;
   }
 }
 

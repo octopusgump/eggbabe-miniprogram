@@ -11,7 +11,12 @@ Page({
     comingSoon: [],
     noticeText: '',
     noticeVisible: false,
-    noticeTone: 'info'
+    noticeTone: 'info',
+    comingSoonModalVisible: false,
+    comingSoonModalTitle: '',
+    comingSoonModalIcon: '',
+    comingSoonModalTag: '下期',
+    comingSoonModalLines: []
   },
 
   onLoad() {
@@ -60,7 +65,7 @@ Page({
     const item = list.find(row => row.key === key);
     if (!item || item.disabled) return;
     if (item.comingSoon) {
-      this.showNotice('这个玩法还在准备中。', 'info');
+      this.openComingSoonModal(item);
       return;
     }
     if (!item.route) {
@@ -72,6 +77,29 @@ Page({
       fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
     });
   },
+
+  openComingSoonModal(item) {
+    const lines = Array.isArray(item.modalLines) && item.modalLines.length
+      ? item.modalLines
+      : [`${item.title}玩法还在准备中，下期就和你见面～`, '上线后会在这里第一时间亮起来。'];
+    this.setData({
+      comingSoonModalVisible: true,
+      comingSoonModalTitle: item.title,
+      comingSoonModalIcon: item.icon,
+      comingSoonModalTag: item.phaseTag || '下期',
+      comingSoonModalLines: lines
+    });
+  },
+
+  onCloseComingSoonModal() {
+    this.setData({ comingSoonModalVisible: false });
+  },
+
+  onComingSoonOverlayTap() {
+    this.onCloseComingSoonModal();
+  },
+
+  onComingSoonDialogTap() {},
 
   onUnload() {
     clearTimeout(this.noticeTimer);

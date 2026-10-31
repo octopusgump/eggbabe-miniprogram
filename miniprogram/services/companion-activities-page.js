@@ -14,7 +14,20 @@ function row(key, title, icon, options) {
     return { key, title, icon, disabled: true, ctaText: '明天再来', ctaWide: true, route: '', comingSoon: false, dimmed: false, earn: false };
   }
   if (options.comingSoon) {
-    return { key, title, icon, disabled: false, ctaText: '想玩', ctaWide: false, route: '', comingSoon: true, dimmed: true, earn: false };
+    return {
+      key,
+      title,
+      icon,
+      disabled: false,
+      ctaText: '想玩',
+      ctaWide: false,
+      route: '',
+      comingSoon: true,
+      dimmed: true,
+      earn: false,
+      phaseTag: options.phaseTag || '下期',
+      modalLines: options.modalLines || []
+    };
   }
   if (options.earn) {
     return { key, title, icon, disabled: false, ctaPrefix: '赚', ctaSuffix: '10', ctaWide: false, route: options.route || '', comingSoon: false, dimmed: false, earn: true, cost: 10 };
@@ -55,7 +68,13 @@ function buildView(starBalance) {
       row('travel', '旅行', assets.icons.travel, { route: '', cost: 20 }),
       row('work', '打工', assets.icons.work, { earn: true, route: '', cost: 10 })
     ],
-    comingSoon: [row('friend', '交友', assets.icons.friend, { comingSoon: true })]
+    comingSoon: [
+      row('friend', '交友', assets.icons.friend, {
+        comingSoon: true,
+        phaseTag: '下期',
+        modalLines: ['交友玩法还在准备中，下期就和你见面～', '上线后会在这里第一时间亮起来。']
+      })
+    ]
   };
 }
 

@@ -10,6 +10,8 @@ stars.resetRoomStarView('AVAILABLE');
   assert.equal(view.playable.length, 5);
   assert.equal(view.comingSoon.length, 1);
   assert.equal(view.comingSoon[0].title, '交友');
+  assert.equal(view.comingSoon[0].phaseTag, '下期');
+  assert.ok(view.comingSoon[0].modalLines[0].includes('交友玩法还在准备中'));
   assert.equal(view.playable.find(row => row.key === 'listen').route, '/pages/listen/listen');
   assert.equal(view.playable.find(row => row.key === 'drawing').route, '/pages/doodle/doodle?entry=companion');
   assert.ok(view.starBalanceIcon.includes('/assets/ui/activity-list/runtime/'));

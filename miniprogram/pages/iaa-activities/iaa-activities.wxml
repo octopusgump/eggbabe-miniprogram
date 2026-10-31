@@ -47,4 +47,26 @@
       </view>
     </view>
   </scroll-view>
+
+  <view
+    wx:if="{{comingSoonModalVisible}}"
+    class="activities-coming-soon-overlay"
+    aria-role="dialog"
+    aria-label="{{comingSoonModalTitle}}玩法说明"
+    catchtap="onComingSoonOverlayTap"
+  >
+    <view class="activities-coming-soon-dialog" catchtap="onComingSoonDialogTap">
+      <view class="activities-coming-soon-icon-wrap">
+        <image class="activities-coming-soon-icon" src="{{comingSoonModalIcon}}" mode="aspectFit"></image>
+      </view>
+      <view class="activities-coming-soon-heading">
+        <text class="activities-coming-soon-title">{{comingSoonModalTitle}}</text>
+        <text class="activities-coming-soon-tag">{{comingSoonModalTag}}</text>
+      </view>
+      <view class="activities-coming-soon-copy">
+        <text wx:for="{{comingSoonModalLines}}" wx:key="*this" class="activities-coming-soon-line">{{item}}</text>
+      </view>
+      <app-button text="知道了" variant="primary" bind:tap="onCloseComingSoonModal"></app-button>
+    </view>
+  </view>
 </view>

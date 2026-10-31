@@ -25,7 +25,7 @@ assert.equal(app.pages[0], 'pages/welcome/welcome', '正式启动页保持欢迎
 assert.equal(/tabBar[\s\S]*iaa-core-review/.test(JSON.stringify(app.tabBar)), false, '开发验收页不得进入正式 tabBar');
 assert.equal(/wx\.request|wx\.cloud|cloud\.callFunction|database\(/.test(`${todayAdapterSource}\n${starAdapterSource}`), false, '不得新增真实网络、数据库或服务端成功模拟；本机记录与随机邀请已获授权');
 assert.equal(roomLogic.includes('已经留下') || roomLogic.includes('还差 ${remaining}'), false, '纪念册暂停期间房间不得宣称纪念进度或纪念已可进入');
-assert.equal(roomLogic.includes('/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room'), true, '房间不得渲染纪念解锁结果或跳转到暂停中的纪念册');
+assert.equal(roomLogic.includes('/pages/keepsake-album/keepsake-album'), true, '房间百宝箱必须进入正式纪念册页面');
 
 const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
 const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);

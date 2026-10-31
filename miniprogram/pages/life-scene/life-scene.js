@@ -1722,8 +1722,8 @@ Page({
   onOpenMemoryAlbum(section) {
     this.closeToolbox({ instant: true });
     this.returningFromChild = true;
-    const tab = section === 'activities' ? '&section=activities' : '';
-    wx.navigateTo({ url: `/pages/iaa-memory-album-demo/iaa-memory-album-demo?entry=room${tab}`,
+    const tab = section === 'postcard' ? '?tab=postcard' : '';
+    wx.navigateTo({ url: `/pages/keepsake-album/keepsake-album${tab}`,
       success: result => {
         const photo = assets.resolveActionPanorama(this.data.pet, { atHome: true, key: 'window' }, this.data.dailyWindowEnvironment || {}, '');
         if (result && result.eventChannel) result.eventChannel.emit('roomActivityContext', { atHome: Boolean(this.data.currentState && this.data.currentState.atHome), teaImage: photo && photo.panorama || '' });

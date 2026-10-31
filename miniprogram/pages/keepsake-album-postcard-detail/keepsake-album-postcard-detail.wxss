@@ -1,0 +1,58 @@
+.postcard-detail-page {
+  min-height: 100vh;
+  background: #FAFAF8;
+  display: flex;
+  flex-direction: column;
+}
+
+.postcard-detail-scroll {
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 112rpx - env(safe-area-inset-top));
+}
+
+.postcard-detail-content {
+  padding: 16rpx 48rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.postcard-detail-hero {
+  width: 100%;
+  height: 896rpx;
+  display: block;
+  border-radius: 32rpx;
+  background: #F0F0EA;
+}
+
+.postcard-detail-copy {
+  margin-top: 40rpx;
+}
+
+.postcard-detail-paragraph + .postcard-detail-paragraph {
+  margin-top: 32rpx;
+}
+
+.postcard-detail-line {
+  display: block;
+  color: #002900;
+  font-size: 28rpx;
+  line-height: 1.75;
+}
+
+.postcard-detail-line + .postcard-detail-line {
+  margin-top: 8rpx;
+}
+
+.postcard-detail-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  color: #5C5C5C;
+  font-size: 26rpx;
+}
+
+.postcard-detail-state__copy {
+  display: block;
+}

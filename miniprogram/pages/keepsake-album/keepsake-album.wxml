@@ -1,0 +1,84 @@
+<view class="keepsake-album-page">
+  <nav-bar title="纪念册" surface="canvas" fallback-url="/pages/life-scene/life-scene"></nav-bar>
+
+  <view class="keepsake-album-body">
+    <view class="keepsake-tabs" role="tablist" aria-label="纪念册分类">
+      <view
+        class="keepsake-tabs__track"
+      >
+        <view
+          class="keepsake-tabs__item {{tab === 'meet' ? 'keepsake-tabs__item--active' : ''}}"
+          data-tab="meet"
+          bindtap="onSelectTab"
+          aria-role="tab"
+          aria-selected="{{tab === 'meet'}}"
+        >遇见</view>
+        <view
+          class="keepsake-tabs__item {{tab === 'postcard' ? 'keepsake-tabs__item--active' : ''}}"
+          data-tab="postcard"
+          bindtap="onSelectTab"
+          aria-role="tab"
+          aria-selected="{{tab === 'postcard'}}"
+        >明信片</view>
+      </view>
+    </view>
+
+    <scroll-view wx:if="{{tab === 'meet'}}" class="keepsake-scroll" scroll-y>
+      <view wx:if="{{meets.length}}" class="meet-grid" aria-label="遇见照片">
+        <view
+          wx:for="{{meets}}"
+          wx:key="id"
+          class="meet-grid__cell"
+          data-id="{{item.id}}"
+          data-detail-id="{{item.detailId}}"
+          bindtap="onOpenMeet"
+          aria-role="button"
+          aria-label="查看遇见照片"
+        >
+          <image class="meet-grid__image" src="{{item.image}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view wx:else class="keepsake-empty" aria-live="polite">
+        <view class="keepsake-empty__ring" aria-hidden="true"></view>
+        <text class="keepsake-empty__title">还没有遇见</text>
+        <text class="keepsake-empty__copy">和蛋宝宝一起拍下第一张融合图吧</text>
+      </view>
+    </scroll-view>
+
+    <scroll-view wx:else class="keepsake-scroll" scroll-y>
+      <view wx:if="{{postcards.length}}" class="postcard-grid" aria-label="明信片">
+        <view
+          wx:for="{{postcards}}"
+          wx:key="id"
+          class="postcard-grid__cell"
+          data-id="{{item.id}}"
+          data-detail-id="{{item.detailId}}"
+          bindtap="onOpenPostcard"
+          aria-role="button"
+          aria-label="查看明信片"
+        >
+          <image class="postcard-grid__image" src="{{item.image}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view wx:else class="keepsake-empty" aria-live="polite">
+        <view class="keepsake-empty__ring" aria-hidden="true"></view>
+        <text class="keepsake-empty__title">还没有明信片</text>
+        <text class="keepsake-empty__copy">走过的风景，会变成一张张明信片</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view wx:if="{{isDemo}}" class="demo-switcher">
+    <text class="demo-switcher__title">开发态 · 纪念册数据</text>
+    <view class="demo-switcher__grid">
+      <view
+        wx:for="{{modeOptions}}"
+        wx:key="value"
+        class="demo-chip {{albumMode === item.value ? 'demo-chip--active' : ''}}"
+        data-mode="{{item.value}}"
+        bindtap="onSelectAlbumMode"
+        aria-role="button"
+      >{{item.label}}</view>
+    </view>
+  </view>
+</view>

@@ -99,7 +99,7 @@ async function main() {
   page.returnToCompanion=false; page.onShow(); await new Promise(resolve=>setImmediate(resolve)); assert.equal(page.data.pendingCompanionMemory.id,'second-drawing','当天第二次创作仍可收录');
   page.onCollectCompanionMemory();assert.equal(adapter.getMemories().length,1);
   page.onToggleToolbox();assert.equal(page.data.toolboxVisible,true);
-  page.onOpenMemoryAlbum();assert.match(navigation.url,/entry=room/);
+  page.onOpenMemoryAlbum();assert.match(navigation.url,/pages\/keepsake-album\/keepsake-album/);
 
   const doodle = require('../../pages/doodle/doodle-definition');
   const editor=Object.assign({},doodle,{companionDrawing:true,setData(){}});

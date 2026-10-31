@@ -82,6 +82,10 @@
   overflow: hidden;
 }
 
+.activities-card--coming-soon {
+  overflow: visible;
+}
+
 .activities-card__divider {
   height: 1rpx;
   background: #E8E8E4;
@@ -97,7 +101,34 @@
 }
 
 .activities-row--coming-soon {
+  position: relative;
   padding-right: 24rpx;
+  overflow: visible;
+  z-index: 0;
+}
+
+.activities-row--coming-soon.activities-row--wish-shake {
+  z-index: 2;
+  animation: activities-row-wish-shake 420ms ease-in-out;
+}
+
+@keyframes activities-row-wish-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-6rpx);
+  }
+  36% {
+    transform: translateX(6rpx);
+  }
+  54% {
+    transform: translateX(-4rpx);
+  }
+  72% {
+    transform: translateX(4rpx);
+  }
 }
 
 .activities-row__wish {
@@ -111,35 +142,29 @@
   padding: 24rpx 8rpx 24rpx 32rpx;
   border-radius: 32rpx 0 0 32rpx;
   box-sizing: border-box;
-  transition: background 120ms ease-out;
 }
 
-.activities-row__wish--active {
-  background: #E6EED0;
-}
-
-/* 03.04 关帧：0 按下 · 80ms +1 弹出 · 160–640ms 上浮闪×3 · 800ms 收尾 */
+/* 03.04：点击处弹出，向上飞出 tab；160–640ms 闪×3；800ms 收尾 */
 .activities-wish-float {
   position: absolute;
-  z-index: 4;
-  left: 108rpx;
-  top: -4rpx;
-  width: 120rpx;
-  height: 140rpx;
+  z-index: 30;
+  width: 0;
+  height: 0;
+  overflow: visible;
   pointer-events: none;
 }
 
 .activities-wish-float__plus {
   position: absolute;
   left: 0;
-  top: 72rpx;
+  top: 0;
   color: #FFDD79;
   font-size: 40rpx;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
   text-shadow: 0 0 16rpx rgba(255, 191, 26, 0.45);
-  transform-origin: 50% 100%;
+  transform: translate(-50%, -50%);
   animation: activities-wish-plus-0304 800ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
@@ -154,66 +179,64 @@
 }
 
 .activities-wish-float__spark--1 {
-  left: -16rpx;
-  top: 92rpx;
+  left: -20rpx;
+  top: 8rpx;
   font-size: 18rpx;
-  opacity: 0.9;
 }
 
 .activities-wish-float__spark--2 {
-  left: 52rpx;
-  top: 72rpx;
+  left: 16rpx;
+  top: -12rpx;
   font-size: 14rpx;
-  opacity: 0.8;
 }
 
 @keyframes activities-wish-plus-0304 {
   0% {
     opacity: 0;
-    transform: translateY(16rpx) scale(0.45);
+    transform: translate(-50%, -50%) scale(0.45);
   }
   8% {
     opacity: 1;
-    transform: translateY(-4rpx) scale(1.14);
+    transform: translate(-50%, calc(-50% - 8rpx)) scale(1.14);
   }
   10% {
-    transform: translateY(0) scale(0.96);
+    transform: translate(-50%, -50%) scale(0.96);
   }
   12% {
     opacity: 1;
-    transform: translateY(-2rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 4rpx)) scale(1);
   }
   22% {
     opacity: 0.35;
-    transform: translateY(-28rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 56rpx)) scale(1);
   }
   30% {
     opacity: 1;
-    transform: translateY(-40rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 80rpx)) scale(1);
   }
   40% {
     opacity: 0.35;
-    transform: translateY(-56rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 112rpx)) scale(1);
   }
   50% {
     opacity: 1;
-    transform: translateY(-68rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 136rpx)) scale(1);
   }
   60% {
     opacity: 0.35;
-    transform: translateY(-84rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 168rpx)) scale(1);
   }
   70% {
     opacity: 1;
-    transform: translateY(-96rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 192rpx)) scale(1);
   }
   80% {
     opacity: 0.35;
-    transform: translateY(-108rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 216rpx)) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-120rpx) scale(1);
+    transform: translate(-50%, calc(-50% - 280rpx)) scale(1);
   }
 }
 
@@ -221,23 +244,26 @@
   0%,
   9% {
     opacity: 0;
-    transform: translateY(16rpx) scale(0.6);
+    transform: translate(-50%, -50%) scale(0.6);
   }
   12% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1);
   }
   80% {
-    opacity: 0.65;
-    transform: translateY(-108rpx) scale(0.95);
+    opacity: 0.55;
+    transform: translate(-50%, calc(-50% - 216rpx)) scale(0.95);
   }
   100% {
     opacity: 0;
-    transform: translateY(-120rpx) scale(0.85);
+    transform: translate(-50%, calc(-50% - 280rpx)) scale(0.85);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .activities-row--wish-shake {
+    animation: none;
+  }
   .activities-wish-float__plus,
   .activities-wish-float__spark {
     animation-duration: 20ms;

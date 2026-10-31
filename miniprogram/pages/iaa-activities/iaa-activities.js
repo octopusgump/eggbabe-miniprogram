@@ -84,7 +84,23 @@ Page({
     const key = event.currentTarget.dataset.key;
     const item = this.data.comingSoon.find(row => row.key === key);
     if (!item || !item.comingSoon) return;
-    this.playWishPlusOne(key);
+    const localX = Number(event.detail && event.detail.x);
+    const localY = Number(event.detail && event.detail.y);
+    const query = wx.createSelectorQuery().in(this);
+    query.select(`#wish-area-${key}`).boundingClientRect();
+    query.select(`#wish-row-${key}`).boundingClientRect();
+    query.exec(rects => {
+      if (!this) return;
+      const wishRect = rects && rects[0];
+      const rowRect = rects && rects[1];
+      let originX = localX;
+      let originY = localY;
+      if (wishRect && rowRect && Number.isFinite(localX) && Number.isFinite(localY)) {
+        originX = localX + (wishRect.left - rowRect.left);
+        originY = localY + (wishRect.top - rowRect.top);
+      }
+      this.playWishPlusOne(key, originX, originY);
+    });
   },
 
   onTapComingSoonCta(event) {
@@ -94,13 +110,26 @@ Page({
     this.openComingSoonModal(item);
   },
 
-  playWishPlusOne(key) {
+  playWishPlusOne(key, originX, originY) {
     this.wishBurstSeq = (this.wishBurstSeq || 0) + 1;
     const id = `wish-${Date.now()}-${this.wishBurstSeq}`;
-    this.setData({
-      wishBursts: this.data.wishBursts.concat({ id, key }),
-      wishPressKey: key
-    });
+    const burst = {
+      id,
+      key,
+      originX: Number.isFinite(originX) ? originX : 0,
+      originY: Number.isFinite(originY) ? originY : 0
+    };
+    const restartShake = () => {
+      this.setData({
+        wishBursts: this.data.wishBursts.concat(burst),
+        wishPressKey: key
+      });
+    };
+    if (this.data.wishPressKey === key) {
+      this.setData({ wishPressKey: '' }, restartShake);
+    } else {
+      restartShake();
+    }
     clearTimeout(this.wishPressTimers[key]);
     this.wishPressTimers[key] = setTimeout(() => {
       if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });

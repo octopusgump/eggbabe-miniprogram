@@ -31,6 +31,9 @@
 .pet-mood-tab--post-hatch.pet-mood-tab--expanded{width:408rpx;max-width:408rpx;padding:22rpx 26rpx 20rpx}
 .pet-mood-tab--post-hatch.pet-mood-tab--star-award{animation:pet-mood-room-award 520ms ease-out both}
 .pet-mood-tab__room-header{margin-bottom:14rpx}
+.pet-mood-tab__room-header--minimal{margin-bottom:0}
+.pet-mood-tab--post-hatch.pet-mood-tab--room-minimal{max-width:220rpx;padding:16rpx 22rpx}
+.pet-mood-tab--post-hatch.pet-mood-tab--room-summary{max-width:320rpx}
 .pet-mood-tab__room-stars{display:flex;align-items:center;gap:12rpx;font-size:42rpx;font-weight:600;color:#35483C}
 .pet-mood-tab__room-amount{font-size:42rpx;font-weight:600;color:#35483C}
 .pet-mood-tab__room-gain{margin-left:4rpx;font-size:28rpx;font-weight:600;line-height:1;color:#35483C;animation:pet-mood-room-gain-pop .72s ease-out both}

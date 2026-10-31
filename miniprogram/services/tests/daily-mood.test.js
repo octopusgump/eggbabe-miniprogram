@@ -52,6 +52,7 @@ assert.equal(homeTemplate.includes('<pet-mood-tab') && lifeSceneTemplate.include
 assert.equal(lifeSceneTemplate.includes('class="life-status-stack') && lifeSceneTemplate.indexOf('<pet-mood-tab') < lifeSceneTemplate.indexOf('class="room-clock'), true, '破壳后 Tab 与时钟也必须位于同一纵向状态容器并保持顺序');
 assert.equal(lifeSceneTemplate.includes('star-roll-value="{{companionStarRollValue}}"') && lifeSceneTemplate.includes('一起 {{companionDays}} 天') === false && lifeSceneTemplate.includes('companion-days="{{companionDays}}"'), true, '破壳后房间必须把星星滚变与天数传入陪伴卡');
 assert.equal(lifeSceneTemplate.includes('overlay-locked="{{todayCompanionVisible || dailyWindowVisible || magicWindowVisible}}"'), true, '遮罩打开时必须强制陪伴卡回到 compact');
+assert.equal(lifeSceneTemplate.includes('summary-hold-ready="{{sceneEntered && initialViewportReady && !loading && !error}}"'), true, '场景就绪后须先 summary 再收至 minimal');
 assert.equal(homeTemplate.includes("homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed") && !lifeSceneTemplate.includes('intro-ready'), true, '破壳前仍等场景就绪后 intro；破壳后房间不得用定时 intro 自动展开');
 assert.equal(homeTemplate.includes('class="home-status-stack') && homeTemplate.indexOf('<pet-mood-tab') < homeTemplate.indexOf('class="room-clock'), true, '首页 Tab 与时钟必须位于同一纵向状态容器并保持顺序');
 assert.equal(componentTemplate.includes('pet-mood-tab__star-summary') && componentTemplate.includes('陪伴星星') && componentTemplate.includes('starProgressText'), true, '破壳前 Tab 仍支持陪伴星星与纪念进度');
@@ -153,6 +154,7 @@ const postHatchContext = {
     mood: dailyMood.mockDailyMood('post-hatch', 'CURIOSITY'),
     starRollValue: 11,
     companionDays: 3,
+    summaryHoldReady: true,
     introReady: true,
     overlayLocked: false,
     reducedMotion: true
@@ -163,13 +165,21 @@ const postHatchContext = {
 };
 Object.assign(postHatchContext, componentDefinition.methods);
 componentDefinition.lifetimes.attached.call(postHatchContext);
-componentDefinition.observers.introReady.call(postHatchContext, true);
-assert.equal(postHatchContext.data.expanded, false, '破壳后房间不得因 introReady 自动展开');
-assert.equal(scheduledTimer, null, '破壳后展开不得启动 9 秒计时');
+componentDefinition.observers.summaryHoldReady.call(postHatchContext, true);
+assert.equal(postHatchContext.data.roomCardPhase, 'summary', '场景就绪后先展示 summary（星+天数+名字+今日心情）');
+assert.equal(postHatchContext.data.expanded, false, 'summary 阶段不得展开全文');
+assert.equal(petMoodTab.POST_HATCH_SUMMARY_HOLD_MS, 7000, 'summary 展示 7 秒后应收至 minimal');
+assert.equal(scheduledTimer && scheduledTimer.delay, 7000, 'summary 计时须为 7000ms');
+scheduledTimer.callback();
+assert.equal(postHatchContext.data.roomCardPhase, 'minimal', '7 秒后只保留星与一起 X 天');
 componentDefinition.methods.onToggle.call(postHatchContext);
-assert.equal(postHatchContext.data.expanded, true, '破壳后仅点击切换到 expanded');
+assert.equal(postHatchContext.data.roomCardPhase, 'expanded', '点击 minimal 须展开全文');
+assert.equal(petMoodTab.POST_HATCH_EXPANDED_HOLD_MS, 7000, '展开全文展示 7 秒后应收起');
+assert.equal(scheduledTimer && scheduledTimer.delay, 7000, 'expanded 计时须为 7000ms');
+scheduledTimer.callback();
+assert.equal(postHatchContext.data.roomCardPhase, 'minimal', '展开结束后回到 minimal');
 componentDefinition.observers.overlayLocked.call(postHatchContext, true);
-assert.equal(postHatchContext.data.expanded, false, '遮罩锁定时必须回到 compact');
+assert.equal(postHatchContext.data.roomCardPhase, 'minimal', '遮罩锁定时必须回到 minimal');
 componentDefinition.lifetimes.detached.call(postHatchContext);
 
 if (originalComponent === undefined) delete global.Component;

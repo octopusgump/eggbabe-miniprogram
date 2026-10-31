@@ -85,6 +85,7 @@
         companion-days="{{companionDays}}"
         star-award-visible="{{companionStarAwardVisible}}"
         overlay-locked="{{todayCompanionVisible || dailyWindowVisible || magicWindowVisible}}"
+        summary-hold-ready="{{sceneEntered && initialViewportReady && !loading && !error}}"
         reduced-motion="{{reducedMotion}}"
       ></pet-mood-tab>
     </view>

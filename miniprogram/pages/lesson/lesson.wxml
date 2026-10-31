@@ -1,7 +1,7 @@
 <view class="page">
   <nav-bar title="早教班"></nav-bar>
   <view class="content">
-    <view wx:if="{{loading}}" class="center-note">我正在坐好，等你来教我…</view>
+    <view wx:if="{{loading}}" class="page-loading"><loading-orbit size="M"></loading-orbit><text>我正在坐好，等你来教我…</text></view>
     <view wx:elif="{{error && !options.length}}" class="center-note">{{error}}</view>
     <block wx:else>
       <text class="kicker">LITTLE CLASS</text>

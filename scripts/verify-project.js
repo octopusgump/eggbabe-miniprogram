@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const miniprogram = path.join(root, 'miniprogram');
@@ -131,6 +132,8 @@ for (const assetDoc of [
   'assets/scenes/lifecycle/post-hatch/30-character/boon-koi/README.md',
   'assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/README.md'
 ]) if (!fs.existsSync(path.join(miniprogram, assetDoc))) errors.push(`缺少分层素材目录：${assetDoc}`);
+
+execFileSync(process.execPath, [path.join(miniprogram, 'services/tests/loading-orbit.test.js')], { stdio: 'inherit' });
 
 if (errors.length) {
   console.error(`项目校验失败（${errors.length} 项）：`);

@@ -31,5 +31,9 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   assert.match(diaryWxml, /分享这篇日记/);
   assert.equal(/diary-share-pill/.test(diaryWxml), false, '顶栏不得放置与胶囊冲突的分享按钮');
 
+  const diaryWxss = fs.readFileSync(path.join(root, 'pages/companion-diary/companion-diary.wxss'), 'utf8');
+  assert.match(diaryWxss, /\.diary-share-actions__primary[\s\S]*width:\s*100%/);
+  assert.match(diaryWxss, /\.diary-share-actions__secondary[\s\S]*width:\s*100%/);
+
   console.log('companion-diary adapter 与房间路由校验通过。');
 });

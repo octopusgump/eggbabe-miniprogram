@@ -195,7 +195,9 @@ to{left:var(--scene-origin-left,0);top:var(--scene-origin-top,0);width:var(--sce
 .companion-balance--award{animation:companion-balance-award 520ms ease-out both}
 .companion-balance__stars{display:flex;align-items:center;gap:12rpx;font-size:42rpx;font-weight:600}
 .companion-balance__amount{font-size:42rpx;font-weight:600;color:#35483C}
+.companion-balance__gain{margin-left:4rpx;font-size:28rpx;font-weight:700;line-height:1;color:#FFDD79;text-shadow:0 2rpx 8rpx rgba(72,50,12,.35);animation:companion-balance-gain-pop .72s ease-out both}
 .companion-balance__days{display:block;margin-top:8rpx;font-size:23rpx;color:#5A675E}
+@keyframes companion-balance-gain-pop{0%{opacity:0;transform:translate3d(0,8rpx,0) scale(.88)}40%{opacity:1;transform:translate3d(0,-4rpx,0) scale(1.04)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
 @keyframes companion-balance-award{0%{transform:scale(1)}35%{transform:scale(1.02)}100%{transform:scale(1)}}
 .companion-unread-dot{position:absolute;right:2rpx;top:2rpx;width:16rpx;height:16rpx;border-radius:50%;background:#D9463C}
 .companion-toolbox-stack{position:relative;display:flex;flex-direction:column;align-items:flex-end}

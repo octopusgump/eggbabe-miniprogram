@@ -372,6 +372,7 @@ Page({
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
+    companionStarGainLabel: '',
     todayCompanionVisible: false,
     todayCompanionView: null,
     todayCompanionGameInvitation: false,
@@ -534,31 +535,56 @@ Page({
     return balance >= 0 ? balance : -1;
   },
 
+  canShowRoomStarRoll() {
+    if (!this.pageActive || !this.data.pet || this.data.loading || this.data.error) return false;
+    if (this.data.todayCompanionVisible || this.data.dailyWindowVisible || this.data.magicWindowVisible) return false;
+    if (!this.data.sceneEntered || !this.data.initialViewportReady) return false;
+    return true;
+  },
+
+  formatCompanionStarGainLabel(delta) {
+    const change = Number(delta);
+    if (!change) return '';
+    return change > 0 ? `+${change}` : String(change);
+  },
+
+  maybePlayRoomStarRoll() {
+    const target = Number(this.data.companionStarBalance);
+    const from = this.companionStarDisplayValue();
+    if (target < 0 || from < 0) {
+      this.companionStarAwardPending = false;
+      return false;
+    }
+    if (!this.companionStarAwardPending && from === target) return false;
+    if (!this.canShowRoomStarRoll()) return false;
+    const delta = target - from;
+    this.companionStarAwardPending = false;
+    if (from === target) return false;
+    this.setData({
+      companionStarRollValue: target,
+      companionStarAwardVisible: true,
+      companionLastAward: delta,
+      companionStarGainLabel: this.formatCompanionStarGainLabel(delta)
+    });
+    this.scheduleCompanionStarAwardEnd(from, target);
+    return true;
+  },
+
   scheduleCompanionStarAwardEnd(from, to) {
     clearTimeout(this.companionStarAwardTimer);
     const duration = rollDurationMs(from, to, this.data.reducedMotion);
     const hold = duration > 0 ? Math.min(duration + 180, 2000) : 0;
     if (hold <= 0) {
-      if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+      if (this.pageActive) this.setData({ companionStarAwardVisible: false, companionStarGainLabel: '' });
       return;
     }
     this.companionStarAwardTimer = setTimeout(() => {
-      if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+      if (this.pageActive) this.setData({ companionStarAwardVisible: false, companionStarGainLabel: '' });
     }, hold);
   },
 
   flushCompanionStarRoomFeedback() {
-    const target = Number(this.data.companionStarBalance);
-    const from = this.companionStarDisplayValue();
-    if (target < 0 || from < 0) {
-      this.companionStarAwardPending = false;
-      return;
-    }
-    if (!this.companionStarAwardPending && from === target) return;
-    this.companionStarAwardPending = false;
-    if (from === target) return;
-    this.setData({ companionStarRollValue: target, companionStarAwardVisible: true });
-    this.scheduleCompanionStarAwardEnd(from, target);
+    return this.maybePlayRoomStarRoll();
   },
 
   loadCompanionStar(options) {
@@ -569,9 +595,6 @@ Page({
       const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
       const fromDisplay = this.companionStarDisplayValue();
       const balanceChanged = fromDisplay >= 0 && balance !== fromDisplay;
-      const deferFeedback = balanceChanged && (Boolean(settings.deferAward) || this.data.todayCompanionVisible);
-
-      if (deferFeedback) this.companionStarAwardPending = true;
 
       const patch = {
         companionStarBalance: balance,
@@ -581,22 +604,24 @@ Page({
         companionStarProgressText: ''
       };
 
-      if (balanceChanged && !deferFeedback) {
-        patch.companionStarRollValue = balance;
-        patch.companionStarAwardVisible = true;
+      if (balanceChanged) {
         patch.companionLastAward = balance - fromDisplay;
+        this.companionStarAwardPending = true;
       } else if (fromDisplay < 0) {
         patch.companionStarRollValue = balance;
         patch.companionStarAwardVisible = false;
+        patch.companionStarGainLabel = '';
       }
 
       this.setData(patch);
 
       clearTimeout(this.companionStarAwardTimer);
-      if (balanceChanged && !deferFeedback) {
-        this.scheduleCompanionStarAwardEnd(fromDisplay, balance);
-      } else if (!deferFeedback && !balanceChanged) {
-        this.setData({ companionStarAwardVisible: false });
+      if (balanceChanged) {
+        if (!this.maybePlayRoomStarRoll()) {
+          this.setData({ companionStarAwardVisible: false, companionStarGainLabel: '' });
+        }
+      } else if (!balanceChanged) {
+        this.setData({ companionStarAwardVisible: false, companionStarGainLabel: '' });
       }
       return result;
     });
@@ -672,8 +697,7 @@ Page({
   onCloseTodayCompanion() {
     if (!this.data.todayCompanionVisible) return;
     this.clearStarAwardFeedback();
-    this.setData({ todayCompanionVisible: false });
-    this.flushCompanionStarRoomFeedback();
+    this.setData({ todayCompanionVisible: false }, () => this.maybePlayRoomStarRoll());
   },
 
   // 保留信纸内点击的冒泡边界，避免点正文触发遮罩关闭。
@@ -859,6 +883,7 @@ Page({
           this.lastStatusSlotKey = slotKey;
           this.showStatusBubble(nextStatusBubble);
         }
+        this.maybePlayRoomStarRoll();
       });
       if (!this.hasTrackedEnter) {
         analytics.track('scene_enter', { scene_id: `${currentState.major}:${currentState.key}`, entry_type: this.data.enterFromHome ? 'home_expand' : 'direct' });
@@ -1042,7 +1067,10 @@ Page({
     clearTimeout(this.sceneEnterTimer);
     this.sceneEnterTimer = setTimeout(() => {
       if (this.pageActive && this.data.currentState && this.data.sceneBackgroundReady) {
-        this.setData({ sceneEntered: true }, () => this.maybeShowDailyCompanion());
+        this.setData({ sceneEntered: true }, () => {
+          this.maybeShowDailyCompanion();
+          this.maybePlayRoomStarRoll();
+        });
       }
     }, this.data.reducedMotion ? 0 : 24);
   },
@@ -1314,7 +1342,10 @@ Page({
     this.needsInitialViewport = false;
     clearTimeout(this.initialViewportTimer);
     this.initialViewportTimer = null;
-    this.setData({ initialViewportReady: true }, () => this.maybeShowDailyCompanion());
+    this.setData({ initialViewportReady: true }, () => {
+      this.maybeShowDailyCompanion();
+      this.maybePlayRoomStarRoll();
+    });
   },
 
   vibrateCuddleTick() {
@@ -2007,7 +2038,7 @@ Page({
       });
       this.syncLetterProgress();
       this.syncRoomContextEntry();
-      if (flushStarRollAfterLoad) this.flushCompanionStarRoomFeedback();
+      if (flushStarRollAfterLoad) this.maybePlayRoomStarRoll();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {

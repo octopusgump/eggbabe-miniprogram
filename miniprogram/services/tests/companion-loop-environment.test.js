@@ -72,8 +72,8 @@ function loadRoomPage(envVersion) {
   starAdapter.resetRoomStarView('AVAILABLE');
   const page = Object.assign({}, definition, {
     pageActive: true,
-    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' }, currentState: { atHome: false, key: 'travel' } }),
-    setData(patch) { Object.assign(this.data, patch); }
+    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' }, currentState: { atHome: false, key: 'travel' }, sceneEntered: true, initialViewportReady: true, loading: false }),
+    setData(patch, callback) { Object.assign(this.data, patch); if (typeof callback === 'function') callback(); }
   });
   return { page, config: require('../../config/v2') };
 }

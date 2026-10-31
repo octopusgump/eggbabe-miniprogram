@@ -103,8 +103,8 @@ function loadRoomPage(log, dataOverrides) {
   starAdapter.resetRoomStarView('AVAILABLE');
   const page = Object.assign({}, definition, {
     pageActive: true,
-    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' } }, dataOverrides),
-    setData(patch) { Object.assign(this.data, patch); }
+    data: Object.assign({}, definition.data, { pet: { id: 'test', name: '玉兔' }, sceneEntered: true, initialViewportReady: true, loading: false }, dataOverrides),
+    setData(patch, callback) { Object.assign(this.data, patch); if (typeof callback === 'function') callback(); }
   });
   return { page, starAdapter, fixture: require('../../fixtures/iaa-star-unlock') };
 }

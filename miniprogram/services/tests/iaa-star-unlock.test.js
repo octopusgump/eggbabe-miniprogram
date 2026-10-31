@@ -59,7 +59,8 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(roomLogic.includes('todayCompanionVisible: true') && roomLogic.includes('starAdapter.recordCompanion(starView,'), true, '房间 overlay 必须承接陪伴操作与同一份星星状态');
   assert.equal(roomLogic.includes('starAdapter.recordLetterOpen'), true, '开信必须调用 recordLetterOpen 记一起 X 天');
   assert.equal(roomLogic.includes('companionStarAwardPending') && roomLogic.includes('deferAward: awardedStars > 0'), true, '信纸内获得星星后必须把房间左上角 +1 保留到 overlay 关闭时再展示');
-  assert.ok(roomLogic.includes('const showRoomAward = false'), '关闭信纸不再重复播放得星反馈');
+  assert.equal(roomLogic.includes('flushCompanionStarRoomFeedback'), true, '关信或回房应触发左上角余额滚变');
+  assert.ok(!roomLogic.includes('const showRoomAward = false'), '关信时用 flush 滚变，不再硬关 room award');
   assert.equal(roomLogic.includes("wx.navigateTo({ url: '/pages/iaa-today-companion"), false, '今日陪伴不得再跳转到带第二张场景图的独立页面');
   const overlayStart = roomTemplate.indexOf('class="today-companion-overlay"');
   const overlayEnd = roomTemplate.indexOf('<daily-window-detail', overlayStart);

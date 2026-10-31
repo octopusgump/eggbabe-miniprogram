@@ -1,0 +1,1 @@
+<text class="companion-roll-number {{rolling ? 'companion-roll-number--rolling' : ''}}">{{shown >= 0 ? shown : '—'}}</text>

@@ -137,7 +137,7 @@ async function runLoop(envVersion) {
     assert.equal(result.tomorrowAfterInteract, false, `${result.envVersion} 完成陪伴不得自动展开明日内容`);
     assert.equal(result.balanceAfter, 13, `${result.envVersion} 星星累计更新`);
     assert.equal(result.closed, true);
-    assert.equal(result.roomAwardAfterClose, false, `${result.envVersion} 关闭信件不再重复播放得星效果`);
+    assert.equal(result.roomAwardAfterClose, result.balanceAfter > result.balanceBefore, `${result.envVersion} 关信后若余额已涨则触发左上滚变光晕`);
     assert.equal(result.doneOnReopen, true, `${result.envVersion} 同日再次进入不得重复领取`);
     assert.equal(result.progressText, '', `${result.envVersion} 房间不显示纪念进度`);
     assert.equal(result.progressAfter, '', `${result.envVersion} 满星后不得宣称纪念已可进入`);

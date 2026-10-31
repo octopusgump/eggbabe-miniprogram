@@ -16,6 +16,7 @@ const todayCompanionAdapter = require('../../services/iaa-today-companion-adapte
 const companionActivities = require('../../services/companion-activity-catalog');
 const letterActivityProgress = require('../../services/companion-letter-progress');
 const companionPetImage = require('../../utils/companion-pet-image');
+const { rollDurationMs } = require('../../utils/companion-star-roll');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
@@ -349,6 +350,7 @@ Page({
     moodTesterLabel: dailyMoodConfig.mockDailyMood('post-hatch', dailyMoodConfig.DEFAULT_MOOD_TYPE).moodLabel,
     moodTabTopPx: 70,
     companionStarBalance: -1,
+    companionStarRollValue: -1,
     companionDays: 0,
     companionLastAward: 0,
     companionUnread: false,
@@ -525,30 +527,76 @@ Page({
     if (query.open === 'today-companion') this.onOpenTodayCompanion();
   },
 
+  companionStarDisplayValue() {
+    const roll = Number(this.data.companionStarRollValue);
+    if (roll >= 0) return roll;
+    const balance = Number(this.data.companionStarBalance);
+    return balance >= 0 ? balance : -1;
+  },
+
+  scheduleCompanionStarAwardEnd(from, to) {
+    clearTimeout(this.companionStarAwardTimer);
+    const duration = rollDurationMs(from, to, this.data.reducedMotion);
+    const hold = duration > 0 ? Math.min(duration + 180, 2000) : 0;
+    if (hold <= 0) {
+      if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+      return;
+    }
+    this.companionStarAwardTimer = setTimeout(() => {
+      if (this.pageActive) this.setData({ companionStarAwardVisible: false });
+    }, hold);
+  },
+
+  flushCompanionStarRoomFeedback() {
+    const target = Number(this.data.companionStarBalance);
+    const from = this.companionStarDisplayValue();
+    if (target < 0 || from < 0) {
+      this.companionStarAwardPending = false;
+      return;
+    }
+    if (!this.companionStarAwardPending && from === target) return;
+    this.companionStarAwardPending = false;
+    if (from === target) return;
+    this.setData({ companionStarRollValue: target, companionStarAwardVisible: true });
+    this.scheduleCompanionStarAwardEnd(from, target);
+  },
+
   loadCompanionStar(options) {
     const settings = options || {};
     return starAdapter.getRoomStarView().then(result => {
       if (!this.pageActive || !result.ok || !result.data || !result.data.star) return result;
-      const previousBalance = Number(this.data.companionStarBalance);
       const balance = Number(result.data.star.balance || 0);
       const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
-      const balanceIncreased = previousBalance >= 0 && balance > previousBalance;
-      const companionStarAwardVisible = balanceIncreased && !settings.deferAward;
-      if (balanceIncreased && settings.deferAward) this.companionStarAwardPending = true;
-      this.setData({
+      const fromDisplay = this.companionStarDisplayValue();
+      const balanceChanged = fromDisplay >= 0 && balance !== fromDisplay;
+      const deferFeedback = balanceChanged && (Boolean(settings.deferAward) || this.data.todayCompanionVisible);
+
+      if (deferFeedback) this.companionStarAwardPending = true;
+
+      const patch = {
         companionStarBalance: balance,
         companionDays: Number(result.data.star.companionDays || 0),
-        companionLastAward: balanceIncreased ? balance - previousBalance : this.data.companionLastAward,
         companionStarClaimed: claimed,
         // 房间状态保持极简，不额外展示解锁进度。
-        companionStarProgressText: '',
-        companionStarAwardVisible
-      });
+        companionStarProgressText: ''
+      };
+
+      if (balanceChanged && !deferFeedback) {
+        patch.companionStarRollValue = balance;
+        patch.companionStarAwardVisible = true;
+        patch.companionLastAward = balance - fromDisplay;
+      } else if (fromDisplay < 0) {
+        patch.companionStarRollValue = balance;
+        patch.companionStarAwardVisible = false;
+      }
+
+      this.setData(patch);
+
       clearTimeout(this.companionStarAwardTimer);
-      if (companionStarAwardVisible) {
-        this.companionStarAwardTimer = setTimeout(() => {
-          if (this.pageActive) this.setData({ companionStarAwardVisible: false });
-        }, 1600);
+      if (balanceChanged && !deferFeedback) {
+        this.scheduleCompanionStarAwardEnd(fromDisplay, balance);
+      } else if (!deferFeedback && !balanceChanged) {
+        this.setData({ companionStarAwardVisible: false });
       }
       return result;
     });
@@ -584,6 +632,9 @@ Page({
         const game = !away && companionActivities.byKind(todayResult.data.today.activityKind);
         this.todayCompanionScenario = away ? 'away' : 'normal';
         if (letterStars > 0) this.prepareStarAwardSound();
+        const openedBalance = Number(star.balance || 0);
+        const displayBeforeOpen = this.companionStarDisplayValue();
+        if (displayBeforeOpen >= 0 && openedBalance !== displayBeforeOpen) this.companionStarAwardPending = true;
         this.setData({
           acceptanceToolsOpen: false,
           todayCompanionVisible: true,
@@ -598,7 +649,7 @@ Page({
           todayCompanionActivityIcon: game && game.icon || '',
           todayCompanionStarView: letterResult.data,
           companionDays: Number(star.companionDays || 0),
-          companionStarBalance: Number(star.balance || 0),
+          companionStarBalance: openedBalance,
           todayCompanionInteractionPending: false,
           todayCompanionInteractionDone: claimed,
           todayCompanionInteractionFeedback: this.data.pendingCompanionMemory ? this.data.pendingCompanionMemory.line : '',
@@ -621,17 +672,8 @@ Page({
   onCloseTodayCompanion() {
     if (!this.data.todayCompanionVisible) return;
     this.clearStarAwardFeedback();
-    const showRoomAward = false;
-    this.companionStarAwardPending = false;
-    const patch = { todayCompanionVisible: false };
-    if (showRoomAward) patch.companionStarAwardVisible = true;
-    this.setData(patch);
-    clearTimeout(this.companionStarAwardTimer);
-    if (showRoomAward) {
-      this.companionStarAwardTimer = setTimeout(() => {
-        if (this.pageActive) this.setData({ companionStarAwardVisible: false });
-      }, 1600);
-    }
+    this.setData({ todayCompanionVisible: false });
+    this.flushCompanionStarRoomFeedback();
   },
 
   // 保留信纸内点击的冒泡边界，避免点正文触发遮罩关闭。
@@ -1955,6 +1997,7 @@ Page({
       if (!pending.ok || pending.data.dateKey === date) this.applyCompanionInteractionResult(pending);
       else this.setData({ todayCompanionInteractionPending: false });
     }
+    const flushStarRollAfterLoad = Boolean(this.returningFromChild);
     this.loadCompanionStar({ deferAward: true }).then(result => {
       if (!this.pageActive || !result || !result.ok) return;
       this.setData({
@@ -1964,6 +2007,7 @@ Page({
       });
       this.syncLetterProgress();
       this.syncRoomContextEntry();
+      if (flushStarRollAfterLoad) this.flushCompanionStarRoomFeedback();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {

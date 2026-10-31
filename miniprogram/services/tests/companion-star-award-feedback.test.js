@@ -137,7 +137,7 @@ function newLog() { return { plays: [], vibrations: [], created: 0, destroyed: 0
 
     // 回房间：只展示原 +1 与光晕，不再发声或震动。
     page.onCloseTodayCompanion();
-    assert.equal(page.data.companionStarAwardVisible, false, '关闭信件不再重复播放得星效果');
+    assert.equal(page.data.companionStarRollValue, page.data.companionStarBalance, '关闭信件后左上角滚到最新余额');
     // 同日重开：不再收星，也不再播放。
     await page.onOpenTodayCompanion();
     assert.equal(page.data.todayCompanionAwardedStars, 0, '重开信件不得重播收星');

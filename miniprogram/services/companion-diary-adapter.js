@@ -10,11 +10,15 @@
  * @property {string} body 正文（可多段，前端按 \n\n 分段）
  * @property {string} signOff 落款，如「啾咪，兔小乖」
  * @property {string} shareCardTitle 分享卡标题（可与正文摘要不同）
- * @property {string} shareFooterName 分享卡左下角昵称
- * @property {string} shareQrHint 分享卡二维码占位说明（Sample 不渲染真码）
+ * @property {string} shareBrandName 分享卡左下角品牌名（Figma 02.02「eggbabe」）
+ * @property {string} shareQrHint 分享卡码区说明（Figma「长按识别小程序码」）
+ * @property {string} shareQrImageUrl 分享卡小程序码图；正式版优先 config.miniProgramCodeUrl
  */
 
 const companionPetImage = require('../utils/companion-pet-image');
+const config = require('../config/v2');
+
+const SAMPLE_MINI_PROGRAM_CODE = '/assets/ui/share/mini-program-code-sample-v01.png';
 
 const DETAIL_FIELD_KEYS = Object.freeze([
   'id',
@@ -23,8 +27,9 @@ const DETAIL_FIELD_KEYS = Object.freeze([
   'body',
   'signOff',
   'shareCardTitle',
-  'shareFooterName',
-  'shareQrHint'
+  'shareBrandName',
+  'shareQrHint',
+  'shareQrImageUrl'
 ]);
 
 const SAMPLE_BODY =
@@ -45,9 +50,16 @@ function buildSampleDetail(pet) {
     body,
     signOff: `啾咪，${name}`,
     shareCardTitle: '来自蛋宝宝的日记',
-    shareFooterName: (pet && (pet.name || pet.nickname)) || 'eggbabe',
-    shareQrHint: '正式版将展示小程序码'
+    shareBrandName: 'eggbabe',
+    shareQrHint: '长按识别小程序码',
+    shareQrImageUrl: SAMPLE_MINI_PROGRAM_CODE
   };
+}
+
+function resolveShareQrImageUrl(detail) {
+  if (config.miniProgramCodeUrl) return config.miniProgramCodeUrl;
+  const fromDetail = detail && detail.shareQrImageUrl;
+  return fromDetail || SAMPLE_MINI_PROGRAM_CODE;
 }
 
 /**
@@ -71,5 +83,7 @@ function getDiaryDetail(options) {
 
 module.exports = {
   DETAIL_FIELD_KEYS,
-  getDiaryDetail
+  SAMPLE_MINI_PROGRAM_CODE,
+  getDiaryDetail,
+  resolveShareQrImageUrl
 };

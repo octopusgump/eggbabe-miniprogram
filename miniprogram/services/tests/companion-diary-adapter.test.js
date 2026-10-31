@@ -11,6 +11,13 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   assert.equal(result.data.salutation, '亲爱的主人，');
   assert.match(result.data.imageUrl, /home_bedroom_window_day_v01\.webp$/);
   assert.match(result.data.signOff, /dbb/);
+  assert.equal(result.data.shareBrandName, 'eggbabe');
+  assert.equal(result.data.shareQrHint, '长按识别小程序码');
+  assert.match(result.data.shareQrImageUrl, /mini-program-code-sample-v01\.png$/);
+  assert.match(
+    adapter.resolveShareQrImageUrl(result.data),
+    /mini-program-code-sample-v01\.png$/
+  );
   assert.equal(adapter.DETAIL_FIELD_KEYS.includes('body'), true);
 
   return adapter.getDiaryDetail({ pet: {} });
@@ -32,19 +39,35 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   assert.match(diaryWxml, /\/assets\/icons\/send-ink\.svg/);
   assert.equal(/diary-share-pill/.test(diaryWxml), false, '顶栏不得放置与胶囊冲突的分享按钮');
 
+  assert.match(diaryWxml, /diary-share-card__qr-image/);
+  assert.match(diaryWxml, /shareQrImageUrl/);
+  assert.match(diaryWxml, /shareBrandName/);
+  assert.match(diaryWxml, /shareQrHint/);
+  assert.equal(/diary-share-card__qr-grid/.test(diaryWxml), false, '不得使用 CSS 网格占位小程序码');
+
   const diaryWxss = fs.readFileSync(path.join(root, 'pages/companion-diary/companion-diary.wxss'), 'utf8');
+  assert.match(diaryWxss, /\.diary-share-actions__primary[\s\S]*height:\s*96rpx/);
+  assert.match(diaryWxss, /\.diary-share-actions__secondary[\s\S]*height:\s*80rpx/);
   assert.match(diaryWxss, /\.diary-share-actions__primary[\s\S]*width:\s*100%/);
   assert.match(diaryWxss, /\.diary-share-actions__secondary[\s\S]*width:\s*100%/);
   assert.match(
     diaryWxss,
     /\.diary-share-actions__secondary[\s\S]*border:\s*3rpx solid #002900/,
-    '分享底栏次按钮须与 Figma / app-button 一致使用 3rpx #002900 描边'
+    '02.02 次按钮 Medium：1.5px → 3rpx #002900 描边'
   );
   assert.match(
     diaryWxss,
-    /\.diary-share-actions \.button-label[\s\S]*font-size:\s*30rpx[\s\S]*font-weight:\s*600/,
-    '分享底栏按钮文案须为 30rpx / 600'
+    /\.diary-share-actions__primary \.button-label[\s\S]*font-size:\s*30rpx[\s\S]*font-weight:\s*500/,
+    '02.02 主按钮 Large：15px / Medium → 30rpx / 500'
   );
+  assert.match(
+    diaryWxss,
+    /\.diary-share-actions__secondary \.button-label[\s\S]*font-size:\s*28rpx[\s\S]*font-weight:\s*500/,
+    '02.02 次按钮 Medium：14px / Medium → 28rpx / 500'
+  );
+
+  const qrAsset = path.join(root, 'assets/ui/share/mini-program-code-sample-v01.png');
+  assert.equal(fs.existsSync(qrAsset), true, '须包含 Figma 02.02 小程序码样张');
 
   console.log('companion-diary adapter 与房间路由校验通过。');
 });

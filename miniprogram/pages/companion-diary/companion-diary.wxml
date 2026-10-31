@@ -67,14 +67,16 @@
           </view>
         </view>
         <view class="diary-share-card__footer">
-          <view class="diary-share-card__user">
-            <pet-avatar pet-type="{{pet.prototype}}" size="{{36}}"></pet-avatar>
-            <text class="diary-share-card__name">{{detail.shareFooterName}}</text>
+          <view class="diary-share-card__brand">
+            <text class="diary-share-card__brand-name">{{detail.shareBrandName}}</text>
+            <text class="diary-share-card__brand-hint">{{detail.shareQrHint}}</text>
           </view>
-          <view class="diary-share-card__qr" aria-label="{{detail.shareQrHint}}">
-            <view class="diary-share-card__qr-grid" aria-hidden="true"></view>
-            <text class="diary-share-card__qr-hint">{{detail.shareQrHint}}</text>
-          </view>
+          <image
+            class="diary-share-card__qr-image"
+            src="{{shareQrImageUrl}}"
+            mode="aspectFit"
+            aria-label="{{detail.shareQrHint}}"
+          ></image>
         </view>
       </view>
       <view class="diary-share-actions">

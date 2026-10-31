@@ -1577,25 +1577,49 @@ Page({
     }
     this.setData({ toolboxMotion: 'closing', toolboxChestOpen: false, memoryGuideVisible: false });
     this.toolboxMotionTimer = setTimeout(() => {
-      if (!this.pageActive) return;
+      if (!this.pageActive || this.data.toolboxMotion !== 'closing') return;
       this.setData({ toolboxVisible: false, toolboxMotion: 'closed' });
       this.toolboxMotionTimer = null;
-    }, 200);
+    }, 220);
   },
   startToolboxOpen() {
     this.clearToolboxMotionTimer();
-    this.setData({ toolboxVisible: true, toolboxMotion: 'opening', toolboxChestOpen: false, memoryGuideVisible: false });
-    this.toolboxChestTimer = setTimeout(() => {
-      if (!this.pageActive) return;
-      this.setData({ toolboxChestOpen: true });
-      this.toolboxChestTimer = null;
-    }, 80);
-    this.toolboxMotionTimer = setTimeout(() => {
-      if (!this.pageActive) return;
-      this.setData({ toolboxMotion: 'open' });
-      this.toolboxMotionTimer = null;
-    }, 360);
+    const armOpening = () => {
+      this.setData({ toolboxMotion: 'opening' });
+      this.toolboxChestTimer = setTimeout(() => {
+        if (!this.pageActive) return;
+        this.setData({ toolboxChestOpen: true });
+        this.toolboxChestTimer = null;
+      }, 80);
+      this.toolboxMotionTimer = setTimeout(() => {
+        if (!this.pageActive || this.data.toolboxMotion !== 'opening') return;
+        this.setData({ toolboxMotion: 'open' });
+        this.toolboxMotionTimer = null;
+      }, 400);
+    };
+    this.setData({
+      toolboxVisible: true,
+      toolboxMotion: 'closed',
+      toolboxChestOpen: false,
+      memoryGuideVisible: false
+    }, () => {
+      if (typeof wx !== 'undefined' && wx.nextTick) wx.nextTick(armOpening);
+      else setTimeout(armOpening, 0);
+    });
   },
+  onToolboxPanelAnimEnd(event) {
+    const name = event && event.detail && event.detail.animationName;
+    if (!name || !this.pageActive) return;
+    if (name === 'toolbox-panel-open' && this.data.toolboxMotion === 'opening') {
+      clearTimeout(this.toolboxMotionTimer);
+      this.setData({ toolboxMotion: 'open' });
+    }
+    if (name === 'toolbox-panel-close' && this.data.toolboxMotion === 'closing') {
+      clearTimeout(this.toolboxMotionTimer);
+      this.setData({ toolboxVisible: false, toolboxMotion: 'closed' });
+    }
+  },
+  onToolboxButtonAnimEnd() {},
   onToggleToolbox() {
     if (this.data.reducedMotion) {
       const next = !this.data.toolboxVisible;

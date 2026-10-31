@@ -144,17 +144,21 @@
     <view class="scene-action-dock {{toolboxVisible ? 'scene-action-dock--toolbox-open' : ''}}">
       <view class="companion-toolbox-stack">
         <view class="companion-toolbox companion-toolbox--{{toolboxMotion}}" catchtap="noop" aria-hidden="{{toolboxMotion === 'closed' && !toolboxVisible}}">
+          <view class="companion-toolbox__motion" bindanimationend="onToolboxPanelAnimEnd">
           <view class="companion-toolbox__grid">
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开日记" bindtap="onOpenToolboxDiary"><image src="{{toolboxDiaryIcon}}" mode="aspectFit"></image><text>日记</text></view>
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开活动" catchtap="onOpenToolboxActivity"><image src="{{toolboxActivityIcon}}" mode="aspectFit"></image><text>活动</text></view>
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开设置" bindtap="onOpenToolboxSettings"><image src="{{mySettingsIcon}}" mode="aspectFit"></image><text>设置</text></view>
           </view>
+          </view>
         </view>
-        <view class="scene-action-button companion-toolbox-button companion-toolbox-button--{{toolboxMotion}}" hover-class="scene-action-button--pressed" aria-role="button" aria-label="{{toolboxVisible ? '收起百宝箱' : '打开百宝箱'}}" aria-expanded="{{toolboxVisible}}" bindtap="onToggleToolbox">
-          <view class="companion-toolbox-button__icons" aria-hidden="true">
-            <image class="companion-toolbox-button__lid {{toolboxChestOpen ? '' : 'companion-toolbox-button__lid--visible'}}" src="{{toolboxIconClosed}}" mode="aspectFit"></image>
-            <image class="companion-toolbox-button__lid {{toolboxChestOpen ? 'companion-toolbox-button__lid--visible' : ''}}" src="{{toolboxIconOpen}}" mode="aspectFit"></image>
+        <view class="scene-action-button companion-toolbox-button" hover-class="{{toolboxMotion === 'opening' || toolboxMotion === 'closing' ? 'none' : 'scene-action-button--pressed'}}" aria-role="button" aria-label="{{toolboxVisible ? '收起百宝箱' : '打开百宝箱'}}" aria-expanded="{{toolboxVisible}}" bindtap="onToggleToolbox">
+          <view class="companion-toolbox-button__motion companion-toolbox-button--{{toolboxMotion}}" bindanimationend="onToolboxButtonAnimEnd">
+            <view class="companion-toolbox-button__icons" aria-hidden="true">
+              <image class="companion-toolbox-button__lid {{toolboxChestOpen ? '' : 'companion-toolbox-button__lid--visible'}}" src="{{toolboxIconClosed}}" mode="aspectFit"></image>
+              <image class="companion-toolbox-button__lid {{toolboxChestOpen ? 'companion-toolbox-button__lid--visible' : ''}}" src="{{toolboxIconOpen}}" mode="aspectFit"></image>
+            </view>
           </view>
         </view>
       </view>

@@ -80,10 +80,24 @@ Page({
     });
   },
 
+  onWishTouchStart(event) {
+    const touch = event.touches && event.touches[0];
+    if (!touch) return;
+    this.lastWishTouch = {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    };
+  },
+
   onTapComingSoonWish(event) {
     const key = event.currentTarget.dataset.key;
     const item = this.data.comingSoon.find(row => row.key === key);
     if (!item || !item.comingSoon) return;
+    const cached = this.lastWishTouch;
+    if (cached && Number.isFinite(cached.clientX) && Number.isFinite(cached.clientY)) {
+      this.playWishPlusOne(key, cached.clientX, cached.clientY);
+      return;
+    }
     const localX = Number(event.detail && event.detail.x);
     const localY = Number(event.detail && event.detail.y);
     const query = wx.createSelectorQuery().in(this);

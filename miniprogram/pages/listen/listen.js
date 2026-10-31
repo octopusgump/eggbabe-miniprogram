@@ -43,13 +43,17 @@ Page({
     if (state.pendingResult) { this.showFeedback(state.pendingResult, 0); return; }
     if (!state.categories.length) { this.showEnd(state); return; }
     if (state.completedToday) this.showChoices();
-    else this.startGroup();
+    else this.startGroup(null);
   },
   startGroup(event) {
     if (this.data.busy || stars.getRoomScope() !== this.scope) return;
     const id = typeof event === 'string' ? event : event && event.currentTarget.dataset.id;
     const result = adapter.startGroup(id);
-    if (!result.ok) { this.setData({ error: result.error.message }); return; }
+    if (!result.ok) {
+      const message = result.error && result.error.message || '这个话题暂时没有新的问题。';
+      this.setData({ view: 'blocked', error: message, busy: false });
+      return;
+    }
     this.resultId = null;
     this.draft = result.data;
     this.renderQuestion();

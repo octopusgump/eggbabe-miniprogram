@@ -203,7 +203,7 @@
         <text wx:if="{{todayCompanionTomorrowVisible}}" class="today-companion-letter__hint {{currentState.atHome ? 'today-companion-letter__hint--with-role' : ''}}">{{todayCompanionView.today.tomorrowHint}}</text>
       </view>
     </view>
-    <view wx:if="{{currentState.atHome && ((todayCompanionGameInvitation && todayCompanionView.today.activityKind !== 'listen' && !pendingCompanionMemory) || todayCompanionTomorrowVisible)}}" class="companion-letter-role {{todayCompanionGameInvitation ? 'companion-letter-role--game' : ''}} {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><companion-pet-portrait src="{{companionRoleImage}}" name="{{pet.name || '蛋宝宝'}}" variant="letter-badge"></companion-pet-portrait></view>
+    <view wx:if="{{currentState.atHome && todayCompanionTomorrowVisible && !todayCompanionGameInvitation && !pendingCompanionMemory}}" class="companion-letter-role {{companionRoleEntering ? 'companion-letter-role--entering' : ''}}" aria-role="button" aria-label="与蛋宝宝聊天" catchtap="onCompanionChatTap"><companion-pet-portrait src="{{companionRoleImage}}" name="{{pet.name || '蛋宝宝'}}" variant="letter-badge"></companion-pet-portrait></view>
     </view>
   </view>
 

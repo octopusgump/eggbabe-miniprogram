@@ -66,7 +66,8 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(overlayTemplate.includes('src="{{panoramaImage}}"'), false, '信纸 overlay 内不得重复渲染第二张场景图');
   assert.equal(/窗边的小纸条|这一会儿，收好了。|房间左上角，多了一颗星星。|♡|✓/.test(overlayTemplate), false, '信纸 overlay 不得增加未经确认的小标题、完成文案、说明或装饰图标');
   assert.equal(roomStyles.includes('.today-companion-overlay{position:fixed;z-index:400') && roomStyles.includes('.today-companion-letter__title') && roomStyles.includes('font-size:42rpx'), true, 'overlay 必须覆盖原房间并保持标题与正文两级层次');
-  assert.ok(!roomTemplate.includes('companion-tabs') && roomTemplate.includes('companion-letter-role') && roomTemplate.includes('onCompanionChatTap'), '取消分栏，聊天通过信纸边缘角色进入');
+  assert.ok(!roomTemplate.includes('companion-tabs') && roomTemplate.includes('companion-letter-role') && roomTemplate.includes('onCompanionChatTap'), '取消分栏；普通信「明天呢？」展开后可从信纸边缘进聊天');
+  assert.ok(roomTemplate.includes('todayCompanionTomorrowVisible && !todayCompanionGameInvitation'), '小游戏邀请信（听你说/一起画）信纸右下角不挂宠物');
   assert.equal(moodTemplate.includes('pet-mood-tab__star-summary') && moodTemplate.includes('今日已收下') && moodTemplate.includes('今日待收下'), true, '今日心情区域必须展示星星数量和今日状态');
   assert.equal(moodTemplate.includes('starProgressText') && moodStyles.includes('.pet-mood-tab__star-progress'), true, '今日心情组件保留进度文字位，供纪念册恢复或服务端累计接入时使用');
   assert.ok(roomLogic.includes('onOpenMemoryAlbum') && roomTemplate.includes('纪念册'), '百宝箱可以打开纪念册');

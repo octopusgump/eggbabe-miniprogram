@@ -2,7 +2,7 @@
 <view wx:else class="page">
   <nav-bar title="{{title}}"></nav-bar>
   <view class="content">
-    <view wx:if="{{loading}}" class="state">正在加载协议信息…</view>
+    <view wx:if="{{loading}}" class="state state--loading"><loading-orbit size="M"></loading-orbit><text>正在加载协议信息…</text></view>
     <view wx:else class="document-card">
       <text class="document-title">{{title}}</text>
       <text class="meta">版本号：{{version || '未配置'}}</text>

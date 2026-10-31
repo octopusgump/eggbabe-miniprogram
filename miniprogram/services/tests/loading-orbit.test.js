@@ -1,0 +1,59 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '../..');
+const componentRoot = path.join(root, 'components/loading-orbit');
+const template = fs.readFileSync(path.join(componentRoot, 'loading-orbit.wxml'), 'utf8');
+const styles = fs.readFileSync(path.join(componentRoot, 'loading-orbit.wxss'), 'utf8');
+const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
+
+assert.equal(app.usingComponents['loading-orbit'], '/components/loading-orbit/loading-orbit', 'Loading / Orbit 必须在 app.json 全局注册');
+
+assert.equal(template.includes('loading-orbit__track') && template.includes('loading-orbit__spin') && template.includes('loading-orbit__dot'), true, '组件必须为固定 Track + 可旋转 Spin（点挂在 Spin）');
+assert.equal(!template.includes('loading-orbit__spinner'), true, '旋转层命名应对齐 Figma Spin，而非 spinner');
+assert.match(styles, /614:2861[\s\S]*2s linear[\s\S]*1\.1s/, '样式应记录 Figma 2s 导出与 1.1s 交接差异');
+assert.equal(template.includes('loading-orbit--reduced'), true, '组件必须支持减少动态时的静态退化 class');
+
+assert.match(styles, /\.loading-orbit--S\s*\{[^}]*width:\s*60rpx/s, 'S 号外框必须为 30px → 60rpx');
+assert.match(styles, /\.loading-orbit--M\s*\{[^}]*width:\s*96rpx/s, 'M 号外框必须为 48px → 96rpx');
+assert.match(styles, /\.loading-orbit--L\s*\{[^}]*width:\s*168rpx/s, 'L 号外框必须为 84px → 168rpx');
+assert.match(styles, /\.loading-orbit--S \.loading-orbit__track,\s*\n\.loading-orbit--S \.loading-orbit__spin[\s\S]*width:\s*48rpx/s, 'S 号轨道直径必须为 24px → 48rpx');
+assert.equal(!/\.loading-orbit__track\s*\{[^}]*animation:/s.test(styles), true, 'Track 环必须固定、不得参与旋转动画');
+assert.match(styles, /\.loading-orbit__spin[\s\S]*animation:\s*loading-orbit-spin/, '仅 Spin 层应绑定绕轨旋转');
+assert.match(styles, /\.loading-orbit--S \.loading-orbit__track\s*\{[^}]*border-width:\s*4rpx/s, 'S 号线宽必须为 2px → 4rpx');
+assert.match(styles, /\.loading-orbit--M \.loading-orbit__dot[^}]*width:\s*16rpx/, 'M 号点径必须为 8px → 16rpx');
+assert.match(styles, /\.loading-orbit--light \.loading-orbit__track[^}]*#E5E3DF/, '浅色轨道必须使用 Border/Default');
+assert.match(styles, /\.loading-orbit--light \.loading-orbit__dot[^}]*#9DB65B/, '浅色点必须使用 Brand/Leaf');
+assert.match(styles, /animation:\s*loading-orbit-spin\s+1\.1s\s+linear\s+infinite/, '绕轨动画必须为 1.1s linear 无限循环');
+assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.loading-orbit__spin[\s\S]*animation:\s*none/, '系统减少动态时必须停在 12 点静帧');
+assert.match(styles, /\.loading-orbit--reduced \.loading-orbit__spin[\s\S]*animation:\s*none/, '页面传入 reducedMotion 时必须停止旋转');
+
+const chatWxml = fs.readFileSync(path.join(root, 'pages/chat/chat.wxml'), 'utf8');
+const journeyWxml = fs.readFileSync(path.join(root, 'pages/journey-scene/journey-scene.wxml'), 'utf8');
+const lifeSceneWxml = fs.readFileSync(path.join(root, 'pages/life-scene/life-scene.wxml'), 'utf8');
+const wishWxml = fs.readFileSync(path.join(root, 'pages/wish/wish.wxml'), 'utf8');
+const lessonWxml = fs.readFileSync(path.join(root, 'pages/lesson/lesson.wxml'), 'utf8');
+const policyWxml = fs.readFileSync(path.join(root, 'pages/policy/policy.wxml'), 'utf8');
+const ageWxml = fs.readFileSync(path.join(root, 'pages/age-range/age-range.wxml'), 'utf8');
+const lifeScenesWxml = fs.readFileSync(path.join(root, 'pages/life-scenes/life-scenes.wxml'), 'utf8');
+const todayWxml = fs.readFileSync(path.join(root, 'pages/iaa-today-companion/iaa-today-companion.wxml'), 'utf8');
+const collectionWxml = fs.readFileSync(path.join(root, 'pages/collection-card/collection-card.wxml'), 'utf8');
+const homeWxml = fs.readFileSync(path.join(root, 'pages/home/home.wxml'), 'utf8');
+const chatWxmlHistory = chatWxml;
+
+assert.equal(chatWxml.includes('<loading-orbit size="M"'), true, '聊天页必须使用 M 号 Loading / Orbit');
+assert.equal(journeyWxml.includes('<loading-orbit size="L" tone="dark"'), true, '旅程页必须使用 L 号深色 Loading / Orbit');
+assert.equal(lifeSceneWxml.includes('<loading-orbit size="S"'), true, '房间页必须使用 S 号 Loading / Orbit');
+assert.equal(wishWxml.includes('<loading-orbit size="M"'), true, '愿望池必须使用 M 号 Loading / Orbit');
+assert.equal(lessonWxml.includes('<loading-orbit size="M"'), true, '早教页必须使用 M 号 Loading / Orbit');
+assert.equal(policyWxml.includes('<loading-orbit size="M"'), true, '政策页必须使用 M 号 Loading / Orbit');
+assert.equal(ageWxml.includes('<loading-orbit size="M"'), true, '年龄页必须使用 M 号 Loading / Orbit');
+assert.equal(lifeScenesWxml.includes('<loading-orbit size="M"'), true, '纪念册 Page State 必须使用 M 号 Loading / Orbit');
+assert.equal(todayWxml.includes('<loading-orbit size="M"'), true, '今日陪伴必须使用 M 号 Loading / Orbit');
+assert.equal(lifeSceneWxml.includes('tone="dark"'), true, '魔法窗必须使用深色 S 号 Loading / Orbit');
+assert.equal(collectionWxml.includes('card-image-loader'), true, '收藏卡 demo 插画态不得接入 Orbit');
+assert.equal(!homeWxml.includes('<loading-orbit'), true, '破壳前首页不得接入 Orbit');
+assert.equal(chatWxmlHistory.includes('history-loading') && !chatWxmlHistory.match(/history-loading[\s\S]*loading-orbit/), true, '聊天历史上拉文案不得接入 Orbit');
+
+console.log('Loading / Orbit 组件规格与主要接入点校验通过。');

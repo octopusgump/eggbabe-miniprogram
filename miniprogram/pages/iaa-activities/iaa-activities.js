@@ -81,7 +81,13 @@ Page({
     });
   },
 
+  findComingSoonRow(key) {
+    const target = String(key || '');
+    return (this.data.comingSoon || []).find(row => String(row.key) === target);
+  },
+
   onWishTouchStart(event) {
+    this.wishTouchMoved = false;
     const touch = event.touches && event.touches[0];
     if (!touch) return;
     this.lastWishTouch = {
@@ -91,31 +97,36 @@ Page({
     };
   },
 
-  pulseWishRowShake(key) {
-    const apply = () => this.setData({ wishPressKey: key });
-    if (this.data.wishPressKey === key) {
-      this.setData({ wishPressKey: '' }, apply);
-    } else {
-      apply();
-    }
-    clearTimeout(this.wishPressTimers[key]);
-    this.wishPressTimers[key] = setTimeout(() => {
-      if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
-    }, 420);
+  onWishTouchMove() {
+    this.wishTouchMoved = true;
   },
 
-  onTapComingSoonWish(event) {
+  onWishTouchEnd(event) {
+    if (this.wishTouchMoved) return;
     const key = event.currentTarget.dataset.key;
-    const item = this.data.comingSoon.find(row => row.key === key);
-    if (!item || !item.comingSoon) return;
+    this.fireWishFeedback(key, event);
+  },
+
+  fireWishFeedback(key, event) {
+    if (!this.findComingSoonRow(key)) return;
+    const now = Date.now();
+    if (
+      this.lastWishFeedbackKey === key
+      && this.lastWishFeedbackAt
+      && now - this.lastWishFeedbackAt < 320
+    ) {
+      return;
+    }
+    this.lastWishFeedbackKey = key;
+    this.lastWishFeedbackAt = now;
     this.pulseWishRowShake(key);
-    const detailX = Number(event.detail && event.detail.x);
-    const detailY = Number(event.detail && event.detail.y);
+    const detailX = Number(event && event.detail && event.detail.x);
+    const detailY = Number(event && event.detail && event.detail.y);
     let originX = Number.isFinite(detailX) ? detailX : 0;
     let originY = Number.isFinite(detailY) ? detailY : 0;
     if (!Number.isFinite(detailX) || !Number.isFinite(detailY)) {
       const cached = this.lastWishTouch;
-      if (cached && cached.key === key && Number.isFinite(cached.clientX)) {
+      if (cached && String(cached.key) === String(key) && Number.isFinite(cached.clientX)) {
         const query = wx.createSelectorQuery().in(this);
         query.select(`#wish-area-${key}`).boundingClientRect();
         query.exec(rects => {
@@ -139,10 +150,27 @@ Page({
     this.playWishPlusOne(key, originX, originY);
   },
 
+  pulseWishRowShake(key) {
+    const apply = () => this.setData({ wishPressKey: key });
+    if (this.data.wishPressKey === key) {
+      this.setData({ wishPressKey: '' }, apply);
+    } else {
+      apply();
+    }
+    clearTimeout(this.wishPressTimers[key]);
+    this.wishPressTimers[key] = setTimeout(() => {
+      if (this.data.wishPressKey === key) this.setData({ wishPressKey: '' });
+    }, 420);
+  },
+
+  onTapComingSoonWish(event) {
+    this.fireWishFeedback(event.currentTarget.dataset.key, event);
+  },
+
   onTapComingSoonCta(event) {
     const key = event.currentTarget.dataset.key;
-    const item = this.data.comingSoon.find(row => row.key === key);
-    if (!item || !item.comingSoon) return;
+    const item = this.findComingSoonRow(key);
+    if (!item) return;
     this.openComingSoonModal(item);
   },
 

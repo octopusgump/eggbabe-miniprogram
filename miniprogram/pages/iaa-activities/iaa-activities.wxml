@@ -48,6 +48,8 @@
             class="activities-row__wish"
             data-key="{{item.key}}"
             catchtouchstart="onWishTouchStart"
+            catchtouchmove="onWishTouchMove"
+            catchtouchend="onWishTouchEnd"
             catchtap="onTapComingSoonWish"
             aria-role="button"
             aria-label="{{item.title}}想玩反馈"

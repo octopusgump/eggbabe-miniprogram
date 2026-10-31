@@ -87,6 +87,10 @@ async function main(){
   const timerCount=timers.size;p.maybeShowDailyCompanion();assert.equal(timers.size,timerCount,'重复刷新不重复播放到信');
   p.data.companionRoleImage='/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare.webp';
   await p.onOpenTodayCompanion();assert.equal(p.data.companionRoleImage.endsWith('/stare.webp'),true,'展开信纸不清空角色素材');assert.equal(p.data.companionLetterArriving,false,'动画期间点击立即读信');assert.equal(p.data.companionUnread,false);
+  p.syncRoomContextEntry();
+  assert.equal(p.data.contextEntryFlatEnvelope, false, '开信后左下切宠物头像，不再保持扁信封');
+  assert.match(p.data.contextActionIcon, /30-character\/jade-rabbit\/stare\.webp/, '开信后展示玉兔头像');
+  assert.equal(p.data.contextEntryOpensChat, true, '开信后左下进入聊天');
   p.onTodayCompanionRevealTomorrow();assert.equal(p.data.todayCompanionTomorrowVisible,false,'未进入小游戏时不能展开明日内容');
   p.onTodayCompanionAction();navigation.success();
   p.setData({companionNavigating:false,todayCompanionVisible:true});navigation=undefined;

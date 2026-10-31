@@ -245,9 +245,9 @@ function listenToolboxEntryVisibleForRoom(atHome, todayActivityKind, listenDone)
 function roomContextEntry(pet, chatAccess, options) {
   const input = options || {};
   const atHome = Boolean(input.atHome);
-  const kind = input.todayActivityKind;
-  const listenCompleted = kind === 'listen' && input.listenCompleted;
-  if (atHome && listenCompleted) {
+  const listenDone = Boolean(input.listenCompleted);
+  const letterOpenedToday = Boolean(input.letterOpenedToday);
+  if (atHome && (listenDone || letterOpenedToday)) {
     const chat = contextActionPresentation(pet, chatAccess);
     return {
       icon: companionPetImage.resolveCompanionPetImage(pet),
@@ -770,8 +770,8 @@ Page({
         || (listenDone ? 'listen' : null);
       const contextEntry = roomContextEntry(this.data.pet, snapshot.chatAccess, {
         atHome: currentState.atHome,
-        todayActivityKind,
-        listenCompleted: listenDone && todayActivityKind === 'listen'
+        listenCompleted: listenDone,
+        letterOpenedToday: this.letterOpenedToday()
       });
       const slotKey = `${currentState.slotIndex}:${currentState.major}:${currentState.key}`;
       const shouldShowStatusBubble = currentState.atHome && slotKey !== this.lastStatusSlotKey;
@@ -1394,6 +1394,16 @@ Page({
 
   noop() {},
 
+  letterOpenedToday() {
+    const date = require('../../services/companion-star-rules').shanghaiDate();
+    if (this.companionSeenDate === date) return true;
+    try {
+      if (wx.getStorageSync(this.companionSeenKey()) === date) return true;
+    } catch (error) {}
+    const star = this.data.todayCompanionStarView && this.data.todayCompanionStarView.star;
+    return Boolean(star && star.baseClaimed);
+  },
+
   syncRoomContextEntry(extra) {
     if (!this.data.pet) return;
     const currentState = this.data.currentState;
@@ -1405,8 +1415,8 @@ Page({
     const atHome = Boolean(currentState && currentState.atHome);
     const entry = roomContextEntry(this.data.pet, chatAccess, {
       atHome,
-      todayActivityKind,
-      listenCompleted: listenDone && todayActivityKind === 'listen'
+      listenCompleted: listenDone,
+      letterOpenedToday: this.letterOpenedToday()
     });
     this.setData(Object.assign({
       contextActionIcon: entry.icon,

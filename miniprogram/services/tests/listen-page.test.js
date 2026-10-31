@@ -84,6 +84,7 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
   nav.properties.customBack = false; navDefinition.methods.onBack.call(nav);
   assert.equal(navigatedBack, beforeCustomBack + 1, '其他页面保留原返回行为');
   const dailyPet = { id: 'listen-daily-done', ownerId: 'owner', lifecycleStage: 'HATCHED', prototype: '锦鲤' };
+  petStore.getPet = () => dailyPet;
   stars.configureRoom(dailyPet.id, dailyPet);
   stars.getDailyInvitation(['listen'], () => 0);
   await stars.recordLetterOpen((await stars.getRoomStarView()).data);

@@ -141,13 +141,13 @@
 
     <view wx:if="{{toolboxVisible}}" class="toolbox-dismiss" bindtap="onToggleToolbox"></view>
     <view wx:if="{{memoryGuideVisible}}" class="companion-memory-guide" bindtap="onToggleToolbox">打开百宝箱，看看回忆</view>
-    <view class="scene-action-dock">
+    <view class="scene-action-dock {{toolboxVisible ? 'scene-action-dock--toolbox-open' : ''}}">
       <view class="companion-toolbox-stack">
         <view class="companion-toolbox {{toolboxVisible ? 'companion-toolbox--open' : ''}}" catchtap="noop" aria-hidden="{{!toolboxVisible}}">
           <view class="companion-toolbox__grid">
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开纪念册" bindtap="onOpenMemoryAlbum"><image src="{{memoryAlbumIcon}}" mode="aspectFit"></image><text>纪念册</text></view>
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开日记" bindtap="onOpenToolboxDiary"><image src="{{toolboxDiaryIcon}}" mode="aspectFit"></image><text>日记</text></view>
-            <view class="companion-toolbox__item" aria-role="button" aria-label="听你说" bindtap="onOpenToolboxActivity"><image src="{{toolboxActivityIcon}}" mode="aspectFit"></image><text>活动</text></view>
+            <view class="companion-toolbox__item" aria-role="button" aria-label="打开活动" catchtap="onOpenToolboxActivity"><image src="{{toolboxActivityIcon}}" mode="aspectFit"></image><text>活动</text></view>
             <view class="companion-toolbox__item" aria-role="button" aria-label="打开设置" bindtap="onOpenToolboxSettings"><image src="{{mySettingsIcon}}" mode="aspectFit"></image><text>设置</text></view>
           </view>
         </view>

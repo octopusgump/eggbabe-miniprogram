@@ -362,7 +362,7 @@ Page({
     toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
     toolboxDiaryIcon: assets.POST_HATCH.sceneActions.toolboxItems.card,
-    toolboxActivityIcon: companionActivities.byKind('listen') && companionActivities.byKind('listen').icon || assets.POST_HATCH.sceneActions.toolboxItems.keepsakes,
+    toolboxActivityIcon: assets.POST_HATCH.sceneActions.toolboxItems.activities,
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,

@@ -75,14 +75,18 @@
 
   <view wx:if="{{pet}}" class="life-status-stack" style="top:{{moodTabTopPx}}px;">
     <view class="pet-mood-anchor">
-      <view class="companion-balance {{companionStarAwardVisible ? 'companion-balance--award' : ''}}" aria-label="星星 {{companionStarBalance}}，一起 {{companionDays}} 天">
-        <view class="companion-balance__stars">
-          <companion-star mode="room" size="30" pulse="{{companionStarAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star>
-          <companion-roll-number class="companion-balance__amount" value="{{companionStarRollValue}}" reduced-motion="{{reducedMotion}}"></companion-roll-number>
-          <text wx:if="{{companionStarAwardVisible && companionStarGainLabel}}" class="companion-balance__gain">{{companionStarGainLabel}}</text>
-        </view>
-        <text class="companion-balance__days">一起 {{companionDays}} 天</text>
-      </view>
+      <pet-mood-tab
+        id="petMoodTab"
+        layout="post-hatch"
+        pet-name="{{pet.name || '还没有名字'}}"
+        mood="{{dailyMood}}"
+        star-roll-value="{{companionStarRollValue}}"
+        star-gain-label="{{companionStarGainLabel}}"
+        companion-days="{{companionDays}}"
+        star-award-visible="{{companionStarAwardVisible}}"
+        overlay-locked="{{todayCompanionVisible || dailyWindowVisible || magicWindowVisible}}"
+        reduced-motion="{{reducedMotion}}"
+      ></pet-mood-tab>
     </view>
     <view
       class="room-clock room-clock--{{clockMode}}"

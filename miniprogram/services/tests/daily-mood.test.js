@@ -48,16 +48,18 @@ assert.equal(!componentTemplate.includes('pet-mood-tab__divider') && !componentS
 assert.equal(componentStyles.includes('.pet-mood-tab__name{display:block;max-width:100%') && componentStyles.includes('.pet-mood-tab__sentence{width:0;max-height:0') && componentStyles.includes('.pet-mood-tab--expanded .pet-mood-tab__sentence{width:auto;max-width:100%}') && componentStyles.includes('.pet-mood-tab__sentence--visible{max-height:96rpx'), true, '收起态隐藏句子不得撑宽 Tab，展开态必须完整呈现句子和 AI 生成标识');
 assert.equal(componentStyles.includes('transition:width 420ms cubic-bezier(.16,1,.3,1)') && componentStyles.includes('transform:translate3d(0,-5rpx,0)') && componentTemplate.includes('contentVisible'), true, '点击展开必须分阶段执行宽度缓动与文案淡入上移');
 assert.equal(componentStyles.includes('.pet-mood-tab__eyebrow{flex:none;color:#748078;font-size:20rpx;font-weight:600') && componentStyles.includes('.pet-mood-tab__mood-label{overflow:hidden;color:#31463A;font-size:22rpx;font-weight:600'), true, '“今日心情”与正式心情名称必须使用相同字重');
-assert.equal(homeTemplate.includes('<pet-mood-tab') && lifeSceneTemplate.includes('companion-balance'), true, '破壳前后都必须使用同一名字与心情组合组件');
+assert.equal(homeTemplate.includes('<pet-mood-tab') && lifeSceneTemplate.includes('layout="post-hatch"') && lifeSceneTemplate.includes('<pet-mood-tab'), true, '破壳前用默认 Tab，破壳后房间用 post-hatch 状态卡');
+assert.equal(lifeSceneTemplate.includes('class="life-status-stack') && lifeSceneTemplate.indexOf('<pet-mood-tab') < lifeSceneTemplate.indexOf('class="room-clock'), true, '破壳后 Tab 与时钟也必须位于同一纵向状态容器并保持顺序');
+assert.equal(lifeSceneTemplate.includes('star-roll-value="{{companionStarRollValue}}"') && lifeSceneTemplate.includes('一起 {{companionDays}} 天') === false && lifeSceneTemplate.includes('companion-days="{{companionDays}}"'), true, '破壳后房间必须把星星滚变与天数传入陪伴卡');
+assert.equal(lifeSceneTemplate.includes('overlay-locked="{{todayCompanionVisible || dailyWindowVisible || magicWindowVisible}}"'), true, '遮罩打开时必须强制陪伴卡回到 compact');
+assert.equal(homeTemplate.includes("homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed") && !lifeSceneTemplate.includes('intro-ready'), true, '破壳前仍等场景就绪后 intro；破壳后房间不得用定时 intro 自动展开');
 assert.equal(homeTemplate.includes('class="home-status-stack') && homeTemplate.indexOf('<pet-mood-tab') < homeTemplate.indexOf('class="room-clock'), true, '首页 Tab 与时钟必须位于同一纵向状态容器并保持顺序');
-assert.equal(lifeSceneTemplate.includes('class="life-status-stack') && lifeSceneTemplate.indexOf('companion-balance') < lifeSceneTemplate.indexOf('class="room-clock'), true, '破壳后 Tab 与时钟也必须位于同一纵向状态容器并保持顺序');
-assert.equal(componentTemplate.includes('pet-mood-tab__star-summary') && componentTemplate.includes('陪伴星星') && componentTemplate.includes('starProgressText'), true, '今日心情组件必须支持在同一区域展示陪伴星星与纪念进度');
-assert.equal(lifeSceneTemplate.includes('companionStarBalance') && lifeSceneTemplate.includes('一起 {{companionDays}} 天'), true, '破壳后房间必须把星星状态传入左上角今日心情组件');
+assert.equal(componentTemplate.includes('pet-mood-tab__star-summary') && componentTemplate.includes('陪伴星星') && componentTemplate.includes('starProgressText'), true, '破壳前 Tab 仍支持陪伴星星与纪念进度');
 assert.equal(homeTemplate.includes('star-balance='), false, '破壳前房间不应提前展示陪伴星星');
 assert.match(homeStyles, /\.home-status-stack \{[^}]*left: 24rpx;[^}]*align-items: flex-start;[^}]*max-width: calc\(100vw - 48rpx\)/, '破壳前名字卡与时钟必须共用 24rpx 左对齐线');
 assert.match(homeStyles, /\.home-status-tab \{[^}]*margin-left: 0;/, '破壳前名字卡不得再单独向右偏移');
 assert.match(lifeSceneStyles, /\.life-status-stack\{[^}]*left:24rpx;[^}]*align-items:flex-start/, '破壳后名字卡与时钟必须继续共用 24rpx 左对齐线');
-assert.equal(homeTemplate.includes("homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed") && lifeSceneLogic.includes('maybeShowDailyCompanion'), true, '9 秒展示必须等场景真正就绪后开始');
+assert.equal(componentTemplate.includes('pet-mood-tab__room-stars') && componentTemplate.includes('companion-roll-number'), true, '破壳后陪伴卡顶部必须使用滚变星星行');
 assert.equal(homeTemplate.includes('isDemo && pet && stage !== \'hatched\'') && lifeSceneTemplate.includes('class="mood-tester"'), true, '八种心情切换器必须限制在开发态');
 assert.equal(homeTemplate.includes('acceptanceToolsOpen') && homeTemplate.includes('onAcceptanceToolsToggle'), true, '首页开发态验收器必须默认收进单一入口');
 assert.equal(lifeSceneTemplate.includes('isDemo && acceptanceToolsOpen && currentState') && lifeSceneTemplate.includes('onAcceptanceToolsToggle'), true, '破壳后开发态验收器也必须默认收进单一入口');
@@ -142,6 +144,33 @@ Object.assign(secondContext, componentDefinition.methods);
 componentDefinition.lifetimes.attached.call(secondContext);
 assert.equal(secondContext.data.expanded, false, '同一登录会话再次进入页面不得重复自动展开');
 componentDefinition.lifetimes.detached.call(secondContext);
+
+const postHatchContext = {
+  componentAttached: true,
+  properties: {
+    layout: 'post-hatch',
+    petName: '蛋宝宝',
+    mood: dailyMood.mockDailyMood('post-hatch', 'CURIOSITY'),
+    starRollValue: 11,
+    companionDays: 3,
+    introReady: true,
+    overlayLocked: false,
+    reducedMotion: true
+  },
+  data: Object.assign({}, componentDefinition.data),
+  setData(patch) { Object.assign(this.data, patch); },
+  triggerEvent() {}
+};
+Object.assign(postHatchContext, componentDefinition.methods);
+componentDefinition.lifetimes.attached.call(postHatchContext);
+componentDefinition.observers.introReady.call(postHatchContext, true);
+assert.equal(postHatchContext.data.expanded, false, '破壳后房间不得因 introReady 自动展开');
+assert.equal(scheduledTimer, null, '破壳后展开不得启动 9 秒计时');
+componentDefinition.methods.onToggle.call(postHatchContext);
+assert.equal(postHatchContext.data.expanded, true, '破壳后仅点击切换到 expanded');
+componentDefinition.observers.overlayLocked.call(postHatchContext, true);
+assert.equal(postHatchContext.data.expanded, false, '遮罩锁定时必须回到 compact');
+componentDefinition.lifetimes.detached.call(postHatchContext);
 
 if (originalComponent === undefined) delete global.Component;
 else global.Component = originalComponent;

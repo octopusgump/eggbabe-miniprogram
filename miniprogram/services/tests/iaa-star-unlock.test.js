@@ -50,7 +50,7 @@ fixture.STATE_OPTIONS.forEach(option => {
   assert.equal(app.pages.includes('pages/iaa-star-unlock/iaa-star-unlock'), false, '陪伴星星不得注册为独立页面');
   assert.equal(roomLogic.includes("require('../../services/iaa-star-unlock-adapter')") && roomLogic.includes('loadCompanionStar()'), true, '房间页必须从统一 adapter 读取星星');
   assert.equal(roomLogic.includes("query.entry === 'iaa-core-review'") && roomLogic.includes('coreReviewPreviewPet()'), true, '开发验收入口必须能用内存 fixture 直达房间，不写入绑定数据');
-  assert.ok(roomTemplate.includes('companion-balance__stars') && roomTemplate.includes('companionDays'), '左上角只显示星星与一起 X 天');
+  assert.ok(roomTemplate.includes('layout="post-hatch"') && roomTemplate.includes('companion-days="{{companionDays}}"'), '左上角陪伴卡须展示星星与一起 X 天');
   assert.ok(roomTemplate.includes('bindtap="onContextActionTap"') && roomLogic.includes('contextEntryOpensChat') && roomLogic.includes('onOpenListenFromRoom'), '左下：未首组完成开信；听你说首组完成后左下宠物进聊天；继续听你说走百宝箱');
   assert.ok(roomTemplate.includes('onOpenToolboxActivity') && roomLogic.includes('iaa-activities/iaa-activities'), '百宝箱「活动」进入 Figma 全量玩法 list，听你说从列表内进入');
   assert.ok(roomLogic.includes('toolboxItems.activities') && roomTemplate.includes('catchtap="onOpenToolboxActivity"'), '百宝箱「活动」使用 Figma 星星图标且可点透 dismiss 层');

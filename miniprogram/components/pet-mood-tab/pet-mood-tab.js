@@ -11,15 +11,24 @@ function appGlobalData() {
   }
 }
 
+function isPostHatchLayout(layout) {
+  return layout === 'post-hatch';
+}
+
 Component({
   properties: {
+    layout: { type: String, value: 'default' },
     petName: { type: String, value: '还没有名字' },
     mood: { type: Object, value: null },
     starBalance: { type: Number, value: -1 },
+    starRollValue: { type: Number, value: -1 },
+    starGainLabel: { type: String, value: '' },
+    companionDays: { type: Number, value: 0 },
     starClaimed: { type: Boolean, value: false },
     starProgressText: { type: String, value: '' },
     starAwardVisible: { type: Boolean, value: false },
     introReady: { type: Boolean, value: false },
+    overlayLocked: { type: Boolean, value: false },
     reducedMotion: { type: Boolean, value: false },
     nameInteractive: { type: Boolean, value: false },
     todayCompanionEntry: { type: Boolean, value: false }
@@ -32,15 +41,20 @@ Component({
 
   observers: {
     introReady(ready) {
-      if (!this.componentAttached) return;
+      if (!this.componentAttached || isPostHatchLayout(this.properties.layout)) return;
       if (ready) this.startSessionIntroIfNeeded();
       else this.collapse();
+    },
+    overlayLocked(locked) {
+      if (!this.componentAttached || !isPostHatchLayout(this.properties.layout)) return;
+      if (locked) this.collapse(true);
     }
   },
 
   lifetimes: {
     attached() {
       this.componentAttached = true;
+      if (isPostHatchLayout(this.properties.layout)) return;
       if (this.properties.introReady) this.startSessionIntroIfNeeded();
     },
     detached() {
@@ -52,6 +66,7 @@ Component({
 
   pageLifetimes: {
     show() {
+      if (isPostHatchLayout(this.properties.layout)) return;
       if (this.properties.introReady) this.startSessionIntroIfNeeded();
     },
     hide() {
@@ -74,6 +89,7 @@ Component({
     },
 
     startSessionIntroIfNeeded() {
+      if (isPostHatchLayout(this.properties.layout)) return;
       if (!this.properties.mood || !this.properties.introReady) return;
       const globalData = appGlobalData();
       if (globalData && globalData.dailyMoodIntroShown) {
@@ -97,6 +113,7 @@ Component({
           if (this.componentAttached && this.data.expanded) this.setData({ contentVisible: true });
         }, CONTENT_REVEAL_DELAY_MS);
       }
+      if (isPostHatchLayout(this.properties.layout)) return;
       this.autoCollapseTimer = setTimeout(() => {
         this.autoCollapseTimer = null;
         if (this.componentAttached) this.collapse();

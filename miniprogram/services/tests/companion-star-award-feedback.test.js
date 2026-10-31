@@ -53,9 +53,10 @@ assert.match(roomStyles, /today-companion-award__plus\{[^}]*animation:today-comp
 assert.match(starStyles, /companion-star-neutral-show 2s step-end/, '两张造型必须硬切换，不做交叉淡化以免重影');
 assert.match(starStyles, /companion-star--award .companion-star__pose--neutral\{[^}]*2s/, '收星挤压弹出主节奏约 2 秒');
 
-// 房间：左上角沿用同一哑光造型，只做光晕回应，不重播信件动作。
-assert.equal(moodTemplate.includes('<companion-star class="pet-mood-tab__star-icon" mode="room" size="22" pulse="{{starAwardVisible}}"'), true, '房间左上角星星沿用同一造型并随原 +1 时机回应');
-assert.equal(moodTemplate.includes('pet-mood-tab__star-award">+1'), true, '房间左上角原 +1 徽标保持不变');
+// 房间：左上角 post-hatch 陪伴卡沿用同一哑光造型与滚变 +N，不重播信件动作。
+assert.equal(moodTemplate.includes('layout === \'post-hatch\'') && moodTemplate.includes('<companion-roll-number class="pet-mood-tab__room-amount"'), true, '房间左上角星星滚变与造型在同一陪伴卡内');
+assert.equal(moodTemplate.includes('pet-mood-tab__room-gain">{{starGainLabel}}'), true, '房间滚变增量须用 #35483C 的 +N 标签');
+assert.equal(moodTemplate.includes('pet-mood-tab__star-award">+1'), true, '破壳前 Tab 内 +1 徽标保持不变');
 assert.equal(/companion-star--room[^{]*\{[^}]*squeezed/.test(starStyles), false, '房间不得重播挤压动作');
 
 function stubWx(log) {

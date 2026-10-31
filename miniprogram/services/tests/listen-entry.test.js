@@ -34,6 +34,10 @@ Date.now = () => now;
     assert.equal(page.readLetterProgress().available, false, '旧的明日展开记录不能冒充进入活动');
 
     page.onTodayCompanionAction(); assert.equal(navigation.url, '/pages/listen/listen');
+    navigation = null;
+    page.setData({ toolboxVisible: true, companionNavigating: false });
+    page.onOpenToolboxActivity();
+    assert.match(navigation && navigation.url, /pages\/listen\/listen/, '首组未完成时「活动」也可直达听你说');
     assert.equal(page.data.todayCompanionVisible, true, '进入听你说不关闭信件');
     navigation.fail(); assert.equal(page.data.todayCompanionVisible, true); assert.equal(page.data.companionNavigating, false);
     assert.equal(page.data.todayCompanionTomorrowAvailable, false, '导航失败不解锁明天入口');

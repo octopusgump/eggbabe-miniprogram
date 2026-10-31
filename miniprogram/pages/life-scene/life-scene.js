@@ -362,7 +362,7 @@ Page({
     toolboxIcon: assets.POST_HATCH.sceneActions.toolbox,
     memoryAlbumIcon: assets.POST_HATCH.sceneActions.toolboxItems.postcards,
     toolboxDiaryIcon: assets.POST_HATCH.sceneActions.toolboxItems.card,
-    toolboxActivityIcon: assets.POST_HATCH.sceneActions.toolboxItems.keepsakes,
+    toolboxActivityIcon: companionActivities.byKind('listen') && companionActivities.byKind('listen').icon || assets.POST_HATCH.sceneActions.toolboxItems.keepsakes,
     companionStarClaimed: false,
     companionStarProgressText: '',
     companionStarAwardVisible: false,
@@ -1449,14 +1449,7 @@ Page({
   },
 
   onOpenToolboxActivity() {
-    const kind = starAdapter.getTodayInvitationKind()
-      || (this.data.todayCompanionView && this.data.todayCompanionView.today && this.data.todayCompanionView.today.activityKind);
-    if (kind === 'listen') {
-      if (this.data.listenToolboxEntryVisible) return this.onOpenListenFromToolbox();
-      this.setData({ toolboxVisible: false });
-      return this.onOpenTodayCompanion();
-    }
-    this.onOpenMemoryAlbum('activities');
+    this.onOpenListenFromToolbox();
   },
 
   onOpenToolboxSettings() {

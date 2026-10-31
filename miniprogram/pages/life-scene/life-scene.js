@@ -1471,7 +1471,7 @@ Page({
     this.closeToolbox({ instant: true });
     this.returningFromChild = true;
     wx.navigateTo({
-      url: '/pages/collection-card/collection-card',
+      url: '/pages/companion-diary/companion-diary?entry=room',
       fail: () => {
         this.returningFromChild = false;
         this.showSystemNotice('日记没有打开，请重试', 'warning');

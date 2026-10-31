@@ -56,6 +56,7 @@ function markColorHintSeen() {
 const doodleDefinition = {
   data: {
     statusBarHeight: 20,
+    navCoverHeightPx: 76,
     toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
     brushSizes: BRUSH_SIZE_OPTIONS,
@@ -119,8 +120,11 @@ const doodleDefinition = {
     this.operationSequence = this.shellArt.operations.length;
     this.editRevision = 0;
     this.savedRevision = 0;
+    const windowWidth = info.windowWidth || 375;
+    const navRowPx = Math.round(windowWidth / 750 * 112);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
+      navCoverHeightPx: (info.statusBarHeight || 20) + navRowPx,
       selectedBrushColor: initialBrush.value,
       selectedBrushColorName: initialBrush.name
     });
@@ -797,6 +801,9 @@ const doodleDefinition = {
       fail: () => {
         this.backInProgress = false;
         this.setData({ pageTransitionPhase: 'visible' });
+      },
+      complete: () => {
+        if (this.pageActive) this.backInProgress = false;
       }
     });
   },

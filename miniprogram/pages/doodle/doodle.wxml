@@ -4,15 +4,12 @@
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
     <view class="doodle-nav-row">
       <view class="doodle-nav-leading">
-        <view class="doodle-back" aria-role="button" aria-label="返回" bindtap="onBack">
+        <view class="doodle-back" aria-hidden="true">
           <view class="doodle-chevron"></view>
         </view>
         <text
           class="save-status save-status--{{saveStatus}}"
-          aria-role="button"
-          aria-label="{{companionDrawing ? '画好了' : saveStatusText}}"
-          aria-disabled="{{!companionDrawing && (saveStatus === 'saved' || saveStatus === 'saving')}}"
-          bindtap="onManualSave"
+          aria-hidden="true"
         >{{companionDrawing ? '画好了' : saveStatusText}}</text>
       </view>
       <text class="doodle-title">{{companionDrawing ? '一起画' : '画我的蛋壳'}}</text>
@@ -78,6 +75,27 @@
         catchtouchcancel="onCanvasTouchCancel"
       ></canvas>
     </view>
+    <cover-view class="doodle-nav-cover" style="padding-top: {{statusBarHeight}}px; height: {{navCoverHeightPx}}px;">
+      <cover-view class="doodle-nav-cover-row">
+        <cover-view class="doodle-back-cover" bindtap="onBack" aria-role="button" aria-label="返回">
+          <cover-view class="doodle-chevron-cover"></cover-view>
+        </cover-view>
+        <cover-view
+          wx:if="{{companionDrawing}}"
+          class="doodle-save-cover"
+          bindtap="onManualSave"
+          aria-role="button"
+          aria-label="画好了"
+        >画好了</cover-view>
+        <cover-view
+          wx:elif="{{saveStatus === 'unsaved' || saveStatus === 'error'}}"
+          class="doodle-save-cover doodle-save-cover--{{saveStatus}}"
+          bindtap="onManualSave"
+          aria-role="button"
+          aria-label="{{saveStatusText}}"
+        >{{saveStatusText}}</cover-view>
+      </cover-view>
+    </cover-view>
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <view class="content" catchtap="onToolPanelTap">

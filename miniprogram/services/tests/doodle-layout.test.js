@@ -25,6 +25,7 @@ assert.equal(pageScript.includes('onToggleCanvasSize'), false, '画画页不得�
 assert.equal(wxml.includes('page--{{pageTransitionPhase}}'), true, '画画页必须绑定独立的淡入淡出状态');
 assert.equal(pageScript.includes('AUTO_SAVE_DELAY') || pageScript.includes('scheduleAutoSave'), false, '画画页不得继续定时自动上传作品');
 assert.equal(wxml.includes('bindtap="onManualSave"') && pageScript.includes("unsaved: '保存'") && pageScript.includes("error: '重新保存'"), true, '左上角必须提供保存、保存中、已保存和重新保存状态');
+assert.equal(wxml.includes('class="doodle-back-cover"') && wxml.includes('bindtap="onBack"') && wxml.includes('doodle-nav-cover'), true, '返回与保存热区必须使用 cover-view 浮在原生 Canvas 之上');
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'") && pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
 assert.doesNotMatch(wxss, /\.page--waiting\s*\{[^}]*pointer-events:\s*none/, 'Canvas 准备期间必须阻止点击穿透到首页');

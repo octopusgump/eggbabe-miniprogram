@@ -142,12 +142,18 @@
   padding: 24rpx 8rpx 24rpx 32rpx;
   border-radius: 32rpx 0 0 32rpx;
   box-sizing: border-box;
+  overflow: visible;
+  z-index: 1;
+}
+
+.activities-row--coming-soon.activities-row--wish-shake .activities-row__wish {
+  z-index: 3;
 }
 
 /* 行内 +1：与 tab 同层渲染，避免 cover-view 在开发者工具不显示 */
 .activities-wish-float {
   position: absolute;
-  z-index: 40;
+  z-index: 50;
   width: 0;
   height: 0;
   overflow: visible;
@@ -244,8 +250,7 @@
     animation: none;
   }
   .activities-wish-float__motion {
-    animation: none;
-    opacity: 0;
+    animation-duration: 120ms;
   }
 }
 

@@ -54,6 +54,20 @@
           >
             <image class="activities-row__icon activities-row__icon--dimmed" src="{{item.icon}}" mode="aspectFill"></image>
             <text class="activities-row__title activities-row__title--dimmed">{{item.title}}</text>
+            <block wx:for="{{wishBursts}}" wx:for-item="burst" wx:key="id">
+              <view
+                wx:if="{{burst.key === item.key}}"
+                class="activities-wish-float"
+                style="left: {{burst.originX}}px; top: {{burst.originY}}px;"
+                aria-hidden="true"
+              >
+                <view class="activities-wish-float__motion">
+                  <text class="activities-wish-float__plus">+1</text>
+                  <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
+                  <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
+                </view>
+              </view>
+            </block>
           </view>
           <view
             class="activities-cta"
@@ -64,20 +78,6 @@
           >
             <text class="activities-cta__text">{{item.ctaText}}</text>
           </view>
-          <block wx:for="{{wishBursts}}" wx:for-item="burst" wx:key="id">
-            <view
-              wx:if="{{burst.key === item.key}}"
-              class="activities-wish-float"
-              style="left: {{burst.originX}}px; top: {{burst.originY}}px;"
-              aria-hidden="true"
-            >
-              <view class="activities-wish-float__motion">
-                <text class="activities-wish-float__plus">+1</text>
-                <text class="activities-wish-float__spark activities-wish-float__spark--1">✦</text>
-                <text class="activities-wish-float__spark activities-wish-float__spark--2">✦</text>
-              </view>
-            </view>
-          </block>
         </view>
       </view>
     </view>

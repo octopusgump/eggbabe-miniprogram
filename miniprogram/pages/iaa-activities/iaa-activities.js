@@ -86,27 +86,9 @@ Page({
     if (!touch) return;
     this.lastWishTouch = {
       clientX: touch.clientX,
-      clientY: touch.clientY
+      clientY: touch.clientY,
+      key: event.currentTarget.dataset.key
     };
-  },
-
-  resolveWishBurstOrigin(key, clientX, clientY, callback) {
-    const query = wx.createSelectorQuery().in(this);
-    query.select(`#wish-row-${key}`).boundingClientRect();
-    query.exec(rects => {
-      if (!this) return;
-      const rowRect = rects && rects[0];
-      let originX = Number.isFinite(clientX) ? clientX : 0;
-      let originY = Number.isFinite(clientY) ? clientY : 0;
-      if (rowRect && Number.isFinite(clientX) && Number.isFinite(clientY)) {
-        originX = clientX - rowRect.left;
-        originY = clientY - rowRect.top;
-      } else if (rowRect) {
-        originX = rowRect.width * 0.45;
-        originY = rowRect.height * 0.35;
-      }
-      callback(originX, originY);
-    });
   },
 
   pulseWishRowShake(key) {
@@ -127,34 +109,34 @@ Page({
     const item = this.data.comingSoon.find(row => row.key === key);
     if (!item || !item.comingSoon) return;
     this.pulseWishRowShake(key);
-    const fromTap = event.changedTouches && event.changedTouches[0];
-    const cached = this.lastWishTouch;
-    const touch = fromTap || (cached && { clientX: cached.clientX, clientY: cached.clientY });
-    if (touch && Number.isFinite(touch.clientX) && Number.isFinite(touch.clientY)) {
-      this.resolveWishBurstOrigin(key, touch.clientX, touch.clientY, (originX, originY) => {
-        this.playWishPlusOne(key, originX, originY);
-      });
-      return;
-    }
-    const localX = Number(event.detail && event.detail.x);
-    const localY = Number(event.detail && event.detail.y);
-    const query = wx.createSelectorQuery().in(this);
-    query.select(`#wish-area-${key}`).boundingClientRect();
-    query.select(`#wish-row-${key}`).boundingClientRect();
-    query.exec(rects => {
-      if (!this) return;
-      const wishRect = rects && rects[0];
-      const rowRect = rects && rects[1];
-      let originX = 0;
-      let originY = 0;
-      if (wishRect && rowRect) {
-        const x = Number.isFinite(localX) ? localX : wishRect.width / 2;
-        const y = Number.isFinite(localY) ? localY : wishRect.height / 2;
-        originX = wishRect.left - rowRect.left + x;
-        originY = wishRect.top - rowRect.top + y;
+    const detailX = Number(event.detail && event.detail.x);
+    const detailY = Number(event.detail && event.detail.y);
+    let originX = Number.isFinite(detailX) ? detailX : 0;
+    let originY = Number.isFinite(detailY) ? detailY : 0;
+    if (!Number.isFinite(detailX) || !Number.isFinite(detailY)) {
+      const cached = this.lastWishTouch;
+      if (cached && cached.key === key && Number.isFinite(cached.clientX)) {
+        const query = wx.createSelectorQuery().in(this);
+        query.select(`#wish-area-${key}`).boundingClientRect();
+        query.exec(rects => {
+          if (!this) return;
+          const wishRect = rects && rects[0];
+          if (!wishRect) {
+            this.playWishPlusOne(key, 120, 40);
+            return;
+          }
+          this.playWishPlusOne(
+            key,
+            cached.clientX - wishRect.left,
+            cached.clientY - wishRect.top
+          );
+        });
+        return;
       }
-      this.playWishPlusOne(key, originX, originY);
-    });
+      originX = 120;
+      originY = 40;
+    }
+    this.playWishPlusOne(key, originX, originY);
   },
 
   onTapComingSoonCta(event) {
@@ -174,7 +156,7 @@ Page({
       originY: Number.isFinite(originY) ? originY : 0
     };
     this.setData({
-      wishBursts: this.data.wishBursts.concat(burst)
+      wishBursts: (this.data.wishBursts || []).concat(burst)
     });
     const burstTimer = setTimeout(() => {
       if (!this) return;

@@ -14,8 +14,12 @@ assert.equal(wxml.includes('root-portal') || wxml.includes('cover-view'), false,
 assert.equal(wxml.includes('bindtap="onTapRow"') && wxml.includes('data-section="soon"'), false, '即将上线行不得整行绑定单一 tap');
 assert.equal(logic.includes('playWishPlusOne') && logic.includes('wishBursts'), true, '必须支持可叠加的 +1 实例');
 assert.match(logic, /pulseWishRowShake\(key\)/, '点击白区须立刻触发 tab 晃动');
-assert.match(logic, /resolveWishBurstOrigin\(key/, '须把触点换算为行内坐标');
-assert.match(logic, /originX:\s*Number\.isFinite\(originX\)/, '+1 实例须记录行内 origin');
+assert.match(logic, /fireWishFeedback\(key/, '白区反馈须统一走 fireWishFeedback');
+assert.match(logic, /findComingSoonRow\(key\)/, '须按 key 查找即将上线行');
+assert.doesNotMatch(logic, /fireWishFeedback[\s\S]*!item\.comingSoon/, 'fireWishFeedback 不得因 comingSoon 字段缺失拦截');
+assert.equal(wxml.includes('catchtouchend="onWishTouchEnd"'), true, '须用 touchend 兜底触发反馈');
+assert.match(logic, /originX:\s*Number\.isFinite\(originX\)/, '+1 实例须记录白区内 origin');
+assert.match(wxml, /activities-row__wish[\s\S]*wishBursts[\s\S]*activities-wish-float/, '+1 须渲染在白区容器内');
 assert.match(logic, /this\.setData\(\{ \.\.\.view, wishBursts, wishPressKey \}\)/, 'refresh 须保留进行中的 +1');
 
 assert.match(wxss, /\.activities-wish-float[\s\S]*position:\s*absolute/, '+1 须锚定在 coming-soon 行内');

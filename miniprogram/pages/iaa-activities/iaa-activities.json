@@ -2,7 +2,6 @@
   "navigationStyle": "custom",
   "usingComponents": {
     "nav-bar": "../../components/nav-bar/nav-bar",
-    "inline-notice": "../../components/inline-notice/inline-notice",
-    "app-button": "../../components/button/button"
+    "inline-notice": "../../components/inline-notice/inline-notice"
   }
 }

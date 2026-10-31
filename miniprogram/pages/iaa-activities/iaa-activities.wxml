@@ -56,9 +56,7 @@
     catchtap="onComingSoonOverlayTap"
   >
     <view class="activities-coming-soon-dialog" catchtap="onComingSoonDialogTap">
-      <view class="activities-coming-soon-icon-wrap">
-        <image class="activities-coming-soon-icon" src="{{comingSoonModalIcon}}" mode="aspectFit"></image>
-      </view>
+      <image class="activities-coming-soon-icon" src="{{comingSoonModalIcon}}" mode="aspectFit"></image>
       <view class="activities-coming-soon-heading">
         <text class="activities-coming-soon-title">{{comingSoonModalTitle}}</text>
         <text class="activities-coming-soon-tag">{{comingSoonModalTag}}</text>
@@ -66,7 +64,12 @@
       <view class="activities-coming-soon-copy">
         <text wx:for="{{comingSoonModalLines}}" wx:key="*this" class="activities-coming-soon-line">{{item}}</text>
       </view>
-      <app-button text="知道了" variant="primary" bind:tap="onCloseComingSoonModal"></app-button>
+      <view
+        class="activities-coming-soon-btn"
+        aria-role="button"
+        aria-label="知道了"
+        bindtap="onCloseComingSoonModal"
+      >知道了</view>
     </view>
   </view>
 </view>

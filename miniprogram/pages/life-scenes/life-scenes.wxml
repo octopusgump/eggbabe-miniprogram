@@ -43,7 +43,7 @@
 
   <block wx:else>
     <scroll-view class="content {{isDemo ? 'content--demo' : ''}}" scroll-y enhanced show-scrollbar="{{false}}">
-      <view wx:if="{{loading}}" class="page-state"><view class="loading-orbit"></view><text>正在翻看回忆…</text></view>
+      <view wx:if="{{loading}}" class="page-state"><loading-orbit size="M"></loading-orbit><text>正在翻看回忆…</text></view>
       <view wx:elif="{{error}}" class="page-state"><text>{{error}}</text><view class="retry" bindtap="onRetry">重新加载</view></view>
       <block wx:elif="{{section === 'keepsakes'}}">
         <view wx:if="{{keepsakes.length}}" class="keepsake-grid">

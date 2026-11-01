@@ -30,7 +30,7 @@
   </view>
 
   <view wx:if="{{screenState === 'loading'}}" class="state-stage">
-    <view class="soft-loader"><view class="soft-loader__dot soft-loader__dot--one"></view><view class="soft-loader__dot soft-loader__dot--two"></view><view class="soft-loader__dot soft-loader__dot--three"></view></view>
+    <loading-orbit size="M"></loading-orbit>
     <text class="state-stage__title">正在推开今天的门</text>
     <text class="state-stage__copy">看看玉兔现在在做什么。</text>
   </view>

@@ -149,7 +149,8 @@ assert.equal(lifeSceneLogic.includes('/pages/chat/chat?state_key=') && lifeScene
 assert.equal(chatWxml.includes('class="conversation"') && chatWxml.includes('class="composer"') && chatLogic.includes('postHatch.sendSceneMessage'), true, '完整对话页必须同时包含消息区、输入区并复用统一陪伴服务');
 assert.equal(chatWxml.includes('id="message-typing"') && chatWxml.includes('aria-label="蛋宝宝正在回复"') && chatLogic.includes("this.setScrollTarget('message-typing')"), true, '等待回复时必须显示可访问的三点气泡并自动滚入视野');
 assert.equal(chatStyles.includes('animation:typing .5s ease-in-out infinite') && chatStyles.includes('animation-delay:.08s') && chatStyles.includes('animation-delay:.16s'), true, '正在回复的三点微动效必须按 0.5 秒完整循环依次跳动');
-assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatStyles.includes('.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
+const loadingOrbitStyles = fs.readFileSync(path.resolve(__dirname, '../../components/loading-orbit/loading-orbit.wxss'), 'utf8');
+assert.equal(chatLogic.includes('reducedMotionEnabled()') && chatWxml.includes("reducedMotion ? 'page--reduced' : ''") && chatWxml.includes('reduced-motion="{{reducedMotion}}"') && loadingOrbitStyles.includes('.loading-orbit--reduced .loading-orbit__spin') && chatStyles.includes('.page--reduced .typing-bubble__dots view{animation:none}'), true, '聊天页必须在系统减少动态效果时退化为静态三点');
 assert.equal(lifeSceneWxml.includes('onOpenToolboxSettings') && lifeSceneWxml.includes('src="{{mySettingsIcon}}"'), true, '设置入口收入百宝箱');
 assert.equal(lifeSceneLogic.includes("onOpenMySettings() {\n    wx.switchTab({ url: '/pages/my/my' });"), true, '设置仍跳转我的页');
 assert.equal(!lifeSceneWxml.includes('bindtap="onOpenMySettings"'), true, '右下不再单独挂设置按钮');

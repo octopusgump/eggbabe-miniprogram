@@ -31,7 +31,6 @@
 .typing-bubble__dots view:nth-child(2){animation-delay:.08s}.typing-bubble__dots view:nth-child(3){animation-delay:.16s}
 .thread-spacer{height:24rpx}
 .page-state{min-height:760rpx;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24rpx;padding:40rpx;color:#5C5C5C;font-size:25rpx;text-align:center}
-.loading-orbit{width:48rpx;height:48rpx;border:4rpx solid #E5E3DF;border-top-color:#002900;border-radius:50%;animation:spin .8s linear infinite}
 .retry{min-height:96rpx;display:flex;align-items:center;justify-content:center;padding:0 34rpx;border-radius:999rpx;background:#002900;color:#FFF;font-size:26rpx;font-weight:600}
 .composer{flex:none;padding:16rpx 20rpx calc(18rpx + env(safe-area-inset-bottom));border-top:1rpx solid rgba(70,72,60,.10);background:#FCFCF9;box-shadow:none}
 .composer-error{display:block;padding:0 12rpx 12rpx;color:#C33F36;font-size:24rpx;font-weight:500;line-height:1.45}
@@ -45,11 +44,10 @@
 .send-button--busy,.send-button--disabled{background:#E5E3DF;box-shadow:none}
 .send-button--disabled .send-button__icon{opacity:.42}
 .pressable--pressed{opacity:.9;transform:scale(.98);background:#001F00}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes typing{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-3rpx)}}
 @keyframes status-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.loading-orbit,.typing-bubble__dots view,.message-status__pending-dot{animation:none}}
+@media (prefers-reduced-motion:reduce){.typing-bubble__dots view,.message-status__pending-dot{animation:none}}
 .page--reduced .composer-input,.page--reduced .send-button{transition:none}
-.page--reduced .loading-orbit,.page--reduced .typing-bubble__dots view{animation:none}
+.page--reduced .typing-bubble__dots view{animation:none}
 .page--reduced .message-status__pending-dot{animation:none}
 .health-mask{position:fixed;z-index:300;inset:0;display:flex;align-items:center;justify-content:center;padding:40rpx;background:rgba(13,22,16,.48);box-sizing:border-box}.health-dialog{width:100%;max-width:620rpx;padding:42rpx 34rpx 30rpx;border-radius:34rpx;background:#FFF;box-sizing:border-box}.health-message{display:block;color:#26362B;font-size:30rpx;font-weight:600;line-height:1.65;text-align:center}.health-actions{display:flex;margin-top:36rpx}.health-button{min-height:96rpx;display:flex;align-items:center;justify-content:center;flex:1;border-radius:999rpx;background:#002900;color:#FFF;font-size:26rpx;font-weight:600}

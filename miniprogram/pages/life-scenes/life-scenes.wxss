@@ -3,7 +3,6 @@
 .content,.detail-content{flex:1;padding:28rpx 32rpx calc(60rpx + env(safe-area-inset-bottom));box-sizing:border-box}
 .content--demo{padding-bottom:calc(186rpx + env(safe-area-inset-bottom))}
 .page-state,.empty-memory{min-height:720rpx;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22rpx;color:#5C5C5C;font-size:24rpx;text-align:center}
-.loading-orbit{width:46rpx;height:46rpx;border:4rpx solid #E5E3DF;border-top-color:#002900;border-radius:50%;animation:loading-spin .8s linear infinite}
 .retry{height:96rpx;display:flex;align-items:center;justify-content:center;padding:0 32rpx;border-radius:999rpx;background:#002900;color:#FFF;font-size:24rpx}
 .memory-asset-error{width:100%;height:100%;min-height:180rpx;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16rpx;box-sizing:border-box;background:#FDECEA;color:#D9463C;font-size:22rpx;text-align:center}
 .memory-asset-error--compact{min-height:0;border-radius:24rpx}
@@ -71,6 +70,5 @@
 .memory-preview-switch__dots{width:58rpx;display:flex;align-items:center;justify-content:space-between}
 .memory-preview-switch__dot{width:14rpx;height:14rpx;border:2rpx solid #002900;border-radius:50%;background:#FFF}
 .memory-preview-switch__dot--active{background:#002900}
-@keyframes loading-spin{to{transform:rotate(360deg)}}
 @keyframes memory-card-glare-sweep{0%{opacity:0;transform:translate3d(-34%,0,0) rotate(8deg)}35%{opacity:.72}100%{opacity:0;transform:translate3d(34%,0,0) rotate(8deg)}}
-@media (prefers-reduced-motion:reduce){.loading-orbit,.keepsake-grid-item--pressed .memory-card-glare,.postcard-list-item--pressed .memory-card-glare{animation:none}.keepsake-grid-item,.keepsake-grid-art,.postcard-list-item,.recommend-card,.memory-preview-switch{transition:none}.keepsake-grid-item--pressed{transform:none}.keepsake-grid-item--pressed .memory-card-glare,.postcard-list-item--pressed .memory-card-glare{opacity:.18;transform:none}}
+@media (prefers-reduced-motion:reduce){.keepsake-grid-item--pressed .memory-card-glare,.postcard-list-item--pressed .memory-card-glare{animation:none}.keepsake-grid-item,.keepsake-grid-art,.postcard-list-item,.recommend-card,.memory-preview-switch{transition:none}.keepsake-grid-item--pressed{transform:none}.keepsake-grid-item--pressed .memory-card-glare,.postcard-list-item--pressed .memory-card-glare{opacity:.18;transform:none}}

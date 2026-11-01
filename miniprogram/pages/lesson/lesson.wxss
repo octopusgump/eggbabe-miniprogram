@@ -1,6 +1,7 @@
 .page { display: flex; flex-direction: column; height: 100vh; background: #FAFAF8; }
 .content { flex: 1; display: flex; flex-direction: column; box-sizing: border-box; padding: 48rpx 42rpx calc(50rpx + env(safe-area-inset-bottom)); }
 .center-note { margin: auto; color: #85867F; font-size: 26rpx; }
+.page-loading { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 24rpx; color: #85867F; font-size: 26rpx; text-align: center; }
 .kicker { color: #809044; font-size: 20rpx; letter-spacing: 4rpx; }
 .title { margin-top: 18rpx; color: #17311F; font-size: 40rpx; font-weight: 600; }
 .desc { margin-top: 14rpx; color: #777B75; font-size: 24rpx; }

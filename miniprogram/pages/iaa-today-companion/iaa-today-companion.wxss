@@ -54,9 +54,6 @@ page{height:100%;background:#F4F1E9}
 .state-stage__title{margin-top:34rpx;color:#304136;font-size:36rpx;font-weight:650}
 .state-stage__copy{max-width:520rpx;margin-top:14rpx;color:#778078;font-size:25rpx;line-height:1.65}
 .state-stage__action{min-width:248rpx;height:96rpx;display:flex;align-items:center;justify-content:center;box-sizing:border-box;margin-top:36rpx;padding:0 36rpx;border-radius:999rpx;background:#294736;color:#FFF;font-size:25rpx;font-weight:600}
-.soft-loader{height:72rpx;display:flex;align-items:center;gap:15rpx}
-.soft-loader__dot{width:17rpx;height:17rpx;border-radius:50%;background:#839381;animation:soft-rise 1.2s ease-in-out infinite}
-.soft-loader__dot--two{animation-delay:.15s}.soft-loader__dot--three{animation-delay:.3s}
 .empty-window{position:relative;width:186rpx;height:156rpx;overflow:hidden;border:10rpx solid #D8D2C2;border-bottom-width:19rpx;border-radius:14rpx;background:linear-gradient(180deg,#CADCE1,#F5E4C2)}
 .empty-window::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:8rpx;transform:translateX(-50%);background:#D8D2C2}
 .empty-window__sun{position:absolute;right:22rpx;top:25rpx;width:38rpx;height:38rpx;border-radius:50%;background:#F4C875}
@@ -66,5 +63,3 @@ page{height:100%;background:#F4F1E9}
 .today-page--amber .letter-paper{background:linear-gradient(90deg,transparent 0,transparent 44rpx,rgba(184,105,84,.15) 45rpx,rgba(184,105,84,.15) 47rpx,transparent 48rpx),#FFF5E5}
 .today-page--sky .letter-paper{background:linear-gradient(90deg,transparent 0,transparent 44rpx,rgba(184,105,84,.13) 45rpx,rgba(184,105,84,.13) 47rpx,transparent 48rpx),#F7FBF7}
 .today-page--rose .letter-paper{background:linear-gradient(90deg,transparent 0,transparent 44rpx,rgba(166,92,91,.14) 45rpx,rgba(166,92,91,.14) 47rpx,transparent 48rpx),#FFF7F1}
-@keyframes soft-rise{0%,100%{opacity:.35;transform:translateY(5rpx)}50%{opacity:1;transform:translateY(-7rpx)}}
-@media (prefers-reduced-motion:reduce){.soft-loader__dot{animation:none}}

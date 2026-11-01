@@ -62,7 +62,7 @@ function buildView(starBalance) {
       row('listen', '听你说', assets.icons.listen, {
         disabled: listenDailyFull(),
         route: '/pages/listen/listen',
-        cost: 20
+        earn: true
       }),
       row('meet', '遇见你', assets.icons.meet, { route: '', cost: 20 }),
       row('travel', '旅行', assets.icons.travel, { route: '', cost: 20 }),

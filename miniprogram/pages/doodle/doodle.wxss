@@ -123,3 +123,32 @@
 @keyframes exit-confirm-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
+
+.prop-look-row { position: absolute; z-index: 36; top: calc(env(safe-area-inset-top) + 112rpx + 12rpx); left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; }
+.prop-look-hint { pointer-events: auto; padding: 12rpx 30rpx; border-radius: 999rpx; background: rgba(25, 30, 26, 0.72); color: #FFF; font-size: 26rpx; font-weight: 500; line-height: 1.2; box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12); }
+.prop-look-hint--empty { opacity: 0.72; }
+.canvas-notice-anchor--prop { top: calc(env(safe-area-inset-top) + 112rpx + 72rpx); }
+
+.prop-sketch-layer { position: absolute; z-index: 5; width: 52vw; height: 52vw; top: calc(50% - 168rpx); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; }
+.prop-sketch-layer--flip-out .prop-sketch-image { animation: prop-sketch-flip-out 320ms ease-in forwards; }
+
+.prop-unlock-layer { position: fixed; z-index: 120; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top) + 140rpx) 48rpx calc(120rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: linear-gradient(180deg, #FFF 0%, #F7F5EE 100%); }
+.prop-unlock-image { width: 62vw; height: 62vw; max-height: 560rpx; }
+.prop-unlock-name { margin-top: 24rpx; color: #002900; font-size: 36rpx; font-weight: 600; line-height: 1.3; }
+.prop-unlock-ok { width: 560rpx; max-width: 100%; height: 96rpx; margin-top: auto; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 96rpx; }
+
+.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; align-items: flex-end; justify-content: center; padding: 0 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prop-tutorial-card { width: 100%; padding: 36rpx 32rpx 28rpx; border-radius: 28rpx; background: #FFF; box-shadow: 0 24rpx 64rpx rgba(0, 0, 0, 0.18); box-sizing: border-box; }
+.prop-tutorial-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
+.prop-tutorial-title { flex: 1; color: #002900; font-size: 32rpx; font-weight: 600; line-height: 1.35; }
+.prop-tutorial-step { color: #687548; font-size: 22rpx; line-height: 1.4; white-space: nowrap; }
+.prop-tutorial-body { display: block; margin-top: 20rpx; color: #3E4638; font-size: 28rpx; line-height: 1.5; }
+.prop-tutorial-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 28rpx; }
+.prop-tutorial-skip { color: #687548; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; }
+.prop-tutorial-next { min-width: 194rpx; height: 76rpx; margin: 0; padding: 0 28rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 28rpx; font-weight: 600; line-height: 76rpx; }
+
+@keyframes prop-sketch-flip-out {
+  from { opacity: 1; transform: rotateY(0deg) scale(1); }
+  to { opacity: 0; transform: rotateY(90deg) scale(0.92); }
+}

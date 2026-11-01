@@ -75,6 +75,20 @@ Page({
       this.showNotice('这个玩法还在准备中。', 'info');
       return;
     }
+    if (item.key === 'drawing') {
+      stars.beginCompanionPropDrawing('activity').then(result => {
+        if (!result.ok) {
+          this.showNotice(result.error && result.error.message || '星星还不够，先去赚一点吧。', 'warning');
+          return;
+        }
+        this.refresh();
+        wx.navigateTo({
+          url: item.route,
+          fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
+        });
+      });
+      return;
+    }
     wx.navigateTo({
       url: item.route,
       fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')

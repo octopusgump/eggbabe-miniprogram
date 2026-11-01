@@ -42,17 +42,17 @@ function answerAll(categoryId) {
   const second = await listen.completeGroup(answerAll('pressure'));
   assert.equal(second.awardedStars, 0); assert.equal(second.duplicate, false, '零星星也是真实的新完成');
   const drawing = await stars.recordDrawingComplete(await day(), 'after-answer', { random: () => 1 });
-  assert.equal(drawing.baseAwardedStars, 0); assert.equal(drawing.giftStars, 3);
+  assert.equal(drawing.baseAwardedStars, 0); assert.equal(drawing.giftStars, 10);
   assert.equal((await stars.recordDrawingComplete(await day(), 'after-answer')).awardedStars, 0);
-  assert.equal((await stars.recordDrawingComplete(await day(), 'second-drawing')).giftStars, 0);
-  assert.equal(stars.getActivityCompleted('drawing'), true);
+  assert.equal((await stars.recordDrawingComplete(await day(), 'second-drawing')).giftStars, 10);
+  assert.equal(stars.getActivityCompleted('drawing'), false);
   assert.equal(stars.getActivityCompleted('listen'), true);
 
   // 模块重载模拟关闭小程序：结果、余额、每日额度和题库位置都恢复。
   delete require.cache[require.resolve('../iaa-star-unlock-adapter')];
   delete require.cache[require.resolve('../listen-adapter')];
   stars = require('../iaa-star-unlock-adapter'); listen = require('../listen-adapter'); configure('answers-first');
-  assert.equal((await day()).star.balance, 26);
+  assert.equal((await day()).star.balance, 43);
   assert.equal(listen.getResult(firstId).data.answers[firstId + '_q01'].text, '用户可选补充');
   assert.equal((await listen.completeGroup(firstId)).awardedStars, 0);
   assert.equal((await stars.recordDrawingComplete(await day(), 'after-answer')).awardedStars, 0);
@@ -77,7 +77,7 @@ function answerAll(categoryId) {
   configure('drawing-first');
   await stars.recordLetterOpen(await day());
   const drawn = await stars.recordDrawingComplete(await day(), 'first-drawing');
-  assert.equal(drawn.baseAwardedStars, 0); assert.equal(drawn.giftStars, 3);
+  assert.equal(drawn.baseAwardedStars, 0); assert.equal(drawn.giftStars, 10);
   assert.equal((await listen.completeGroup(answerAll('habits'))).awardedStars, 10);
   assert.equal((await day()).star.companionDays, 1);
 

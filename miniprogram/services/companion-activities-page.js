@@ -55,8 +55,7 @@ function buildView(starBalance) {
     starBalance: balance,
     playable: [
       row('drawing', '一起画', assets.icons.draw, {
-        disabled: stars.getActivityCompleted('drawing'),
-        route: '/pages/doodle/doodle?entry=companion',
+        route: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity',
         cost: 20
       }),
       row('listen', '听你说', assets.icons.listen, {

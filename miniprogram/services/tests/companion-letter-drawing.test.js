@@ -34,10 +34,10 @@ async function main(){
   assert.equal(start.awardedStars, 0); assert.equal(start.data.star.companionDays, 2, '进入画纸不增加日数');
   assert.equal((await adapter.recordDrawingStart(start.data)).awardedStars, 0, '旧快照不重复发开始奖励');
   const done = await adapter.recordDrawingComplete(start.data, 'work-1');
-  assert.equal(done.awardedStars, 3); assert.equal(done.baseAwardedStars, 0); assert.equal(done.giftStars, 3); assert.equal(done.data.star.companionDays, 3, '画画完成才加天');
-  assert.equal(done.data.star.balance, 18); assert.equal(done.data.star.dailyBasis, 13);
+  assert.equal(done.awardedStars, 10); assert.equal(done.baseAwardedStars, 0); assert.equal(done.giftStars, 10); assert.equal(done.data.star.companionDays, 3, '画画完成才加天');
+  assert.equal(done.data.star.balance, 25); assert.equal(done.data.star.dailyBasis, 13);
   assert.equal((await adapter.recordDrawingComplete(input,'work-1')).awardedStars,0);
-  assert.equal((await adapter.recordDrawingComplete(input,'work-2')).awardedStars,0,'第二幅仍可收藏但没有额外奖励');
+  assert.equal((await adapter.recordDrawingComplete(input,'work-2')).awardedStars,10,'第二幅达标仍 +10');
   assert.equal((await adapter.recordCompanion(input)).data.star.companionDays,3,'普通动作不会重复计日');
 
   adapter.configureRoom('ordinary-first');
@@ -45,7 +45,7 @@ async function main(){
   const ordinary = await adapter.recordCompanion((await adapter.getRoomStarView()).data); assert.equal(ordinary.awardedStars, 0);
   assert.equal(ordinary.data.star.companionDays,7,'完成后第7天');
   const subsequentStart=await adapter.recordDrawingStart(ordinary.data);assert.equal(subsequentStart.awardedStars,0);
-  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,3);assert.equal(bonus.baseAwardedStars,0);assert.equal(bonus.data.star.companionDays,7);
+  const bonus=await adapter.recordDrawingComplete(ordinary.data,'ordinary-work');assert.equal(bonus.awardedStars,10);assert.equal(bonus.baseAwardedStars,0);assert.equal(bonus.data.star.companionDays,7);
 
   adapter.configureRoom('midnight-draft');
   await adapter.recordLetterOpen(seed(2));
@@ -58,7 +58,7 @@ async function main(){
   await resumed.beginCompanionDrawing();
   const todayView=(await adapter.getRoomStarView()).data;
   assert.equal(todayView.star.baseClaimed, true, '跨日开信发放当日基础');
-  const nextDone = await adapter.recordDrawingComplete(todayView, 'midnight-work'); assert.equal(nextDone.awardedStars, 3); assert.equal(nextDone.baseAwardedStars, 0); assert.equal(nextDone.data.star.companionDays, 3);
+  const nextDone = await adapter.recordDrawingComplete(todayView, 'midnight-work'); assert.equal(nextDone.awardedStars, 10); assert.equal(nextDone.baseAwardedStars, 0); assert.equal(nextDone.data.star.companionDays, 3);
   assert.equal(nextDone.data.star.baseClaimed,true);
   assert.equal(nextDone.data.star.noteCollected,false,'完成画画不冒充已经收好纸条');
   assert.equal((await adapter.recordDrawingStart(nextDone.data)).awardedStars,0,'进入新画作仍不发奖励');
@@ -127,8 +127,8 @@ async function main(){
   assert.equal(adapter.getCompanionDraft(),null,'画好后清空旧草稿，下一幅从空白开始');
   parent.startClock=()=>{};parent.refreshEnvironment=()=>{};parent.loadSnapshot=()=>{};parent.scheduleEnvironmentRefresh=()=>{};
   parent.onShow();await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(parent.data.pendingCompanionMemory.image,'/tmp/local-drawing.png');  assert.equal(parent.data.todayCompanionAwardedStars,3);assert.equal(parent.data.todayCompanionInteractionFeedback,'一起画完啦。这三颗小星星，送给你。');
-  assert.equal(parent.data.companionStarBalance,16);assert.equal(parent.data.companionDays,1);
+  assert.equal(parent.data.pendingCompanionMemory.image,'/tmp/local-drawing.png');  assert.equal(parent.data.todayCompanionAwardedStars,10);assert.equal(parent.data.todayCompanionInteractionFeedback,'这个小道具，送给你。');
+  assert.equal(parent.data.companionStarBalance,23);assert.equal(parent.data.companionDays,1);
   parent.onCollectCompanionMemory();assert.equal(adapter.getMemories().length,1);assert.equal(parent.data.todayCompanionVisible,false);
   parent.clearStarAwardFeedback();editor.clearCompanionFeedback();
   adapter.configureRoom('background-note');

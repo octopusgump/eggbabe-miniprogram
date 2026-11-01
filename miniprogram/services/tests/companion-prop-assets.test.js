@@ -20,6 +20,11 @@ catalog.PROPS.forEach(prop => {
     fs.existsSync(path.join(lineDir, `${prop.id}.webp`)),
     `缺少简笔 ${prop.id}.webp`
   );
+  const colorCandidates = assets.coloredPaths(prop).map(item => path.join(__dirname, '../..', item.replace(/^\//, '')));
+  assert.ok(
+    colorCandidates.some(file => fs.existsSync(file)),
+    `缺少彩色资源 ${prop.id}（catalog colorFile 或 webp）`
+  );
 });
 
 console.log('道具资源路径与 catalog / line 素材校验通过。');

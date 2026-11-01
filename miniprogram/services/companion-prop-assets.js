@@ -13,11 +13,11 @@ function lineSketchPath(propId) {
 function coloredPaths(entry) {
   const id = entry && entry.id ? entry.id : '';
   const paths = [];
-  if (id) paths.push(`${COLOR_ROOT}${id}.webp`);
   if (entry && entry.colorFile) {
     paths.push(`${COLOR_ROOT}${entry.colorFile}`);
     paths.push(`${LEGACY_COLOR_ROOT}${entry.colorFile}`);
   }
+  if (id) paths.push(`${COLOR_ROOT}${id}.webp`);
   return paths.filter((value, index, list) => value && list.indexOf(value) === index);
 }
 

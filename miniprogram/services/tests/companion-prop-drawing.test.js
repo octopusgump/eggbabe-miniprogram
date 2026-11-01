@@ -21,6 +21,14 @@ const stars = require('../iaa-star-unlock-adapter');
   assert.equal(completion.awardedStars, 10);
   assert.equal((await day()).star.balance, before + 10);
 
+  const duplicate = await stars.recordPropDrawingComplete(await day(), 'prop-work-1');
+  assert.equal(duplicate.awardedStars, 0);
+  assert.equal((await day()).star.balance, before + 10);
+
+  const second = await stars.recordPropDrawingComplete(await day(), 'prop-work-2');
+  assert.equal(second.awardedStars, 10);
+  assert.equal((await day()).star.balance, before + 20);
+
   console.log('一起画免费入场与达标 +10 星口径通过。');
 })().catch(error => {
   console.error(error);

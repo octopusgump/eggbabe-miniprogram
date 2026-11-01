@@ -21,7 +21,9 @@ function attach(definition) {
   const originalComplete = definition.completeCompanionDrawing;
 
   definition.onLoad = function onLoad(query) {
+    if (originalOnLoad) originalOnLoad.call(this, query);
     this.companionPropMode = Boolean(this.companionDrawing);
+    if (!this.companionPropMode) return;
     this.propEntrySource = (query && query.source) || 'activity';
     this.propEntry = propCatalog.getById(query && query.propId)
       || propCatalog.pickDaily(require('./companion-star-rules').shanghaiDate(), companionAdapter.getRoomScope());
@@ -63,7 +65,6 @@ function attach(definition) {
       propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
       propFinishVisible: false
     });
-    if (originalOnLoad) originalOnLoad.call(this, query);
   };
 
   definition.revealEditor = function revealEditor() {

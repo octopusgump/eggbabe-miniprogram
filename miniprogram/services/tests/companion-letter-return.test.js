@@ -55,7 +55,7 @@ global.clearTimeout = global.clearInterval = () => {};
       assert.equal(page.data.todayCompanionTomorrowAvailable, false);
       const sameLetter = page.data.todayCompanionView;
       page.onTodayCompanionAction();
-      assert.equal(navigation.url, '/pages/doodle/doodle?entry=companion');
+      assert.match(navigation.url, /\/pages\/doodle\/doodle\?entry=companion&mode=prop&source=letter/);
       if (!successAfterHide) navigation.success();
       page.onHide();
       if (successAfterHide) navigation.success();

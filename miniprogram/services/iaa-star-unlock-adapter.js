@@ -8,6 +8,7 @@ const localCache = require('./companion-local-cache');
 
 const { dailyStars, shanghaiDate, previousShanghaiDate } = require('./companion-star-rules');
 const LISTEN_EXTRA_STARS = 10;
+const PROP_DRAWING_REWARD = 10;
 let roomPreviewView = null;
 let roomPetId = '';
 let collectedMemories = [];
@@ -79,7 +80,7 @@ function getActivityCompleted(kind) {
   ensureDaily(roomPreviewView);
   const star = roomPreviewView.star;
   if (kind === 'listen') return Boolean(listeningState.day && listeningState.day.date === shanghaiDate() && listeningState.day.categories.length);
-  if (kind === 'drawing') return Boolean(star.drawingCompleted);
+  if (kind === 'drawing') return false;
   return Boolean(star.noteCollected);
 }
 function getMemories() { return clone(collectedMemories); }
@@ -292,7 +293,73 @@ function exchangePhoto(id, ready) {
 function recordDrawingStart(view) { return recordLetterOpen(view); }
 function recordDrawingComplete(view, drawingId, options) {
   if (!drawingId || typeof drawingId !== 'string') return Promise.resolve({ ok: false, error: { code: 'DRAWING_ID_REQUIRED', message: '这幅画还没有准备好，请再试一次。' } });
-  return settle(view, 'complete', drawingId, options);
+  return recordPropDrawingComplete(view, drawingId, options);
+}
+
+function beginCompanionPropDrawing() {
+  if (!roomPreviewView) {
+    roomPreviewView = fixture.starUnlockViewFor('AVAILABLE');
+    roomPreviewView.dateKey = shanghaiDate();
+  }
+  ensureDaily(roomPreviewView);
+  return Promise.resolve({ ok: true, cost: 0, data: clone(roomPreviewView) });
+}
+
+function recordPropDrawingComplete(view, drawingId) {
+  if (!drawingId || typeof drawingId !== 'string') {
+    return Promise.resolve({ ok: false, error: { code: 'DRAWING_ID_REQUIRED', message: '这幅画还没有准备好，请再试一次。' } });
+  }
+  if (!view || !view.star || !view.star.dailyClaimStatus) {
+    return Promise.resolve({ ok: false, error: { code: 'INVALID_LOCAL_VIEW', message: '这次陪伴还没有准备好。' } });
+  }
+  if (view.star.dailyClaimStatus === 'ERROR') {
+    return Promise.resolve({ ok: false, error: { code: 'LOCAL_FIXTURE_RECORD_FAILED', message: '刚才没有记下来，请再试一次。' } });
+  }
+  const previous = snapshot();
+  const completedAt = Date.now();
+  const today = shanghaiDate(completedAt);
+  const current = ensureDaily(clone(roomPreviewView || view), today);
+  const star = current.star;
+  const duplicate = completedDrawingIds.has(drawingId);
+  let effectiveAdded = false;
+  let streakInterrupted = false;
+  if (!duplicate) {
+    if (!star.effectiveDone) {
+      streakInterrupted = Boolean(lastEffectiveDate && lastEffectiveDate !== today && lastEffectiveDate !== previousShanghaiDate(today));
+      applyDisconnectClear(star, today);
+      star.companionDays = Number(star.companionDays || 0) + 1;
+      star.effectiveDone = true;
+      lastEffectiveDate = today;
+      effectiveAdded = true;
+      refreshDailyBasis(star);
+    }
+    completedDrawingIds.add(drawingId);
+  }
+  const giftStars = duplicate ? 0 : PROP_DRAWING_REWARD;
+  if (giftStars > 0) {
+    star.balance = Number(star.balance || 0) + giftStars;
+  }
+  star.dailyClaimStatus = star.baseClaimed ? (star.balance >= current.nextMemory.unlockedAtStar ? 'UNLOCKED' : 'CLAIMED') : 'AVAILABLE';
+  current.progress = fixture.progressPresentation(star.balance, star.nextUnlockAt);
+  current.newlyUnlockedMemory = giftStars > 0 && star.balance >= current.nextMemory.unlockedAtStar ? clone(current.nextMemory) : null;
+  current.helperText = star.effectiveDone ? '今天的陪伴已经记下。' : '完成活动，记下今天的陪伴。';
+  roomPreviewView = clone(current);
+  if (!persist()) {
+    restore(previous);
+    return Promise.resolve(saveFailure());
+  }
+  return Promise.resolve({
+    ok: true,
+    data: current,
+    awardedStars: giftStars,
+    baseAwardedStars: 0,
+    giftStars,
+    listenExtraStars: 0,
+    drawingGift: giftStars > 0 ? { kind: 'prop', stars: giftStars, line: '这个小道具，送给你。' } : null,
+    effectiveAdded,
+    streakInterrupted,
+    duplicate: Boolean(duplicate)
+  });
 }
 function getCompanionDraft() { return companionDraft ? clone(companionDraft) : null; }
 function setCompanionDraft(art) { companionDraft = art ? clone(art) : null; if (!art) companionDraftStartDate = null; }
@@ -392,6 +459,9 @@ module.exports = {
   recordCompanion,
   recordDrawingStart,
   recordDrawingComplete,
+  beginCompanionPropDrawing,
+  recordPropDrawingComplete,
+  PROP_DRAWING_REWARD,
   getCompanionDraft,
   setCompanionDraft,
   getCompanionDraftStartDate,

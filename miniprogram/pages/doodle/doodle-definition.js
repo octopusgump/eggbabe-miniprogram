@@ -57,6 +57,10 @@ const doodleDefinition = {
   data: {
     statusBarHeight: 20,
     navCoverHeightPx: 76,
+    navSlotWidthPx: 86,
+    companionPropMode: false,
+    propFinishVisible: false,
+    propDrawingLocked: false,
     toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
     brushSizes: BRUSH_SIZE_OPTIONS,
@@ -734,7 +738,11 @@ const doodleDefinition = {
       if (this.savedForReturn) { await this.leaveEditor({ saved: true }); return { ok: true }; }
       const task = this.completeCompanionDrawing();
       this.manualSaveTask = task;
-      try { return await task; } finally { if (this.manualSaveTask === task) this.manualSaveTask = null; }
+      try {
+        const result = await task;
+        if (result && result.ok && this.data.propUnlockVisible) return result;
+        return result;
+      } finally { if (this.manualSaveTask === task) this.manualSaveTask = null; }
     }
     if (this.editRevision === this.savedRevision) {
       this.setSaveStatus('saved');
@@ -891,5 +899,7 @@ const doodleDefinition = {
     this.canvasSetupToken = (this.canvasSetupToken || 0) + 1;
   }
 };
+
+require('../../services/companion-prop-doodle').attach(doodleDefinition);
 
 module.exports = doodleDefinition;

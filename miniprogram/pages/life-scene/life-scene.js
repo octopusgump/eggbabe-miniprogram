@@ -2045,8 +2045,27 @@ Page({
         if (!completion.ok) { this.setData({ todayCompanionInteractionError: completion.error.message }); return; }
         if (!this.pageActive) return;
         this.completedCompanionDrawing = null;
-        const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line: completion.drawingGift.line }) : memory;
-        this.setData({ todayCompanionVisible: true, pendingCompanionMemory: completedMemory, todayCompanionStarView: completion.data, todayCompanionInteractionDone: true, todayCompanionInteractionFeedback: completedMemory.line, todayCompanionAwardedStars: completion.awardedStars });
+        const line = completion.drawingGift ? completion.drawingGift.line : memory.line;
+        if (memory.kind === 'prop') {
+          this.setData({
+            todayCompanionVisible: true,
+            pendingCompanionMemory: null,
+            todayCompanionStarView: completion.data,
+            todayCompanionInteractionDone: true,
+            todayCompanionInteractionFeedback: line,
+            todayCompanionAwardedStars: completion.awardedStars
+          });
+        } else {
+          const completedMemory = completion.drawingGift ? Object.assign({}, memory, { line }) : memory;
+          this.setData({
+            todayCompanionVisible: true,
+            pendingCompanionMemory: completedMemory,
+            todayCompanionStarView: completion.data,
+            todayCompanionInteractionDone: true,
+            todayCompanionInteractionFeedback: completedMemory.line,
+            todayCompanionAwardedStars: completion.awardedStars
+          });
+        }
         if (completion.awardedStars > 0) this.playStarAwardFeedback();
         if (completion.streakInterrupted) this.showSystemNotice('连续天数中断了');
         return this.loadCompanionStar({ deferAward: true });

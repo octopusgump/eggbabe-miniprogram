@@ -7,45 +7,29 @@ const day = () => stars.getRoomStarView().then(result => result.data);
 const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一起在窗边喝了一杯茶。' };
 (async () => {
   stars.configureRoom('gift-settlement');
-  let calls = 0;
   await stars.recordLetterOpen(await day());
   const start = await stars.recordDrawingStart(await day());
-  const first = await stars.recordDrawingComplete(start.data, 'first-work', { random: () => { calls++; return 1; } });
-  assert.equal(first.giftStars, 3, '首次必得，不读取随机数');
-  assert.equal(calls, 0);
-  assert.equal(first.awardedStars, 3);
-  assert.equal(first.data.star.balance, 16, '初始2星，开信基础11、画好回礼3，进入画纸不发星');
+  const first = await stars.recordDrawingComplete(start.data, 'first-work');
+  assert.equal(first.giftStars, 10, '道具临摹达标每次 +10');
+  assert.equal(first.awardedStars, 10);
+  assert.equal(first.data.star.balance, 23, '初始2星，开信基础11、画好 +10，进入画纸不发星');
   assert.equal(first.data.star.companionDays, 1, '完成活动记一天');
-  const repeated = await stars.recordDrawingComplete(start.data, 'first-work', { random: () => { throw Error('重复不应重抽'); } });
+  const repeated = await stars.recordDrawingComplete(start.data, 'first-work');
   assert.equal(repeated.awardedStars, 0);
-  assert.deepEqual(repeated.drawingGift, first.drawingGift, '后台恢复同一作品保留回礼结果');
-  assert.equal((await stars.recordDrawingComplete(first.data, 'second-work')).awardedStars, 0);
+  assert.equal((await stars.recordDrawingComplete(first.data, 'second-work')).awardedStars, 10, '同日第二幅仍 +10');
   now += 1;
   assert.equal((await stars.recordDrawingComplete(await day(), 'first-work')).awardedStars, 0, '跨午夜旧回调不占用新日');
   await stars.recordLetterOpen(await day());
-  const miss = await stars.recordDrawingComplete(await day(), 'next-day-work', { random: () => 0.33 });
-  assert.equal(miss.giftStars, 0, '33%的上边界不命中');
-  assert.equal(miss.baseAwardedStars, 0);
-  assert.equal(miss.drawingGift.kind, 'ordinary');
-  const secondToday = await stars.recordDrawingComplete(miss.data, 'next-day-second', { random: () => { throw Error('同日第二幅不能重抽'); } });
-  assert.equal(secondToday.awardedStars, 0);
-  now += 86400000;
-  await stars.recordLetterOpen(await day());
-  const hit = await stars.recordDrawingComplete(await day(), 'later-hit', { random: () => 0.329999 });
-  assert.equal(hit.giftStars, 3);
-  assert.equal(hit.baseAwardedStars, 0, '基础已在开信发放');
-  assert.equal(hit.drawingGift.kind, 'gift');
-  for (let index = 0; index < 4; index++) {
-    now += 86400000;
-    await stars.recordLetterOpen(await day());
-    const result = await stars.recordDrawingComplete(await day(), `miss-${index}`, { random: () => 0.99 });
-    assert.equal(result.giftStars, 0, '连续未命中不提高概率、不增加保底');
-  }
+  const nextDay = await stars.recordDrawingComplete(await day(), 'next-day-work');
+  assert.equal(nextDay.giftStars, 10);
+  assert.equal(nextDay.baseAwardedStars, 0);
+  assert.equal(nextDay.drawingGift.kind, 'prop');
+
   stars.configureRoom('invalid-work');
   assert.equal((await stars.recordDrawingComplete(await day(), '')).ok, false);
   assert.equal((await day()).star.balance, 2);
   await stars.recordLetterOpen(await day());
-  assert.equal((await stars.recordDrawingComplete(await day(), 'valid-after-error')).giftStars, 3, '失败不消耗首次机会');
+  assert.equal((await stars.recordDrawingComplete(await day(), 'valid-after-error')).giftStars, 10);
 
   stars.configureRoom('tea-effective');
   stars.beginTeaActivity({ id: 'free-tea', photo });
@@ -93,5 +77,5 @@ const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一�
   const afterPaid = await day();
   assert.equal(afterPaid.star.companionDays, beforePaid.star.companionDays, '茶会不改变天数');
   assert.equal(afterPaid.star.balance, beforePaid.star.balance - 20);
-  console.log('画画首次/33%边界/每日次数/跨日去重/无保底，以及茶会不加天/不发星/恢复通过。');
+  console.log('道具临摹 +10/重复进入/跨日去重，以及茶会不加天/不发星/恢复通过。');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => { Date.now = originalNow; });

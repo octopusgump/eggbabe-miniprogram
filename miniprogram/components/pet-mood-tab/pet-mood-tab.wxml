@@ -12,7 +12,7 @@
         <companion-roll-number class="pet-mood-tab__room-amount" value="{{starRollValue}}" reduced-motion="{{reducedMotion}}"></companion-roll-number>
         <text wx:if="{{starAwardVisible && starGainLabel}}" class="pet-mood-tab__room-gain">{{starGainLabel}}</text>
       </view>
-      <text class="pet-mood-tab__room-days">一起 {{companionDays}} 天</text>
+      <text class="pet-mood-tab__room-days">连续一起 {{companionDays}} 天</text>
     </view>
     <view class="pet-mood-tab__room-detail {{roomCardPhase === 'minimal' ? '' : 'pet-mood-tab__room-detail--open'}}">
       <text class="pet-mood-tab__name">{{petName}}</text>

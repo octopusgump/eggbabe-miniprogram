@@ -57,6 +57,10 @@ const doodleDefinition = {
   data: {
     statusBarHeight: 20,
     navCoverHeightPx: 76,
+    navSlotWidthPx: 86,
+    companionPropMode: false,
+    propFinishVisible: false,
+    propDrawingLocked: false,
     toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
     brushSizes: BRUSH_SIZE_OPTIONS,

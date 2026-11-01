@@ -3,16 +3,16 @@ const LOOK_DURATION_MS = 5000;
 const MANUAL_LOOKS = 3;
 const TUTORIAL_STEPS = Object.freeze([
   Object.freeze({
-    title: '先看一看简笔',
-    body: '线稿会在蛋上停留约 5 秒。先记住形状，再开始画。'
+    title: '第一步 · 看一看',
+    body: '先看一眼简笔，记住它的样子～\n大约几秒后它会隐藏起来'
   }),
   Object.freeze({
-    title: '用画笔临摹',
-    body: '简笔收起后就能画。还有 3 次「再看一眼」机会，每次约 5 秒。'
+    title: '第二步 · 动手画',
+    body: '简笔收起来后，拿起画笔开始画吧。忘了长什么样，就点「再看一眼」。'
   }),
   Object.freeze({
-    title: '画好了交作业',
-    body: '画得够认真就能解锁彩色小道具。点「画好了」试试看。'
+    title: '第三步 · 画好了',
+    body: '画好了就点下方按钮。认真画够时间，就能解锁这张彩色小道具。'
   })
 ]);
 

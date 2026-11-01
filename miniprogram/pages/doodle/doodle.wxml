@@ -3,17 +3,18 @@
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
     <view class="doodle-nav-row">
-      <view class="doodle-nav-leading">
+      <view class="doodle-nav-leading" style="min-width: {{navSlotWidthPx}}px;">
         <view class="doodle-back" aria-hidden="true">
           <view class="doodle-chevron"></view>
         </view>
         <text
+          wx:if="{{!companionPropMode}}"
           class="save-status save-status--{{saveStatus}}"
           aria-hidden="true"
         >{{companionDrawing ? '画好了' : saveStatusText}}</text>
       </view>
       <text class="doodle-title">{{companionDrawing ? '一起画' : '画我的蛋壳'}}</text>
-      <view class="doodle-nav-safe"></view>
+      <view class="doodle-nav-safe" style="width: {{navSlotWidthPx}}px; min-width: {{navSlotWidthPx}}px;"></view>
     </view>
   </view>
 
@@ -24,7 +25,7 @@
           <cover-view class="doodle-chevron-cover"></cover-view>
         </cover-view>
         <cover-view
-          wx:if="{{companionDrawing}}"
+          wx:if="{{companionDrawing && !companionPropMode}}"
           class="doodle-save-cover"
           catchtap="onManualSave"
           aria-role="button"
@@ -41,7 +42,7 @@
     </cover-view>
   </root-portal>
 
-  <view class="preview" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}}" bindtap="onCanvasBackdropTap">
     <view wx:if="{{companionPropMode && propLookHint}}" class="prop-look-row">
       <view
         class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
@@ -61,7 +62,7 @@
       ></inline-notice>
     </view>
 
-    <view class="canvas-action-rail">
+    <view class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
       <view
         class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
         aria-role="button"
@@ -90,12 +91,16 @@
       </view>
     </view>
 
-    <view class="preview-aura"></view>
+    <view wx:if="{{!companionPropMode}}" class="preview-aura"></view>
+    <view wx:if="{{companionPropMode}}" class="prop-paper-board">
+      <view class="prop-paper-dash"></view>
+    </view>
     <view wx:if="{{companionPropMode && propPeekVisible}}" class="prop-sketch-layer {{propPeekAnimating ? 'prop-sketch-layer--flip-out' : ''}}">
       <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
     </view>
+    <text wx:if="{{companionPropMode && propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
 
-    <view class="egg-canvas-stack" style="transform:scale({{canvasScale}});">
+    <view class="egg-canvas-stack {{companionPropMode ? 'egg-canvas-stack--prop' : ''}}" style="transform:scale({{canvasScale}});">
       <canvas
         type="2d"
         id="eggBaseCanvas"
@@ -116,7 +121,15 @@
     </view>
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
-    <view class="content" catchtap="onToolPanelTap">
+    <button
+      wx:if="{{companionPropMode && propFinishVisible && !propUnlockVisible && !propTutorialVisible}}"
+      class="prop-finish-btn"
+      bindtap="onManualSave"
+      aria-role="button"
+      aria-label="画好了"
+    >画好了</button>
+
+    <view class="content {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}" catchtap="onToolPanelTap">
       <view class="tool-section {{!toolPanelOpen ? 'tool-section--compact' : ''}}">
       <view wx:if="{{toolPanelOpen && activeTool === 'brush'}}" class="tool-options brush-options">
         <view class="brush-settings-grid">
@@ -240,11 +253,18 @@
     <view class="prop-tutorial-card">
       <view class="prop-tutorial-head">
         <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
-        <text class="prop-tutorial-step">{{propTutorialStep + 1}}/3</text>
+        <view class="prop-tutorial-step-row">
+          <text class="prop-tutorial-step">{{propTutorialStep + 1}}/3</text>
+          <view class="prop-tutorial-dots">
+            <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
+            <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
+            <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
+          </view>
+        </view>
       </view>
       <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>
-      <view class="prop-tutorial-footer">
-        <text class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过</text>
+      <view class="prop-tutorial-footer {{propTutorialStep >= 2 ? 'prop-tutorial-footer--final' : ''}}">
+        <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
         <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
       </view>
     </view>

@@ -30,13 +30,24 @@ function attach(definition) {
     this.propSession = propChallenge.createSession();
     const sketchPath = this.propEntry ? propAssets.resolveLinePath(this.propEntry) : '';
     const coloredPath = this.propEntry ? propAssets.resolveColoredPath(this.propEntry) : '';
+    const legacyColored = this.propEntry && this.propEntry.colorFile
+      ? `${propAssets.LEGACY_COLOR_ROOT}${this.propEntry.colorFile}`
+      : '';
+    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const windowWidth = info.windowWidth || 375;
+    let navSlotWidthPx = Math.round(windowWidth * 86 / 390);
+    try {
+      const menu = wx.getMenuButtonBoundingClientRect && wx.getMenuButtonBoundingClientRect();
+      if (menu && Number.isFinite(Number(menu.left))) {
+        navSlotWidthPx = Math.round(Number(menu.left));
+      }
+    } catch (error) {}
     this.setData({
       companionPropMode: this.companionPropMode,
+      navSlotWidthPx,
       propSketchPath: sketchPath,
       propColoredPath: coloredPath,
-      propFallbackColoredPath: this.propEntry && this.propEntry.colorFile
-        ? `${propAssets.LEGACY_COLOR_ROOT}${this.propEntry.colorFile}`
-        : coloredPath,
+      propFallbackColoredPath: legacyColored || coloredPath,
       propDisplayName: this.propEntry ? this.propEntry.name : '',
       propLookHint: propChallenge.lookHintText(propChallenge.MANUAL_LOOKS),
       propSessionLookRemaining: propChallenge.MANUAL_LOOKS,
@@ -196,7 +207,7 @@ function attach(definition) {
   };
 
   definition.onPropSketchError = function onPropSketchError() {
-    const fallback = this.data.propFallbackColoredPath || this.data.propColoredPath;
+    const fallback = this.data.propColoredPath || this.data.propFallbackColoredPath;
     if (fallback && this.data.propSketchSrc !== fallback) {
       this.setData({ propSketchSrc: fallback });
     }

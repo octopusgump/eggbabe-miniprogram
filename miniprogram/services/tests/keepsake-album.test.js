@@ -32,6 +32,12 @@ assert.equal(listTemplate.includes('bindtap="onOpenMeet"'), true, '遇见网格�
 assert.equal(listTemplate.includes('bindtap="onOpenPostcard"'), true, '明信片网格必须可进入详情');
 assert.equal(listStyles.includes('grid-template-columns: repeat(3'), true, '遇见与明信片列表必须为 3 列');
 assert.equal(listStyles.includes('background: #FAFAF8'), true, '纪念册背景必须为 #FAFAF8');
+
+const navTemplate = fs.readFileSync(path.join(root, 'components/nav-bar/nav-bar.wxml'), 'utf8');
+const navStyles = fs.readFileSync(path.join(root, 'components/nav-bar/nav-bar.wxss'), 'utf8');
+assert.equal(navTemplate.includes('nav-back-ink.svg'), true, '返回必须使用 Figma Navigation / Back 图标');
+assert.equal(navStyles.includes('box-shadow') && navStyles.match(/navbar-root--canvas[\s\S]*nav-side--back[\s\S]*box-shadow/), false, '纪念册顶栏返回不得使用白底阴影圆钮');
+assert.equal(navStyles.includes('.nav-side--back--pressed') && navStyles.includes('#E5EBE5'), true, '返回按下态须为 ink-surface');
 assert.equal(listTemplate.includes('遇见') && listTemplate.includes('明信片'), true, '纪念册必须提供遇见与明信片 Tab');
 
 assert.equal(meetDetailTemplate.includes('meet-detail-hero'), true, '遇见详情必须有大图');

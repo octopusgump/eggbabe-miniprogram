@@ -76,12 +76,11 @@ Page({
       return;
     }
     if (item.key === 'drawing') {
-      stars.beginCompanionPropDrawing('activity').then(result => {
+      stars.beginCompanionPropDrawing().then(result => {
         if (!result.ok) {
-          this.showNotice(result.error && result.error.message || '星星还不够，先去赚一点吧。', 'warning');
+          this.showNotice(result.error && result.error.message || '暂时打不开，请稍后再试。', 'warning');
           return;
         }
-        this.refresh();
         wx.navigateTo({
           url: item.route,
           fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')

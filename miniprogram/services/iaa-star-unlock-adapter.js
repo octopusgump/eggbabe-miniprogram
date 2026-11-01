@@ -8,7 +8,6 @@ const localCache = require('./companion-local-cache');
 
 const { dailyStars, shanghaiDate, previousShanghaiDate } = require('./companion-star-rules');
 const LISTEN_EXTRA_STARS = 10;
-const DRAWING_ENTRY_COST = 20;
 const PROP_DRAWING_REWARD = 10;
 let roomPreviewView = null;
 let roomPetId = '';
@@ -297,25 +296,13 @@ function recordDrawingComplete(view, drawingId, options) {
   return recordPropDrawingComplete(view, drawingId, options);
 }
 
-function beginCompanionPropDrawing(source) {
-  const entrySource = String(source || 'activity');
+function beginCompanionPropDrawing() {
   if (!roomPreviewView) {
     roomPreviewView = fixture.starUnlockViewFor('AVAILABLE');
     roomPreviewView.dateKey = shanghaiDate();
   }
   ensureDaily(roomPreviewView);
-  if (entrySource === 'letter') {
-    return Promise.resolve({ ok: true, cost: 0, data: clone(roomPreviewView) });
-  }
-  const balance = Number(roomPreviewView.star.balance || 0);
-  if (balance < DRAWING_ENTRY_COST) {
-    return Promise.resolve({ ok: false, error: { code: 'INSUFFICIENT_STARS', message: '星星还不够，先去赚一点吧。' } });
-  }
-  const result = commitMutation(() => {
-    deductActivityStars(DRAWING_ENTRY_COST);
-    return { ok: true, cost: DRAWING_ENTRY_COST, data: clone(roomPreviewView) };
-  });
-  return Promise.resolve(result);
+  return Promise.resolve({ ok: true, cost: 0, data: clone(roomPreviewView) });
 }
 
 function recordPropDrawingComplete(view, drawingId) {
@@ -474,7 +461,6 @@ module.exports = {
   recordDrawingComplete,
   beginCompanionPropDrawing,
   recordPropDrawingComplete,
-  DRAWING_ENTRY_COST,
   PROP_DRAWING_REWARD,
   getCompanionDraft,
   setCompanionDraft,

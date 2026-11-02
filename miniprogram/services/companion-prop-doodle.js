@@ -268,9 +268,14 @@ function attach(definition) {
   };
 
   definition.onPropColoredError = function onPropColoredError() {
-    const fallback = this.data.propFallbackColoredPath;
-    if (fallback && this.data.propColoredSrc !== fallback) {
-      this.setData({ propColoredSrc: fallback });
+    const entry = this.propEntry;
+    if (!entry) return;
+    const paths = propAssets.coloredPaths(entry);
+    const current = this.data.propColoredSrc || this.data.propColoredPath;
+    const index = paths.indexOf(current);
+    const next = index >= 0 ? paths[index + 1] : paths[1];
+    if (next && next !== current) {
+      this.setData({ propColoredSrc: next });
     }
   };
 

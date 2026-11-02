@@ -126,6 +126,14 @@
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
 
 .preview--prop { background: #F8F7EF; }
+.preview--prop-unlock .prop-paper-board,
+.preview--prop-unlock .prop-sketch-layer,
+.preview--prop-unlock .prop-peek-caption,
+.preview--prop-unlock .prop-look-row,
+.preview--prop-unlock .prop-finish-btn,
+.preview--prop-unlock .content,
+.preview--prop-unlock .canvas-action-rail { visibility: hidden; pointer-events: none; }
+.egg-canvas-stack--hidden { visibility: hidden; pointer-events: none; height: 0; overflow: hidden; flex: 0 0 0; }
 
 .prop-chrome--dimmed { opacity: 0.35; pointer-events: none; }
 

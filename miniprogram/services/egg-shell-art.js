@@ -371,6 +371,57 @@ function drawEraserStroke(context, operation, width, height) {
   context.restore();
 }
 
+/** 道具临摹：Canvas 像素区与虚线内缘 1:1，仅保留圆角裁剪 */
+const PROP_PAPER_INSET_X = 0;
+const PROP_PAPER_INSET_Y = 0;
+const PROP_PAPER_CORNER_RADIUS_RATIO = 0.051;
+
+function propPaperPath(context, width, height) {
+  const left = width * PROP_PAPER_INSET_X;
+  const top = height * PROP_PAPER_INSET_Y;
+  const w = width * (1 - PROP_PAPER_INSET_X * 2);
+  const h = height * (1 - PROP_PAPER_INSET_Y * 2);
+  const radius = Math.min(w, h) * PROP_PAPER_CORNER_RADIUS_RATIO;
+  context.beginPath();
+  context.moveTo(left + radius, top);
+  context.lineTo(left + w - radius, top);
+  context.quadraticCurveTo(left + w, top, left + w, top + radius);
+  context.lineTo(left + w, top + h - radius);
+  context.quadraticCurveTo(left + w, top + h, left + w - radius, top + h);
+  context.lineTo(left + radius, top + h);
+  context.quadraticCurveTo(left, top + h, left, top + h - radius);
+  context.lineTo(left, top + radius);
+  context.quadraticCurveTo(left, top, left + radius, top);
+  context.closePath();
+}
+
+function drawPropPaperBase(context, width, height) {
+  context.clearRect(0, 0, width, height);
+}
+
+function drawPropLineOverlay(context, lineImage, width, height) {
+  if (!context || !lineImage || !width || !height) return;
+  context.clearRect(0, 0, width, height);
+  const size = Math.min(width, height) * 0.88;
+  const x = (width - size) / 2;
+  const y = (height - size) / 2;
+  context.drawImage(lineImage, x, y, size, size);
+}
+
+function drawPropPaperArt(context, width, height, shellInput, activeOperation) {
+  const shell = normalizeShellArt(shellInput);
+  context.clearRect(0, 0, width, height);
+  context.save();
+  propPaperPath(context, width, height);
+  context.clip();
+  shell.operations.concat(activeOperation || []).forEach(operation => {
+    if (operation.type === 'sticker') drawSticker(context, operation, width, height);
+    if (operation.type === 'stroke' && operation.tool === 'eraser') drawEraserStroke(context, operation, width, height);
+    if (operation.type === 'stroke' && operation.tool === 'brush') drawPixelStroke(context, operation, width, height);
+  });
+  context.restore();
+}
+
 function drawEggArt(context, image, width, height, shellInput, activeOperation) {
   const shell = normalizeShellArt(shellInput);
   context.clearRect(0, 0, width, height);
@@ -430,6 +481,12 @@ module.exports = {
   cloneShellArt,
   createSticker,
   createStroke,
+  PROP_PAPER_INSET_X,
+  PROP_PAPER_INSET_Y,
+  propPaperPath,
+  drawPropPaperBase,
+  drawPropPaperArt,
+  drawPropLineOverlay,
   drawEggBase,
   drawEggArt,
   operationSummary

@@ -7,6 +7,11 @@ const catalog = require('../companion-prop-catalog');
 const entry = catalog.getById('dried_tea_tag');
 assert.ok(entry);
 assert.equal(assets.lineSketchPath('dried_tea_tag'), '/assets/keepsakes/turnarounds/line/dried_tea_tag.webp');
+const duck = catalog.getById('k_r01_yellow_rubber_duck');
+assert.ok(duck);
+const duckPaths = assets.coloredPaths(duck);
+assert.ok(duckPaths[0].includes('card_square'), '小黄鸭解锁应优先方形单件图');
+assert.ok(duckPaths.some(item => item.includes('keepsake_k-r01_yellow_rubber_duck_card_square')));
 assert.equal(assets.resolveLinePath(entry), assets.lineSketchPath('dried_tea_tag'));
 assert.equal(assets.resolveColoredPath(entry), assets.coloredPaths(entry)[0]);
 assert.ok(assets.coloredPaths(entry).some(item => item.includes('keepsake_dried_tea_tag')));
@@ -19,6 +24,11 @@ catalog.PROPS.forEach(prop => {
   assert.ok(
     fs.existsSync(path.join(lineDir, `${prop.id}.webp`)),
     `缺少简笔 ${prop.id}.webp`
+  );
+  const colorCandidates = assets.coloredPaths(prop).map(item => path.join(__dirname, '../..', item.replace(/^\//, '')));
+  assert.ok(
+    colorCandidates.some(file => fs.existsSync(file)),
+    `缺少彩色资源 ${prop.id}（catalog colorFile 或 webp）`
   );
 });
 

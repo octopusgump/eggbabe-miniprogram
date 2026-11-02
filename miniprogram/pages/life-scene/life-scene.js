@@ -2041,6 +2041,25 @@ Page({
       if (flushStarRollAfterLoad) this.maybePlayRoomStarRoll();
       if (!this.completedCompanionDrawing) return;
       const memory = this.completedCompanionDrawing;
+      if (memory.kind === 'prop') {
+        this.completedCompanionDrawing = null;
+        const awardedStars = Number(memory.awardedStars) || 0;
+        return starAdapter.getRoomStarView().then(viewResult => {
+          if (!viewResult.ok || !this.pageActive) return;
+          this.setData({
+            todayCompanionVisible: true,
+            pendingCompanionMemory: null,
+            todayCompanionStarView: viewResult.data,
+            todayCompanionInteractionDone: true,
+            todayCompanionInteractionFeedback: memory.line || '这个小道具，送给你。',
+            todayCompanionAwardedStars: awardedStars,
+            companionStarBalance: Number(viewResult.data.star.balance || 0),
+            companionDays: Number(viewResult.data.star.companionDays || 0)
+          });
+          if (awardedStars > 0) this.playStarAwardFeedback();
+          return this.loadCompanionStar({ deferAward: true });
+        });
+      }
       return starAdapter.recordDrawingComplete(result.data, memory.id).then(completion => {
         if (!completion.ok) { this.setData({ todayCompanionInteractionError: completion.error.message }); return; }
         if (!this.pageActive) return;

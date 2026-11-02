@@ -5,6 +5,7 @@ const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
 
 const TUTORIAL_FINAL_LABEL = '开始画';
+const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
 function attach(definition) {
   const originalOnLoad = definition.onLoad;
@@ -21,12 +22,15 @@ function attach(definition) {
   const originalComplete = definition.completeCompanionDrawing;
 
   definition.onLoad = function onLoad(query) {
+    if (originalOnLoad) originalOnLoad.call(this, query);
     this.companionPropMode = Boolean(this.companionDrawing);
+    if (!this.companionPropMode) return;
     this.propEntrySource = (query && query.source) || 'activity';
     this.propEntry = propCatalog.getById(query && query.propId)
       || propCatalog.pickDaily(require('./companion-star-rules').shanghaiDate(), companionAdapter.getRoomScope());
     this.gateTracker = drawingGate.createTracker();
     this.gateStrokeId = null;
+    this.propGateOptions = { paper: true };
     this.propSession = propChallenge.createSession();
     const sketchPath = this.propEntry ? propAssets.resolveLinePath(this.propEntry) : '';
     const coloredPath = this.propEntry ? propAssets.resolveColoredPath(this.propEntry) : '';
@@ -55,6 +59,7 @@ function attach(definition) {
       propColoredSrc: coloredPath,
       propPeekVisible: false,
       propPeekAnimating: false,
+      propGuideSketchVisible: false,
       propDrawingLocked: true,
       propUnlockVisible: false,
       propTutorialVisible: false,
@@ -63,14 +68,61 @@ function attach(definition) {
       propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
       propFinishVisible: false
     });
-    if (originalOnLoad) originalOnLoad.call(this, query);
+  };
+
+  definition.playPropUnlockAward = function playPropUnlockAward() {
+    if (!this.data.propAwardVisible || !this.data.propAwardStars) return;
+    try {
+      if (wx.createInnerAudioContext) {
+        this.propAwardAudio = wx.createInnerAudioContext({ useWebAudioImplement: true });
+        this.propAwardAudio.src = PROP_AWARD_SOUND;
+        this.propAwardAudio.volume = 0.2;
+        this.propAwardAudio.obeyMuteSwitch = true;
+        if (this.propAwardAudio.onError) {
+          this.propAwardAudio.onError(() => {
+            if (this.propAwardAudio) {
+              try { this.propAwardAudio.destroy(); } catch (error) {}
+              this.propAwardAudio = null;
+            }
+          });
+        }
+        clearTimeout(this.propAwardSoundTimer);
+        this.propAwardSoundTimer = setTimeout(() => {
+          if (this.pageActive && this.propAwardAudio) {
+            try { this.propAwardAudio.play(); } catch (error) {}
+          }
+        }, 520);
+      }
+    } catch (error) {}
+    if (this.data.companionReducedMotion) return;
+    clearTimeout(this.propAwardHapticTimer);
+    this.propAwardHapticTimer = setTimeout(() => {
+      if (this.pageActive && wx.vibrateShort) {
+        try { wx.vibrateShort({ type: 'light' }); } catch (error) {}
+      }
+    }, 840);
+  };
+
+  definition.clearPropUnlockAward = function clearPropUnlockAward() {
+    clearTimeout(this.propAwardSoundTimer);
+    clearTimeout(this.propAwardHapticTimer);
+    if (this.propAwardAudio) {
+      try { this.propAwardAudio.stop(); this.propAwardAudio.destroy(); } catch (error) {}
+      this.propAwardAudio = null;
+    }
   };
 
   definition.revealEditor = function revealEditor() {
     const run = () => {
       if (!this.pageActive) return;
       if (this.companionPropMode && !propChallenge.hasSeenTutorial()) {
-        this.setData({ propTutorialVisible: true, propTutorialStep: 0, propDrawingLocked: true });
+        this.setData({
+          propTutorialVisible: true,
+          propTutorialStep: 0,
+          propDrawingLocked: true,
+          propGuideSketchVisible: true
+        });
+        this.setPropLineOverlayVisible(true);
       } else if (this.companionPropMode) {
         this.scheduleInitialPropPeek();
       }
@@ -97,6 +149,7 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
+    this.setPropLineOverlayVisible(false);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
@@ -113,6 +166,7 @@ function attach(definition) {
           propDrawingLocked: false,
           propFinishVisible: true
         });
+        this.setPropLineOverlayVisible(true);
       }, 320);
     }, propChallenge.LOOK_DURATION_MS);
   };
@@ -126,7 +180,8 @@ function attach(definition) {
 
   definition.onPropTutorialSkip = function onPropTutorialSkip() {
     propChallenge.markTutorialSeen();
-    this.setData({ propTutorialVisible: false });
+    this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
+    this.setPropLineOverlayVisible(false);
     this.scheduleInitialPropPeek();
   };
 
@@ -134,17 +189,35 @@ function attach(definition) {
     const step = Number(this.data.propTutorialStep) || 0;
     if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
       propChallenge.markTutorialSeen();
-      this.setData({ propTutorialVisible: false });
+      this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
+      this.setPropLineOverlayVisible(false);
       this.scheduleInitialPropPeek();
       return;
     }
-    this.setData({ propTutorialStep: step + 1 });
+    const nextStep = step + 1;
+    this.setData({
+      propTutorialStep: nextStep,
+      propGuideSketchVisible: nextStep === 0
+    });
+    this.setPropLineOverlayVisible(nextStep === 0);
   };
 
-  definition.onPropUnlockOk = function onPropUnlockOk() {
+  definition.onPropUnlockOk = async function onPropUnlockOk() {
     if (!this.data.propUnlockVisible || this.propCompletingExit) return;
     this.propCompletingExit = true;
+    this.clearPropUnlockAward();
     const payload = this.pendingPropCompletion;
+    if (payload) {
+      try {
+        const viewResult = await companionAdapter.getRoomStarView();
+        if (viewResult.ok) {
+          const settlement = await companionAdapter.recordPropDrawingComplete(viewResult.data, payload.id);
+          if (settlement.ok) payload.awardedStars = Number(settlement.awardedStars) || 0;
+        }
+      } catch (error) {
+        payload.awardedStars = 0;
+      }
+    }
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.emit && payload) channel.emit('companionDrawingCompleted', payload);
     companionAdapter.setCompanionDraft(null);
@@ -169,7 +242,7 @@ function attach(definition) {
     if (originalTouchMove) originalTouchMove.call(this, event);
     if (!this.companionPropMode || !this.gateTracker || !this.currentStroke) return;
     const point = this.canvasPoint(event);
-    drawingGate.trackPoint(this.gateTracker, this.data.activeTool, point);
+    drawingGate.trackPoint(this.gateTracker, this.data.activeTool, point, this.propGateOptions);
     if (this.data.activeTool === 'brush') drawingGate.trackActiveElapsed(this.gateTracker, Date.now());
   };
 
@@ -192,7 +265,7 @@ function attach(definition) {
     if (originalUndo) originalUndo.call(this);
     if (this.companionPropMode) {
       const prevMs = this.gateTracker ? this.gateTracker.activeMs : 0;
-      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations);
+      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations, this.propGateOptions);
       this.gateTracker.activeMs = prevMs;
     }
   };
@@ -201,9 +274,45 @@ function attach(definition) {
     const prevMs = this.gateTracker ? this.gateTracker.activeMs : 0;
     if (originalClear) originalClear.call(this);
     if (this.companionPropMode) {
-      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations);
+      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations, this.propGateOptions);
       this.gateTracker.activeMs = prevMs;
     }
+  };
+
+  const originalRenderAll = definition.renderAll;
+
+  definition.renderPropLineOverlay = function renderPropLineOverlay() {
+    if (!this.companionPropMode || !this.data.propLineOverlayVisible) return;
+    if (!this.propLineLayer || !this.propLineImage) return;
+    shellArtService.drawPropLineOverlay(
+      this.propLineLayer.context,
+      this.propLineImage,
+      this.propLineLayer.width,
+      this.propLineLayer.height
+    );
+  };
+
+  definition.clearPropLineOverlay = function clearPropLineOverlay() {
+    if (!this.propLineLayer) return;
+    const layer = this.propLineLayer;
+    layer.context.clearRect(0, 0, layer.width, layer.height);
+  };
+
+  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible(visible) {
+    const next = Boolean(visible);
+    if (next === Boolean(this.data.propLineOverlayVisible)) {
+      if (next) this.renderPropLineOverlay();
+      return;
+    }
+    this.setData({ propLineOverlayVisible: next }, () => {
+      if (next) this.renderPropLineOverlay();
+      else this.clearPropLineOverlay();
+    });
+  };
+
+  definition.renderAll = function renderAll() {
+    if (originalRenderAll) originalRenderAll.call(this);
+    this.renderPropLineOverlay();
   };
 
   definition.onPropSketchError = function onPropSketchError() {
@@ -214,9 +323,14 @@ function attach(definition) {
   };
 
   definition.onPropColoredError = function onPropColoredError() {
-    const fallback = this.data.propFallbackColoredPath;
-    if (fallback && this.data.propColoredSrc !== fallback) {
-      this.setData({ propColoredSrc: fallback });
+    const entry = this.propEntry;
+    if (!entry) return;
+    const paths = propAssets.coloredPaths(entry);
+    const current = this.data.propColoredSrc || this.data.propColoredPath;
+    const index = paths.indexOf(current);
+    const next = index >= 0 ? paths[index + 1] : paths[1];
+    if (next && next !== current) {
+      this.setData({ propColoredSrc: next });
     }
   };
 
@@ -259,11 +373,18 @@ function attach(definition) {
       line: '这个小道具，送给你。',
       date: require('./companion-star-rules').shanghaiDate()
     };
+    const rewardStars = companionAdapter.PROP_DRAWING_REWARD;
     this.setData({
       propUnlockVisible: true,
+      propUnlockActive: true,
       propFinishVisible: false,
-      toolPanelOpen: false
+      toolPanelOpen: false,
+      propAwardStars: rewardStars,
+      propAwardVisible: rewardStars > 0
+    }, () => {
+      if (rewardStars > 0) this.playPropUnlockAward();
     });
+    this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;
     return { ok: true };
   };
@@ -271,12 +392,14 @@ function attach(definition) {
   definition.onHide = function onHide() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
 
   definition.onUnload = function onUnload() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };
 }

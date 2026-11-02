@@ -33,4 +33,19 @@ const rebuilt = gate.rebuildFromOperations([
 ]);
 assert.equal(rebuilt.activeStrokeIds.size, 1);
 
+const stickerTracker = gate.createTracker();
+assert.equal(gate.beginStroke(stickerTracker, 'sticker'), null);
+assert.equal(stickerTracker.activeStrokeIds.size, 0);
+
+const eraserOnly = gate.createTracker();
+const eraserId = gate.beginStroke(eraserOnly, 'eraser');
+gate.trackPoint(eraserOnly, 'eraser', { x: 0.5, y: 0.5 });
+gate.endStroke(eraserOnly, eraserId, 'eraser', false);
+assert.equal(gate.evaluate(eraserOnly).ok, false);
+
+const afterUndo = gate.rebuildFromOperations([
+  { type: 'stroke', tool: 'brush', points: [{ x: 0.2, y: 0.5 }, { x: 0.8, y: 0.5 }] }
+]);
+assert.equal(gate.evaluate(afterUndo).ok, false, '单笔撤销后重建不应达标');
+
 console.log('一起画 v2 完成门槛单测通过。');

@@ -32,7 +32,7 @@
           aria-label="画好了"
         >画好了</cover-view>
         <cover-view
-          wx:elif="{{saveStatus === 'unsaved' || saveStatus === 'error'}}"
+          wx:elif="{{!companionPropMode && (saveStatus === 'unsaved' || saveStatus === 'error')}}"
           class="doodle-save-cover doodle-save-cover--{{saveStatus}}"
           catchtap="onManualSave"
           aria-role="button"

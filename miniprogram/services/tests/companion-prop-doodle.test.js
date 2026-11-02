@@ -81,6 +81,18 @@ global.wx = global.wx || {
     assert.equal(emitted.kind, 'prop');
     assert.equal(emitted.propId, 'dried_tea_tag');
     assert.equal(emitted.image, '/tmp/prop-drawing.png');
+
+    const peekEditor = createEditor();
+    peekEditor.propSession = propChallenge.createSession();
+    peekEditor.setPropLineOverlayVisible = () => {};
+    peekEditor.startPropPeek({ countsAgainstManual: false });
+    assert.equal(peekEditor.data.propPeekVisible, true);
+    peekEditor.onPropPeekCardTap();
+    assert.equal(peekEditor.data.propPeekAnimating, true);
+    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_FLIP_MS + 40));
+    assert.equal(peekEditor.data.propPeekVisible, false);
+    assert.equal(peekEditor.data.propFinishVisible, true);
+
     console.log('道具临摹页完成链路与 gate 拦截单测通过。');
   } finally {
     canvas.exportImage = oldExport;

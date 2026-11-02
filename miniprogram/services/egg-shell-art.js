@@ -371,6 +371,8 @@ function drawEraserStroke(context, operation, width, height) {
   context.restore();
 }
 
+/** 道具临摹画板底色，与 `.prop-paper-board` / `--prop-paper-fill` 保持一致 */
+const PROP_PAPER_FILL = '#F7EEE5';
 /** 道具临摹：Canvas 像素区与虚线内缘 1:1，仅保留圆角裁剪 */
 const PROP_PAPER_INSET_X = 0;
 const PROP_PAPER_INSET_Y = 0;
@@ -397,6 +399,11 @@ function propPaperPath(context, width, height) {
 
 function drawPropPaperBase(context, width, height) {
   context.clearRect(0, 0, width, height);
+  context.save();
+  propPaperPath(context, width, height);
+  context.fillStyle = PROP_PAPER_FILL;
+  context.fill();
+  context.restore();
 }
 
 function drawPropLineOverlay(context, lineImage, width, height) {
@@ -481,6 +488,7 @@ module.exports = {
   cloneShellArt,
   createSticker,
   createStroke,
+  PROP_PAPER_FILL,
   PROP_PAPER_INSET_X,
   PROP_PAPER_INSET_Y,
   propPaperPath,

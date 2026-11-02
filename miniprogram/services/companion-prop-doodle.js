@@ -136,6 +136,30 @@ function attach(definition) {
     this.startPropPeek({ countsAgainstManual: false });
   };
 
+  definition.dismissPropPeek = function dismissPropPeek() {
+    if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
+    clearTimeout(this.propPeekTimer);
+    clearTimeout(this.propPeekHideTimer);
+    const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
+    this.setData({ propPeekAnimating: true });
+    this.propPeekHideTimer = setTimeout(() => {
+      this.propSession.drawingLocked = false;
+      this.setData({
+        propPeekVisible: false,
+        propPeekAnimating: false,
+        propDrawingLocked: false,
+        propFinishVisible: true
+      });
+      this.setPropLineOverlayVisible(true);
+    }, flipMs);
+  };
+
+  definition.onPropPeekCardTap = function onPropPeekCardTap() {
+    if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
+    if (this.data.propTutorialVisible) return;
+    this.dismissPropPeek();
+  };
+
   definition.startPropPeek = function startPropPeek(options) {
     const settings = options || {};
     clearTimeout(this.propPeekTimer);
@@ -157,17 +181,7 @@ function attach(definition) {
       propFinishVisible: false
     });
     this.propPeekTimer = setTimeout(() => {
-      this.setData({ propPeekAnimating: true });
-      this.propPeekHideTimer = setTimeout(() => {
-        this.propSession.drawingLocked = false;
-        this.setData({
-          propPeekVisible: false,
-          propPeekAnimating: false,
-          propDrawingLocked: false,
-          propFinishVisible: true
-        });
-        this.setPropLineOverlayVisible(true);
-      }, 320);
+      this.dismissPropPeek();
     }, propChallenge.LOOK_DURATION_MS);
   };
 

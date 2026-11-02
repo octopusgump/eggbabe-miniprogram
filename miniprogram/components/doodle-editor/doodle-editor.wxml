@@ -42,6 +42,20 @@
     </cover-view>
   </root-portal>
 
+  <view
+    wx:if="{{companionPropMode && propLookHint && !propTutorialVisible && !propUnlockVisible}}"
+    class="prop-look-chrome {{propDrawingLocked || propTutorialVisible ? 'prop-chrome--dimmed' : ''}}"
+  >
+    <view
+      class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+      bindtap="onPropLookAgain"
+      aria-role="button"
+      aria-label="{{propLookHint}}"
+    >
+      <text>{{propLookHint}}</text>
+    </view>
+  </view>
+
   <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}}" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
@@ -81,23 +95,21 @@
     </view>
 
     <view wx:if="{{!companionPropMode}}" class="preview-aura"></view>
-    <view wx:if="{{companionPropMode && (propPeekVisible || propPeekAnimating)}}" class="prop-sketch-layer {{propPeekAnimating ? 'prop-sketch-layer--flip-out' : ''}}">
-      <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
+    <view
+      wx:if="{{companionPropMode && (propPeekVisible || propPeekAnimating)}}"
+      class="prop-peek-card {{propPeekAnimating ? 'prop-peek-card--flip-out' : ''}} {{companionReducedMotion ? 'prop-peek-card--reduced' : ''}}"
+      bindtap="onPropPeekCardTap"
+      aria-role="button"
+      aria-label="收起简笔，开始画"
+    >
+      <view class="prop-sketch-layer">
+        <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
+      </view>
+      <text wx:if="{{propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
     </view>
-    <text wx:if="{{companionPropMode && propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
     <text wx:if="{{companionPropMode && propGuideSketchVisible && !propPeekVisible}}" class="prop-peek-caption">先看看简笔，记住它的样子</text>
 
     <view wx:if="{{companionPropMode}}" class="prop-paper-stage">
-      <view wx:if="{{propLookHint && !propTutorialVisible}}" class="prop-look-row">
-        <view
-          class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-          bindtap="onPropLookAgain"
-          aria-role="button"
-          aria-label="{{propLookHint}}"
-        >
-          <text>{{propLookHint}}</text>
-        </view>
-      </view>
       <view class="prop-paper-board">
         <view class="prop-paper-dash"></view>
       </view>

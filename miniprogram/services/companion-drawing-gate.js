@@ -1,6 +1,6 @@
 const GRID_SIZE = 10;
 const MIN_STROKES = 5;
-const MIN_ACTIVE_MS = 15000;
+const MIN_ACTIVE_MS = 5000;
 const MIN_CELLS = 5;
 const IDLE_GAP_MS = 1200;
 const EGG_RX = 0.4;

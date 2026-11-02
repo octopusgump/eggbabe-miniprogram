@@ -5,14 +5,29 @@ const MIN_CELLS = 5;
 const IDLE_GAP_MS = 1200;
 const EGG_RX = 0.4;
 const EGG_RY = 0.46;
+const PAPER_INSET_X = 0.1;
+const PAPER_INSET_Y = 0.08;
 
 const INCOMPLETE_HINT = '再画一会儿，让我看得清楚一点。';
 
-function cellIndex(normalizedPoint) {
+function cellIndex(normalizedPoint, options) {
   if (!normalizedPoint) return -1;
   const x = Number(normalizedPoint.x);
   const y = Number(normalizedPoint.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return -1;
+  const usePaper = options && options.paper;
+  if (usePaper) {
+    const left = PAPER_INSET_X;
+    const top = PAPER_INSET_Y;
+    const right = 1 - PAPER_INSET_X;
+    const bottom = 1 - PAPER_INSET_Y;
+    if (x < left || x > right || y < top || y > bottom) return -1;
+    const nx = (x - left) / (right - left);
+    const ny = (y - top) / (bottom - top);
+    const col = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(nx * GRID_SIZE)));
+    const row = Math.min(GRID_SIZE - 1, Math.max(0, Math.floor(ny * GRID_SIZE)));
+    return row * GRID_SIZE + col;
+  }
   const dx = (x - 0.5) / EGG_RX;
   const dy = (y - 0.5) / EGG_RY;
   if ((dx * dx) + (dy * dy) > 1) return -1;
@@ -45,10 +60,10 @@ function beginStroke(tracker, tool) {
   return strokeId;
 }
 
-function trackPoint(tracker, tool, point) {
+function trackPoint(tracker, tool, point, options) {
   if (!tracker || !tracker.trackingStroke || !point) return;
   if (tool === 'brush') {
-    const index = cellIndex(point);
+    const index = cellIndex(point, options);
     if (index >= 0) tracker.cells.add(index);
   }
 }
@@ -81,12 +96,12 @@ function snapshot(tracker) {
   };
 }
 
-function rebuildFromOperations(operations) {
+function rebuildFromOperations(operations, options) {
   const tracker = createTracker();
   (operations || []).forEach(operation => {
     if (!operation || operation.type !== 'stroke' || operation.tool !== 'brush') return;
     const strokeId = beginStroke(tracker, 'brush');
-    (operation.points || []).forEach(point => trackPoint(tracker, 'brush', point));
+    (operation.points || []).forEach(point => trackPoint(tracker, 'brush', point, options));
     tracker.activeMs += Math.max(0, ((operation.points || []).length - 1) * 3200);
     endStroke(tracker, strokeId, 'brush', false);
     operation.gateStrokeId = strokeId;

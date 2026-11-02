@@ -60,6 +60,7 @@ const doodleDefinition = {
     navSlotWidthPx: 86,
     companionPropMode: false,
     propFinishVisible: false,
+    propGuideSketchVisible: false,
     propDrawingLocked: false,
     toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
@@ -217,6 +218,11 @@ const doodleDefinition = {
       this.baseLayer = layers[0];
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
+      if (this.companionPropMode) {
+        this.renderAll();
+        this.revealEditor();
+        return;
+      }
       return Promise.all([
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),
         canvas2d.loadImage(this.artLayer, shellArtService.BASE_ASSET)
@@ -283,6 +289,14 @@ const doodleDefinition = {
 
   renderBase() {
     if (!this.baseLayer) return;
+    if (this.companionPropMode) {
+      shellArtService.drawPropPaperBase(
+        this.baseLayer.context,
+        this.baseLayer.width,
+        this.baseLayer.height
+      );
+      return;
+    }
     shellArtService.drawEggBase(
       this.baseLayer.context,
       this.baseImage,
@@ -294,6 +308,16 @@ const doodleDefinition = {
 
   renderArt(activeOperation) {
     if (!this.artLayer) return;
+    if (this.companionPropMode) {
+      shellArtService.drawPropPaperArt(
+        this.artLayer.context,
+        this.artLayer.width,
+        this.artLayer.height,
+        this.shellArt,
+        activeOperation
+      );
+      return;
+    }
     shellArtService.drawEggArt(
       this.artLayer.context,
       this.artMaskImage,

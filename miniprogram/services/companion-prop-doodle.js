@@ -29,6 +29,7 @@ function attach(definition) {
       || propCatalog.pickDaily(require('./companion-star-rules').shanghaiDate(), companionAdapter.getRoomScope());
     this.gateTracker = drawingGate.createTracker();
     this.gateStrokeId = null;
+    this.propGateOptions = { paper: true };
     this.propSession = propChallenge.createSession();
     const sketchPath = this.propEntry ? propAssets.resolveLinePath(this.propEntry) : '';
     const coloredPath = this.propEntry ? propAssets.resolveColoredPath(this.propEntry) : '';
@@ -57,6 +58,7 @@ function attach(definition) {
       propColoredSrc: coloredPath,
       propPeekVisible: false,
       propPeekAnimating: false,
+      propGuideSketchVisible: false,
       propDrawingLocked: true,
       propUnlockVisible: false,
       propTutorialVisible: false,
@@ -71,7 +73,12 @@ function attach(definition) {
     const run = () => {
       if (!this.pageActive) return;
       if (this.companionPropMode && !propChallenge.hasSeenTutorial()) {
-        this.setData({ propTutorialVisible: true, propTutorialStep: 0, propDrawingLocked: true });
+        this.setData({
+          propTutorialVisible: true,
+          propTutorialStep: 0,
+          propDrawingLocked: true,
+          propGuideSketchVisible: true
+        });
       } else if (this.companionPropMode) {
         this.scheduleInitialPropPeek();
       }
@@ -127,7 +134,7 @@ function attach(definition) {
 
   definition.onPropTutorialSkip = function onPropTutorialSkip() {
     propChallenge.markTutorialSeen();
-    this.setData({ propTutorialVisible: false });
+    this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
     this.scheduleInitialPropPeek();
   };
 
@@ -135,11 +142,15 @@ function attach(definition) {
     const step = Number(this.data.propTutorialStep) || 0;
     if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
       propChallenge.markTutorialSeen();
-      this.setData({ propTutorialVisible: false });
+      this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
       this.scheduleInitialPropPeek();
       return;
     }
-    this.setData({ propTutorialStep: step + 1 });
+    const nextStep = step + 1;
+    this.setData({
+      propTutorialStep: nextStep,
+      propGuideSketchVisible: nextStep === 0
+    });
   };
 
   definition.onPropUnlockOk = function onPropUnlockOk() {
@@ -170,7 +181,7 @@ function attach(definition) {
     if (originalTouchMove) originalTouchMove.call(this, event);
     if (!this.companionPropMode || !this.gateTracker || !this.currentStroke) return;
     const point = this.canvasPoint(event);
-    drawingGate.trackPoint(this.gateTracker, this.data.activeTool, point);
+    drawingGate.trackPoint(this.gateTracker, this.data.activeTool, point, this.propGateOptions);
     if (this.data.activeTool === 'brush') drawingGate.trackActiveElapsed(this.gateTracker, Date.now());
   };
 
@@ -193,7 +204,7 @@ function attach(definition) {
     if (originalUndo) originalUndo.call(this);
     if (this.companionPropMode) {
       const prevMs = this.gateTracker ? this.gateTracker.activeMs : 0;
-      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations);
+      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations, this.propGateOptions);
       this.gateTracker.activeMs = prevMs;
     }
   };
@@ -202,7 +213,7 @@ function attach(definition) {
     const prevMs = this.gateTracker ? this.gateTracker.activeMs : 0;
     if (originalClear) originalClear.call(this);
     if (this.companionPropMode) {
-      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations);
+      this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations, this.propGateOptions);
       this.gateTracker.activeMs = prevMs;
     }
   };

@@ -137,8 +137,9 @@
 .prop-paper-dash { position: absolute; inset: 30rpx; border: 3rpx dashed rgba(53, 72, 60, 0.2); border-radius: 40rpx; }
 
 .egg-canvas-stack--prop { top: -120rpx; z-index: 2; filter: none; }
+.egg-canvas-stack--prop .egg-canvas--base { opacity: 0; }
 
-.prop-sketch-layer { position: absolute; z-index: 5; width: 47vw; height: 47vw; top: calc(50% - 168rpx); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.prop-sketch-layer { position: absolute; z-index: 5; width: 52vw; height: 52vw; max-width: 420rpx; max-height: 420rpx; top: calc(50% - 168rpx); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; }
 .prop-sketch-layer--flip-out .prop-sketch-image { animation: prop-sketch-flip-out 320ms ease-in forwards; }
 .prop-peek-caption { position: absolute; z-index: 6; left: 0; right: 0; top: calc(50% + 72rpx); color: rgba(53, 72, 60, 0.6); font-size: 26rpx; line-height: 1.3; text-align: center; pointer-events: none; }

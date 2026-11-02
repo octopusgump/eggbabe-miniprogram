@@ -43,17 +43,6 @@
   </root-portal>
 
   <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}}" bindtap="onCanvasBackdropTap">
-    <view wx:if="{{companionPropMode && propLookHint && !propTutorialVisible}}" class="prop-look-row">
-      <view
-        class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-        bindtap="onPropLookAgain"
-        aria-role="button"
-        aria-label="{{propLookHint}}"
-      >
-        <text>{{propLookHint}}</text>
-      </view>
-    </view>
-
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -92,16 +81,55 @@
     </view>
 
     <view wx:if="{{!companionPropMode}}" class="preview-aura"></view>
-    <view wx:if="{{companionPropMode}}" class="prop-paper-board">
-      <view class="prop-paper-dash"></view>
-    </view>
     <view wx:if="{{companionPropMode && (propPeekVisible || propPeekAnimating)}}" class="prop-sketch-layer {{propPeekAnimating ? 'prop-sketch-layer--flip-out' : ''}}">
       <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
     </view>
     <text wx:if="{{companionPropMode && propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
     <text wx:if="{{companionPropMode && propGuideSketchVisible && !propPeekVisible}}" class="prop-peek-caption">先看看简笔，记住它的样子</text>
 
-    <view class="egg-canvas-stack {{companionPropMode ? 'egg-canvas-stack--prop' : ''}} {{propUnlockVisible ? 'egg-canvas-stack--hidden' : ''}}" style="transform:scale({{canvasScale}});">
+    <view wx:if="{{companionPropMode}}" class="prop-paper-stage">
+      <view wx:if="{{propLookHint && !propTutorialVisible}}" class="prop-look-row">
+        <view
+          class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+          bindtap="onPropLookAgain"
+          aria-role="button"
+          aria-label="{{propLookHint}}"
+        >
+          <text>{{propLookHint}}</text>
+        </view>
+      </view>
+      <view class="prop-paper-board">
+        <view class="prop-paper-dash"></view>
+      </view>
+      <view class="prop-canvas-slot {{propUnlockVisible ? 'prop-canvas-slot--hidden' : ''}}">
+        <view class="egg-canvas-stack egg-canvas-stack--prop" style="transform:scale({{canvasScale}});">
+          <canvas
+            type="2d"
+            id="eggBaseCanvas"
+            class="egg-canvas egg-canvas--base"
+            hidden="{{exitConfirmVisible || propUnlockVisible}}"
+          ></canvas>
+          <canvas
+            type="2d"
+            id="eggArtCanvas"
+            class="egg-canvas egg-canvas--art"
+            hidden="{{exitConfirmVisible || propUnlockVisible}}"
+            disable-scroll
+            catchtouchstart="onCanvasTouchStart"
+            catchtouchmove="onCanvasTouchMove"
+            catchtouchend="onCanvasTouchEnd"
+            catchtouchcancel="onCanvasTouchCancel"
+          ></canvas>
+          <canvas
+            type="2d"
+            id="propLineOverlayCanvas"
+            class="egg-canvas egg-canvas--line-overlay"
+            hidden="{{exitConfirmVisible || propUnlockVisible}}"
+          ></canvas>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="egg-canvas-stack {{propUnlockVisible ? 'egg-canvas-stack--hidden' : ''}}" style="transform:scale({{canvasScale}});">
       <canvas
         type="2d"
         id="eggBaseCanvas"
@@ -118,13 +146,6 @@
         catchtouchmove="onCanvasTouchMove"
         catchtouchend="onCanvasTouchEnd"
         catchtouchcancel="onCanvasTouchCancel"
-      ></canvas>
-      <canvas
-        wx:if="{{companionPropMode}}"
-        type="2d"
-        id="propLineOverlayCanvas"
-        class="egg-canvas egg-canvas--line-overlay"
-        hidden="{{exitConfirmVisible || propUnlockVisible}}"
       ></canvas>
     </view>
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>

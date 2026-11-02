@@ -371,16 +371,17 @@ function drawEraserStroke(context, operation, width, height) {
   context.restore();
 }
 
-/** 道具临摹画纸内缘（与 doodle 虚线框比例对齐） */
-const PROP_PAPER_INSET_X = 0.1;
-const PROP_PAPER_INSET_Y = 0.08;
+/** 道具临摹：Canvas 像素区与虚线内缘 1:1，仅保留圆角裁剪 */
+const PROP_PAPER_INSET_X = 0;
+const PROP_PAPER_INSET_Y = 0;
+const PROP_PAPER_CORNER_RADIUS_RATIO = 0.051;
 
 function propPaperPath(context, width, height) {
   const left = width * PROP_PAPER_INSET_X;
   const top = height * PROP_PAPER_INSET_Y;
   const w = width * (1 - PROP_PAPER_INSET_X * 2);
   const h = height * (1 - PROP_PAPER_INSET_Y * 2);
-  const radius = Math.min(w, h) * 0.08;
+  const radius = Math.min(w, h) * PROP_PAPER_CORNER_RADIUS_RATIO;
   context.beginPath();
   context.moveTo(left + radius, top);
   context.lineTo(left + w - radius, top);

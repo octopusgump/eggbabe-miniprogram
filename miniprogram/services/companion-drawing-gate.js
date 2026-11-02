@@ -5,8 +5,8 @@ const MIN_CELLS = 5;
 const IDLE_GAP_MS = 1200;
 const EGG_RX = 0.4;
 const EGG_RY = 0.46;
-const PAPER_INSET_X = 0.1;
-const PAPER_INSET_Y = 0.08;
+const PAPER_INSET_X = 0;
+const PAPER_INSET_Y = 0;
 
 const INCOMPLETE_HINT = '再画一会儿，让我看得清楚一点。';
 

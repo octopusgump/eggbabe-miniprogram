@@ -1,5 +1,6 @@
 const TUTORIAL_STORAGE_KEY = 'eggbabe_draw_prop_tutorial_seen_v1';
 const LOOK_DURATION_MS = 5000;
+const PEEK_FLIP_MS = 720;
 const MANUAL_LOOKS = 3;
 const TUTORIAL_STEPS = Object.freeze([
   Object.freeze({
@@ -48,6 +49,7 @@ function lookHintText(lookRemaining) {
 module.exports = {
   TUTORIAL_STORAGE_KEY,
   LOOK_DURATION_MS,
+  PEEK_FLIP_MS,
   MANUAL_LOOKS,
   TUTORIAL_STEPS,
   hasSeenTutorial,

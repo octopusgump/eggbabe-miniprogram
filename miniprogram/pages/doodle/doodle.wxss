@@ -155,16 +155,14 @@
 .prop-tutorial-card { width: 100%; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; }
 .prop-tutorial-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
 .prop-tutorial-title { flex: 1; color: #002900; font-size: 38rpx; font-weight: 700; line-height: 1.35; }
-.prop-tutorial-step-row { display: flex; flex-direction: column; align-items: flex-end; gap: 8rpx; flex-shrink: 0; }
-.prop-tutorial-step { color: #5B6B5F; font-size: 24rpx; line-height: 1.4; white-space: nowrap; }
+.prop-tutorial-step-row { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
 .prop-tutorial-dots { display: flex; align-items: center; gap: 8rpx; }
 .prop-tutorial-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: rgba(0, 41, 0, 0.2); }
 .prop-tutorial-dot--active { width: 36rpx; background: #002900; }
 .prop-tutorial-body { display: block; margin-top: 20rpx; color: #3E4C42; font-size: 28rpx; line-height: 1.57; white-space: pre-line; }
-.prop-tutorial-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 28rpx; }
-.prop-tutorial-footer--final { justify-content: flex-end; }
-.prop-tutorial-skip { color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; }
-.prop-tutorial-next { min-width: 194rpx; height: 76rpx; margin: 0; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; }
+.prop-tutorial-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 28rpx; width: 100%; box-sizing: border-box; }
+.prop-tutorial-skip { margin-right: auto; color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
+.prop-tutorial-next { min-width: 194rpx; height: 76rpx; margin: 0 0 0 auto; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; }
 
 @keyframes prop-sketch-flip-out {
   from { opacity: 1; transform: rotateY(0deg) scale(1); }

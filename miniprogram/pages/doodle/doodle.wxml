@@ -254,7 +254,6 @@
       <view class="prop-tutorial-head">
         <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
         <view class="prop-tutorial-step-row">
-          <text class="prop-tutorial-step">{{propTutorialStep + 1}}/3</text>
           <view class="prop-tutorial-dots">
             <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
             <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
@@ -263,7 +262,7 @@
         </view>
       </view>
       <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>
-      <view class="prop-tutorial-footer {{propTutorialStep >= 2 ? 'prop-tutorial-footer--final' : ''}}">
+      <view class="prop-tutorial-footer">
         <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
         <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
       </view>

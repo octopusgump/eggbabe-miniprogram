@@ -95,10 +95,11 @@
     <view wx:if="{{companionPropMode}}" class="prop-paper-board">
       <view class="prop-paper-dash"></view>
     </view>
-    <view wx:if="{{companionPropMode && (propPeekVisible || propGuideSketchVisible)}}" class="prop-sketch-layer {{propPeekAnimating ? 'prop-sketch-layer--flip-out' : ''}}">
+    <view wx:if="{{companionPropMode && (propPeekVisible || propPeekAnimating)}}" class="prop-sketch-layer {{propPeekAnimating ? 'prop-sketch-layer--flip-out' : ''}}">
       <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
     </view>
-    <text wx:if="{{companionPropMode && (propPeekVisible || propGuideSketchVisible)}}" class="prop-peek-caption">{{propPeekVisible ? '先看一眼，记住它的样子' : '先看看简笔，记住它的样子'}}</text>
+    <text wx:if="{{companionPropMode && propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
+    <text wx:if="{{companionPropMode && propGuideSketchVisible && !propPeekVisible}}" class="prop-peek-caption">先看看简笔，记住它的样子</text>
 
     <view class="egg-canvas-stack {{companionPropMode ? 'egg-canvas-stack--prop' : ''}}" style="transform:scale({{canvasScale}});">
       <canvas
@@ -117,6 +118,13 @@
         catchtouchmove="onCanvasTouchMove"
         catchtouchend="onCanvasTouchEnd"
         catchtouchcancel="onCanvasTouchCancel"
+      ></canvas>
+      <canvas
+        wx:if="{{companionPropMode}}"
+        type="2d"
+        id="propLineOverlayCanvas"
+        class="egg-canvas egg-canvas--line-overlay"
+        hidden="{{exitConfirmVisible}}"
       ></canvas>
     </view>
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>

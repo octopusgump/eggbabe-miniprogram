@@ -61,6 +61,7 @@ const doodleDefinition = {
     companionPropMode: false,
     propFinishVisible: false,
     propGuideSketchVisible: false,
+    propLineOverlayVisible: false,
     propDrawingLocked: false,
     toolbarIcons: preHatchAssets.doodleToolbar,
     brushColors: shellArtService.BRUSH_COLORS,
@@ -219,9 +220,20 @@ const doodleDefinition = {
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
-        this.renderAll();
-        this.revealEditor();
-        return;
+        const sketchPath = this.data.propSketchPath || '';
+        const loadLine = sketchPath
+          ? canvas2d.createLayer(this, '#propLineOverlayCanvas').then(layer => {
+            if (setupToken !== this.canvasSetupToken || !layer) return null;
+            this.propLineLayer = layer;
+            return canvas2d.loadImage(layer, sketchPath);
+          })
+          : Promise.resolve(null);
+        return loadLine.then(image => {
+          if (setupToken !== this.canvasSetupToken) return;
+          this.propLineImage = image;
+          this.renderAll();
+          this.revealEditor();
+        });
       }
       return Promise.all([
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),

@@ -79,6 +79,7 @@ function attach(definition) {
           propDrawingLocked: true,
           propGuideSketchVisible: true
         });
+        this.setPropLineOverlayVisible(true);
       } else if (this.companionPropMode) {
         this.scheduleInitialPropPeek();
       }
@@ -105,6 +106,7 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
+    this.setPropLineOverlayVisible(false);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
@@ -121,6 +123,7 @@ function attach(definition) {
           propDrawingLocked: false,
           propFinishVisible: true
         });
+        this.setPropLineOverlayVisible(true);
       }, 320);
     }, propChallenge.LOOK_DURATION_MS);
   };
@@ -135,6 +138,7 @@ function attach(definition) {
   definition.onPropTutorialSkip = function onPropTutorialSkip() {
     propChallenge.markTutorialSeen();
     this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
+    this.setPropLineOverlayVisible(false);
     this.scheduleInitialPropPeek();
   };
 
@@ -143,6 +147,7 @@ function attach(definition) {
     if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
       propChallenge.markTutorialSeen();
       this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
+      this.setPropLineOverlayVisible(false);
       this.scheduleInitialPropPeek();
       return;
     }
@@ -151,6 +156,7 @@ function attach(definition) {
       propTutorialStep: nextStep,
       propGuideSketchVisible: nextStep === 0
     });
+    this.setPropLineOverlayVisible(nextStep === 0);
   };
 
   definition.onPropUnlockOk = function onPropUnlockOk() {
@@ -218,6 +224,42 @@ function attach(definition) {
     }
   };
 
+  const originalRenderAll = definition.renderAll;
+
+  definition.renderPropLineOverlay = function renderPropLineOverlay() {
+    if (!this.companionPropMode || !this.data.propLineOverlayVisible) return;
+    if (!this.propLineLayer || !this.propLineImage) return;
+    shellArtService.drawPropLineOverlay(
+      this.propLineLayer.context,
+      this.propLineImage,
+      this.propLineLayer.width,
+      this.propLineLayer.height
+    );
+  };
+
+  definition.clearPropLineOverlay = function clearPropLineOverlay() {
+    if (!this.propLineLayer) return;
+    const layer = this.propLineLayer;
+    layer.context.clearRect(0, 0, layer.width, layer.height);
+  };
+
+  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible(visible) {
+    const next = Boolean(visible);
+    if (next === Boolean(this.data.propLineOverlayVisible)) {
+      if (next) this.renderPropLineOverlay();
+      return;
+    }
+    this.setData({ propLineOverlayVisible: next }, () => {
+      if (next) this.renderPropLineOverlay();
+      else this.clearPropLineOverlay();
+    });
+  };
+
+  definition.renderAll = function renderAll() {
+    if (originalRenderAll) originalRenderAll.call(this);
+    this.renderPropLineOverlay();
+  };
+
   definition.onPropSketchError = function onPropSketchError() {
     const fallback = this.data.propColoredPath || this.data.propFallbackColoredPath;
     if (fallback && this.data.propSketchSrc !== fallback) {
@@ -276,6 +318,7 @@ function attach(definition) {
       propFinishVisible: false,
       toolPanelOpen: false
     });
+    this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;
     return { ok: true };
   };

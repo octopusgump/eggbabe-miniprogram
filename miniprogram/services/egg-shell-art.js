@@ -398,6 +398,15 @@ function drawPropPaperBase(context, width, height) {
   context.clearRect(0, 0, width, height);
 }
 
+function drawPropLineOverlay(context, lineImage, width, height) {
+  if (!context || !lineImage || !width || !height) return;
+  context.clearRect(0, 0, width, height);
+  const size = Math.min(width, height) * 0.88;
+  const x = (width - size) / 2;
+  const y = (height - size) / 2;
+  context.drawImage(lineImage, x, y, size, size);
+}
+
 function drawPropPaperArt(context, width, height, shellInput, activeOperation) {
   const shell = normalizeShellArt(shellInput);
   context.clearRect(0, 0, width, height);
@@ -476,6 +485,7 @@ module.exports = {
   propPaperPath,
   drawPropPaperBase,
   drawPropPaperArt,
+  drawPropLineOverlay,
   drawEggBase,
   drawEggArt,
   operationSummary

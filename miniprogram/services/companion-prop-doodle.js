@@ -202,11 +202,22 @@ function attach(definition) {
     this.setPropLineOverlayVisible(nextStep === 0);
   };
 
-  definition.onPropUnlockOk = function onPropUnlockOk() {
+  definition.onPropUnlockOk = async function onPropUnlockOk() {
     if (!this.data.propUnlockVisible || this.propCompletingExit) return;
     this.propCompletingExit = true;
     this.clearPropUnlockAward();
     const payload = this.pendingPropCompletion;
+    if (payload) {
+      try {
+        const viewResult = await companionAdapter.getRoomStarView();
+        if (viewResult.ok) {
+          const settlement = await companionAdapter.recordPropDrawingComplete(viewResult.data, payload.id);
+          if (settlement.ok) payload.awardedStars = Number(settlement.awardedStars) || 0;
+        }
+      } catch (error) {
+        payload.awardedStars = 0;
+      }
+    }
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.emit && payload) channel.emit('companionDrawingCompleted', payload);
     companionAdapter.setCompanionDraft(null);
@@ -362,26 +373,16 @@ function attach(definition) {
       line: '这个小道具，送给你。',
       date: require('./companion-star-rules').shanghaiDate()
     };
-    let awardedStars = 0;
-    try {
-      const viewResult = await companionAdapter.getRoomStarView();
-      if (viewResult.ok) {
-        const settlement = await companionAdapter.recordPropDrawingComplete(viewResult.data, completionId);
-        if (settlement.ok) awardedStars = Number(settlement.awardedStars) || 0;
-      }
-    } catch (error) {
-      awardedStars = 0;
-    }
-    const showStars = awardedStars > 0;
+    const rewardStars = companionAdapter.PROP_DRAWING_REWARD;
     this.setData({
       propUnlockVisible: true,
       propUnlockActive: true,
       propFinishVisible: false,
       toolPanelOpen: false,
-      propAwardStars: showStars ? awardedStars : 0,
-      propAwardVisible: showStars
+      propAwardStars: rewardStars,
+      propAwardVisible: rewardStars > 0
     }, () => {
-      if (showStars) this.playPropUnlockAward();
+      if (rewardStars > 0) this.playPropUnlockAward();
     });
     this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;

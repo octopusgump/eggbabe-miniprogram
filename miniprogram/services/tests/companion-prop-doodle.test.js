@@ -77,7 +77,7 @@ global.wx = global.wx || {
     assert.equal(editor.data.propAwardStars, 10);
     assert.equal(editor.data.propAwardVisible, true);
     assert.equal(emitted, undefined);
-    editor.onPropUnlockOk();
+    await editor.onPropUnlockOk();
     assert.equal(emitted.kind, 'prop');
     assert.equal(emitted.propId, 'dried_tea_tag');
     assert.equal(emitted.image, '/tmp/prop-drawing.png');

@@ -133,7 +133,7 @@ async function main(){
   canvas.exportImage=async()=>'/tmp/local-drawing.png';
   assert.equal((await editor.completeCompanionDrawing()).ok,true);
   assert.equal(parent.completedCompanionDrawing,undefined,'解锁层未确认前不回调房间');
-  editor.onPropUnlockOk();canvas.exportImage=oldExport;
+  await editor.onPropUnlockOk();canvas.exportImage=oldExport;
   assert.equal(parent.completedCompanionDrawing.kind,'prop');
   assert.equal(adapter.getCompanionDraft(),null,'画好后清空旧草稿，下一幅从空白开始');
   parent.startClock=()=>{};parent.refreshEnvironment=()=>{};parent.loadSnapshot=()=>{};parent.scheduleEnvironmentRefresh=()=>{};

@@ -155,12 +155,13 @@
 
 .prop-sketch-layer { position: absolute; z-index: 5; width: 52vw; height: 52vw; max-width: 420rpx; max-height: 420rpx; top: calc(50% - 168rpx); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .prop-peek-card { position: absolute; z-index: 5; left: 50%; top: calc(50% - 168rpx); width: 52vw; max-width: 420rpx; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; pointer-events: auto; transform-origin: center center; perspective: 1400rpx; }
-.prop-peek-card--flip-out { animation: prop-peek-card-flip-out 720ms ease-in forwards; }
-.prop-peek-card--reduced.prop-peek-card--flip-out { animation-duration: 80ms; }
+.prop-peek-card--flip-out { animation: prop-peek-card-flip-out 580ms cubic-bezier(0.32, 0, 0.67, 0) forwards; }
+.prop-peek-card--reduced.prop-peek-card--flip-out { animation-duration: 80ms; animation-timing-function: ease-out; }
+.prop-peek-card--flip-out .prop-peek-caption { animation: prop-peek-caption-fade-out 280ms ease-out forwards; }
+.prop-peek-card--reduced.prop-peek-card--flip-out .prop-peek-caption { animation: none; opacity: 0; }
 .prop-peek-card .prop-sketch-layer { position: relative; top: auto; left: auto; width: 100%; height: 52vw; max-width: 420rpx; max-height: 420rpx; transform: none; }
 .prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; mix-blend-mode: darken; }
 .prop-peek-card .prop-peek-caption { position: relative; top: auto; left: auto; right: auto; margin-top: 24rpx; width: 100%; }
-.prop-sketch-layer--flip-out .prop-sketch-image { animation: prop-sketch-flip-out 320ms ease-in forwards; }
 .prop-peek-caption { position: absolute; z-index: 12; left: 0; right: 0; top: calc(50% + 72rpx); color: rgba(53, 72, 60, 0.6); font-size: 26rpx; line-height: 1.3; text-align: center; pointer-events: none; }
 
 .prop-finish-btn { position: absolute; z-index: 40; left: 50%; bottom: calc(200rpx + env(safe-area-inset-bottom)); width: 560rpx; max-width: calc(100% - 96rpx); height: 96rpx; margin: 0; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 96rpx; text-align: center; transform: translateX(-50%); box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); }
@@ -204,11 +205,13 @@
 .prop-tutorial-next { min-width: 194rpx; height: 76rpx; margin: 0 0 0 auto; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; }
 
 @keyframes prop-peek-card-flip-out {
-  from { opacity: 1; transform: translate(-50%, -50%) rotateY(0deg) scale(1); }
-  to { opacity: 0; transform: translate(-50%, -50%) rotateY(88deg) scale(0.94); }
+  0% { opacity: 1; transform: translate(-50%, -50%) rotateY(0deg) scale(1); }
+  12% { opacity: 1; transform: translate(-50%, -50%) rotateY(-6deg) scale(1.03); }
+  45% { opacity: 1; transform: translate(-50%, -50%) rotateY(78deg) scale(0.98); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateY(-16rpx) rotateY(96deg) scale(0.86); }
 }
 
-@keyframes prop-sketch-flip-out {
-  from { opacity: 1; transform: rotateY(0deg) scale(1); }
-  to { opacity: 0; transform: rotateY(90deg) scale(0.92); }
+@keyframes prop-peek-caption-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8rpx); }
 }

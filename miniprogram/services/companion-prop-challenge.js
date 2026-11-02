@@ -1,6 +1,7 @@
 const TUTORIAL_STORAGE_KEY = 'eggbabe_draw_prop_tutorial_seen_v1';
 const LOOK_DURATION_MS = 5000;
-const PEEK_FLIP_MS = 720;
+/** Must match `.prop-peek-card--flip-out` duration in doodle*.wxss (580ms). */
+const PEEK_FLIP_MS = 580;
 const MANUAL_LOOKS = 3;
 const TUTORIAL_STEPS = Object.freeze([
   Object.freeze({

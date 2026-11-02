@@ -17,7 +17,7 @@ for (let index = 0; index < 5; index += 1) {
 }
 
 let result = gate.evaluate(tracker);
-assert.equal(result.ok, true, '五笔、十五秒、五格应通过');
+assert.equal(result.ok, true, '五笔、七秒、五格应通过');
 
 const weak = gate.createTracker();
 const weakId = gate.beginStroke(weak, 'brush');

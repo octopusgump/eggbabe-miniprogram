@@ -126,7 +126,7 @@
 
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
 
-.preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; }
+.preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; }
 .preview--prop-unlock .prop-paper-stage,
 .preview--prop-unlock .prop-look-chrome,
 .preview--prop-unlock .prop-sketch-layer,
@@ -147,7 +147,7 @@
 .prop-look-hint--empty { opacity: 0.55; }
 .canvas-notice-anchor--prop { top: 16rpx; }
 
-.prop-paper-board { position: absolute; z-index: 0; inset: 0; border-radius: 56rpx; border: 1rpx solid rgba(53, 72, 60, 0.08); background: #F1EEE1; box-shadow: 0 8rpx 32rpx rgba(54, 71, 61, 0.06); pointer-events: none; }
+.prop-paper-board { position: absolute; z-index: 0; inset: 0; border-radius: 56rpx; border: 1rpx solid rgba(53, 72, 60, 0.08); background: var(--prop-paper-fill, #F7EEE5); box-shadow: 0 8rpx 32rpx rgba(54, 71, 61, 0.06); pointer-events: none; }
 .prop-paper-dash { position: absolute; inset: 30rpx; border: 3rpx dashed rgba(53, 72, 60, 0.2); border-radius: 40rpx; }
 
 .prop-canvas-slot { position: absolute; z-index: 2; inset: 30rpx; pointer-events: auto; overflow: visible; }

@@ -5,6 +5,7 @@ const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
 
 const TUTORIAL_FINAL_LABEL = '开始画';
+const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
 function attach(definition) {
   const originalOnLoad = definition.onLoad;
@@ -67,6 +68,48 @@ function attach(definition) {
       propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
       propFinishVisible: false
     });
+  };
+
+  definition.playPropUnlockAward = function playPropUnlockAward() {
+    if (!this.data.propAwardVisible || !this.data.propAwardStars) return;
+    try {
+      if (wx.createInnerAudioContext) {
+        this.propAwardAudio = wx.createInnerAudioContext({ useWebAudioImplement: true });
+        this.propAwardAudio.src = PROP_AWARD_SOUND;
+        this.propAwardAudio.volume = 0.2;
+        this.propAwardAudio.obeyMuteSwitch = true;
+        if (this.propAwardAudio.onError) {
+          this.propAwardAudio.onError(() => {
+            if (this.propAwardAudio) {
+              try { this.propAwardAudio.destroy(); } catch (error) {}
+              this.propAwardAudio = null;
+            }
+          });
+        }
+        clearTimeout(this.propAwardSoundTimer);
+        this.propAwardSoundTimer = setTimeout(() => {
+          if (this.pageActive && this.propAwardAudio) {
+            try { this.propAwardAudio.play(); } catch (error) {}
+          }
+        }, 520);
+      }
+    } catch (error) {}
+    if (this.data.companionReducedMotion) return;
+    clearTimeout(this.propAwardHapticTimer);
+    this.propAwardHapticTimer = setTimeout(() => {
+      if (this.pageActive && wx.vibrateShort) {
+        try { wx.vibrateShort({ type: 'light' }); } catch (error) {}
+      }
+    }, 840);
+  };
+
+  definition.clearPropUnlockAward = function clearPropUnlockAward() {
+    clearTimeout(this.propAwardSoundTimer);
+    clearTimeout(this.propAwardHapticTimer);
+    if (this.propAwardAudio) {
+      try { this.propAwardAudio.stop(); this.propAwardAudio.destroy(); } catch (error) {}
+      this.propAwardAudio = null;
+    }
   };
 
   definition.revealEditor = function revealEditor() {
@@ -162,6 +205,7 @@ function attach(definition) {
   definition.onPropUnlockOk = function onPropUnlockOk() {
     if (!this.data.propUnlockVisible || this.propCompletingExit) return;
     this.propCompletingExit = true;
+    this.clearPropUnlockAward();
     const payload = this.pendingPropCompletion;
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && channel.emit && payload) channel.emit('companionDrawingCompleted', payload);
@@ -318,10 +362,26 @@ function attach(definition) {
       line: '这个小道具，送给你。',
       date: require('./companion-star-rules').shanghaiDate()
     };
+    let awardedStars = 0;
+    try {
+      const viewResult = await companionAdapter.getRoomStarView();
+      if (viewResult.ok) {
+        const settlement = await companionAdapter.recordPropDrawingComplete(viewResult.data, completionId);
+        if (settlement.ok) awardedStars = Number(settlement.awardedStars) || 0;
+      }
+    } catch (error) {
+      awardedStars = 0;
+    }
+    const showStars = awardedStars > 0;
     this.setData({
       propUnlockVisible: true,
+      propUnlockActive: true,
       propFinishVisible: false,
-      toolPanelOpen: false
+      toolPanelOpen: false,
+      propAwardStars: showStars ? awardedStars : 0,
+      propAwardVisible: showStars
+    }, () => {
+      if (showStars) this.playPropUnlockAward();
     });
     this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;
@@ -331,12 +391,14 @@ function attach(definition) {
   definition.onHide = function onHide() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
 
   definition.onUnload = function onUnload() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };
 }

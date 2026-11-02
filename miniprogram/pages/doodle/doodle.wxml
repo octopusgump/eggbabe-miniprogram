@@ -251,9 +251,20 @@
     </view>
   </view>
 
-  <view wx:if="{{companionPropMode && propUnlockVisible}}" class="prop-unlock-layer">
-    <image class="prop-unlock-image" src="{{propColoredSrc || propColoredPath}}" mode="aspectFit" binderror="onPropColoredError"></image>
-    <text class="prop-unlock-name">{{propDisplayName}}</text>
+  <view wx:if="{{companionPropMode && propUnlockVisible}}" class="prop-unlock-layer {{propUnlockActive ? 'prop-unlock-layer--active' : ''}}">
+    <view class="prop-unlock-reveal">
+      <image class="prop-unlock-image" src="{{propColoredSrc || propColoredPath}}" mode="aspectFit" binderror="onPropColoredError"></image>
+      <text class="prop-unlock-name">{{propDisplayName}}</text>
+    </view>
+    <view
+      wx:if="{{propAwardVisible && propAwardStars > 0}}"
+      class="prop-unlock-award {{companionReducedMotion ? 'prop-unlock-award--reduced' : ''}}"
+      aria-live="polite"
+      aria-label="获得 {{propAwardStars}} 颗星星"
+    >
+      <companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star>
+      <text class="prop-unlock-award-plus">+{{propAwardStars}}</text>
+    </view>
     <button class="prop-unlock-ok" bindtap="onPropUnlockOk">好的</button>
   </view>
 

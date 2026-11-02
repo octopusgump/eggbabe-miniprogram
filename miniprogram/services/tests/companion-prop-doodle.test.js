@@ -74,6 +74,8 @@ global.wx = global.wx || {
     canvas.exportImage = async () => '/tmp/prop-drawing.png';
     assert.equal((await editor.completeCompanionDrawing()).ok, true);
     assert.equal(editor.data.propUnlockVisible, true);
+    assert.equal(editor.data.propAwardStars, 10);
+    assert.equal(editor.data.propAwardVisible, true);
     assert.equal(emitted, undefined);
     editor.onPropUnlockOk();
     assert.equal(emitted.kind, 'prop');

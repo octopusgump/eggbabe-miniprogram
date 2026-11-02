@@ -44,6 +44,7 @@
 .egg-canvas--base { z-index: 1; }
 .egg-canvas--art { z-index: 2; touch-action: none; }
 .egg-canvas--line-overlay { z-index: 3; pointer-events: none; touch-action: none; }
+.egg-canvas-stack--prop .egg-canvas--line-overlay { mix-blend-mode: darken; }
 .canvas-loading { position: absolute; z-index: 4; bottom: 18rpx; padding: 7rpx 14rpx; border-radius: 999rpx; background: rgba(255,255,255,.82); color: #77756E; font-size: 20rpx; }
 
 .content { position: absolute; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: center; padding: 12rpx 24rpx calc(24rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
@@ -151,7 +152,7 @@
 .egg-canvas-stack--prop .egg-canvas--base { opacity: 0; }
 
 .prop-sketch-layer { position: absolute; z-index: 5; width: 52vw; height: 52vw; max-width: 420rpx; max-height: 420rpx; top: calc(50% - 168rpx); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; }
+.prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; mix-blend-mode: darken; }
 .prop-sketch-layer--flip-out .prop-sketch-image { animation: prop-sketch-flip-out 320ms ease-in forwards; }
 .prop-peek-caption { position: absolute; z-index: 12; left: 0; right: 0; top: calc(50% + 72rpx); color: rgba(53, 72, 60, 0.6); font-size: 26rpx; line-height: 1.3; text-align: center; pointer-events: none; }
 

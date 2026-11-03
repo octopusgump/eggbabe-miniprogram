@@ -8,6 +8,17 @@ const shellArtService = require('./egg-shell-art');
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
+function exportPropPeekRestAnim() {
+  if (!wx.createAnimation) return null;
+  const animation = wx.createAnimation({
+    duration: 1,
+    timingFunction: 'linear',
+    transformOrigin: '50% 50% 0'
+  });
+  animation.scaleX(1).opacity(1).step();
+  return animation.export();
+}
+
 function exportPropPeekFlipAnim(reducedMotion, durationMs) {
   if (!wx.createAnimation) return null;
   const animation = wx.createAnimation({
@@ -158,28 +169,40 @@ function attach(definition) {
     this.startPropPeek({ countsAgainstManual: false });
   };
 
+  definition.finishPropPeekDismiss = function finishPropPeekDismiss() {
+    if (this.propSession) this.propSession.drawingLocked = false;
+    this.setData({
+      propPeekVisible: false,
+      propPeekAnimating: false,
+      propPeekSketchAnim: null,
+      propDrawingLocked: false,
+      propFinishVisible: true
+    }, () => {
+      if (typeof this.renderAll === 'function') this.renderAll();
+      this.setPropLineOverlayVisible(true);
+    });
+  };
+
+  // 收起只走 wx.createAnimation。再叠 CSS transform 时，真机上两套动画会一起失效。
   definition.dismissPropPeek = function dismissPropPeek() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
-    const flipAnim = exportPropPeekFlipAnim(this.data.companionReducedMotion, flipMs);
-    this.setData({
-      propPeekAnimating: true,
-      propPeekSketchAnim: flipAnim
-    }, () => {
-      clearTimeout(this.propPeekHideTimer);
-      this.propPeekHideTimer = setTimeout(() => {
-        this.propSession.drawingLocked = false;
-        this.setData({
-          propPeekVisible: false,
-          propPeekAnimating: false,
-          propPeekSketchAnim: null,
-          propDrawingLocked: false,
-          propFinishVisible: true
-        });
-        this.setPropLineOverlayVisible(true);
-      }, flipMs);
+    const generation = (this.propPeekGeneration || 0) + 1;
+    this.propPeekGeneration = generation;
+    this.setData({ propPeekAnimating: true }, () => {
+      if (generation !== this.propPeekGeneration) return;
+      this.setData({
+        propPeekSketchAnim: exportPropPeekFlipAnim(Boolean(this.data.companionReducedMotion), flipMs)
+      }, () => {
+        if (generation !== this.propPeekGeneration) return;
+        clearTimeout(this.propPeekHideTimer);
+        this.propPeekHideTimer = setTimeout(() => {
+          if (generation !== this.propPeekGeneration) return;
+          this.finishPropPeekDismiss();
+        }, flipMs);
+      });
     });
   };
 
@@ -194,6 +217,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     if (settings.countsAgainstManual && this.propSession.lookRemaining <= 0) return;
+    this.propPeekGeneration = (this.propPeekGeneration || 0) + 1;
     if (settings.countsAgainstManual) {
       this.propSession.lookRemaining -= 1;
       this.setData({
@@ -207,7 +231,7 @@ function attach(definition) {
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekSketchAnim: null,
+      propPeekSketchAnim: exportPropPeekRestAnim(),
       propFinishVisible: false
     });
     this.propPeekTimer = setTimeout(() => {
@@ -344,14 +368,18 @@ function attach(definition) {
 
   definition.setPropLineOverlayVisible = function setPropLineOverlayVisible(visible) {
     const next = Boolean(visible);
-    if (next === Boolean(this.data.propLineOverlayVisible)) {
-      if (next) this.renderPropLineOverlay();
-      return;
-    }
-    this.setData({ propLineOverlayVisible: next }, () => {
+    const token = (this.propLineOverlayToken || 0) + 1;
+    this.propLineOverlayToken = token;
+    const apply = () => {
+      if (token !== this.propLineOverlayToken) return;
       if (next) this.renderPropLineOverlay();
       else this.clearPropLineOverlay();
-    });
+    };
+    if (next === Boolean(this.data.propLineOverlayVisible)) {
+      apply();
+      return;
+    }
+    this.setData({ propLineOverlayVisible: next }, apply);
   };
 
   definition.renderAll = function renderAll() {

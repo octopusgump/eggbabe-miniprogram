@@ -1,8 +1,8 @@
 const assert = require('assert');
 const { resolveCompanionPetImage, resolveCompanionPetCharacterFolder } = require('../../utils/companion-pet-image');
 
-const koiPath = '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/stare.webp';
-const rabbitPath = '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare.webp';
+const koiPath = '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/stare.png';
+const rabbitPath = '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/stare.png';
 
 assert.equal(resolveCompanionPetImage({ prototype: '锦鲤' }), koiPath);
 assert.equal(resolveCompanionPetImage({ prototype: 'KOI' }), koiPath);

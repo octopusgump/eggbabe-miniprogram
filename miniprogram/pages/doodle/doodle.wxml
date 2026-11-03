@@ -43,7 +43,7 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && propLookHint && !propTutorialVisible && !propUnlockVisible}}"
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propTutorialVisible && !propUnlockVisible}}"
     class="prop-look-chrome {{propDrawingLocked || propTutorialVisible ? 'prop-chrome--dimmed' : ''}}"
   >
     <view
@@ -56,7 +56,11 @@
     </view>
   </view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}}" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}}" bindtap="onCanvasBackdropTap">
+    <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-layer" aria-live="polite">
+      <view class="prop-prepare-spinner" aria-hidden="true"></view>
+      <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
+    </view>
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -132,7 +136,7 @@
       ></canvas>
     </view>
 
-    <view class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
+    <view wx:if="{{!companionPropMode || canvasReady}}" class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
       <view
         class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
         aria-role="button"
@@ -171,7 +175,7 @@
       aria-label="画好了"
     >画好了</button>
 
-    <view class="content {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}" catchtap="onToolPanelTap">
+    <view wx:if="{{!companionPropMode || canvasReady}}" class="content {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}" catchtap="onToolPanelTap">
       <view class="tool-section {{!toolPanelOpen ? 'tool-section--compact' : ''}}">
       <view wx:if="{{toolPanelOpen && activeTool === 'brush'}}" class="tool-options brush-options">
         <view class="brush-settings-grid">

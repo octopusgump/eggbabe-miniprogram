@@ -29,6 +29,8 @@ assert.equal(wxml.includes('class="doodle-back-cover"') && wxml.includes('catcht
 assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/, '导航 cover 必须通过 root-portal 抬到原生 Canvas 之上');
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'") && pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
+assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示画纸加载层，不得整页透明');
+assert.match(wxml, /prop-prepare-layer[\s\S]*正在准备画纸/, '道具临摹须在画板区展示加载动画与文案');
 assert.doesNotMatch(wxss, /\.page--waiting\s*\{[^}]*pointer-events:\s*none/, 'Canvas 准备期间必须阻止点击穿透到首页');
 assert.match(wxss, /\.page--entering\s*\{[^}]*doodle-page-fade-in 320ms/, '画画页入场必须仅使用 320ms 淡入');
 assert.match(wxss, /\.page--exiting\s*\{[^}]*doodle-page-fade-out 320ms/, '画画页离场必须仅使用 320ms 淡出');
@@ -58,6 +60,7 @@ assert.match(
 assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必须建立明确层叠上下文');
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
+assert.match(wxss, /@keyframes prop-peek-sketch-flip-out/, '看一看收起须使用小程序兼容的平面翻页动画，不得依赖 rotateY');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');
 assert.match(wxml, /transform:scale\(\{\{canvasScale\}\}\)/, 'Canvas 必须绑定双指缩放倍率');
 assert.match(pageScript, /MAX_CANVAS_SCALE\s*=\s*1\.6/, '双指缩放必须限制在安全倍率内');

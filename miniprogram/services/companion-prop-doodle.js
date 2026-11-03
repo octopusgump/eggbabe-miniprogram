@@ -148,17 +148,19 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
-    this.setData({ propPeekAnimating: true });
-    this.propPeekHideTimer = setTimeout(() => {
-      this.propSession.drawingLocked = false;
-      this.setData({
-        propPeekVisible: false,
-        propPeekAnimating: false,
-        propDrawingLocked: false,
-        propFinishVisible: true
-      });
-      this.setPropLineOverlayVisible(true);
-    }, flipMs);
+    this.setData({ propPeekAnimating: true }, () => {
+      clearTimeout(this.propPeekHideTimer);
+      this.propPeekHideTimer = setTimeout(() => {
+        this.propSession.drawingLocked = false;
+        this.setData({
+          propPeekVisible: false,
+          propPeekAnimating: false,
+          propDrawingLocked: false,
+          propFinishVisible: true
+        });
+        this.setPropLineOverlayVisible(true);
+      }, flipMs);
+    });
   };
 
   definition.onPropPeekCardTap = function onPropPeekCardTap() {

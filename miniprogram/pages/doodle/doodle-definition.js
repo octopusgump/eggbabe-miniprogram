@@ -237,6 +237,10 @@ const doodleDefinition = {
           : Promise.resolve(null);
         return loadLine.then(image => {
           if (setupToken !== this.canvasSetupToken) return;
+          if (sketchPath && !image) {
+            this.failCanvasPreparation();
+            return;
+          }
           this.propLineImage = image;
           this.renderAll();
           this.revealEditor();

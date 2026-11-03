@@ -24,4 +24,16 @@ const toolbox = postHatch.POST_HATCH.sceneActions.toolboxItems;
   assert.match(postHatch.POST_HATCH.sceneActions[key], /\.png$/, `百宝箱木箱 ${key} 必须为 PNG`);
 });
 
+const uiRoot = path.join(miniprogramRoot, 'assets/ui');
+function countWebp(dir) {
+  let n = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) n += countWebp(p);
+    else if (entry.name.endsWith('.webp')) n += 1;
+  }
+  return n;
+}
+assert.equal(countWebp(uiRoot), 0, '阶段 1：assets/ui 下不得再保留 webp');
+
 console.log('房间左下/右下 UI 图标格式（PNG）校验通过。');

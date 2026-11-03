@@ -60,7 +60,7 @@
     </view>
   </view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}}" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible && propTutorialStep === 2 ? 'preview--prop-tutorial-step-finish' : ''}}" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -171,8 +171,8 @@
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <button
-      wx:if="{{companionPropMode && propFinishVisible && !propUnlockVisible && !propTutorialVisible}}"
-      class="prop-finish-btn"
+      wx:if="{{companionPropMode && !propUnlockVisible && ((propFinishVisible && !propTutorialVisible) || (propTutorialVisible && propTutorialStep === 2))}}"
+      class="prop-finish-btn {{propTutorialVisible && propTutorialStep === 2 ? 'prop-finish-btn--tutorial-spotlight' : ''}}"
       bindtap="onManualSave"
       aria-role="button"
       aria-label="画好了"
@@ -292,7 +292,7 @@
     </view>
   </view>
 
-  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim" catchtouchmove="true">
+  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim {{propTutorialStep === 2 ? 'prop-tutorial-scrim--step-finish' : ''}}" catchtouchmove="true">
     <view class="prop-tutorial-bg-sketch" aria-hidden="true"></view>
     <view class="prop-tutorial-card">
       <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>

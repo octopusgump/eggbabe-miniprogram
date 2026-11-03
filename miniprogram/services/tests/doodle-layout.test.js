@@ -83,13 +83,23 @@ assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔
 assert.match(wxml, /prop-peek-anchor--tutorial/, '教程第一步须复用同一张简笔，不得另挂一份');
 assert.match(
   wxml,
-  /<\/view>\s*<view wx:if="\{\{companionPropMode && propTutorialVisible\}\}" class="prop-tutorial-scrim"/,
+  /preview--prop-tutorial-step-finish[\s\S]*<\/view>\s*<\/view>\s*<view wx:if="\{\{companionPropMode && propTutorialVisible\}\}" class="prop-tutorial-scrim/,
   '教程遮罩须提升到 preview 外全屏 fixed，避免第二步卡片浮在中间'
 );
 assert.match(
   wxss,
-  /\.preview--prop-tutorial \.content,\s*\n\.preview--prop-tutorial \.canvas-action-rail,\s*\n\.preview--prop-tutorial \.prop-finish-btn\s*\{[^}]*visibility:\s*hidden;/,
-  '教程进行中须完全隐藏画好了、工具栏与撤销导轨，不得仅半透明露出'
+  /\.preview--prop-tutorial \.content,\s*\n\.preview--prop-tutorial \.canvas-action-rail\s*\{[^}]*visibility:\s*hidden;/,
+  '教程前两步须隐藏工具栏与撤销导轨'
+);
+assert.match(
+  wxss,
+  /\.preview--prop-tutorial-step-finish \.prop-finish-btn\s*\{[^}]*z-index:\s*135;[^}]*bottom:\s*calc\(380rpx \+ env\(safe-area-inset-bottom\)\);/,
+  '教程第三步须露出画好了按钮并抬至教程卡上方（Figma T03）'
+);
+assert.match(
+  wxml,
+  /propTutorialStep === 2 \? 'preview--prop-tutorial-step-finish'/,
+  '教程第三步须单独标记 finish 高亮态'
 );
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');

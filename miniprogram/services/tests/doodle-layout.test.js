@@ -82,8 +82,11 @@ assert.match(wxss, /\.prop-tutorial-foot\s*\{[^}]*justify-content:\s*flex-end;[^
 assert.match(wxss, /\.prop-tutorial-skip\s*\{[^}]*margin-right:\s*auto;/, '跳过教程须顶在左侧，主按钮靠右');
 assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*display:\s*inline-block;[^}]*margin:\s*0 0 0 auto;/, '教程主按钮须靠右且不得被默认 button 样式拉满整行');
 assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教程标题必须单行显示');
-assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须按 Figma 仅在 T02/T03 显示');
-assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按 Figma 逐步配置');
+assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须在第二步卡片显示');
+assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按步骤配置');
+const propChallengeScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-challenge.js'), 'utf8');
+assert.equal(propChallengeScript.includes('第二步 · 动手画'), false, '道具临摹教程不得保留「第二步 · 动手画」');
+assert.match(propChallengeScript, /TUTORIAL_STEPS[\s\S]*第二步 · 画好了/, '教程仅保留一起画与画好了两步');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
 assert.match(wxml, /prop-peek-anchor--tutorial/, '教程 T01 须复用同一张简笔，不得另挂一份');
 assert.ok(
@@ -93,18 +96,20 @@ assert.ok(
 assert.ok(
   wxml.indexOf('prop-finish-cover') > wxml.indexOf('preview--prop-tutorial')
     && wxml.indexOf('prop-finish-cover') < wxml.indexOf('class="prop-tutorial-scrim'),
-  'T03 cover 画好了须在 preview 与教程遮罩之间'
+  'T02 cover 画好了须在 preview 与教程遮罩之间'
 );
 assert.match(
   wxss,
-  /\.preview--prop-tutorial-step-1 \.figma-toolbar--compact \.tool-button:first-child\s*\{[^}]*#f7d774/,
-  'T02 须高亮画笔工具'
+  /\.preview--prop-tutorial-step-1 \.prop-finish-btn\s*\{[^}]*visibility:\s*hidden;/,
+  '教程第二步须隐藏原生画好了，改由 cover 演示'
 );
 assert.match(
   wxss,
   /\.preview--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
   'T01 须高亮再看一眼入口'
 );
+assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-2/, '不得再保留第三步 preview 修饰类');
+assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-2/, '教程蒙层仅保留两步 padding');
 assert.match(
   wxml,
   /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating \|\| propTutorialVisible\}\}"/,

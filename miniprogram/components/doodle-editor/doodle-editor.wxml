@@ -139,7 +139,7 @@
       ></canvas>
     </view>
 
-    <view wx:if="{{!companionPropMode || canvasReady}}" class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
+    <view wx:if="{{!companionPropMode}}" class="canvas-action-rail">
       <view
         class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
         aria-role="button"
@@ -167,6 +167,35 @@
         <text class="canvas-action-label">清空</text>
       </view>
     </view>
+    <cover-view
+      wx:if="{{companionPropMode && canvasReady}}"
+      class="canvas-action-rail canvas-action-rail--prop {{propDrawingLocked || propTutorialVisible ? 'prop-chrome--dimmed' : ''}}"
+    >
+      <cover-view
+        class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="撤销一步"
+        catchtap="onUndo"
+      >
+        <cover-image
+          class="canvas-action-image"
+          src="{{canUndo ? toolbarIcons.undo : toolbarIcons.undoDisabled}}"
+        ></cover-image>
+        <cover-view class="canvas-action-label">撤销</cover-view>
+      </cover-view>
+      <cover-view
+        class="canvas-action-button canvas-action-button--clear {{!canClear ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="清空画面"
+        catchtap="onClear"
+      >
+        <cover-image
+          class="canvas-action-image"
+          src="{{canClear ? toolbarIcons.clear : toolbarIcons.clearDisabled}}"
+        ></cover-image>
+        <cover-view class="canvas-action-label">清空</cover-view>
+      </cover-view>
+    </cover-view>
 
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 

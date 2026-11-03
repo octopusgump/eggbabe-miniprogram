@@ -75,12 +75,14 @@ assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
 assert.match(propDoodleScript, /exportPropPeekFlipAnim[\s\S]*wx\.createAnimation/, '看一看收起须使用 wx.createAnimation 平面翻页，不得依赖 CSS rotateY');
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');
-assert.match(wxss, /\.prop-tutorial-card\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*auto;/, '教程卡须用双列网格，使 progress dots 与下一步/开始画右缘对齐');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*grid-column:\s*2;[^}]*justify-self:\s*end;/, '教程主按钮须与 progress dots 共用右列对齐');
+assert.match(wxss, /\.prop-tutorial-scrim\s*\{[^}]*background:\s*rgba\(22, 36, 26, 0\.8\);/, '教程蒙层须对齐 Figma 09b 深色 scrim');
+assert.match(wxss, /\.prop-tutorial-head\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;/, '教程卡标题行须与步骤点对齐');
+assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*min-width:\s*194rpx;[^}]*padding:\s*0 52rpx;/, '教程主按钮须对齐 Figma 胶囊尺寸');
 assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教程标题必须单行显示');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*width:\s*194rpx;/, '教程主按钮须固定宽度，避免挤窄标题列');
+assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须按 Figma 仅在 T02/T03 显示');
+assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按 Figma 逐步配置');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
-assert.match(wxml, /prop-peek-anchor--tutorial/, '教程第一步须复用同一张简笔，不得另挂一份');
+assert.match(wxml, /prop-peek-anchor--tutorial/, '教程 T01 须复用同一张简笔，不得另挂一份');
 assert.ok(
   wxml.indexOf('class="prop-tutorial-scrim') > wxml.indexOf('preview--prop-tutorial'),
   '教程遮罩须在 preview 之后，全屏 fixed'
@@ -88,22 +90,17 @@ assert.ok(
 assert.ok(
   wxml.indexOf('prop-finish-cover') > wxml.indexOf('preview--prop-tutorial')
     && wxml.indexOf('prop-finish-cover') < wxml.indexOf('class="prop-tutorial-scrim'),
-  '第三步 cover 画好了须在 preview 与教程遮罩之间'
+  'T03 cover 画好了须在 preview 与教程遮罩之间'
 );
 assert.match(
   wxss,
-  /\.preview--prop-tutorial \.content,\s*\n\.preview--prop-tutorial \.canvas-action-rail,\s*\n\.preview--prop-tutorial \.prop-finish-btn\s*\{[^}]*visibility:\s*hidden;/,
-  '教程期间须隐藏工具栏、撤销导轨与 preview 内画好了按钮'
-);
-assert.match(
-  wxml,
-  /root-portal wx:if="\{\{companionPropMode && propTutorialVisible && propTutorialStep === 2\}\}"[\s\S]*prop-finish-cover prop-finish-cover--tutorial-spotlight[\s\S]*>画好了</,
-  '教程第三步须用 cover-view 展示高亮画好了，压过原生 Canvas（Figma T03）'
+  /\.preview--prop-tutorial-step-1 \.figma-toolbar--compact \.tool-button:first-child\s*\{[^}]*#f7d774/,
+  'T02 须高亮画笔工具'
 );
 assert.match(
   wxss,
-  /\.prop-finish-cover--tutorial-spotlight\s*\{[^}]*border:\s*6rpx solid rgba\(255, 221, 121, 0\.92\);/,
-  '教程第三步 cover 画好了须带金色高亮描边'
+  /\.preview--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
+  'T01 须高亮再看一眼入口'
 );
 assert.match(
   wxml,

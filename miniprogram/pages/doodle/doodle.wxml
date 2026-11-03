@@ -47,8 +47,8 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && propLookHint && !propTutorialVisible && !propUnlockVisible}}"
-    class="prop-look-chrome {{propDrawingLocked || propTutorialVisible ? 'prop-chrome--dimmed' : ''}}"
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep < 2)}}"
+    class="prop-look-chrome {{propDrawingLocked || (propTutorialVisible && propTutorialStep === 2) ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep <= 1 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
   >
     <view
       class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
@@ -60,7 +60,7 @@
     </view>
   </view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}}" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'preview--prop-tutorial-step-0' : ''}} {{propTutorialVisible && propTutorialStep === 1 ? 'preview--prop-tutorial-step-1' : ''}} {{propTutorialVisible && propTutorialStep === 2 ? 'preview--prop-tutorial-step-2' : ''}}" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -171,8 +171,8 @@
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <button
-      wx:if="{{companionPropMode && !propUnlockVisible && propFinishVisible && !propTutorialVisible}}"
-      class="prop-finish-btn"
+      wx:if="{{companionPropMode && !propUnlockVisible && ((propFinishVisible && !propTutorialVisible) || (propTutorialVisible && propTutorialStep === 1))}}"
+      class="prop-finish-btn {{propTutorialVisible && propTutorialStep === 1 ? 'prop-finish-btn--tutorial-dim' : ''}}"
       bindtap="onManualSave"
       aria-role="button"
       aria-label="画好了"
@@ -296,18 +296,22 @@
     <cover-view class="prop-finish-cover prop-finish-cover--tutorial-spotlight" aria-role="button" aria-label="画好了">画好了</cover-view>
   </root-portal>
 
-  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim {{propTutorialStep === 2 ? 'prop-tutorial-scrim--step-finish' : ''}}" catchtouchmove="true">
+  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim prop-tutorial-scrim--step-{{propTutorialStep}}" catchtouchmove="true">
     <view class="prop-tutorial-bg-sketch" aria-hidden="true"></view>
     <view class="prop-tutorial-card">
-      <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
-      <view class="prop-tutorial-dots">
-        <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
-        <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
-        <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
+      <view class="prop-tutorial-head">
+        <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
+        <view wx:if="{{propTutorialSteps[propTutorialStep].showStepDots}}" class="prop-tutorial-dots">
+          <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
+          <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
+          <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
+        </view>
       </view>
       <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>
-      <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
-      <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
+      <view class="prop-tutorial-foot">
+        <text wx:if="{{propTutorialSteps[propTutorialStep].showSkip}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
+        <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialSteps[propTutorialStep].primaryLabel}}</button>
+      </view>
     </view>
   </view>
 

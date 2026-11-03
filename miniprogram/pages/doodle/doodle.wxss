@@ -131,10 +131,27 @@
 .preview--prop-tutorial { overflow: visible; }
 .preview--prop-tutorial .content,
 .preview--prop-tutorial .canvas-action-rail,
-.preview--prop-tutorial .prop-finish-btn { visibility: hidden; pointer-events: none; }
-.prop-finish-btn--tutorial-spotlight { box-shadow: 0 0 0 6rpx rgba(255, 221, 121, 0.92), 0 8rpx 24rpx rgba(0, 41, 0, 0.18); }
-.prop-finish-cover { position: fixed; z-index: 9998; left: 95rpx; width: 560rpx; height: var(--prop-finish-btn-height, 96rpx); bottom: calc(var(--prop-tutorial-finish-cover-bottom, 380rpx) + env(safe-area-inset-bottom)); border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: var(--prop-finish-btn-height, 96rpx); text-align: center; box-sizing: border-box; box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); pointer-events: none; }
-.prop-finish-cover--tutorial-spotlight { border: 6rpx solid rgba(255, 221, 121, 0.92); }
+.preview--prop-tutorial .prop-finish-btn { pointer-events: none; }
+.preview--prop-tutorial-step-0 .content,
+.preview--prop-tutorial-step-0 .canvas-action-rail,
+.preview--prop-tutorial-step-0 .prop-finish-btn { opacity: 0.35; }
+.preview--prop-tutorial-step-0 .prop-look-chrome,
+.preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; z-index: 145; }
+.preview--prop-tutorial-step-0 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
+.preview--prop-tutorial-step-0 .prop-peek-anim { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 28rpx; }
+.preview--prop-tutorial-step-1 .content { opacity: 1; z-index: 145; }
+.preview--prop-tutorial-step-1 .content.prop-chrome--dimmed { opacity: 1; }
+.preview--prop-tutorial-step-1 .canvas-action-rail,
+.preview--prop-tutorial-step-1 .prop-finish-btn--tutorial-dim { opacity: 0.35; z-index: 140; visibility: visible; }
+.preview--prop-tutorial-step-1 .prop-look-chrome { opacity: 1; z-index: 145; }
+.preview--prop-tutorial-step-1 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
+.preview--prop-tutorial-step-1 .figma-toolbar--compact .tool-button:first-child { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 20rpx; }
+.preview--prop-tutorial-step-2 .content,
+.preview--prop-tutorial-step-2 .canvas-action-rail { opacity: 0.35; visibility: visible; z-index: 140; }
+.preview--prop-tutorial-step-2 .prop-finish-btn { visibility: hidden; }
+.prop-finish-btn--tutorial-dim { opacity: 0.35; }
+.prop-finish-cover { position: fixed; z-index: 9998; left: 110rpx; width: 560rpx; height: 96rpx; bottom: calc(248rpx + env(safe-area-inset-bottom)); border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 96rpx; text-align: center; box-sizing: border-box; box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); pointer-events: none; }
+.prop-finish-cover--tutorial-spotlight { border: 6rpx solid #f7d774; box-shadow: 0 0 14rpx rgba(247, 215, 116, 0.6), 0 8rpx 24rpx rgba(0, 41, 0, 0.12); }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,
@@ -208,14 +225,20 @@
   100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
 }
 
-.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: env(safe-area-inset-top) 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(22, 36, 26, 0.8); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: env(safe-area-inset-top) 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prop-tutorial-scrim--step-0 { padding-bottom: calc(110rpx + env(safe-area-inset-bottom)); }
+.prop-tutorial-scrim--step-1 { padding-bottom: calc(210rpx + env(safe-area-inset-bottom)); }
+.prop-tutorial-scrim--step-2 { padding-bottom: calc(230rpx + env(safe-area-inset-bottom)); }
 .prop-tutorial-bg-sketch { flex: 1 1 auto; min-height: 0; pointer-events: none; }
-.prop-tutorial-card { width: 100%; flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16rpx; row-gap: 20rpx; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; align-items: start; }
-.prop-tutorial-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; white-space: nowrap; color: #002900; font-size: 34rpx; font-weight: 700; line-height: 1.35; }
-.prop-tutorial-dots { grid-column: 2; grid-row: 1; justify-self: end; align-self: center; display: flex; align-items: center; gap: 8rpx; }
+.prop-tutorial-card { width: 100%; flex: 0 0 auto; display: flex; flex-direction: column; gap: 20rpx; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; }
+.prop-tutorial-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; width: 100%; }
+.prop-tutorial-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; color: #002900; font-size: 38rpx; font-weight: 700; line-height: 1.35; }
+.prop-tutorial-dots { flex: 0 0 auto; display: flex; align-items: center; gap: 8rpx; }
 .prop-tutorial-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: rgba(0, 41, 0, 0.2); }
 .prop-tutorial-dot--active { width: 36rpx; background: #002900; }
-.prop-tutorial-body { grid-column: 1 / -1; grid-row: 2; margin-top: 0; color: #3E4C42; font-size: 28rpx; line-height: 1.57; white-space: pre-line; }
-.prop-tutorial-skip { grid-column: 1; grid-row: 3; align-self: center; margin-right: auto; color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
-.prop-tutorial-next { grid-column: 2; grid-row: 3; justify-self: end; align-self: center; width: 194rpx; min-width: 194rpx; max-width: 194rpx; height: 76rpx; margin: 0; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; }
+.prop-tutorial-body { color: #3E4C42; font-size: 28rpx; line-height: 44rpx; white-space: pre-line; }
+.prop-tutorial-foot { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 76rpx; }
+.prop-tutorial-foot .prop-tutorial-next { margin-left: auto; }
+.prop-tutorial-skip { color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
+.prop-tutorial-next { width: auto; min-width: 194rpx; height: 76rpx; margin: 0; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; }
 .prop-tutorial-next::after { border: none; }

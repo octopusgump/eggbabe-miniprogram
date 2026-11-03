@@ -5,16 +5,25 @@ const PEEK_FLIP_MS = 580;
 const MANUAL_LOOKS = 3;
 const TUTORIAL_STEPS = Object.freeze([
   Object.freeze({
-    title: '第一步 · 看一看',
-    body: '先看一眼简笔，记住它的样子～\n大约几秒后它会隐藏起来'
+    title: '一起画',
+    body: '先看一眼简笔，几秒后会收起来。拿起画笔临摹，忘了就点「再看一眼」，画完点「画好了」。',
+    showStepDots: false,
+    showSkip: false,
+    primaryLabel: '开始画'
   }),
   Object.freeze({
     title: '第二步 · 动手画',
-    body: '简笔收起来后，拿起画笔开始画吧。忘了长什么样，就点「再看一眼」。'
+    body: '简笔收起来后，拿起画笔开始画吧。忘了长什么样，就点「再看一眼」。',
+    showStepDots: true,
+    showSkip: true,
+    primaryLabel: '下一步'
   }),
   Object.freeze({
     title: '第三步 · 画好了',
-    body: '画好了就点下方按钮。认真画够时间，就能解锁这张彩色小道具。'
+    body: '画好了就点这里。认真画够时间，就能解锁这张彩色小道具。',
+    showStepDots: true,
+    showSkip: false,
+    primaryLabel: '开始画'
   })
 ]);
 

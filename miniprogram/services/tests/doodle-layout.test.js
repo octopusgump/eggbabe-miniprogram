@@ -89,6 +89,7 @@ assert.equal(propChallengeScript.includes('第二步 · 动手画'), false, '道
 assert.match(propChallengeScript, /TUTORIAL_STEPS[\s\S]*第二步 · 画好了/, '教程仅保留一起画与画好了两步');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
 assert.match(wxml, /prop-peek-anchor--tutorial/, '教程 T01 须复用同一张简笔，不得另挂一份');
+assert.doesNotMatch(wxml, /propLineOverlayCanvas/, '简笔不得再叠在画纸 propLineOverlayCanvas 上');
 assert.ok(
   wxml.indexOf('class="prop-tutorial-scrim') > wxml.indexOf('preview--prop-tutorial'),
   '教程遮罩须在 preview 之后，全屏 fixed'

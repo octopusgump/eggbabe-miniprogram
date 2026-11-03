@@ -247,24 +247,9 @@ const doodleDefinition = {
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
-        const sketchPath = this.data.propSketchPath || '';
-        const loadLine = sketchPath
-          ? canvas2d.createLayer(this, '#propLineOverlayCanvas').then(layer => {
-            if (setupToken !== this.canvasSetupToken || !layer) return null;
-            this.propLineLayer = layer;
-            return canvas2d.loadImage(layer, sketchPath);
-          })
-          : Promise.resolve(null);
-        return loadLine.then(image => {
-          if (setupToken !== this.canvasSetupToken) return;
-          if (sketchPath && !image) {
-            this.failCanvasPreparation();
-            return;
-          }
-          this.propLineImage = image;
-          this.renderAll();
-          this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
-        });
+        this.renderAll();
+        this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
+        return;
       }
       return Promise.all([
         canvas2d.loadImage(this.baseLayer, shellArtService.BASE_ASSET),

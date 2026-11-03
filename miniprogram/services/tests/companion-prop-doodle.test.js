@@ -1,4 +1,5 @@
 const assert = require('assert');
+const fs = require('fs');
 const gate = require('../companion-drawing-gate');
 const propChallenge = require('../companion-prop-challenge');
 const editorDefinition = require('../../pages/doodle/doodle-definition');
@@ -101,18 +102,12 @@ global.wx = global.wx || {
     const peekEditor = createEditor();
     peekEditor.propSession = propChallenge.createSession();
     peekEditor.propEntryFlowStarted = false;
-    const overlayEvents = [];
-    peekEditor.setPropLineOverlayVisible = (visible) => {
-      overlayEvents.push(Boolean(visible));
-      peekEditor.data.propLineOverlayVisible = Boolean(visible);
-    };
     peekEditor.revealEditor();
     assert.equal(peekEditor.data.propPeekVisible, false, '页未完全显现前不得开始看一看计时');
     peekEditor.setData({ pageTransitionPhase: 'visible' }, () => {
       peekEditor.beginPropEntryFlow();
     });
     assert.equal(peekEditor.data.propPeekVisible, true, '页可见后应自动开始看一看');
-    assert.equal(overlayEvents[overlayEvents.length - 1], false, '看一看期间画板线稿必须先收起');
     const sketchSrc = peekEditor.data.propSketchSrc;
     peekEditor.onPropPeekCardTap();
     assert.equal(peekEditor.data.propPeekAnimating, true);
@@ -123,7 +118,7 @@ global.wx = global.wx || {
     assert.equal(peekEditor.data.propPeekVisible, false);
     assert.equal(peekEditor.data.propPeekAnimating, false);
     assert.equal(peekEditor.data.propFinishVisible, true);
-    assert.equal(overlayEvents[overlayEvents.length - 1], true, '收起动效结束后画板线稿必须显示');
+    assert.notEqual(peekEditor.data.propLineOverlayVisible, true, '画纸不得再叠简笔 line overlay canvas');
     assert.equal(peekEditor.data.propSketchSrc, sketchSrc, '收起不得更换简笔地址导致重新解码');
     clearTimeout(peekEditor.propPeekTimer);
 
@@ -132,11 +127,10 @@ global.wx = global.wx || {
     peekEditor.data.propUnlockVisible = false;
     peekEditor.onPropLookAgain();
     assert.equal(peekEditor.data.propPeekVisible, true, '再看一眼须再次打开同一张简笔');
-    assert.equal(overlayEvents[overlayEvents.length - 1], false);
     peekEditor.onPropPeekCardTap();
     await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_FLIP_MS + 40));
     assert.equal(peekEditor.data.propPeekVisible, false, '再看一眼收起后卡片必须消失');
-    assert.equal(overlayEvents[overlayEvents.length - 1], true, '再看一眼收起后画板线稿必须显示');
+    assert.notEqual(peekEditor.data.propLineOverlayVisible, true, '收起后画纸仍须保持空白，不铺简笔 canvas');
     clearTimeout(peekEditor.propPeekTimer);
 
     delete tutorialStorage[propChallenge.TUTORIAL_STORAGE_KEY];
@@ -144,10 +138,6 @@ global.wx = global.wx || {
     delete tutorialStorage[propChallenge.TUTORIAL_STORAGE_KEY];
     tutorialEditor.propEntryFlowStarted = false;
     tutorialEditor.propSession = propChallenge.createSession();
-    const tutorialOverlay = [];
-    tutorialEditor.setPropLineOverlayVisible = (visible) => {
-      tutorialOverlay.push(Boolean(visible));
-    };
     tutorialEditor.beginPropEntryFlow();
     assert.equal(tutorialEditor.data.propTutorialVisible, true);
     assert.equal(tutorialEditor.data.propTutorialStep, 0);
@@ -161,54 +151,13 @@ global.wx = global.wx || {
     assert.equal(tutorialEditor.data.propTutorialVisible, false);
     assert.equal(tutorialEditor.data.propPeekVisible, true, '开始画后应立刻进入看一看');
     assert.ok(peekDelayMs < 50, `开始画到简笔可见不得再等待准备 loading，实际 ${peekDelayMs}ms`);
-    assert.equal(tutorialOverlay[tutorialOverlay.length - 1], false);
-    console.log(`scheduleInitialPropPeek to peek visible: ${peekDelayMs}ms`);
     clearTimeout(tutorialEditor.propPeekTimer);
 
-    const overlayEditor = createEditor();
-    overlayEditor.propLineLayer = {
-      context: {
-        cleared: false,
-        clearRect() { this.cleared = true; },
-        drawImage() {},
-        save() {},
-        restore() {},
-        clip() {},
-        beginPath() {},
-        moveTo() {},
-        lineTo() {},
-        quadraticCurveTo() {},
-        closePath() {},
-        globalCompositeOperation: 'source-over'
-      },
-      width: 320,
-      height: 320
-    };
-    overlayEditor.propLineImage = { width: 100, height: 100 };
-    overlayEditor.setData({ propLineOverlayVisible: false });
-    overlayEditor.setPropLineOverlayVisible(true);
-    assert.equal(overlayEditor.data.propLineOverlayVisible, true, '简笔 overlay 应可打开');
-    assert.equal(overlayEditor.propLineLayer.context.cleared, true, 'renderPropLineOverlay 不得因 shellArtService 未定义而抛错');
-
-    const raced = createEditor();
-    raced.propLineLayer = overlayEditor.propLineLayer;
-    raced.propLineImage = overlayEditor.propLineImage;
-    const queued = [];
-    let draws = 0;
-    let clears = 0;
-    raced.setData = function setData(patch, callback) {
-      Object.assign(this.data, patch);
-      queued.push(callback);
-    };
-    raced.renderPropLineOverlay = () => { draws += 1; };
-    raced.clearPropLineOverlay = () => { clears += 1; };
-    raced.data.propLineOverlayVisible = false;
-    raced.setPropLineOverlayVisible(true);
-    raced.setPropLineOverlayVisible(false);
-    queued.forEach(callback => { if (typeof callback === 'function') callback(); });
-    assert.equal(draws, 0, '过期的显示回调不得在收起之后把线稿画回去');
-    assert.equal(clears, 1, '最后一次收起必须清掉画板线稿');
-    assert.equal(raced.data.propLineOverlayVisible, false);
+    assert.doesNotMatch(
+      fs.readFileSync(require('path').join(__dirname, '../../pages/doodle/doodle.wxml'), 'utf8'),
+      /propLineOverlayCanvas/,
+      '道具临摹不得再挂载简笔 line overlay canvas'
+    );
 
     console.log('道具临摹页完成链路与 gate 拦截单测通过。');
   } finally {

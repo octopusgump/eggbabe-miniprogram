@@ -110,12 +110,6 @@
             catchtouchend="onCanvasTouchEnd"
             catchtouchcancel="onCanvasTouchCancel"
           ></canvas>
-          <canvas
-            type="2d"
-            id="propLineOverlayCanvas"
-            class="egg-canvas egg-canvas--line-overlay"
-            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating || propTutorialVisible}}"
-          ></canvas>
         </view>
       </view>
     </view>

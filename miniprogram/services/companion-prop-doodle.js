@@ -3,7 +3,6 @@ const propAssets = require('./companion-prop-assets');
 const propChallenge = require('./companion-prop-challenge');
 const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
-const shellArtService = require('./egg-shell-art');
 
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
@@ -150,7 +149,6 @@ function attach(definition) {
         propDrawingLocked: true,
         propGuideSketchVisible: true
       });
-      this.setPropLineOverlayVisible(true);
       return;
     }
     this.scheduleInitialPropPeek();
@@ -179,7 +177,6 @@ function attach(definition) {
       propFinishVisible: true
     }, () => {
       if (typeof this.renderAll === 'function') this.renderAll();
-      this.setPropLineOverlayVisible(true);
     });
   };
 
@@ -226,7 +223,6 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
-    this.setPropLineOverlayVisible(false);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
@@ -249,7 +245,6 @@ function attach(definition) {
   definition.onPropTutorialSkip = function onPropTutorialSkip() {
     propChallenge.markTutorialSeen();
     this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-    this.setPropLineOverlayVisible(false);
     this.scheduleInitialPropPeek();
   };
 
@@ -258,7 +253,6 @@ function attach(definition) {
     if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
       propChallenge.markTutorialSeen();
       this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-      this.setPropLineOverlayVisible(false);
       this.scheduleInitialPropPeek();
       return;
     }
@@ -267,7 +261,6 @@ function attach(definition) {
       propTutorialStep: nextStep,
       propGuideSketchVisible: nextStep === 0
     });
-    this.setPropLineOverlayVisible(nextStep === 0);
   };
 
   definition.onPropUnlockOk = async function onPropUnlockOk() {
@@ -350,37 +343,12 @@ function attach(definition) {
   const originalRenderAll = definition.renderAll;
 
   definition.renderPropLineOverlay = function renderPropLineOverlay() {
-    if (!this.companionPropMode || !this.data.propLineOverlayVisible) return;
-    if (!this.propLineLayer || !this.propLineImage) return;
-    shellArtService.drawPropLineOverlay(
-      this.propLineLayer.context,
-      this.propLineImage,
-      this.propLineLayer.width,
-      this.propLineLayer.height
-    );
+    // 简笔只在「再看一眼」卡片展示，不再叠在画纸原生 canvas 上。
   };
 
-  definition.clearPropLineOverlay = function clearPropLineOverlay() {
-    if (!this.propLineLayer) return;
-    const layer = this.propLineLayer;
-    layer.context.clearRect(0, 0, layer.width, layer.height);
-  };
+  definition.clearPropLineOverlay = function clearPropLineOverlay() {};
 
-  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible(visible) {
-    const next = Boolean(visible);
-    const token = (this.propLineOverlayToken || 0) + 1;
-    this.propLineOverlayToken = token;
-    const apply = () => {
-      if (token !== this.propLineOverlayToken) return;
-      if (next) this.renderPropLineOverlay();
-      else this.clearPropLineOverlay();
-    };
-    if (next === Boolean(this.data.propLineOverlayVisible)) {
-      apply();
-      return;
-    }
-    this.setData({ propLineOverlayVisible: next }, apply);
-  };
+  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible() {};
 
   definition.renderAll = function renderAll() {
     if (originalRenderAll) originalRenderAll.call(this);
@@ -456,7 +424,6 @@ function attach(definition) {
     }, () => {
       if (rewardStars > 0) this.playPropUnlockAward();
     });
-    this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;
     return { ok: true };
   };

@@ -1,8 +1,8 @@
 const TUTORIAL_STORAGE_KEY = 'eggbabe_draw_prop_tutorial_seen_v1';
 const LOOK_DURATION_MS = 5000;
-/** Must match exportPropPeekPopOutAnim default duration in companion-prop-doodle.js (360ms). */
-const PEEK_POP_IN_MS = 320;
-const PEEK_POP_OUT_MS = 360;
+/** Must match prop-peek-anim CSS transition duration (companion-prop-doodle.js). */
+const PEEK_POP_IN_MS = 280;
+const PEEK_POP_OUT_MS = 280;
 /** @deprecated use PEEK_POP_OUT_MS */
 const PEEK_FLIP_MS = PEEK_POP_OUT_MS;
 const MANUAL_LOOKS = 3;

@@ -78,7 +78,7 @@
       aria-label="收起简笔，开始画"
       aria-hidden="{{!(propPeekVisible || propPeekAnimating)}}"
     >
-      <view class="prop-peek-anim" animation="{{propPeekSketchAnim}}">
+      <view class="prop-peek-anim prop-peek-anim--{{propPeekAnimPhase}}">
         <view class="prop-sketch-layer">
           <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
         </view>

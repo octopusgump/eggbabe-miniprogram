@@ -180,7 +180,9 @@
 .prop-peek-anchor { position: absolute; z-index: 36; left: 0; right: 0; top: calc(50% - 168rpx + var(--prop-layout-nudge, 0)); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; pointer-events: none; visibility: hidden; transform: translateY(-50%); }
 .prop-peek-anchor--live { visibility: visible; pointer-events: auto; }
 .prop-peek-anchor--tutorial { position: fixed; z-index: 140; top: calc(env(safe-area-inset-top) + 120rpx); right: 0; bottom: 440rpx; left: 0; height: auto; visibility: visible; pointer-events: none; justify-content: center; transform: none; }
-.prop-peek-anim { width: 52vw; max-width: 420rpx; display: flex; flex-direction: column; align-items: center; }
+.prop-peek-anim { width: 52vw; max-width: 420rpx; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: scale(0.96); transform-origin: center center; transition: opacity 280ms ease-out, transform 280ms ease-out; }
+.prop-peek-anim--shown { opacity: 1; transform: scale(1); }
+.prop-peek-anim--leave { opacity: 0; transform: scale(0.96); }
 .prop-peek-anchor .prop-sketch-layer { position: relative; top: auto; left: auto; width: 100%; height: 52vw; max-width: 420rpx; max-height: 420rpx; transform: none; }
 .prop-sketch-image { width: 100%; height: 100%; opacity: 1; transform-origin: center center; mix-blend-mode: darken; }
 .prop-peek-anchor .prop-peek-caption { position: relative; top: auto; left: auto; right: auto; margin-top: 24rpx; width: 100%; }

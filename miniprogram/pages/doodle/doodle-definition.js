@@ -64,7 +64,7 @@ const doodleDefinition = {
     propFinishVisible: false,
     propGuideSketchVisible: false,
     propLineOverlayVisible: false,
-    propPeekSketchAnim: null,
+    propPeekAnimPhase: 'enter',
     propUnlockActive: false,
     propAwardStars: 0,
     propAwardVisible: false,

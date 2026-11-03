@@ -56,6 +56,7 @@ global.wx = global.wx || {
     tutorialStorage[key] = value;
   },
   getMenuButtonBoundingClientRect: () => ({ left: 281 }),
+  nextTick: (fn) => { if (typeof fn === 'function') fn(); },
   createAnimation: (options) => {
     const duration = options && options.duration ? options.duration : 300;
     return {
@@ -109,10 +110,11 @@ global.wx = global.wx || {
       peekEditor.beginPropEntryFlow();
     });
     assert.equal(peekEditor.data.propPeekVisible, true, '页可见后应自动开始看一看');
+    assert.equal(peekEditor.data.propPeekAnimPhase, 'shown', '看一看出现须进入 shown phase');
     const sketchSrc = peekEditor.data.propSketchSrc;
     peekEditor.onPropPeekCardTap();
     assert.equal(peekEditor.data.propPeekAnimating, true);
-    assert.ok(peekEditor.data.propPeekSketchAnim, '收起简笔须驱动 wx.createAnimation');
+    assert.equal(peekEditor.data.propPeekAnimPhase, 'leave', '收起简笔须进入 leave phase');
     peekEditor.onPropPeekCardTap();
     assert.equal(peekEditor.data.propPeekAnimating, true, '收起过程中重复点击不得打断动效');
     await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_POP_OUT_MS + 40));

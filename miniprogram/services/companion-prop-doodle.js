@@ -7,47 +7,9 @@ const companionAdapter = require('./iaa-star-unlock-adapter');
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
-function exportPropPeekRestAnim() {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: 0,
-    timingFunction: 'linear',
-    transformOrigin: '50% 50% 0'
-  });
-  animation.scale(1).opacity(1).step({ duration: 0 });
-  return animation.export();
-}
-
-function exportPropPeekPopInAnim(reducedMotion, durationMs) {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: durationMs,
-    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.22, 1, 0.36, 1)',
-    transformOrigin: '50% 50% 0'
-  });
-  if (reducedMotion) {
-    return exportPropPeekRestAnim();
-  }
-  // 真机对「opacity 0 + 双 step」常卡在看不见；进场只缩放，保持 opacity 1。
-  animation.scale(0.88).opacity(1).step({ duration: 0 });
-  animation.scale(1).opacity(1).step({ duration: durationMs });
-  return animation.export();
-}
-
-function exportPropPeekPopOutAnim(reducedMotion, durationMs) {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: durationMs,
-    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.4, 0, 0.68, 0.06)',
-    transformOrigin: '50% 50% 0'
-  });
-  if (reducedMotion) {
-    animation.opacity(0).step({ duration: 80 });
-    return animation.export();
-  }
-  animation.scale(0.88).opacity(1).step({ duration: 0 });
-  animation.scale(0.88).opacity(0).step({ duration: durationMs });
-  return animation.export();
+function schedulePropPeekPhase(editor, apply) {
+  if (wx.nextTick) wx.nextTick(apply);
+  else setTimeout(apply, 16);
 }
 
 function attach(definition) {
@@ -103,6 +65,7 @@ function attach(definition) {
       propColoredSrc: coloredPath,
       propPeekVisible: false,
       propPeekAnimating: false,
+      propPeekAnimPhase: 'enter',
       propGuideSketchVisible: false,
       propDrawingLocked: true,
       propUnlockVisible: false,
@@ -190,7 +153,7 @@ function attach(definition) {
     this.setData({
       propPeekVisible: false,
       propPeekAnimating: false,
-      propPeekSketchAnim: exportPropPeekRestAnim(),
+      propPeekAnimPhase: 'enter',
       propDrawingLocked: false,
       propFinishVisible: true
     }, () => {
@@ -198,27 +161,25 @@ function attach(definition) {
     });
   };
 
-  // 收起只走 wx.createAnimation。再叠 CSS transform 时，真机上两套动画会一起失效。
+  // 简笔出现/收起只用 CSS transition，与 companionReducedMotion 无关，避免 wx.createAnimation 真机异常。
   definition.dismissPropPeek = function dismissPropPeek() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
-    const outMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_OUT_MS;
+    const outMs = propChallenge.PEEK_POP_OUT_MS;
     const generation = (this.propPeekGeneration || 0) + 1;
     this.propPeekGeneration = generation;
-    this.setData({ propPeekAnimating: true }, () => {
+    this.setData({
+      propPeekAnimating: true,
+      propPeekAnimPhase: 'leave'
+    }, () => {
       if (generation !== this.propPeekGeneration) return;
-      this.setData({
-        propPeekSketchAnim: exportPropPeekPopOutAnim(Boolean(this.data.companionReducedMotion), outMs)
-      }, () => {
+      clearTimeout(this.propPeekHideTimer);
+      this.propPeekHideTimer = setTimeout(() => {
         if (generation !== this.propPeekGeneration) return;
-        clearTimeout(this.propPeekHideTimer);
-        this.propPeekHideTimer = setTimeout(() => {
-          if (generation !== this.propPeekGeneration) return;
-          this.finishPropPeekDismiss();
-        }, outMs);
-      });
+        this.finishPropPeekDismiss();
+      }, outMs);
     });
   };
 
@@ -243,29 +204,19 @@ function attach(definition) {
     }
     this.propSession.drawingLocked = true;
     const generation = this.propPeekGeneration;
-    const inMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_IN_MS;
     clearTimeout(this.propPeekPopInSettleTimer);
-    const runPopIn = () => {
-      if (generation !== this.propPeekGeneration) return;
-      this.setData({
-        propPeekSketchAnim: exportPropPeekPopInAnim(Boolean(this.data.companionReducedMotion), inMs)
-      });
-      this.propPeekPopInSettleTimer = setTimeout(() => {
-        if (generation !== this.propPeekGeneration) return;
-        this.setData({ propPeekSketchAnim: exportPropPeekRestAnim() });
-      }, inMs + 40);
-    };
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekSketchAnim: exportPropPeekRestAnim(),
+      propPeekAnimPhase: 'enter',
       propFinishVisible: false
     }, () => {
       if (generation !== this.propPeekGeneration) return;
-      if (this.data.companionReducedMotion) return;
-      if (wx.nextTick) wx.nextTick(runPopIn);
-      else setTimeout(runPopIn, 16);
+      schedulePropPeekPhase(this, () => {
+        if (generation !== this.propPeekGeneration) return;
+        this.setData({ propPeekAnimPhase: 'shown' });
+      });
     });
     this.propPeekTimer = setTimeout(() => {
       this.dismissPropPeek();

@@ -73,9 +73,11 @@ assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必�
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
-assert.match(propDoodleScript, /exportPropPeekPopInAnim[\s\S]*scale\(0\.88\)[\s\S]*opacity\(1\)/, '看一看出现须标准 pop 缩放且保持可见，避免 opacity 0 卡死');
-assert.match(propDoodleScript, /exportPropPeekPopOutAnim[\s\S]*wx\.createAnimation/, '看一看收起须使用 wx.createAnimation，不得依赖 CSS rotateY');
-assert.doesNotMatch(propDoodleScript, /scaleX\(0\.06\)/, '收起不得再使用横向压扁 flip');
+assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
+assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
+assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPopOutAnim|propPeekSketchAnim/, '简笔动效不得再使用 wx.createAnimation');
+assert.match(wxss, /\.prop-peek-anim--shown\s*\{[^}]*opacity:\s*1;/, '简笔须用 CSS transition 显示');
+assert.match(wxss, /\.prop-peek-anim--leave\s*\{[^}]*opacity:\s*0;/, '简笔须用 CSS transition 收起');
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');
 assert.match(wxss, /\.prop-tutorial-scrim\s*\{[^}]*background:\s*rgba\(22, 36, 26, 0\.8\);/, '教程蒙层须对齐 Figma 09b 深色 scrim');
 assert.match(wxss, /\.prop-tutorial-head\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;/, '教程卡标题行须与步骤点对齐');

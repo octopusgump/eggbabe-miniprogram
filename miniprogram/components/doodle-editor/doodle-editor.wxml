@@ -1,4 +1,4 @@
-<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}}">
+<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
   <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
     <view class="prop-prepare-spinner" aria-hidden="true"></view>
     <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
@@ -47,27 +47,28 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && canvasNoticeText}}"
-    class="prop-canvas-notice-anchor"
+    wx:if="{{companionPropMode && canvasReady && (canvasNoticeText || (propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)))}}"
+    class="prop-top-chrome {{canvasNoticeText && canvasNoticeVisible ? 'prop-top-chrome--with-notice' : ''}}"
   >
-    <inline-notice
-      text="{{canvasNoticeText}}"
-      tone="{{canvasNoticeTone}}"
-      visible="{{canvasNoticeVisible}}"
-    ></inline-notice>
-  </view>
-
-  <view
-    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
-    class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
-  >
+    <view wx:if="{{canvasNoticeText}}" class="prop-gate-notice-slot">
+      <inline-notice
+        text="{{canvasNoticeText}}"
+        tone="{{canvasNoticeTone}}"
+        visible="{{canvasNoticeVisible}}"
+      ></inline-notice>
+    </view>
     <view
-      class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-      bindtap="onPropLookAgain"
-      aria-role="button"
-      aria-label="{{propLookHint}}"
+      wx:if="{{propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
+      class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
     >
-      <text>{{propLookHint}}</text>
+      <view
+        class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+        bindtap="onPropLookAgain"
+        aria-role="button"
+        aria-label="{{propLookHint}}"
+      >
+        <text>{{propLookHint}}</text>
+      </view>
     </view>
   </view>
 

@@ -101,7 +101,7 @@ assert.ok(
 );
 assert.match(
   wxss,
-  /\.preview--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
+  /\.page--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
   '教程须高亮再看一眼入口'
 );
 assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-1/, '不得再保留第二步 preview 修饰类');
@@ -156,10 +156,15 @@ assert.equal(componentScript.includes("require('../../pages/doodle/doodle-defini
 assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'), true, '清空等轻量反馈必须使用可复用的画布内提示组件');
 assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
 assert.ok(
-  wxml.indexOf('class="prop-canvas-notice-anchor"') > 0
-    && wxml.indexOf('class="prop-canvas-notice-anchor"') < wxml.indexOf('class="prop-look-chrome'),
-  '道具临摹 gate 提示须放在「再看一眼」上方，避免原生 Canvas 遮挡'
+  wxml.includes('prop-top-chrome') && wxml.includes('prop-gate-notice-slot'),
+  '道具临摹 gate 提示须与「再看一眼」同列堆叠，避免 z-index 叠压'
 );
+assert.ok(
+  wxml.indexOf('class="prop-gate-notice-slot"') > 0
+    && wxml.indexOf('class="prop-gate-notice-slot"') < wxml.indexOf('class="prop-look-chrome'),
+  'gate 提示须在「再看一眼」按钮上方'
+);
+assert.match(wxss, /\.prop-top-chrome\s*\{[^}]*flex-direction:\s*column;[^}]*gap:\s*20rpx;/, '顶部 chrome 须用纵向 gap 分隔提示与再看一眼');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上'

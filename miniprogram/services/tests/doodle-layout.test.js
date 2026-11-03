@@ -77,7 +77,10 @@ assert.match(propDoodleScript, /exportPropPeekFlipAnim[\s\S]*wx\.createAnimation
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');
 assert.match(wxss, /\.prop-tutorial-scrim\s*\{[^}]*background:\s*rgba\(22, 36, 26, 0\.8\);/, '教程蒙层须对齐 Figma 09b 深色 scrim');
 assert.match(wxss, /\.prop-tutorial-head\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;/, '教程卡标题行须与步骤点对齐');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*min-width:\s*194rpx;[^}]*padding:\s*0 52rpx;/, '教程主按钮须对齐 Figma 胶囊尺寸');
+assert.match(wxss, /\.prop-tutorial-body\s*\{[^}]*margin-top:\s*28rpx;/, '教程正文须与标题留出间距');
+assert.match(wxss, /\.prop-tutorial-foot\s*\{[^}]*justify-content:\s*flex-end;[^}]*margin-top:\s*32rpx;/, '教程主按钮须靠右并与正文留出间距');
+assert.match(wxss, /\.prop-tutorial-skip\s*\{[^}]*margin-right:\s*auto;/, '跳过教程须顶在左侧，主按钮靠右');
+assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*display:\s*inline-block;/, '教程主按钮不得被默认 button 样式拉满整行');
 assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教程标题必须单行显示');
 assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须按 Figma 仅在 T02/T03 显示');
 assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按 Figma 逐步配置');

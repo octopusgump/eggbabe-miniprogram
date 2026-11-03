@@ -7,29 +7,35 @@ const companionAdapter = require('./iaa-star-unlock-adapter');
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
-function exportPropPeekRestAnim() {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: 1,
-    timingFunction: 'linear',
-    transformOrigin: '50% 50% 0'
-  });
-  animation.scaleX(1).opacity(1).step();
-  return animation.export();
-}
-
-function exportPropPeekFlipAnim(reducedMotion, durationMs) {
+function exportPropPeekPopInAnim(reducedMotion, durationMs) {
   if (!wx.createAnimation) return null;
   const animation = wx.createAnimation({
     duration: durationMs,
-    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.32, 0, 0.67, 0)',
+    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.22, 1, 0.36, 1)',
     transformOrigin: '50% 50% 0'
   });
   if (reducedMotion) {
-    animation.opacity(0).step();
+    animation.opacity(0).step({ duration: 0 });
+    animation.opacity(1).step({ duration: 80 });
     return animation.export();
   }
-  animation.scaleX(0.06).opacity(0).step();
+  animation.scale(0.88).opacity(0).step({ duration: 0 });
+  animation.scale(1).opacity(1).step({ duration: durationMs });
+  return animation.export();
+}
+
+function exportPropPeekPopOutAnim(reducedMotion, durationMs) {
+  if (!wx.createAnimation) return null;
+  const animation = wx.createAnimation({
+    duration: durationMs,
+    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.4, 0, 0.68, 0.06)',
+    transformOrigin: '50% 50% 0'
+  });
+  if (reducedMotion) {
+    animation.opacity(0).step({ duration: 80 });
+    return animation.export();
+  }
+  animation.scale(0.88).opacity(0).step({ duration: durationMs });
   return animation.export();
 }
 
@@ -185,20 +191,20 @@ function attach(definition) {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
-    const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
+    const outMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_OUT_MS;
     const generation = (this.propPeekGeneration || 0) + 1;
     this.propPeekGeneration = generation;
     this.setData({ propPeekAnimating: true }, () => {
       if (generation !== this.propPeekGeneration) return;
       this.setData({
-        propPeekSketchAnim: exportPropPeekFlipAnim(Boolean(this.data.companionReducedMotion), flipMs)
+        propPeekSketchAnim: exportPropPeekPopOutAnim(Boolean(this.data.companionReducedMotion), outMs)
       }, () => {
         if (generation !== this.propPeekGeneration) return;
         clearTimeout(this.propPeekHideTimer);
         this.propPeekHideTimer = setTimeout(() => {
           if (generation !== this.propPeekGeneration) return;
           this.finishPropPeekDismiss();
-        }, flipMs);
+        }, outMs);
       });
     });
   };
@@ -223,11 +229,12 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
+    const inMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_IN_MS;
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekSketchAnim: exportPropPeekRestAnim(),
+      propPeekSketchAnim: exportPropPeekPopInAnim(Boolean(this.data.companionReducedMotion), inMs),
       propFinishVisible: false
     });
     this.propPeekTimer = setTimeout(() => {

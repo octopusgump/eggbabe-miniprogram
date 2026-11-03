@@ -59,6 +59,7 @@ global.wx = global.wx || {
   createAnimation: (options) => {
     const duration = options && options.duration ? options.duration : 300;
     return {
+      scale() { return this; },
       scaleX() { return this; },
       opacity() { return this; },
       step() {
@@ -114,7 +115,7 @@ global.wx = global.wx || {
     assert.ok(peekEditor.data.propPeekSketchAnim, '收起简笔须驱动 wx.createAnimation');
     peekEditor.onPropPeekCardTap();
     assert.equal(peekEditor.data.propPeekAnimating, true, '收起过程中重复点击不得打断动效');
-    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_FLIP_MS + 40));
+    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_POP_OUT_MS + 40));
     assert.equal(peekEditor.data.propPeekVisible, false);
     assert.equal(peekEditor.data.propPeekAnimating, false);
     assert.equal(peekEditor.data.propFinishVisible, true);
@@ -128,7 +129,7 @@ global.wx = global.wx || {
     peekEditor.onPropLookAgain();
     assert.equal(peekEditor.data.propPeekVisible, true, '再看一眼须再次打开同一张简笔');
     peekEditor.onPropPeekCardTap();
-    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_FLIP_MS + 40));
+    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_POP_OUT_MS + 40));
     assert.equal(peekEditor.data.propPeekVisible, false, '再看一眼收起后卡片必须消失');
     assert.notEqual(peekEditor.data.propLineOverlayVisible, true, '收起后画纸仍须保持空白，不铺简笔 canvas');
     clearTimeout(peekEditor.propPeekTimer);

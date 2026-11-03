@@ -64,6 +64,8 @@ assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
 assert.match(propDoodleScript, /exportPropPeekFlipAnim[\s\S]*wx\.createAnimation/, '看一看收起须使用 wx.createAnimation 平面翻页，不得依赖 CSS rotateY');
+assert.match(wxss, /\.prop-tutorial-card\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*auto;/, '教程卡须用双列网格，使 progress dots 与下一步/开始画右缘对齐');
+assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*grid-column:\s*2;[^}]*justify-self:\s*end;/, '教程主按钮须与 progress dots 共用右列对齐');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');
 assert.match(wxml, /transform:scale\(\{\{canvasScale\}\}\)/, 'Canvas 必须绑定双指缩放倍率');
 assert.match(pageScript, /MAX_CANVAS_SCALE\s*=\s*1\.6/, '双指缩放必须限制在安全倍率内');

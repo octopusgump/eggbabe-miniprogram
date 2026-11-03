@@ -117,7 +117,20 @@ global.wx = global.wx || {
 
     const overlayEditor = createEditor();
     overlayEditor.propLineLayer = {
-      context: { cleared: false, clearRect() { this.cleared = true; }, drawImage() {} },
+      context: {
+        cleared: false,
+        clearRect() { this.cleared = true; },
+        drawImage() {},
+        save() {},
+        restore() {},
+        clip() {},
+        beginPath() {},
+        moveTo() {},
+        lineTo() {},
+        quadraticCurveTo() {},
+        closePath() {},
+        globalCompositeOperation: 'source-over'
+      },
       width: 320,
       height: 320
     };

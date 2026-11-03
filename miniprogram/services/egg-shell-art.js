@@ -412,7 +412,13 @@ function drawPropLineOverlay(context, lineImage, width, height) {
   const size = Math.min(width, height) * 0.88;
   const x = (width - size) / 2;
   const y = (height - size) / 2;
+  context.save();
+  propPaperPath(context, width, height);
+  context.clip();
+  // 线稿 webp 常带白底；multiply 让白底透出纸色，只保留深色线条（与 .prop-sketch-image darken 一致）
+  context.globalCompositeOperation = 'multiply';
   context.drawImage(lineImage, x, y, size, size);
+  context.restore();
 }
 
 function drawPropPaperArt(context, width, height, shellInput, activeOperation) {

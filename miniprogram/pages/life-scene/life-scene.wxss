@@ -208,6 +208,8 @@ to{left:var(--scene-origin-left,0);top:var(--scene-origin-top,0);width:var(--sce
 .companion-toolbox__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24rpx 28rpx}
 .companion-toolbox__item{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10rpx;font-size:24rpx;color:#35483C;min-height:112rpx;background:transparent;border-radius:0}
 .companion-toolbox__item image{width:88rpx;height:88rpx;border-radius:0;background:transparent}
+/* 星星素材透明留白较多，补偿绘制比例以对齐其他入口图标的可见尺寸。 */
+.companion-toolbox__item .companion-toolbox__activity-icon{transform:scale(1.3)}
 .companion-toolbox-button{position:relative;right:auto;bottom:auto;transition:box-shadow .16s ease}
 .companion-toolbox-button__motion{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform:scale3d(1,1,1);will-change:transform}
 .companion-toolbox-button__motion.companion-toolbox-button--opening{animation:scene-fab-bounce .36s ease-out both}

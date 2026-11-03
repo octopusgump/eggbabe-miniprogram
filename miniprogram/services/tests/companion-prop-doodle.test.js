@@ -141,10 +141,8 @@ global.wx = global.wx || {
     tutorialEditor.beginPropEntryFlow();
     assert.equal(tutorialEditor.data.propTutorialVisible, true);
     assert.equal(tutorialEditor.data.propTutorialStep, 0);
-    assert.equal(propChallenge.TUTORIAL_STEPS.length, 2);
-    tutorialEditor.onPropTutorialNext();
-    assert.equal(tutorialEditor.data.propTutorialStep, 1);
-    assert.equal(tutorialEditor.data.propTutorialSteps[1].title, '第二步 · 画好了');
+    assert.equal(propChallenge.TUTORIAL_STEPS.length, 1);
+    assert.equal(propChallenge.TUTORIAL_STEPS[0].title, '一起画');
     const peekStartedAt = Date.now();
     tutorialEditor.onPropTutorialNext();
     const peekDelayMs = Date.now() - peekStartedAt;

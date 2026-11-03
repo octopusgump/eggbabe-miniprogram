@@ -139,12 +139,7 @@
 .preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; z-index: 145; }
 .preview--prop-tutorial-step-0 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
 .preview--prop-tutorial-step-0 .prop-peek-anim { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 28rpx; }
-.preview--prop-tutorial-step-1 .content,
-.preview--prop-tutorial-step-1 .canvas-action-rail { opacity: 0.35; visibility: visible; z-index: 140; }
-.preview--prop-tutorial-step-1 .prop-finish-btn { visibility: hidden; }
 .prop-finish-btn--tutorial-dim { opacity: 0.35; }
-.prop-finish-cover { position: fixed; z-index: 9998; left: 110rpx; width: 560rpx; height: 96rpx; bottom: calc(248rpx + env(safe-area-inset-bottom)); border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 96rpx; text-align: center; box-sizing: border-box; box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); pointer-events: none; }
-.prop-finish-cover--tutorial-spotlight { border: 6rpx solid #f7d774; box-shadow: 0 0 14rpx rgba(247, 215, 116, 0.6), 0 8rpx 24rpx rgba(0, 41, 0, 0.12); }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,
@@ -220,7 +215,6 @@
 
 .prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(22, 36, 26, 0.8); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: env(safe-area-inset-top) 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
 .prop-tutorial-scrim--step-0 { padding-bottom: calc(110rpx + env(safe-area-inset-bottom)); }
-.prop-tutorial-scrim--step-1 { padding-bottom: calc(230rpx + env(safe-area-inset-bottom)); }
 .prop-tutorial-bg-sketch { flex: 1 1 auto; min-height: 0; pointer-events: none; }
 .prop-tutorial-card { width: 100%; flex: 0 0 auto; display: flex; flex-direction: column; gap: 0; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; }
 .prop-tutorial-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; width: 100%; }

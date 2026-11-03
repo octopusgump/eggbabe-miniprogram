@@ -85,36 +85,28 @@ assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教
 assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须在第二步卡片显示');
 assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按步骤配置');
 const propChallengeScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-challenge.js'), 'utf8');
-assert.equal(propChallengeScript.includes('第二步 · 动手画'), false, '道具临摹教程不得保留「第二步 · 动手画」');
-assert.match(propChallengeScript, /TUTORIAL_STEPS[\s\S]*第二步 · 画好了/, '教程仅保留一起画与画好了两步');
+assert.equal(propChallengeScript.includes('第二步'), false, '道具临摹教程不得再出现第二步卡片');
+assert.equal((propChallengeScript.match(/title:\s*'/g) || []).length, 1, '教程仅保留「一起画」一步');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
-assert.match(wxml, /prop-peek-anchor--tutorial/, '教程 T01 须复用同一张简笔，不得另挂一份');
+assert.match(wxml, /prop-peek-anchor--tutorial/, '教程须复用同一张简笔，不得另挂一份');
 assert.doesNotMatch(wxml, /propLineOverlayCanvas/, '简笔不得再叠在画纸 propLineOverlayCanvas 上');
+assert.doesNotMatch(wxml, /prop-finish-cover/, '教程不得再演示第二步 cover 画好了');
 assert.ok(
   wxml.indexOf('class="prop-tutorial-scrim') > wxml.indexOf('preview--prop-tutorial'),
   '教程遮罩须在 preview 之后，全屏 fixed'
 );
-assert.ok(
-  wxml.indexOf('prop-finish-cover') > wxml.indexOf('preview--prop-tutorial')
-    && wxml.indexOf('prop-finish-cover') < wxml.indexOf('class="prop-tutorial-scrim'),
-  'T02 cover 画好了须在 preview 与教程遮罩之间'
-);
-assert.match(
-  wxss,
-  /\.preview--prop-tutorial-step-1 \.prop-finish-btn\s*\{[^}]*visibility:\s*hidden;/,
-  '教程第二步须隐藏原生画好了，改由 cover 演示'
-);
 assert.match(
   wxss,
   /\.preview--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
-  'T01 须高亮再看一眼入口'
+  '教程须高亮再看一眼入口'
 );
-assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-2/, '不得再保留第三步 preview 修饰类');
-assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-2/, '教程蒙层仅保留两步 padding');
+assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-1/, '不得再保留第二步 preview 修饰类');
+assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-1/, '教程蒙层不得再保留第二步 padding');
+assert.match(wxml, /prop-tutorial-scrim prop-tutorial-scrim--step-0/, '教程蒙层固定为单步 step-0');
 assert.match(
   wxml,
   /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating \|\| propTutorialVisible\}\}"/,
-  '教程期间须隐藏道具临摹原生 Canvas，避免盖住遮罩与 cover 演示按钮'
+  '教程期间须隐藏道具临摹原生 Canvas，避免盖住遮罩'
 );
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');

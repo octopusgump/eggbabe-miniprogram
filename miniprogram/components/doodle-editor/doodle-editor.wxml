@@ -60,7 +60,7 @@
     </view>
   </view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'preview--prop-tutorial-step-0' : ''}} {{propTutorialVisible && propTutorialStep === 1 ? 'preview--prop-tutorial-step-1' : ''}}" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial-step-0' : ''}}" bindtap="onCanvasBackdropTap">
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -286,18 +286,13 @@
     </view>
   </view>
 
-  <root-portal wx:if="{{companionPropMode && propTutorialVisible && propTutorialStep === 1}}">
-    <cover-view class="prop-finish-cover prop-finish-cover--tutorial-spotlight" aria-role="button" aria-label="画好了">画好了</cover-view>
-  </root-portal>
-
-  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim prop-tutorial-scrim--step-{{propTutorialStep}}" catchtouchmove="true">
+  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim prop-tutorial-scrim--step-0" catchtouchmove="true">
     <view class="prop-tutorial-bg-sketch" aria-hidden="true"></view>
     <view class="prop-tutorial-card">
       <view class="prop-tutorial-head">
         <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
         <view wx:if="{{propTutorialSteps[propTutorialStep].showStepDots}}" class="prop-tutorial-dots">
-          <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
-          <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
+          <view class="prop-tutorial-dot prop-tutorial-dot--active"></view>
         </view>
       </view>
       <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>

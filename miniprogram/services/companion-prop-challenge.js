@@ -10,13 +10,6 @@ const TUTORIAL_STEPS = Object.freeze([
     showStepDots: false,
     showSkip: false,
     primaryLabel: '开始画'
-  }),
-  Object.freeze({
-    title: '第二步 · 画好了',
-    body: '画好了就点这里。认真画够时间，就能解锁这张彩色小道具。',
-    showStepDots: true,
-    showSkip: false,
-    primaryLabel: '开始画'
   })
 ]);
 

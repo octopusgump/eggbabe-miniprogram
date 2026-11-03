@@ -145,7 +145,7 @@
 .preview--prop-unlock .prop-finish-btn,
 .preview--prop-unlock .content,
 .preview--prop-unlock .canvas-action-rail { visibility: hidden; pointer-events: none; }
-.preview--prop .canvas-action-rail { top: calc(50% + 216rpx + var(--prop-layout-nudge, 0)); z-index: 38; }
+.preview--prop .canvas-action-rail { top: calc(50% + 216rpx + var(--prop-layout-nudge, 0)); z-index: 90; }
 .egg-canvas-stack--hidden { visibility: hidden; pointer-events: none; height: 0; overflow: hidden; flex: 0 0 0; }
 .prop-canvas-slot--hidden { visibility: hidden; pointer-events: none; }
 

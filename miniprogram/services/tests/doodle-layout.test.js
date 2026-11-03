@@ -52,7 +52,8 @@ assert.equal(
   true,
   '道具临摹时撤销与清空导轨必须叠在画纸与原生 Canvas 之上'
 );
-assert.match(wxss, /\.preview--prop \.canvas-action-rail\s*\{[^}]*z-index:\s*38;/, '道具临摹导轨必须高于画纸层');
+assert.match(wxss, /\.preview--prop \.canvas-action-rail\s*\{[^}]*z-index:\s*90;/, '道具临摹导轨必须高于画纸层');
+assert.match(wxml, /<cover-view[\s\S]*class="canvas-action-rail canvas-action-rail--prop[\s\S]*撤销[\s\S]*清空[\s\S]*<\/cover-view>/, '道具临摹的撤销与清空必须用 cover-view 盖在原生 Canvas 前面');
 assert.match(wxss, /\.content\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*100;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;/, '工具区域必须明确高于蛋体 Canvas');
 assert.match(
   wxss,

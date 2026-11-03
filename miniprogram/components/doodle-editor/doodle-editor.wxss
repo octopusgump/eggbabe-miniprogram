@@ -129,6 +129,9 @@
 
 .preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; --prop-finish-btn-bottom: 210rpx; --prop-finish-btn-height: 96rpx; --canvas-action-rail-height: 224rpx; }
 .preview--prop-tutorial { overflow: visible; }
+.preview--prop-tutorial .content,
+.preview--prop-tutorial .canvas-action-rail,
+.preview--prop-tutorial .prop-finish-btn { visibility: hidden; pointer-events: none; }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,
@@ -202,7 +205,7 @@
   100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
 }
 
-.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: 0 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: env(safe-area-inset-top) 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
 .prop-tutorial-bg-sketch { flex: 1 1 auto; min-height: 0; pointer-events: none; }
 .prop-tutorial-card { width: 100%; flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16rpx; row-gap: 20rpx; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; align-items: start; }
 .prop-tutorial-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; white-space: nowrap; color: #002900; font-size: 34rpx; font-weight: 700; line-height: 1.35; }

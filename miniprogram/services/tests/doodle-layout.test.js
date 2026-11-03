@@ -81,6 +81,16 @@ assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教
 assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*width:\s*194rpx;/, '教程主按钮须固定宽度，避免挤窄标题列');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
 assert.match(wxml, /prop-peek-anchor--tutorial/, '教程第一步须复用同一张简笔，不得另挂一份');
+assert.match(
+  wxml,
+  /<\/view>\s*<view wx:if="\{\{companionPropMode && propTutorialVisible\}\}" class="prop-tutorial-scrim"/,
+  '教程遮罩须提升到 preview 外全屏 fixed，避免第二步卡片浮在中间'
+);
+assert.match(
+  wxss,
+  /\.preview--prop-tutorial \.content,\s*\n\.preview--prop-tutorial \.canvas-action-rail,\s*\n\.preview--prop-tutorial \.prop-finish-btn\s*\{[^}]*visibility:\s*hidden;/,
+  '教程进行中须完全隐藏画好了、工具栏与撤销导轨，不得仅半透明露出'
+);
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');
 assert.match(wxml, /transform:scale\(\{\{canvasScale\}\}\)/, 'Canvas 必须绑定双指缩放倍率');

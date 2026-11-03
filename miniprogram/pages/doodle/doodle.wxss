@@ -46,7 +46,6 @@
 .egg-canvas--base { z-index: 1; }
 .egg-canvas--art { z-index: 2; touch-action: none; }
 .egg-canvas--line-overlay { z-index: 3; pointer-events: none; touch-action: none; }
-.egg-canvas-stack--prop .egg-canvas--line-overlay { mix-blend-mode: darken; }
 .canvas-loading { position: absolute; z-index: 4; bottom: 18rpx; padding: 7rpx 14rpx; border-radius: 999rpx; background: rgba(255,255,255,.82); color: #77756E; font-size: 20rpx; }
 
 .content { position: absolute; z-index: 100; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: center; padding: 12rpx 24rpx calc(24rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
@@ -202,18 +201,18 @@
   100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
 }
 
-.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; align-items: flex-end; justify-content: center; padding: 0 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
-.prop-tutorial-card { width: 100%; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; }
-.prop-tutorial-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
-.prop-tutorial-title { flex: 1; color: #002900; font-size: 38rpx; font-weight: 700; line-height: 1.35; }
-.prop-tutorial-step-row { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
-.prop-tutorial-dots { display: flex; align-items: center; gap: 8rpx; }
+.prop-tutorial-scrim { position: fixed; z-index: 130; inset: 0; background: rgba(18, 22, 20, 0.55); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: 0 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prop-tutorial-bg-sketch { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 24rpx 32rpx 32rpx; box-sizing: border-box; pointer-events: none; }
+.prop-tutorial-bg-sketch .prop-sketch-image { width: 52vw; max-width: 420rpx; height: 52vw; max-height: 420rpx; }
+.prop-tutorial-card { width: 100%; flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16rpx; row-gap: 20rpx; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; align-items: start; }
+.prop-tutorial-title { grid-column: 1; grid-row: 1; color: #002900; font-size: 38rpx; font-weight: 700; line-height: 1.35; }
+.prop-tutorial-dots { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; display: flex; align-items: center; gap: 8rpx; }
 .prop-tutorial-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: rgba(0, 41, 0, 0.2); }
 .prop-tutorial-dot--active { width: 36rpx; background: #002900; }
-.prop-tutorial-body { display: block; margin-top: 20rpx; color: #3E4C42; font-size: 28rpx; line-height: 1.57; white-space: pre-line; }
-.prop-tutorial-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 28rpx; width: 100%; box-sizing: border-box; }
-.prop-tutorial-skip { margin-right: auto; color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
-.prop-tutorial-next { min-width: 194rpx; height: 76rpx; margin: 0 0 0 auto; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; }
+.prop-tutorial-body { grid-column: 1 / -1; grid-row: 2; margin-top: 0; color: #3E4C42; font-size: 28rpx; line-height: 1.57; white-space: pre-line; }
+.prop-tutorial-skip { grid-column: 1; grid-row: 3; align-self: center; margin-right: auto; color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
+.prop-tutorial-next { grid-column: 2; grid-row: 3; justify-self: end; align-self: center; min-width: 194rpx; height: 76rpx; margin: 0; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; box-sizing: border-box; }
+.prop-tutorial-next::after { border: none; }
 
 @keyframes prop-peek-card-flip-out {
   0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }

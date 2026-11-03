@@ -309,22 +309,23 @@
   </view>
 
   <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim" catchtouchmove="true">
+    <view
+      wx:if="{{propTutorialStep === 0 && propGuideSketchVisible}}"
+      class="prop-tutorial-bg-sketch"
+      aria-hidden="true"
+    >
+      <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
+    </view>
     <view class="prop-tutorial-card">
-      <view class="prop-tutorial-head">
-        <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
-        <view class="prop-tutorial-step-row">
-          <view class="prop-tutorial-dots">
-            <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
-            <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
-            <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
-          </view>
-        </view>
+      <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
+      <view class="prop-tutorial-dots">
+        <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
+        <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
+        <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
       </view>
       <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>
-      <view class="prop-tutorial-footer">
-        <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
-        <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
-      </view>
+      <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
+      <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
     </view>
   </view>
 

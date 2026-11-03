@@ -154,7 +154,16 @@ assert.equal(componentWxml, wxml, '首页内嵌编辑器与独立画画页必须
 assert.equal(componentWxss, wxss, '首页内嵌编辑器与独立画画页必须共用相同视觉布局');
 assert.equal(componentScript.includes("require('../../pages/doodle/doodle-definition')") && componentScript.includes('doodleDefinition.onReady.call(this)'), true, '内嵌编辑器必须复用画画页逻辑和 Canvas 就绪生命周期');
 assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'), true, '清空等轻量反馈必须使用可复用的画布内提示组件');
-assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
+assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
+assert.ok(
+  wxml.indexOf('class="prop-canvas-notice-anchor"') > 0
+    && wxml.indexOf('class="prop-canvas-notice-anchor"') < wxml.indexOf('class="prop-look-chrome'),
+  '道具临摹 gate 提示须放在「再看一眼」上方，避免原生 Canvas 遮挡'
+);
+assert.ok(
+  !wxml.includes('canvas-notice-anchor--prop'),
+  '道具临摹不得再把提示叠在 preview 内 canvas 之上'
+);
 assert.equal(noticeWxml.includes('inline-notice--{{tone}}') && noticeWxss.includes('.inline-notice--warning'), true, '标准轻提示只需提供普通与注意两种语义样式');
 assert.equal((noticeWxss.match(/\.inline-notice--(?:info|warning)\b/g) || []).length <= 2, true, '标准轻提示不得扩张为多套重复视觉');
 assert.match(noticeWxss, /\.inline-notice\s*\{[^}]*background:\s*rgba\(18,21,18,\.72\);[^}]*color:\s*#FFF;/, '画画提示必须统一使用白字半透明深色底');

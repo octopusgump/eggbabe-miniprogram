@@ -32,6 +32,7 @@
 
 .preview { position: relative; z-index: 30; isolation: isolate; min-height: 0; flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 0; background: linear-gradient(180deg, #FFF 0%, #F7F5EE 100%); box-shadow: none; }
 .canvas-notice-anchor { position: absolute; z-index: 35; top: 28rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.prop-canvas-notice-anchor { position: relative; z-index: 48; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8rpx 24rpx 0; background: #F8F7EF; pointer-events: none; }
 .canvas-action-button { width: 112rpx; height: 112rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; border: 0; border-radius: 0; background: transparent; color: #536047; box-shadow: none; transition: transform 180ms ease, opacity 180ms ease, color 180ms ease; }
 .canvas-action-button + .canvas-action-button { border-top: 1rpx solid #E5E3DF; }
 .canvas-action-button:active { transform: scale(.98); }
@@ -166,7 +167,6 @@
 .prop-look-chrome { position: relative; z-index: 45; flex: 0 0 auto; display: flex; justify-content: center; padding: 26rpx 24rpx 12rpx; background: #F8F7EF; pointer-events: none; }
 .prop-look-hint { pointer-events: auto; padding: 14rpx 28rpx; border-radius: 999rpx; border: 1rpx solid rgba(53, 72, 60, 0.12); background: rgba(255, 255, 255, 0.92); color: #35483C; font-size: 26rpx; font-weight: 500; line-height: 1.2; box-shadow: 0 4rpx 16rpx rgba(54, 71, 61, 0.08); }
 .prop-look-hint--empty { opacity: 0.55; }
-.canvas-notice-anchor--prop { top: 16rpx; }
 
 .prop-paper-board { position: absolute; z-index: 0; inset: 0; border-radius: 56rpx; border: 1rpx solid rgba(53, 72, 60, 0.08); background: var(--prop-paper-fill, #F7EEE5); box-shadow: 0 8rpx 32rpx rgba(54, 71, 61, 0.06); pointer-events: none; }
 .prop-paper-dash { position: absolute; z-index: 3; inset: 30rpx; border: 3rpx dashed rgba(53, 72, 60, 0.2); border-radius: 40rpx; pointer-events: none; }

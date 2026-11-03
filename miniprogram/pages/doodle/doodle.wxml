@@ -47,6 +47,17 @@
   </root-portal>
 
   <view
+    wx:if="{{companionPropMode && canvasReady && canvasNoticeText}}"
+    class="prop-canvas-notice-anchor"
+  >
+    <inline-notice
+      text="{{canvasNoticeText}}"
+      tone="{{canvasNoticeTone}}"
+      visible="{{canvasNoticeVisible}}"
+    ></inline-notice>
+  </view>
+
+  <view
     wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
     class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
   >
@@ -61,7 +72,7 @@
   </view>
 
   <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial-step-0' : ''}}" bindtap="onCanvasBackdropTap">
-    <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
+    <view wx:if="{{!companionPropMode}}" class="canvas-notice-anchor">
       <inline-notice
         text="{{canvasNoticeText}}"
         tone="{{canvasNoticeTone}}"

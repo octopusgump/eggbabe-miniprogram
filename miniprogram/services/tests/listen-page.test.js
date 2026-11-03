@@ -30,7 +30,7 @@ function select(p, index = 0) { p.onSelect({ currentTarget: { dataset: { id: p.d
 (async () => {
   const p = page(); p.onLoad(); p.onShow();
   assert.equal(p.data.view, 'question'); assert.equal(p.data.questionNumber, 1);
-  assert.match(p.data.petImage, /boon-koi\/stare.webp$/);
+  assert.match(p.data.petImage, /boon-koi\/stare\.png$/);
   await p.onNext(); assert.equal(p.data.questionNumber, 1, '未选答案不能进入下一题');
   assert.equal(navigatedBack, 0);
   select(p, 4); assert.equal(p.data.noteOpen, true); assert.equal(p.data.scrollTarget, 'listen-supplement');

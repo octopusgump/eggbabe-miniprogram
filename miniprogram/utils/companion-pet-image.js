@@ -9,7 +9,7 @@ function resolveCompanionPetCharacterFolder(pet) {
 function resolveCompanionPetImage(pet, pose) {
   const folder = resolveCompanionPetCharacterFolder(pet);
   const file = String(pose || 'stare').trim() || 'stare';
-  return `${CHARACTER_ROOT}/${folder}/${file}.webp`;
+  return `${CHARACTER_ROOT}/${folder}/${file}.png`;
 }
 
 module.exports = {

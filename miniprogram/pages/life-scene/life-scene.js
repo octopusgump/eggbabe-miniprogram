@@ -20,7 +20,7 @@ const { rollDurationMs } = require('../../utils/companion-star-roll');
 
 // 信件收星反馈：约 2s 挤压弹出；音效略提前，轻震对齐 ~0.84s 弹出高点。
 const LETTER_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/letter/letter-arrival.mp3';
-const LETTER_ICON_SRC = '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.webp';
+const LETTER_ICON_SRC = '/assets/ui/3d-scene-actions/runtime/ui_3d_scene_message_envelope_96_v01.png';
 const STAR_AWARD_SOUND_SRC = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const STAR_AWARD_SOUND_VOLUME = 0.2;
 const STAR_AWARD_SOUND_DELAY_MS = 520;

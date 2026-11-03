@@ -102,6 +102,18 @@ global.wx = global.wx || {
     assert.equal(peekEditor.data.propPeekVisible, false);
     assert.equal(peekEditor.data.propFinishVisible, true);
 
+    const overlayEditor = createEditor();
+    overlayEditor.propLineLayer = {
+      context: { cleared: false, clearRect() { this.cleared = true; }, drawImage() {} },
+      width: 320,
+      height: 320
+    };
+    overlayEditor.propLineImage = { width: 100, height: 100 };
+    overlayEditor.setData({ propLineOverlayVisible: false });
+    overlayEditor.setPropLineOverlayVisible(true);
+    assert.equal(overlayEditor.data.propLineOverlayVisible, true, '简笔 overlay 应可打开');
+    assert.equal(overlayEditor.propLineLayer.context.cleared, true, 'renderPropLineOverlay 不得因 shellArtService 未定义而抛错');
+
     console.log('道具临摹页完成链路与 gate 拦截单测通过。');
   } finally {
     canvas.exportImage = oldExport;

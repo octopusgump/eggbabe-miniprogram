@@ -7,6 +7,17 @@ const companionAdapter = require('./iaa-star-unlock-adapter');
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
+function exportPropPeekRestAnim() {
+  if (!wx.createAnimation) return null;
+  const animation = wx.createAnimation({
+    duration: 0,
+    timingFunction: 'linear',
+    transformOrigin: '50% 50% 0'
+  });
+  animation.scale(1).opacity(1).step({ duration: 0 });
+  return animation.export();
+}
+
 function exportPropPeekPopInAnim(reducedMotion, durationMs) {
   if (!wx.createAnimation) return null;
   const animation = wx.createAnimation({
@@ -15,11 +26,10 @@ function exportPropPeekPopInAnim(reducedMotion, durationMs) {
     transformOrigin: '50% 50% 0'
   });
   if (reducedMotion) {
-    animation.opacity(0).step({ duration: 0 });
-    animation.opacity(1).step({ duration: 80 });
-    return animation.export();
+    return exportPropPeekRestAnim();
   }
-  animation.scale(0.88).opacity(0).step({ duration: 0 });
+  // 真机对「opacity 0 + 双 step」常卡在看不见；进场只缩放，保持 opacity 1。
+  animation.scale(0.88).opacity(1).step({ duration: 0 });
   animation.scale(1).opacity(1).step({ duration: durationMs });
   return animation.export();
 }
@@ -35,6 +45,7 @@ function exportPropPeekPopOutAnim(reducedMotion, durationMs) {
     animation.opacity(0).step({ duration: 80 });
     return animation.export();
   }
+  animation.scale(0.88).opacity(1).step({ duration: 0 });
   animation.scale(0.88).opacity(0).step({ duration: durationMs });
   return animation.export();
 }
@@ -174,11 +185,12 @@ function attach(definition) {
   };
 
   definition.finishPropPeekDismiss = function finishPropPeekDismiss() {
+    clearTimeout(this.propPeekPopInSettleTimer);
     if (this.propSession) this.propSession.drawingLocked = false;
     this.setData({
       propPeekVisible: false,
       propPeekAnimating: false,
-      propPeekSketchAnim: null,
+      propPeekSketchAnim: exportPropPeekRestAnim(),
       propDrawingLocked: false,
       propFinishVisible: true
     }, () => {
@@ -191,6 +203,7 @@ function attach(definition) {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    clearTimeout(this.propPeekPopInSettleTimer);
     const outMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_OUT_MS;
     const generation = (this.propPeekGeneration || 0) + 1;
     this.propPeekGeneration = generation;
@@ -229,13 +242,30 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
+    const generation = this.propPeekGeneration;
     const inMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_POP_IN_MS;
+    clearTimeout(this.propPeekPopInSettleTimer);
+    const runPopIn = () => {
+      if (generation !== this.propPeekGeneration) return;
+      this.setData({
+        propPeekSketchAnim: exportPropPeekPopInAnim(Boolean(this.data.companionReducedMotion), inMs)
+      });
+      this.propPeekPopInSettleTimer = setTimeout(() => {
+        if (generation !== this.propPeekGeneration) return;
+        this.setData({ propPeekSketchAnim: exportPropPeekRestAnim() });
+      }, inMs + 40);
+    };
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekSketchAnim: exportPropPeekPopInAnim(Boolean(this.data.companionReducedMotion), inMs),
+      propPeekSketchAnim: exportPropPeekRestAnim(),
       propFinishVisible: false
+    }, () => {
+      if (generation !== this.propPeekGeneration) return;
+      if (this.data.companionReducedMotion) return;
+      if (wx.nextTick) wx.nextTick(runPopIn);
+      else setTimeout(runPopIn, 16);
     });
     this.propPeekTimer = setTimeout(() => {
       this.dismissPropPeek();
@@ -438,6 +468,7 @@ function attach(definition) {
   definition.onHide = function onHide() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    clearTimeout(this.propPeekPopInSettleTimer);
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
@@ -445,6 +476,7 @@ function attach(definition) {
   definition.onUnload = function onUnload() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    clearTimeout(this.propPeekPopInSettleTimer);
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };

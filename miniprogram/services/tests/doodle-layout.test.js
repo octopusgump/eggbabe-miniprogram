@@ -73,7 +73,7 @@ assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必�
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
-assert.match(propDoodleScript, /exportPropPeekPopInAnim[\s\S]*scale\(0\.88\)[\s\S]*opacity\(0\)/, '看一看出现须标准 pop：0.88 缩放 + 淡入');
+assert.match(propDoodleScript, /exportPropPeekPopInAnim[\s\S]*scale\(0\.88\)[\s\S]*opacity\(1\)/, '看一看出现须标准 pop 缩放且保持可见，避免 opacity 0 卡死');
 assert.match(propDoodleScript, /exportPropPeekPopOutAnim[\s\S]*wx\.createAnimation/, '看一看收起须使用 wx.createAnimation，不得依赖 CSS rotateY');
 assert.doesNotMatch(propDoodleScript, /scaleX\(0\.06\)/, '收起不得再使用横向压扁 flip');
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');

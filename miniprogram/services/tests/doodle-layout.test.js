@@ -81,10 +81,14 @@ assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教
 assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*width:\s*194rpx;/, '教程主按钮须固定宽度，避免挤窄标题列');
 assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
 assert.match(wxml, /prop-peek-anchor--tutorial/, '教程第一步须复用同一张简笔，不得另挂一份');
-assert.match(
-  wxml,
-  /preview--prop-tutorial[\s\S]*<\/view>\s*<\/view>\s*<view wx:if="\{\{companionPropMode && propTutorialVisible\}\}" class="prop-tutorial-scrim/,
-  '教程遮罩须提升到 preview 外全屏 fixed，避免第二步卡片浮在中间'
+assert.ok(
+  wxml.indexOf('class="prop-tutorial-scrim') > wxml.indexOf('preview--prop-tutorial'),
+  '教程遮罩须在 preview 之后，全屏 fixed'
+);
+assert.ok(
+  wxml.indexOf('prop-finish-cover') > wxml.indexOf('preview--prop-tutorial')
+    && wxml.indexOf('prop-finish-cover') < wxml.indexOf('class="prop-tutorial-scrim'),
+  '第三步 cover 画好了须在 preview 与教程遮罩之间'
 );
 assert.match(
   wxss,
@@ -93,13 +97,18 @@ assert.match(
 );
 assert.match(
   wxml,
-  /prop-tutorial-finish-slot[\s\S]*prop-finish-btn--tutorial-spotlight[\s\S]*>画好了</,
-  '教程第三步须在遮罩层内、教程卡上方展示高亮画好了（Figma T03）'
+  /root-portal wx:if="\{\{companionPropMode && propTutorialVisible && propTutorialStep === 2\}\}"[\s\S]*prop-finish-cover prop-finish-cover--tutorial-spotlight[\s\S]*>画好了</,
+  '教程第三步须用 cover-view 展示高亮画好了，压过原生 Canvas（Figma T03）'
 );
 assert.match(
   wxss,
-  /\.prop-tutorial-finish-slot \.prop-finish-btn\s*\{[^}]*visibility:\s*visible;/,
-  '遮罩内演示用画好了按钮须可见且位于教程卡之上'
+  /\.prop-finish-cover--tutorial-spotlight\s*\{[^}]*border:\s*6rpx solid rgba\(255, 221, 121, 0\.92\);/,
+  '教程第三步 cover 画好了须带金色高亮描边'
+);
+assert.match(
+  wxml,
+  /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating \|\| propTutorialVisible\}\}"/,
+  '教程期间须隐藏道具临摹原生 Canvas，避免盖住遮罩与 cover 演示按钮'
 );
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');

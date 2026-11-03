@@ -133,8 +133,8 @@
 .preview--prop-tutorial .canvas-action-rail,
 .preview--prop-tutorial .prop-finish-btn { visibility: hidden; pointer-events: none; }
 .prop-finish-btn--tutorial-spotlight { box-shadow: 0 0 0 6rpx rgba(255, 221, 121, 0.92), 0 8rpx 24rpx rgba(0, 41, 0, 0.18); }
-.prop-tutorial-finish-slot { flex: 0 0 auto; width: 100%; display: flex; justify-content: center; padding: 0 48rpx 28rpx; box-sizing: border-box; pointer-events: none; }
-.prop-tutorial-finish-slot .prop-finish-btn { position: relative; left: auto; bottom: auto; transform: none; visibility: visible; opacity: 1; }
+.prop-finish-cover { position: fixed; z-index: 9998; left: 95rpx; width: 560rpx; height: var(--prop-finish-btn-height, 96rpx); bottom: calc(var(--prop-tutorial-finish-cover-bottom, 380rpx) + env(safe-area-inset-bottom)); border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: var(--prop-finish-btn-height, 96rpx); text-align: center; box-sizing: border-box; box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); pointer-events: none; }
+.prop-finish-cover--tutorial-spotlight { border: 6rpx solid rgba(255, 221, 121, 0.92); }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,

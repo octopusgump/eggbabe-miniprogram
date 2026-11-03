@@ -130,11 +130,11 @@
 .preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; --prop-finish-btn-bottom: 210rpx; --prop-finish-btn-height: 96rpx; --canvas-action-rail-height: 224rpx; }
 .preview--prop-tutorial { overflow: visible; }
 .preview--prop-tutorial .content,
-.preview--prop-tutorial .canvas-action-rail { visibility: hidden; pointer-events: none; }
-.preview--prop-tutorial:not(.preview--prop-tutorial-step-finish) .prop-finish-btn { visibility: hidden; pointer-events: none; }
-.preview--prop-tutorial-step-finish .prop-finish-btn { z-index: 135; pointer-events: none; bottom: calc(380rpx + env(safe-area-inset-bottom)); opacity: 1; }
+.preview--prop-tutorial .canvas-action-rail,
+.preview--prop-tutorial .prop-finish-btn { visibility: hidden; pointer-events: none; }
 .prop-finish-btn--tutorial-spotlight { box-shadow: 0 0 0 6rpx rgba(255, 221, 121, 0.92), 0 8rpx 24rpx rgba(0, 41, 0, 0.18); }
-.prop-tutorial-scrim--step-finish { padding-bottom: calc(36rpx + env(safe-area-inset-bottom)); }
+.prop-tutorial-finish-slot { flex: 0 0 auto; width: 100%; display: flex; justify-content: center; padding: 0 48rpx 28rpx; box-sizing: border-box; pointer-events: none; }
+.prop-tutorial-finish-slot .prop-finish-btn { position: relative; left: auto; bottom: auto; transform: none; visibility: visible; opacity: 1; }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,

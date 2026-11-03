@@ -26,8 +26,9 @@ function createEditor() {
     pageActive: true,
     data: {},
     shellArt: { operations: [] },
-    setData(patch) {
+    setData(patch, callback) {
       Object.assign(this.data, patch);
+      if (typeof callback === 'function') callback();
     },
     showCanvasNotice() {},
     pageTransitionDuration: () => 20,
@@ -45,11 +46,14 @@ function createEditor() {
 
 const canvas = require('../../utils/canvas-2d');
 
+const tutorialStorage = {};
 global.wx = global.wx || {
   getWindowInfo: () => ({ windowWidth: 375, statusBarHeight: 20 }),
   getSystemInfoSync: () => ({ windowWidth: 375, statusBarHeight: 20 }),
-  getStorageSync: () => false,
-  setStorageSync: () => {},
+  getStorageSync: (key) => tutorialStorage[key],
+  setStorageSync: (key, value) => {
+    tutorialStorage[key] = value;
+  },
   getMenuButtonBoundingClientRect: () => ({ left: 281 })
 };
 
@@ -84,9 +88,14 @@ global.wx = global.wx || {
 
     const peekEditor = createEditor();
     peekEditor.propSession = propChallenge.createSession();
+    peekEditor.propEntryFlowStarted = false;
     peekEditor.setPropLineOverlayVisible = () => {};
-    peekEditor.startPropPeek({ countsAgainstManual: false });
-    assert.equal(peekEditor.data.propPeekVisible, true);
+    peekEditor.revealEditor();
+    assert.equal(peekEditor.data.propPeekVisible, false, '页未完全显现前不得开始看一看计时');
+    peekEditor.setData({ pageTransitionPhase: 'visible' }, () => {
+      peekEditor.beginPropEntryFlow();
+    });
+    assert.equal(peekEditor.data.propPeekVisible, true, '页可见后应自动开始看一看');
     peekEditor.onPropPeekCardTap();
     assert.equal(peekEditor.data.propPeekAnimating, true);
     await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_FLIP_MS + 40));

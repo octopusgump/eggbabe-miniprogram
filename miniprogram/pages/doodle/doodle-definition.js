@@ -182,7 +182,11 @@ const doodleDefinition = {
         clearTimeout(this.pageTransitionTimer);
         this.pageTransitionTimer = setTimeout(() => {
           this.pageTransitionTimer = null;
-          if (this.pageActive) this.setData({ pageTransitionPhase: 'visible' });
+          if (this.pageActive) {
+            this.setData({ pageTransitionPhase: 'visible' }, () => {
+              if (typeof this.beginPropEntryFlow === 'function') this.beginPropEntryFlow();
+            });
+          }
         }, transitionDuration + 40);
         if (this.triggerEvent) this.triggerEvent('ready');
         if (this.companionDrawing) this.beginCompanionDrawing();

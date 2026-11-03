@@ -133,7 +133,7 @@
 .preview--prop-preparing .prop-peek-card,
 .preview--prop-preparing .prop-peek-caption,
 .preview--prop-preparing .prop-finish-btn { visibility: hidden; pointer-events: none; }
-.prop-prepare-layer { position: absolute; z-index: 50; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; background: #F8F7EF; pointer-events: auto; }
+.prop-prepare-screen { position: fixed; z-index: 280; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; background: #F8F7EF; pointer-events: auto; }
 .prop-prepare-spinner { width: 64rpx; height: 64rpx; border-radius: 50%; border: 6rpx solid rgba(53, 72, 60, 0.12); border-top-color: #35483C; animation: prop-prepare-spin 720ms linear infinite; }
 .prop-prepare-text { color: #566155; font-size: 28rpx; line-height: 1.4; }
 @keyframes prop-prepare-spin { to { transform: rotate(360deg); } }
@@ -168,8 +168,6 @@
 .prop-peek-card { position: absolute; z-index: 5; left: 50%; top: calc(50% - 168rpx + var(--prop-layout-nudge, 0)); width: 52vw; max-width: 420rpx; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; pointer-events: auto; transform-origin: center center; }
 .prop-peek-card--flip-out { animation: prop-peek-card-flip-out 580ms cubic-bezier(0.32, 0, 0.67, 0) forwards; }
 .prop-peek-card--reduced.prop-peek-card--flip-out { animation-duration: 80ms; animation-timing-function: ease-out; }
-.prop-peek-card--flip-out .prop-sketch-layer { animation: prop-peek-sketch-flip-out 580ms cubic-bezier(0.32, 0, 0.67, 0) forwards; transform-origin: center center; }
-.prop-peek-card--reduced.prop-peek-card--flip-out .prop-sketch-layer { animation-duration: 80ms; animation-timing-function: ease-out; }
 .prop-peek-card--flip-out .prop-peek-caption { animation: prop-peek-caption-fade-out 280ms ease-out forwards; }
 .prop-peek-card--reduced.prop-peek-card--flip-out .prop-peek-caption { animation: none; opacity: 0; }
 .prop-peek-card .prop-sketch-layer { position: relative; top: auto; left: auto; width: 100%; height: 52vw; max-width: 420rpx; max-height: 420rpx; transform: none; }
@@ -220,12 +218,6 @@
 @keyframes prop-peek-card-flip-out {
   0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -50%) translateY(-32rpx) scale(0.86); }
-}
-
-@keyframes prop-peek-sketch-flip-out {
-  0% { opacity: 1; transform: scaleX(1); }
-  35% { opacity: 1; transform: scaleX(0.92); }
-  100% { opacity: 0; transform: scaleX(0.08); }
 }
 
 @keyframes prop-peek-caption-fade-out {

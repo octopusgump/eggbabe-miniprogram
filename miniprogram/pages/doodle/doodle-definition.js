@@ -11,6 +11,8 @@ const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
+/** 道具临摹：至少展示「正在准备画纸」时长，避免解码过快导致用户看不到 loading */
+const PROP_PREPARE_MIN_MS = 520;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -62,6 +64,7 @@ const doodleDefinition = {
     propFinishVisible: false,
     propGuideSketchVisible: false,
     propLineOverlayVisible: false,
+    propPeekSketchAnim: null,
     propUnlockActive: false,
     propAwardStars: 0,
     propAwardVisible: false,
@@ -110,7 +113,11 @@ const doodleDefinition = {
 
   onLoad(query) {
     this.companionDrawing = Boolean(query && query.entry === 'companion');
-    this.setData({ companionDrawing: this.companionDrawing });
+    this.companionPropMode = this.companionDrawing;
+    this.setData({
+      companionDrawing: this.companionDrawing,
+      companionPropMode: this.companionPropMode
+    });
     this.pageActive = true;
     this.colorHintSeen = hasSeenColorHint();
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -215,9 +222,22 @@ const doodleDefinition = {
     this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
   },
 
+  finishPropCanvasPrepare(setupToken, reveal) {
+    if (setupToken !== this.canvasSetupToken || typeof reveal !== 'function') return;
+    const started = this.propPrepareStartedAt || Date.now();
+    const waitMs = Math.max(0, PROP_PREPARE_MIN_MS - (Date.now() - started));
+    clearTimeout(this.propPrepareRevealTimer);
+    this.propPrepareRevealTimer = setTimeout(() => {
+      this.propPrepareRevealTimer = null;
+      if (setupToken !== this.canvasSetupToken) return;
+      reveal();
+    }, waitMs);
+  },
+
   setupCanvases() {
     const setupToken = (this.canvasSetupToken || 0) + 1;
     this.canvasSetupToken = setupToken;
+    if (this.companionPropMode) this.propPrepareStartedAt = Date.now();
     Promise.all([
       canvas2d.createLayer(this, '#eggBaseCanvas'),
       canvas2d.createLayer(this, '#eggArtCanvas')
@@ -243,7 +263,7 @@ const doodleDefinition = {
           }
           this.propLineImage = image;
           this.renderAll();
-          this.revealEditor();
+          this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
         });
       }
       return Promise.all([

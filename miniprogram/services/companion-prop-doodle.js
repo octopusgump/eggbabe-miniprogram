@@ -8,6 +8,21 @@ const shellArtService = require('./egg-shell-art');
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 
+function exportPropPeekFlipAnim(reducedMotion, durationMs) {
+  if (!wx.createAnimation) return null;
+  const animation = wx.createAnimation({
+    duration: durationMs,
+    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.32, 0, 0.67, 0)',
+    transformOrigin: '50% 50% 0'
+  });
+  if (reducedMotion) {
+    animation.opacity(0).step();
+    return animation.export();
+  }
+  animation.scaleX(0.06).opacity(0).step();
+  return animation.export();
+}
+
 function attach(definition) {
   const originalOnLoad = definition.onLoad;
   const originalOnHide = definition.onHide;
@@ -148,13 +163,18 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
-    this.setData({ propPeekAnimating: true }, () => {
+    const flipAnim = exportPropPeekFlipAnim(this.data.companionReducedMotion, flipMs);
+    this.setData({
+      propPeekAnimating: true,
+      propPeekSketchAnim: flipAnim
+    }, () => {
       clearTimeout(this.propPeekHideTimer);
       this.propPeekHideTimer = setTimeout(() => {
         this.propSession.drawingLocked = false;
         this.setData({
           propPeekVisible: false,
           propPeekAnimating: false,
+          propPeekSketchAnim: null,
           propDrawingLocked: false,
           propFinishVisible: true
         });
@@ -187,6 +207,7 @@ function attach(definition) {
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
+      propPeekSketchAnim: null,
       propFinishVisible: false
     });
     this.propPeekTimer = setTimeout(() => {

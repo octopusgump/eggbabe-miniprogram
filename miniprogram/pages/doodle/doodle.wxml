@@ -1,4 +1,8 @@
 <view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}}">
+  <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
+    <view class="prop-prepare-spinner" aria-hidden="true"></view>
+    <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
+  </view>
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
@@ -57,10 +61,6 @@
   </view>
 
   <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}}" bindtap="onCanvasBackdropTap">
-    <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-layer" aria-live="polite">
-      <view class="prop-prepare-spinner" aria-hidden="true"></view>
-      <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
-    </view>
     <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
       <inline-notice
         text="{{canvasNoticeText}}"
@@ -77,7 +77,7 @@
       aria-role="button"
       aria-label="收起简笔，开始画"
     >
-      <view class="prop-sketch-layer">
+      <view class="prop-sketch-layer" animation="{{propPeekSketchAnim}}">
         <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
       </view>
       <text wx:if="{{propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>

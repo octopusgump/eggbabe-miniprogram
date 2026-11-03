@@ -1,4 +1,4 @@
-<view class="page page--{{pageTransitionPhase}}">
+<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}}">
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>

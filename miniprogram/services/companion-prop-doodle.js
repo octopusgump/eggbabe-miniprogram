@@ -32,6 +32,7 @@ function attach(definition) {
     this.gateStrokeId = null;
     this.propGateOptions = { paper: true };
     this.propSession = propChallenge.createSession();
+    this.propEntryFlowStarted = false;
     const sketchPath = this.propEntry ? propAssets.resolveLinePath(this.propEntry) : '';
     const coloredPath = this.propEntry ? propAssets.resolveColoredPath(this.propEntry) : '';
     const legacyColored = this.propEntry && this.propEntry.colorFile
@@ -112,20 +113,25 @@ function attach(definition) {
     }
   };
 
+  definition.beginPropEntryFlow = function beginPropEntryFlow() {
+    if (!this.companionPropMode || this.propEntryFlowStarted) return;
+    this.propEntryFlowStarted = true;
+    if (!propChallenge.hasSeenTutorial()) {
+      this.setData({
+        propTutorialVisible: true,
+        propTutorialStep: 0,
+        propDrawingLocked: true,
+        propGuideSketchVisible: true
+      });
+      this.setPropLineOverlayVisible(true);
+      return;
+    }
+    this.scheduleInitialPropPeek();
+  };
+
   definition.revealEditor = function revealEditor() {
     const run = () => {
       if (!this.pageActive) return;
-      if (this.companionPropMode && !propChallenge.hasSeenTutorial()) {
-        this.setData({
-          propTutorialVisible: true,
-          propTutorialStep: 0,
-          propDrawingLocked: true,
-          propGuideSketchVisible: true
-        });
-        this.setPropLineOverlayVisible(true);
-      } else if (this.companionPropMode) {
-        this.scheduleInitialPropPeek();
-      }
       if (originalReveal) originalReveal.call(this);
     };
     if (wx.nextTick) wx.nextTick(run);

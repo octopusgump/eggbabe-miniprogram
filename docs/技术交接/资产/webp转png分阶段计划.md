@@ -4,7 +4,7 @@
 
 | 阶段 | 范围 | 约文件数 | 代码改动 | 状态 |
 |------|------|---------:|----------|------|
-| **1** | `miniprogram/assets/ui/**` + 左下信封/宠物 stare | ~39 WebP + 2 角色 | `life-scene`、`companion-pet-image` | 进行中 |
+| **1** | `miniprogram/assets/ui/**` + 左下信封/宠物 stare | ~39 WebP + 2 角色 | `life-scene`、`companion-pet-image` | 待合入（PR） |
 | **2** | `30-character` 破壳后头像/姿势、`cards/*` 收藏卡 | ~10 + 20 | `companion-pet-image`、demo、纪念册 | 待办 |
 | **3** | `keepsakes/turnarounds/line` + 道具 catalog 彩色 | ~41 + catalog | `companion-prop-*`、PRD 同步 | 待办 |
 | **4** | 陪伴照片、fixtures、demo 明信片 | ~20+ | `companion-photo-catalog`、`fixtures/*` | 待办 |

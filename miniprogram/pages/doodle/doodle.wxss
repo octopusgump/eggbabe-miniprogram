@@ -127,7 +127,7 @@
 
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
 
-.preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; }
+.preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; --prop-finish-btn-bottom: 210rpx; --prop-finish-btn-height: 96rpx; --canvas-action-rail-height: 224rpx; }
 .preview--prop-tutorial { overflow: visible; }
 .preview--prop-preparing .prop-paper-stage,
 .preview--prop-preparing .prop-peek-anchor,
@@ -145,7 +145,7 @@
 .preview--prop-unlock .prop-finish-btn,
 .preview--prop-unlock .content,
 .preview--prop-unlock .canvas-action-rail { visibility: hidden; pointer-events: none; }
-.preview--prop .canvas-action-rail { top: calc(50% + 216rpx + var(--prop-layout-nudge, 0)); z-index: 38; }
+.preview--prop .canvas-action-rail { top: auto; bottom: calc(var(--prop-finish-btn-bottom) + var(--prop-finish-btn-height) - var(--canvas-action-rail-height) + env(safe-area-inset-bottom)); transform: none; z-index: 38; }
 .egg-canvas-stack--hidden { visibility: hidden; pointer-events: none; height: 0; overflow: hidden; flex: 0 0 0; }
 .prop-canvas-slot--hidden { visibility: hidden; pointer-events: none; }
 
@@ -175,7 +175,7 @@
 .prop-peek-anchor .prop-peek-caption { position: relative; top: auto; left: auto; right: auto; margin-top: 24rpx; width: 100%; }
 .prop-peek-caption { position: absolute; z-index: 12; left: 0; right: 0; top: calc(50% + 72rpx + var(--prop-layout-nudge, 0)); color: rgba(53, 72, 60, 0.6); font-size: 26rpx; line-height: 1.3; text-align: center; pointer-events: none; }
 
-.prop-finish-btn { position: absolute; z-index: 40; left: 50%; bottom: calc(210rpx + env(safe-area-inset-bottom)); width: 560rpx; max-width: calc(100% - 96rpx); height: 96rpx; margin: 0; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 96rpx; text-align: center; transform: translateX(-50%); box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); }
+.prop-finish-btn { position: absolute; z-index: 40; left: 50%; bottom: calc(var(--prop-finish-btn-bottom, 210rpx) + env(safe-area-inset-bottom)); width: 560rpx; max-width: calc(100% - 96rpx); height: var(--prop-finish-btn-height, 96rpx); margin: 0; padding: 0; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: var(--prop-finish-btn-height, 96rpx); text-align: center; transform: translateX(-50%); box-shadow: 0 8rpx 24rpx rgba(0, 41, 0, 0.12); }
 
 .prop-unlock-layer { position: fixed; z-index: 120; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: env(safe-area-inset-top) 48rpx calc(48rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: #F8F7EF; }
 .prop-unlock-stack { display: flex; flex-direction: column; align-items: center; width: 100%; margin: 0 0 56rpx; flex-shrink: 0; }

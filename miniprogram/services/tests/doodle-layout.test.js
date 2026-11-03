@@ -53,6 +53,11 @@ assert.equal(
   '道具临摹时撤销与清空导轨必须叠在画纸与原生 Canvas 之上'
 );
 assert.match(wxss, /\.preview--prop \.canvas-action-rail\s*\{[^}]*z-index:\s*38;/, '道具临摹导轨必须高于画纸层');
+assert.match(
+  wxss,
+  /\.preview--prop \.canvas-action-rail\s*\{[^}]*bottom:\s*calc\(var\(--prop-finish-btn-bottom\) \+ var\(--prop-finish-btn-height\) - var\(--canvas-action-rail-height\) \+ env\(safe-area-inset-bottom\)\);[^}]*transform:\s*none;/,
+  '道具临摹撤销与清空导轨顶缘须与画好了按钮顶缘对齐'
+);
 assert.match(wxss, /\.content\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*100;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;/, '工具区域必须明确高于蛋体 Canvas');
 assert.match(
   wxss,

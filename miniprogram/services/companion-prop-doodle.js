@@ -3,6 +3,7 @@ const propAssets = require('./companion-prop-assets');
 const propChallenge = require('./companion-prop-challenge');
 const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
+const shellArtService = require('./egg-shell-art');
 
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';

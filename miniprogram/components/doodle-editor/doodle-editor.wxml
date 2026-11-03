@@ -65,35 +65,6 @@
       ></inline-notice>
     </view>
 
-    <view class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
-      <view
-        class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
-        aria-role="button"
-        aria-label="撤销一步"
-        bindtap="onUndo"
-      >
-        <image
-          class="canvas-action-image"
-          src="{{canUndo ? toolbarIcons.undo : toolbarIcons.undoDisabled}}"
-          mode="aspectFit"
-        ></image>
-        <text class="canvas-action-label">撤销</text>
-      </view>
-      <view
-        class="canvas-action-button canvas-action-button--clear {{!canClear ? 'canvas-action-button--disabled' : ''}}"
-        aria-role="button"
-        aria-label="清空画面"
-        bindtap="onClear"
-      >
-        <image
-          class="canvas-action-image"
-          src="{{canClear ? toolbarIcons.clear : toolbarIcons.clearDisabled}}"
-          mode="aspectFit"
-        ></image>
-        <text class="canvas-action-label">清空</text>
-      </view>
-    </view>
-
     <view wx:if="{{!companionPropMode}}" class="preview-aura"></view>
     <view
       wx:if="{{companionPropMode && (propPeekVisible || propPeekAnimating)}}"
@@ -160,6 +131,36 @@
         catchtouchcancel="onCanvasTouchCancel"
       ></canvas>
     </view>
+
+    <view class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
+      <view
+        class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="撤销一步"
+        bindtap="onUndo"
+      >
+        <image
+          class="canvas-action-image"
+          src="{{canUndo ? toolbarIcons.undo : toolbarIcons.undoDisabled}}"
+          mode="aspectFit"
+        ></image>
+        <text class="canvas-action-label">撤销</text>
+      </view>
+      <view
+        class="canvas-action-button canvas-action-button--clear {{!canClear ? 'canvas-action-button--disabled' : ''}}"
+        aria-role="button"
+        aria-label="清空画面"
+        bindtap="onClear"
+      >
+        <image
+          class="canvas-action-image"
+          src="{{canClear ? toolbarIcons.clear : toolbarIcons.clearDisabled}}"
+          mode="aspectFit"
+        ></image>
+        <text class="canvas-action-label">清空</text>
+      </view>
+    </view>
+
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <button

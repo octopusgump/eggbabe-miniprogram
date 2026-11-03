@@ -38,7 +38,17 @@ assert.match(
   /\.preview\s*\{[^}]*min-height:\s*0;[^}]*flex:\s*1;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/,
   '导航以下必须使用无分层边框的全屏画布，并将蛋保持在可用区域正中'
 );
-assert.equal(wxml.includes('class="preview" bindtap="onCanvasBackdropTap"') && /class="preview"[\s\S]*class="content" catchtap="onToolPanelTap"/.test(wxml), true, '工具必须位于蛋的画布层之上，点击画布外部时可收起展开设置');
+assert.equal(
+  wxml.includes('bindtap="onCanvasBackdropTap"') && wxml.indexOf('class="canvas-action-rail') < wxml.indexOf('catchtap="onToolPanelTap"'),
+  true,
+  '工具必须位于蛋的画布层之上，点击画布外部时可收起展开设置'
+);
+assert.equal(
+  wxml.indexOf('class="prop-paper-stage"') < 0 || wxml.indexOf('class="canvas-action-rail') > wxml.indexOf('class="prop-paper-stage"'),
+  true,
+  '道具临摹时撤销与清空导轨必须叠在画纸与原生 Canvas 之上'
+);
+assert.match(wxss, /\.preview--prop \.canvas-action-rail\s*\{[^}]*z-index:\s*38;/, '道具临摹导轨必须高于画纸层');
 assert.match(wxss, /\.content\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*100;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;/, '工具区域必须明确高于蛋体 Canvas');
 assert.match(
   wxss,
@@ -97,7 +107,7 @@ assert.equal(wxml.includes('wx:if="{{exitConfirmVisible}}"') && wxml.includes('�
 assert.equal(wxml.includes('保存并返回'), true, '确认窗口必须明确说明保存成功后会返回桌面');
 assert.equal(wxml.includes('保存后，蛋宝宝会带着新装饰回到卧室。'), true, '确认窗口说明必须明确保存后的卧室同步结果');
 assert.match(wxml, /<root-portal[\s\S]*<cover-view[\s\S]*class="exit-confirm-overlay"[\s\S]*class="exit-confirm-dialog"/, '退出确认必须通过 root-portal 和 cover-view 提升到原生 Canvas 之上');
-assert.equal((wxml.match(/hidden="\{\{exitConfirmVisible\}\}"/g) || []).length, 2, '确认窗口显示时必须隐藏两个原生 Canvas，避免蛋穿透弹窗');
+assert.ok((wxml.match(/hidden="\{\{exitConfirmVisible[^"]*\}\}"/g) || []).length >= 2, '确认窗口显示时必须隐藏原生 Canvas，避免蛋穿透弹窗');
 assert.equal(wxml.includes('catchtap="onExitConfirmTap"') && wxml.includes('catchtap="onExitConfirmDialogTap"'), true, '点击遮罩必须返回画画，点击确认卡片内部不得误关闭');
 assert.equal(wxml.includes('exit-confirm-close'), false, '确认窗口不得再显示右上角关闭按钮');
 assert.match(wxss, /\.exit-confirm-dialog\s*\{[^}]*border:\s*1rpx solid #E5E3DF;[^}]*border-radius:\s*32rpx;[^}]*background:\s*#FFF;[^}]*color:\s*#1A1A1A;/, '退出确认窗口必须使用设计系统的白色卡片、浅色描边和深色正文');

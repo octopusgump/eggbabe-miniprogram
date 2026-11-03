@@ -61,23 +61,13 @@ assert.match(
 assert.match(wxss, /\.content\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*100;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;/, '工具区域必须明确高于蛋体 Canvas');
 assert.match(
   wxss,
-  /\.egg-canvas-stack\s*\{[^}]*z-index:\s*1;[^}]*top:\s*-168rpx;[^}]*width:\s*calc\(89vw - var\(--canvas-action-rail-reserve, 0px\)\);[^}]*height:\s*calc\(89vw - var\(--canvas-action-rail-reserve, 0px\)\);[^}]*transform-origin:\s*center;/,
-  '透明蛋壳 Canvas 必须累计上移 168rpx，并为右侧撤销导轨预留宽度后保持正方形'
+  /\.egg-canvas-stack\s*\{[^}]*z-index:\s*1;[^}]*top:\s*-168rpx;[^}]*width:\s*89vw;[^}]*height:\s*89vw;[^}]*transform-origin:\s*center;/,
+  '透明蛋壳 Canvas 必须累计上移 168rpx，同时保持约占屏幕一半和正方形比例'
 );
 assert.match(
   wxss,
-  /\.preview\s*\{[^}]*--canvas-action-rail-reserve:\s*148rpx;[^}]*padding-right:\s*var\(--canvas-action-rail-reserve\);/,
-  '画布舞台必须为撤销与清空导轨预留右侧空白，避免原生 Canvas 压住按钮'
-);
-assert.match(
-  wxss,
-  /\.prop-paper-stage\s*\{[^}]*width:\s*calc\(88vw - var\(--canvas-action-rail-reserve, 0px\)\);/,
-  '道具临摹画纸须同步收窄，为右侧导轨让出原生 Canvas 不可绘制区域'
-);
-assert.match(
-  wxss,
-  /\.prop-paper-stage\s*\{[^}]*left:\s*calc\(50% - var\(--canvas-action-rail-reserve, 0px\) \/ 2\);/,
-  '道具临摹画纸须左移，使画纸与蛋壳舞台在预留导轨后仍视觉居中'
+  /\.prop-paper-stage\s*\{[^}]*left:\s*50%;[^}]*width:\s*88vw;/,
+  '道具临摹画纸须保持原始 88vw 居中宽度'
 );
 assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必须建立明确层叠上下文');
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');

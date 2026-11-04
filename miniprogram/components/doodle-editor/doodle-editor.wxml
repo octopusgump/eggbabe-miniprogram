@@ -47,10 +47,10 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && (canvasNoticeText || (propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)))}}"
-    class="prop-top-chrome {{canvasNoticeText && canvasNoticeVisible ? 'prop-top-chrome--with-notice' : ''}}"
+    wx:if="{{companionPropMode && canvasReady && ((canvasNoticeText && canvasNoticeVisible) || (propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)))}}"
+    class="prop-chrome-stack {{canvasNoticeText && canvasNoticeVisible ? 'prop-chrome-stack--with-gate' : ''}}"
   >
-    <view wx:if="{{canvasNoticeText}}" class="prop-gate-notice-slot">
+    <view wx:if="{{canvasNoticeText && canvasNoticeVisible}}" class="prop-gate-notice-bar">
       <inline-notice
         text="{{canvasNoticeText}}"
         tone="{{canvasNoticeTone}}"
@@ -59,15 +59,19 @@
     </view>
     <view
       wx:if="{{propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
-      class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
+      class="prop-look-row"
     >
       <view
-        class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-        bindtap="onPropLookAgain"
-        aria-role="button"
-        aria-label="{{propLookHint}}"
+        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
       >
-        <text>{{propLookHint}}</text>
+        <view
+          class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+          bindtap="onPropLookAgain"
+          aria-role="button"
+          aria-label="{{propLookHint}}"
+        >
+          <text>{{propLookHint}}</text>
+        </view>
       </view>
     </view>
   </view>

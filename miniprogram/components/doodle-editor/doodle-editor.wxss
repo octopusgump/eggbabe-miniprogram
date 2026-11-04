@@ -32,11 +32,12 @@
 
 .preview { position: relative; z-index: 30; isolation: isolate; min-height: 0; flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 0; background: linear-gradient(180deg, #FFF 0%, #F7F5EE 100%); box-shadow: none; }
 .canvas-notice-anchor { position: absolute; z-index: 35; top: 28rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.prop-gate-notice-slot { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; pointer-events: none; }
-.prop-top-chrome { position: relative; z-index: 50; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20rpx; padding: 16rpx 24rpx 12rpx; box-sizing: border-box; background: #F8F7EF; }
-.prop-top-chrome--with-notice + .preview--prop { --prop-layout-nudge: 24rpx; }
-.prop-top-chrome .prop-look-chrome { z-index: auto; padding: 0; background: transparent; }
-.page--prop-unlock .prop-top-chrome { visibility: hidden; pointer-events: none; }
+.prop-chrome-stack { position: relative; z-index: 50; flex: 0 0 auto; box-sizing: border-box; background: #F8F7EF; }
+.prop-chrome-stack--with-gate + .preview--prop { --prop-layout-nudge: 28rpx; }
+.prop-gate-notice-bar { display: flex; align-items: center; justify-content: center; padding: 12rpx 24rpx 0; margin: 0 0 32rpx; pointer-events: none; }
+.prop-look-row { display: flex; justify-content: center; padding: 20rpx 24rpx 12rpx; pointer-events: none; }
+.prop-gate-notice-bar + .prop-look-row { padding-top: 0; }
+.page--prop-unlock .prop-chrome-stack { visibility: hidden; pointer-events: none; }
 .canvas-action-button { width: 112rpx; height: 112rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; border: 0; border-radius: 0; background: transparent; color: #536047; box-shadow: none; transition: transform 180ms ease, opacity 180ms ease, color 180ms ease; }
 .canvas-action-button + .canvas-action-button { border-top: 1rpx solid #E5E3DF; }
 .canvas-action-button:active { transform: scale(.98); }
@@ -140,7 +141,7 @@
 .preview--prop-tutorial-step-0 .content,
 .preview--prop-tutorial-step-0 .canvas-action-rail,
 .preview--prop-tutorial-step-0 .prop-finish-btn { opacity: 0.35; }
-.page--prop-tutorial-step-0 .prop-top-chrome .prop-look-chrome,
+.page--prop-tutorial-step-0 .prop-chrome-stack .prop-look-chrome,
 .preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; z-index: 145; }
 .page--prop-tutorial-step-0 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
 .preview--prop-tutorial-step-0 .prop-peek-anim { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 28rpx; }
@@ -154,7 +155,7 @@
 .prop-prepare-text { color: #566155; font-size: 28rpx; line-height: 1.4; }
 @keyframes prop-prepare-spin { to { transform: rotate(360deg); } }
 .preview--prop-unlock .prop-paper-stage,
-.page--prop-unlock .prop-top-chrome,
+.page--prop-unlock .prop-chrome-stack,
 .preview--prop-unlock .prop-sketch-layer,
 .preview--prop-unlock .prop-peek-anchor,
 .preview--prop-unlock .prop-peek-caption,

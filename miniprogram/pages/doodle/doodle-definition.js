@@ -125,7 +125,7 @@ const doodleDefinition = {
 
   onLoad(query) {
     this.companionDrawing = Boolean(query && query.entry === 'companion');
-    this.companionPropMode = this.companionDrawing;
+    this.companionPropMode = Boolean(this.companionDrawing && query && query.mode === 'prop');
     this.setData({
       companionDrawing: this.companionDrawing,
       companionPropMode: this.companionPropMode
@@ -133,13 +133,20 @@ const doodleDefinition = {
     if (this.companionPropMode) {
       this.propEntrySketchReady = false;
       this.propEntryCanvasReady = false;
+      companionAdapter.setCompanionDraft(null);
     }
     this.pageActive = true;
     this.colorHintSeen = hasSeenColorHint();
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     const pet = petStore.getPet();
-    this.resumingCompanionDraft = Boolean(this.companionDrawing && companionAdapter.getCompanionDraft());
-    this.shellArt = shellArtService.normalizeShellArt(this.companionDrawing ? companionAdapter.getCompanionDraft() : pet && pet.shell);
+    this.resumingCompanionDraft = Boolean(
+      this.companionDrawing && !this.companionPropMode && companionAdapter.getCompanionDraft()
+    );
+    this.shellArt = shellArtService.normalizeShellArt(
+      this.companionPropMode
+        ? null
+        : (this.companionDrawing ? companionAdapter.getCompanionDraft() : pet && pet.shell)
+    );
     const latestBrush = this.shellArt.operations.slice().reverse().find(item => (
       item.type === 'stroke'
       && item.tool === 'brush'
@@ -289,8 +296,10 @@ const doodleDefinition = {
   beginCompanionDrawing() {
     if (this.companionStartRequested) return Promise.resolve();
     this.companionStartRequested = true;
-    companionAdapter.setCompanionDraft(this.shellArt);
-    companionAdapter.markCompanionDraftStarted();
+    if (!this.companionPropMode) {
+      companionAdapter.setCompanionDraft(this.shellArt);
+      companionAdapter.markCompanionDraftStarted();
+    }
     // 仅画布就绪，不算活动完成；星星与日数在“画好了”成功导出后统一结算。
     return Promise.resolve({ ok: true, awardedStars: 0, effectiveAdded: false });
   },
@@ -836,6 +845,7 @@ const doodleDefinition = {
   },
 
   async performPersistence(snapshot) {
+    if (this.companionPropMode) return { ok: true };
     if (this.companionDrawing) { this.companionDraft = shellArtService.cloneShellArt(snapshot); companionAdapter.setCompanionDraft(this.companionDraft); return { ok: true }; }
     if (runtime.getMode() === 'demo') {
       const result = petStore.applyConfirmedDoodle(snapshot);
@@ -1016,7 +1026,7 @@ const doodleDefinition = {
     if (this.companionDrawing) {
       if (this.pageDisposed) return;
       if (this.savedForReturn) { await this.leaveEditor({ saved: true }); return; }
-      companionAdapter.setCompanionDraft(this.shellArt);
+      if (!this.companionPropMode) companionAdapter.setCompanionDraft(this.shellArt);
       await this.leaveEditor(); return;
     }
     if (this.editRevision !== this.savedRevision) {
@@ -1029,7 +1039,10 @@ const doodleDefinition = {
   },
 
   onHide() {
-    if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
+    if (this.companionDrawing && !this.companionPropMode && !this.savedForReturn) {
+      if (this.currentStroke) this.finishStroke();
+      companionAdapter.setCompanionDraft(this.shellArt);
+    }
     this.clearCompanionFeedback();
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.propEntrySketchFallbackTimer = null;
@@ -1052,7 +1065,9 @@ const doodleDefinition = {
   onUnload() {
     this.pageDisposed = true;
     if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }
-    if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
+    if (this.companionDrawing && !this.companionPropMode && !this.savedForReturn) {
+      companionAdapter.setCompanionDraft(this.shellArt);
+    }
     this.clearCompanionFeedback();
     clearTimeout(this.propEntrySketchFallbackTimer);
     clearTimeout(this.propCanvasSetupTimer);

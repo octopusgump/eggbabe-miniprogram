@@ -31,6 +31,19 @@ function preloadLocalImage(src) {
   });
 }
 
+function propCompletionSignal(payload) {
+  if (!payload) return null;
+  return {
+    id: payload.id,
+    kind: payload.kind,
+    propId: payload.propId,
+    propName: payload.propName,
+    line: payload.line,
+    date: payload.date,
+    awardedStars: payload.awardedStars
+  };
+}
+
 function propPeekTransitionMs(editor, normalMs) {
   if (editor.data && editor.data.companionReducedMotion) return 0;
   return normalMs;
@@ -52,8 +65,9 @@ function attach(definition) {
 
   definition.onLoad = function onLoad(query) {
     if (originalOnLoad) originalOnLoad.call(this, query);
-    this.companionPropMode = Boolean(this.companionDrawing);
+    this.companionPropMode = Boolean(this.companionDrawing && query && query.mode === 'prop');
     if (!this.companionPropMode) return;
+    companionAdapter.setCompanionDraft(null);
     this.propEntrySource = (query && query.source) || 'activity';
     this.propEntry = propCatalog.getById(query && query.propId)
       || propCatalog.pickRandom(companionAdapter.getRoomScope());
@@ -316,7 +330,9 @@ function attach(definition) {
       }
     }
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
-    if (channel && channel.emit && payload) channel.emit('companionDrawingCompleted', payload);
+    const signal = propCompletionSignal(payload);
+    if (channel && channel.emit && signal) channel.emit('companionDrawingCompleted', signal);
+    this.pendingPropCompletion = null;
     companionAdapter.setCompanionDraft(null);
     this.savedForReturn = true;
     this.leaveEditor({ saved: true });
@@ -430,7 +446,6 @@ function attach(definition) {
       kind: 'prop',
       propId: this.propEntry && this.propEntry.id,
       propName: this.propEntry && this.propEntry.name,
-      image,
       line: '这个小道具，送给你。',
       date: require('./companion-star-rules').shanghaiDate()
     };

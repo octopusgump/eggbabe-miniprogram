@@ -111,7 +111,15 @@ const canvas = require('../../utils/canvas-2d');
     await editor.onPropUnlockOk();
     assert.equal(emitted.kind, 'prop');
     assert.equal(emitted.propId, 'dried_tea_tag');
-    assert.equal(emitted.image, '/tmp/prop-drawing.png');
+    assert.equal(emitted.image, undefined, '一次性临摹不向房间传递画作文件');
+    assert.equal('image' in emitted, false);
+
+    const adapter = require('../iaa-star-unlock-adapter');
+    adapter.configureRoom('prop-no-draft');
+    const draftEditor = createEditor();
+    draftEditor.shellArt.operations.push({ type: 'stroke', tool: 'brush', points: [{ x: 1, y: 1 }] });
+    draftEditor.onHide();
+    assert.equal(adapter.getCompanionDraft(), null, '道具临摹中途退出不得写入草稿');
 
     const peekEditor = createEditor();
     peekEditor.propSession = propChallenge.createSession();

@@ -253,6 +253,7 @@ const doodleDefinition = {
         if (this.companionDrawing) this.beginCompanionDrawing();
       };
       if (this.companionPropMode) {
+        if (typeof this.renderAll === 'function') this.renderAll();
         revealPatch.pageTransitionPhase = 'visible';
         this.setData(revealPatch, () => {
           clearTimeout(this.propEntryFlowDeferTimer);
@@ -360,7 +361,6 @@ const doodleDefinition = {
             this.tryCompletePropEntryLoading(this.canvasSetupToken);
           }
         }, 3200);
-        this.renderAll();
         this.propEntryCanvasReady = true;
         this.tryCompletePropEntryLoading(setupToken);
         return;

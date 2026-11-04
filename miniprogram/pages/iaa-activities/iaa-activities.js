@@ -2,6 +2,7 @@ const petStore = require('../../utils/pet-store');
 const config = require('../../config/v2');
 const stars = require('../../services/iaa-star-unlock-adapter');
 const pageModel = require('../../services/companion-activities-page');
+const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
 
 Page({
   data: {
@@ -53,6 +54,9 @@ Page({
       if (!this) return;
       const { wishBursts, wishPressKey } = this.data;
       this.setData({ ...view, wishBursts, wishPressKey });
+      propEntryPrefetch.warmPropDoodleEntry({
+        pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity'
+      });
     });
   },
 
@@ -76,13 +80,15 @@ Page({
       return;
     }
     if (item.key === 'drawing') {
+      const route = item.route;
+      propEntryPrefetch.warmPropDoodleEntry({ pageUrl: route });
       stars.beginCompanionPropDrawing().then(result => {
         if (!result.ok) {
           this.showNotice(result.error && result.error.message || '暂时打不开，请稍后再试。', 'warning');
           return;
         }
         wx.navigateTo({
-          url: item.route,
+          url: route,
           fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
         });
       });

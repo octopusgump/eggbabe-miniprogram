@@ -33,6 +33,7 @@ assert.match(pageScript, /tryCompletePropEntryLoading[\s\S]*revealEditor/, '道�
 assert.match(pageScript, /schedulePropCanvasSetup[\s\S]*PROP_CANVAS_SETUP_DEFER_MS/, '道具临摹须等路由滑入后再 init Canvas');
 assert.match(pageScript, /revealEditor\(\)[\s\S]*if \(this\.companionPropMode\)[\s\S]*revealPatch\.pageTransitionPhase = 'visible'/, '道具临摹 reveal 须跳过二次 page--entering 淡入');
 assert.match(pageScript, /propEntryFlowDeferTimer[\s\S]*PROP_ENTRY_FLOW_DEFER_MS/, '道具临摹须延后自动看一看，避免与 reveal 同帧');
+assert.match(pageScript, /companionPropMode[\s\S]*renderAll\(\)[\s\S]*pageTransitionPhase:\s*'visible'/, 'Canvas 首帧绘制须推迟到 reveal，不与 createLayer 同帧');
 assert.doesNotMatch(pageScript, /propEntryLoadingMinMs|schedulePropEntryLoadingFinish|propEntryLoadingVisible/, '不得再保留进页 Orbit loading 逻辑');
 assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再 reveal');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');

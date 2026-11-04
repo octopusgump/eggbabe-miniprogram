@@ -14,6 +14,7 @@ const dailyMoodConfig = require('../../config/daily-mood');
 const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
+const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
 const letterActivityProgress = require('../../services/companion-letter-progress');
 const companionPetImage = require('../../utils/companion-pet-image');
 const { rollDurationMs } = require('../../utils/companion-star-roll');
@@ -1768,6 +1769,9 @@ Page({
     const entryDate = require('../../services/companion-star-rules').shanghaiDate();
     this.returningFromChild = true;
     this.setData({ companionNavigating: true });
+    if (kind === 'drawing' && activity.route) {
+      propEntryPrefetch.warmPropDoodleEntry({ pageUrl: activity.route });
+    }
     wx.navigateTo({
       url: activity.route,
       success: () => {

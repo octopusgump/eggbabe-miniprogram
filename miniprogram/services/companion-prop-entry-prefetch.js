@@ -1,6 +1,5 @@
 const propCatalog = require('./companion-prop-catalog');
 const propAssets = require('./companion-prop-assets');
-const starRules = require('./companion-star-rules');
 const companionAdapter = require('./iaa-star-unlock-adapter');
 
 let warmPromise = null;
@@ -34,14 +33,14 @@ function preloadPage(url) {
   });
 }
 
-function resolveDailyPropEntry() {
+function resolveDailyPropEntry(options) {
+  const settings = options || {};
   const scope = companionAdapter.getRoomScope();
-  const date = starRules.shanghaiDate();
-  const entry = propCatalog.pickDaily(date, scope);
-  if (!entry) return { scope, date, entry: null, sketch: '' };
+  const roll = typeof settings.roll === 'number' ? { roll: settings.roll } : undefined;
+  const entry = propCatalog.pickRandom(scope, roll);
+  if (!entry) return { scope, entry: null, sketch: '' };
   return {
     scope,
-    date,
     entry,
     sketch: propAssets.resolveLinePath(entry)
   };
@@ -49,9 +48,10 @@ function resolveDailyPropEntry() {
 
 function warmPropDoodleEntry(options) {
   const settings = options || {};
-  const resolved = resolveDailyPropEntry();
+  const resolved = resolveDailyPropEntry(settings);
   if (!resolved.entry) return Promise.resolve(false);
-  const cacheKey = `${resolved.scope}:${resolved.date}:${resolved.entry.id}:${settings.pageUrl || ''}`;
+  const rollKey = typeof settings.roll === 'number' ? String(settings.roll) : 'live';
+  const cacheKey = `${resolved.scope}:${resolved.entry.id}:${settings.pageUrl || ''}:${rollKey}`;
   if (warmPromise && warmKey === cacheKey) return warmPromise;
   warmKey = cacheKey;
   warmPromise = Promise.all([

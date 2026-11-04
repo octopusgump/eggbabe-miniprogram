@@ -22,19 +22,21 @@ companionAdapter.configureRoom('prefetch-test-room');
   prefetch.resetWarmPropDoodleEntryForTests();
   calls.images.length = 0;
   calls.pages.length = 0;
-  const resolved = prefetch.resolveDailyPropEntry();
-  assert.ok(resolved.entry && resolved.sketch, '须能解析当日道具');
+  const resolved = prefetch.resolveDailyPropEntry({ roll: 0.12 });
+  assert.ok(resolved.entry && resolved.sketch, '须能解析随机道具');
   assert.equal(resolved.sketch, propAssets.resolveLinePath(resolved.entry));
 
   await prefetch.warmPropDoodleEntry({
-    pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity'
+    pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity',
+    roll: 0.12
   });
   assert.equal(calls.images.includes(resolved.sketch), true, '须预载简笔');
   assert.equal(calls.pages.length, 1, '须尝试 preloadPage');
 
   calls.images.length = 0;
   await prefetch.warmPropDoodleEntry({
-    pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity'
+    pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity',
+    roll: 0.12
   });
   assert.equal(calls.images.length, 0, '同键预热须去重');
 

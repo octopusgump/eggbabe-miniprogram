@@ -3,35 +3,37 @@ const propAssets = require('./companion-prop-assets');
 const propChallenge = require('./companion-prop-challenge');
 const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
-const shellArtService = require('./egg-shell-art');
 
-const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
+const PROP_LOOK_GATE_HINT_MS = 1800;
+const PROP_LOOK_GATE_HINT_FADE_MS = 180;
+/** 未达标点「再看一眼」时的 pill 文案（与「画好了」v2 长句分开） */
+const PROP_LOOK_GATE_HINT = '再画一会儿吧';
 
-function exportPropPeekRestAnim() {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: 1,
-    timingFunction: 'linear',
-    transformOrigin: '50% 50% 0'
-  });
-  animation.scaleX(1).opacity(1).step();
-  return animation.export();
+function schedulePropPeekPhase(editor, apply) {
+  if (wx.nextTick) wx.nextTick(apply);
+  else setTimeout(apply, 16);
 }
 
-function exportPropPeekFlipAnim(reducedMotion, durationMs) {
-  if (!wx.createAnimation) return null;
-  const animation = wx.createAnimation({
-    duration: durationMs,
-    timingFunction: reducedMotion ? 'ease-out' : 'cubic-bezier(0.32, 0, 0.67, 0)',
-    transformOrigin: '50% 50% 0'
+function preloadLocalImage(src) {
+  const path = String(src || '').trim();
+  if (!path) return Promise.resolve(false);
+  return new Promise(resolve => {
+    if (typeof wx.getImageInfo !== 'function') {
+      resolve(true);
+      return;
+    }
+    wx.getImageInfo({
+      src: path,
+      success: () => resolve(true),
+      fail: () => resolve(false)
+    });
   });
-  if (reducedMotion) {
-    animation.opacity(0).step();
-    return animation.export();
-  }
-  animation.scaleX(0.06).opacity(0).step();
-  return animation.export();
+}
+
+function propPeekTransitionMs(editor, normalMs) {
+  if (editor.data && editor.data.companionReducedMotion) return 0;
+  return normalMs;
 }
 
 function attach(definition) {
@@ -87,15 +89,60 @@ function attach(definition) {
       propColoredSrc: coloredPath,
       propPeekVisible: false,
       propPeekAnimating: false,
-      propGuideSketchVisible: false,
+      propPeekAnimPhase: 'enter',
       propDrawingLocked: true,
       propUnlockVisible: false,
-      propTutorialVisible: false,
-      propTutorialStep: 0,
-      propTutorialSteps: propChallenge.TUTORIAL_STEPS,
-      propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
-      propFinishVisible: false
+      propFinishVisible: false,
+      propLookGateHintText: '',
+      propLookGateHintTone: 'info',
+      propLookGateHintVisible: false
     });
+  };
+
+  definition.clearPropLookGateHint = function clearPropLookGateHint() {
+    clearTimeout(this.propLookGateHintTimer);
+    clearTimeout(this.propLookGateHintCleanupTimer);
+    this.propLookGateHintTimer = null;
+    this.propLookGateHintCleanupTimer = null;
+  };
+
+  definition.dismissPropLookGateHint = function dismissPropLookGateHint() {
+    this.clearPropLookGateHint();
+    if (!this.data.propLookGateHintText && !this.data.propLookGateHintVisible) return;
+    this.setData({
+      propLookGateHintText: '',
+      propLookGateHintVisible: false,
+      propLookGateHintTone: 'info'
+    });
+  };
+
+  definition.preloadPropEntryAssets = function preloadPropEntryAssets() {
+    if (!this.companionPropMode) return Promise.resolve(true);
+    const sketch = this.data.propSketchSrc || this.data.propSketchPath;
+    if (!sketch) return Promise.resolve(true);
+    return preloadLocalImage(sketch).then(() => true, () => true);
+  };
+
+  definition.showPropLookGateHint = function showPropLookGateHint(text, tone) {
+    if (!this.companionPropMode || this.pageActive === false) return false;
+    const message = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!message) return false;
+    this.clearPropLookGateHint();
+    this.setData({
+      propLookGateHintText: message,
+      propLookGateHintTone: tone === 'warning' ? 'warning' : 'info',
+      propLookGateHintVisible: true
+    });
+    this.propLookGateHintTimer = setTimeout(() => {
+        this.propLookGateHintTimer = null;
+        this.setData({ propLookGateHintVisible: false });
+        const fadeMs = this.data.companionReducedMotion ? 0 : PROP_LOOK_GATE_HINT_FADE_MS;
+        this.propLookGateHintCleanupTimer = setTimeout(() => {
+          this.propLookGateHintCleanupTimer = null;
+          if (!this.data.propLookGateHintVisible) this.setData({ propLookGateHintText: '' });
+      }, fadeMs);
+    }, PROP_LOOK_GATE_HINT_MS);
+    return true;
   };
 
   definition.playPropUnlockAward = function playPropUnlockAward() {
@@ -143,16 +190,6 @@ function attach(definition) {
   definition.beginPropEntryFlow = function beginPropEntryFlow() {
     if (!this.companionPropMode || this.propEntryFlowStarted) return;
     this.propEntryFlowStarted = true;
-    if (!propChallenge.hasSeenTutorial()) {
-      this.setData({
-        propTutorialVisible: true,
-        propTutorialStep: 0,
-        propDrawingLocked: true,
-        propGuideSketchVisible: true
-      });
-      this.setPropLineOverlayVisible(true);
-      return;
-    }
     this.scheduleInitialPropPeek();
   };
 
@@ -170,45 +207,47 @@ function attach(definition) {
   };
 
   definition.finishPropPeekDismiss = function finishPropPeekDismiss() {
+    clearTimeout(this.propPeekPopInSettleTimer);
     if (this.propSession) this.propSession.drawingLocked = false;
     this.setData({
       propPeekVisible: false,
       propPeekAnimating: false,
-      propPeekSketchAnim: null,
+      propPeekAnimPhase: 'enter',
       propDrawingLocked: false,
       propFinishVisible: true
     }, () => {
       if (typeof this.renderAll === 'function') this.renderAll();
-      this.setPropLineOverlayVisible(true);
     });
   };
 
-  // 收起只走 wx.createAnimation。再叠 CSS transform 时，真机上两套动画会一起失效。
+  // 简笔出现/收起用 CSS transition；减少动态效果时跳过位移/缩放动画。
   definition.dismissPropPeek = function dismissPropPeek() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
-    const flipMs = this.data.companionReducedMotion ? 80 : propChallenge.PEEK_FLIP_MS;
+    clearTimeout(this.propPeekPopInSettleTimer);
+    const outMs = propPeekTransitionMs(this, propChallenge.PEEK_POP_OUT_MS);
     const generation = (this.propPeekGeneration || 0) + 1;
     this.propPeekGeneration = generation;
-    this.setData({ propPeekAnimating: true }, () => {
+    if (outMs === 0) {
+      this.finishPropPeekDismiss();
+      return;
+    }
+    this.setData({
+      propPeekAnimating: true,
+      propPeekAnimPhase: 'leave'
+    }, () => {
       if (generation !== this.propPeekGeneration) return;
-      this.setData({
-        propPeekSketchAnim: exportPropPeekFlipAnim(Boolean(this.data.companionReducedMotion), flipMs)
-      }, () => {
+      clearTimeout(this.propPeekHideTimer);
+      this.propPeekHideTimer = setTimeout(() => {
         if (generation !== this.propPeekGeneration) return;
-        clearTimeout(this.propPeekHideTimer);
-        this.propPeekHideTimer = setTimeout(() => {
-          if (generation !== this.propPeekGeneration) return;
-          this.finishPropPeekDismiss();
-        }, flipMs);
-      });
+        this.finishPropPeekDismiss();
+      }, outMs);
     });
   };
 
   definition.onPropPeekCardTap = function onPropPeekCardTap() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
-    if (this.data.propTutorialVisible) return;
     this.dismissPropPeek();
   };
 
@@ -226,13 +265,22 @@ function attach(definition) {
       });
     }
     this.propSession.drawingLocked = true;
-    this.setPropLineOverlayVisible(false);
+    const generation = this.propPeekGeneration;
+    clearTimeout(this.propPeekPopInSettleTimer);
+    const reducedMotion = Boolean(this.data.companionReducedMotion);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekSketchAnim: exportPropPeekRestAnim(),
+      propPeekAnimPhase: reducedMotion ? 'shown' : 'enter',
       propFinishVisible: false
+    }, () => {
+      if (generation !== this.propPeekGeneration) return;
+      if (reducedMotion) return;
+      schedulePropPeekPhase(this, () => {
+        if (generation !== this.propPeekGeneration) return;
+        this.setData({ propPeekAnimPhase: 'shown' });
+      });
     });
     this.propPeekTimer = setTimeout(() => {
       this.dismissPropPeek();
@@ -240,34 +288,15 @@ function attach(definition) {
   };
 
   definition.onPropLookAgain = function onPropLookAgain() {
-    if (this.data.propDrawingLocked || this.data.propUnlockVisible || this.data.propTutorialVisible) return;
+    if (this.data.propDrawingLocked || this.data.propUnlockVisible) return;
     if (this.propSession.lookRemaining <= 0) return;
     if (this.currentStroke) this.finishStroke();
-    this.startPropPeek({ countsAgainstManual: true });
-  };
-
-  definition.onPropTutorialSkip = function onPropTutorialSkip() {
-    propChallenge.markTutorialSeen();
-    this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-    this.setPropLineOverlayVisible(false);
-    this.scheduleInitialPropPeek();
-  };
-
-  definition.onPropTutorialNext = function onPropTutorialNext() {
-    const step = Number(this.data.propTutorialStep) || 0;
-    if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
-      propChallenge.markTutorialSeen();
-      this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-      this.setPropLineOverlayVisible(false);
-      this.scheduleInitialPropPeek();
+    const gateResult = drawingGate.evaluate(this.gateTracker);
+    if (!gateResult.ok) {
+      this.showPropLookGateHint(PROP_LOOK_GATE_HINT, 'info');
       return;
     }
-    const nextStep = step + 1;
-    this.setData({
-      propTutorialStep: nextStep,
-      propGuideSketchVisible: nextStep === 0
-    });
-    this.setPropLineOverlayVisible(nextStep === 0);
+    this.startPropPeek({ countsAgainstManual: true });
   };
 
   definition.onPropUnlockOk = async function onPropUnlockOk() {
@@ -294,7 +323,7 @@ function attach(definition) {
   };
 
   definition.onCanvasTouchStart = function onCanvasTouchStart(event) {
-    if (this.companionPropMode && (this.data.propDrawingLocked || this.data.propUnlockVisible || this.data.propTutorialVisible)) return;
+    if (this.companionPropMode && (this.data.propDrawingLocked || this.data.propUnlockVisible)) return;
     if (originalTouchStart) originalTouchStart.call(this, event);
     if (!this.companionPropMode || !this.gateTracker) return;
     const tool = this.data.activeTool;
@@ -347,46 +376,6 @@ function attach(definition) {
     }
   };
 
-  const originalRenderAll = definition.renderAll;
-
-  definition.renderPropLineOverlay = function renderPropLineOverlay() {
-    if (!this.companionPropMode || !this.data.propLineOverlayVisible) return;
-    if (!this.propLineLayer || !this.propLineImage) return;
-    shellArtService.drawPropLineOverlay(
-      this.propLineLayer.context,
-      this.propLineImage,
-      this.propLineLayer.width,
-      this.propLineLayer.height
-    );
-  };
-
-  definition.clearPropLineOverlay = function clearPropLineOverlay() {
-    if (!this.propLineLayer) return;
-    const layer = this.propLineLayer;
-    layer.context.clearRect(0, 0, layer.width, layer.height);
-  };
-
-  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible(visible) {
-    const next = Boolean(visible);
-    const token = (this.propLineOverlayToken || 0) + 1;
-    this.propLineOverlayToken = token;
-    const apply = () => {
-      if (token !== this.propLineOverlayToken) return;
-      if (next) this.renderPropLineOverlay();
-      else this.clearPropLineOverlay();
-    };
-    if (next === Boolean(this.data.propLineOverlayVisible)) {
-      apply();
-      return;
-    }
-    this.setData({ propLineOverlayVisible: next }, apply);
-  };
-
-  definition.renderAll = function renderAll() {
-    if (originalRenderAll) originalRenderAll.call(this);
-    this.renderPropLineOverlay();
-  };
-
   definition.onPropSketchError = function onPropSketchError() {
     const fallback = this.data.propColoredPath || this.data.propFallbackColoredPath;
     if (fallback && this.data.propSketchSrc !== fallback) {
@@ -415,10 +404,10 @@ function attach(definition) {
       return originalComplete ? originalComplete.call(this) : { ok: false };
     }
     if (this.companionCompleting || this.pageDisposed || this.pageActive === false) return { ok: false };
-    if (this.data.propDrawingLocked || this.data.propTutorialVisible) return { ok: false };
+    if (this.data.propDrawingLocked) return { ok: false };
     const gate = drawingGate.evaluate(this.gateTracker);
     if (!gate.ok) {
-      this.showCanvasNotice(gate.hint, 'info');
+      this.showPropLookGateHint(gate.hint, 'info');
       return { ok: false };
     }
     this.companionCompleting = true;
@@ -456,7 +445,6 @@ function attach(definition) {
     }, () => {
       if (rewardStars > 0) this.playPropUnlockAward();
     });
-    this.setPropLineOverlayVisible(false);
     this.companionCompleting = false;
     return { ok: true };
   };
@@ -464,6 +452,10 @@ function attach(definition) {
   definition.onHide = function onHide() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    clearTimeout(this.propPeekPopInSettleTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
+    this.clearPropLookGateHint();
+    this.dismissPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
@@ -471,9 +463,13 @@ function attach(definition) {
   definition.onUnload = function onUnload() {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
+    clearTimeout(this.propPeekPopInSettleTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
+    this.clearPropLookGateHint();
+    this.dismissPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };
 }
 
-module.exports = { attach, TUTORIAL_FINAL_LABEL };
+module.exports = { attach, PROP_LOOK_GATE_HINT_MS, PROP_LOOK_GATE_HINT };

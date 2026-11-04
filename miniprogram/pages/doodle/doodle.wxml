@@ -1,8 +1,4 @@
-<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}}">
-  <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
-    <view class="prop-prepare-spinner" aria-hidden="true"></view>
-    <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
-  </view>
+<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{companionReducedMotion ? 'page--reduced-motion' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}}">
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>
@@ -47,21 +43,28 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && propLookHint && !propTutorialVisible && !propUnlockVisible}}"
-    class="prop-look-chrome {{propDrawingLocked || propTutorialVisible ? 'prop-chrome--dimmed' : ''}}"
-  >
-    <view
-      class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-      bindtap="onPropLookAgain"
-      aria-role="button"
-      aria-label="{{propLookHint}}"
-    >
-      <text>{{propLookHint}}</text>
-    </view>
-  </view>
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible}}"
+    class="prop-chrome-stack-spacer"
+    aria-hidden="true"
+  ></view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}}" bindtap="onCanvasBackdropTap">
-    <view class="canvas-notice-anchor {{companionPropMode ? 'canvas-notice-anchor--prop' : ''}}">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}}" bindtap="onCanvasBackdropTap">
+    <image
+      wx:if="{{companionPropMode && (propSketchSrc || propSketchPath)}}"
+      class="prop-entry-sketch-preload"
+      src="{{propSketchSrc || propSketchPath}}"
+      mode="aspectFit"
+      bindload="onPropEntrySketchLoad"
+      binderror="onPropEntrySketchError"
+    ></image>
+    <view wx:if="{{companionPropMode && canvasReady && canvasNoticeText}}" class="prop-canvas-notice-anchor">
+      <inline-notice
+        text="{{canvasNoticeText}}"
+        tone="{{canvasNoticeTone}}"
+        visible="{{canvasNoticeVisible}}"
+      ></inline-notice>
+    </view>
+    <view wx:if="{{!companionPropMode}}" class="canvas-notice-anchor">
       <inline-notice
         text="{{canvasNoticeText}}"
         tone="{{canvasNoticeTone}}"
@@ -72,21 +75,19 @@
     <view wx:if="{{!companionPropMode}}" class="preview-aura"></view>
     <view
       wx:if="{{companionPropMode && (propSketchSrc || propSketchPath)}}"
-      class="prop-peek-anchor {{(propPeekVisible || propPeekAnimating) ? 'prop-peek-anchor--live' : ''}} {{(propTutorialVisible && propTutorialStep === 0 && propGuideSketchVisible) ? 'prop-peek-anchor--tutorial' : ''}}"
+      class="prop-peek-anchor {{(propPeekVisible || propPeekAnimating) ? 'prop-peek-anchor--live' : ''}}"
       catchtap="onPropPeekCardTap"
       aria-role="button"
       aria-label="收起简笔，开始画"
       aria-hidden="{{!(propPeekVisible || propPeekAnimating)}}"
     >
-      <view class="prop-peek-anim" animation="{{propPeekSketchAnim}}">
+      <view class="prop-peek-anim prop-peek-anim--{{propPeekAnimPhase}}">
         <view class="prop-sketch-layer">
           <image class="prop-sketch-image" src="{{propSketchSrc || propSketchPath}}" mode="aspectFit" binderror="onPropSketchError"></image>
         </view>
         <text wx:if="{{propPeekVisible}}" class="prop-peek-caption">先看一眼，记住它的样子</text>
       </view>
     </view>
-    <text wx:if="{{companionPropMode && propGuideSketchVisible && !propPeekVisible}}" class="prop-peek-caption">先看看简笔，记住它的样子</text>
-
     <view wx:if="{{companionPropMode}}" class="prop-paper-stage">
       <view class="prop-paper-board">
         <view class="prop-paper-dash"></view>
@@ -109,12 +110,6 @@
             catchtouchmove="onCanvasTouchMove"
             catchtouchend="onCanvasTouchEnd"
             catchtouchcancel="onCanvasTouchCancel"
-          ></canvas>
-          <canvas
-            type="2d"
-            id="propLineOverlayCanvas"
-            class="egg-canvas egg-canvas--line-overlay"
-            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating}}"
           ></canvas>
         </view>
       </view>
@@ -139,7 +134,7 @@
       ></canvas>
     </view>
 
-    <view wx:if="{{!companionPropMode || canvasReady}}" class="canvas-action-rail {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}">
+    <view wx:if="{{!companionPropMode || canvasReady}}" class="canvas-action-rail {{companionPropMode && propDrawingLocked ? 'prop-chrome--dimmed' : ''}}">
       <view
         class="canvas-action-button {{!canUndo ? 'canvas-action-button--disabled' : ''}}"
         aria-role="button"
@@ -171,14 +166,14 @@
     <text wx:if="{{!canvasReady}}" class="canvas-loading">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : (companionDrawing ? '正在准备画纸…' : '正在准备蛋壳…')}}</text>
 
     <button
-      wx:if="{{companionPropMode && propFinishVisible && !propUnlockVisible && !propTutorialVisible}}"
+      wx:if="{{companionPropMode && !propUnlockVisible && propFinishVisible}}"
       class="prop-finish-btn"
       bindtap="onManualSave"
       aria-role="button"
       aria-label="画好了"
     >画好了</button>
 
-    <view wx:if="{{!companionPropMode || canvasReady}}" class="content {{companionPropMode && (propDrawingLocked || propTutorialVisible) ? 'prop-chrome--dimmed' : ''}}" catchtap="onToolPanelTap">
+    <view wx:if="{{!companionPropMode || canvasReady}}" class="content {{companionPropMode && propDrawingLocked ? 'prop-chrome--dimmed' : ''}}" catchtap="onToolPanelTap">
       <view class="tool-section {{!toolPanelOpen ? 'tool-section--compact' : ''}}">
       <view wx:if="{{toolPanelOpen && activeTool === 'brush'}}" class="tool-options brush-options">
         <view class="brush-settings-grid">
@@ -290,19 +285,27 @@
       </view>
       </view>
     </view>
+  </view>
 
-    <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim" catchtouchmove="true">
-      <view class="prop-tutorial-bg-sketch" aria-hidden="true"></view>
-      <view class="prop-tutorial-card">
-        <text class="prop-tutorial-title">{{propTutorialSteps[propTutorialStep].title}}</text>
-        <view class="prop-tutorial-dots">
-          <view class="prop-tutorial-dot {{propTutorialStep === 0 ? 'prop-tutorial-dot--active' : ''}}"></view>
-          <view class="prop-tutorial-dot {{propTutorialStep === 1 ? 'prop-tutorial-dot--active' : ''}}"></view>
-          <view class="prop-tutorial-dot {{propTutorialStep === 2 ? 'prop-tutorial-dot--active' : ''}}"></view>
+  <view
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible}}"
+    class="prop-chrome-stack {{propLookGateHintText ? 'prop-chrome-stack--above-scrim' : ''}}"
+    style="top: {{navCoverHeightPx}}px;"
+  >
+    <view class="prop-look-row">
+      <view
+        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}}"
+      >
+        <view class="prop-look-anchor">
+          <view
+            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText && propLookGateHintVisible ? 'prop-look-hint--gate' : ''}}"
+            bindtap="onPropLookAgain"
+            aria-role="button"
+            aria-label="{{(propLookGateHintVisible && propLookGateHintText) ? propLookGateHintText : propLookHint}}"
+          >
+            <text>{{(propLookGateHintVisible && propLookGateHintText) ? propLookGateHintText : propLookHint}}</text>
+          </view>
         </view>
-        <text class="prop-tutorial-body">{{propTutorialSteps[propTutorialStep].body}}</text>
-        <text wx:if="{{propTutorialStep < 2}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
-        <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialStep >= 2 ? propTutorialFinalLabel : '下一步'}}</button>
       </view>
     </view>
   </view>

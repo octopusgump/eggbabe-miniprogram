@@ -29,10 +29,18 @@ assert.equal(wxml.includes('class="doodle-back-cover"') && wxml.includes('catcht
 assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/, '导航 cover 必须通过 root-portal 抬到原生 Canvas 之上');
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'"), true, 'Canvas 准备期间须保持 waiting 阶段');
 assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
-assert.match(pageScript, /PROP_PREPARE_MIN_MS[\s\S]*finishPropCanvasPrepare/, '道具临摹须在简笔解码完成后至少展示一段准备 loading');
+assert.match(pageScript, /tryCompletePropEntryLoading[\s\S]*revealEditor/, '道具临摹须在 canvas 与简笔就绪后直接 reveal，无进页 loading');
+assert.match(pageScript, /schedulePropCanvasSetup[\s\S]*PROP_CANVAS_SETUP_DEFER_MS/, '道具临摹须等路由滑入后再 init Canvas');
+assert.match(pageScript, /revealEditor\(\)[\s\S]*if \(this\.companionPropMode\)[\s\S]*revealPatch\.pageTransitionPhase = 'visible'/, '道具临摹 reveal 须跳过二次 page--entering 淡入');
+assert.match(pageScript, /propEntryFlowDeferTimer[\s\S]*PROP_ENTRY_FLOW_DEFER_MS/, '道具临摹须延后自动看一看，避免与 reveal 同帧');
+assert.match(pageScript, /companionPropMode[\s\S]*renderAll\(\)[\s\S]*pageTransitionPhase:\s*'visible'/, 'Canvas 首帧绘制须推迟到 reveal，不与 createLayer 同帧');
+assert.doesNotMatch(pageScript, /propEntryLoadingMinMs|schedulePropEntryLoadingFinish|propEntryLoadingVisible/, '不得再保留进页 Orbit loading 逻辑');
+assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再 reveal');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
-assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示画纸加载层，不得整页透明');
-assert.match(wxml, /prop-prepare-screen[\s\S]*正在准备画纸/, '道具临摹须在整页展示加载动画与文案');
+assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须可见画纸，不得整页透明');
+assert.doesNotMatch(wxml, /prop-entry-loading|propEntryLoadingVisible|loading-orbit/, '道具临摹不得再展示进页 loading / Orbit');
+assert.match(wxml, /prop-entry-sketch-preload/, '简笔预载须在 preview 内 decode，不得阻断 Canvas 初始化');
+assert.doesNotMatch(wxml, /prop-prepare-screen|prop-prepare-preload|preview--prop-preparing/, '不得再使用旧 prop-prepare 或 preview 隐藏方案');
 assert.doesNotMatch(wxss, /\.page--waiting\s*\{[^}]*pointer-events:\s*none/, 'Canvas 准备期间必须阻止点击穿透到首页');
 assert.match(wxss, /\.page--entering\s*\{[^}]*doodle-page-fade-in 320ms/, '画画页入场必须仅使用 320ms 淡入');
 assert.match(wxss, /\.page--exiting\s*\{[^}]*doodle-page-fade-out 320ms/, '画画页离场必须仅使用 320ms 淡出');
@@ -53,25 +61,63 @@ assert.equal(
   '道具临摹时撤销与清空导轨必须叠在画纸与原生 Canvas 之上'
 );
 assert.match(wxss, /\.preview--prop \.canvas-action-rail\s*\{[^}]*z-index:\s*38;/, '道具临摹导轨必须高于画纸层');
+assert.match(
+  wxss,
+  /\.preview--prop \.canvas-action-rail\s*\{[^}]*bottom:\s*calc\(var\(--prop-finish-btn-bottom\) \+ var\(--prop-finish-btn-height\) - var\(--canvas-action-rail-height\) \+ env\(safe-area-inset-bottom\)\);[^}]*transform:\s*none;/,
+  '道具临摹撤销与清空导轨顶缘须与画好了按钮顶缘对齐'
+);
 assert.match(wxss, /\.content\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*100;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;/, '工具区域必须明确高于蛋体 Canvas');
 assert.match(
   wxss,
   /\.egg-canvas-stack\s*\{[^}]*z-index:\s*1;[^}]*top:\s*-168rpx;[^}]*width:\s*89vw;[^}]*height:\s*89vw;[^}]*transform-origin:\s*center;/,
   '透明蛋壳 Canvas 必须累计上移 168rpx，同时保持约占屏幕一半和正方形比例'
 );
+assert.match(
+  wxss,
+  /\.prop-paper-stage\s*\{[^}]*left:\s*50%;[^}]*width:\s*88vw;/,
+  '道具临摹画纸须保持原始 88vw 居中宽度'
+);
 assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必须建立明确层叠上下文');
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
-assert.match(propDoodleScript, /exportPropPeekFlipAnim[\s\S]*wx\.createAnimation/, '看一看收起须使用 wx.createAnimation 平面翻页，不得依赖 CSS rotateY');
+assert.doesNotMatch(wxss, /\.prop-entry-loading\b/, '不得再保留进页 loading 样式');
+assert.match(propDoodleScript, /preloadPropEntryAssets/, '保留软预载辅助，但不得 hard-fail 阻断进入');
+assert.match(pageScript, /onPropEntrySketchLoad/, '简笔 decode 后再 reveal');
+assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须在再看一眼同位展示约 1.8 秒');
+assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT\s*=\s*'再画一会儿吧'/, '再看一眼 gate 须使用 COO 定稿短句');
+assert.match(propDoodleScript, /showPropLookGateHint\(PROP_LOOK_GATE_HINT/, '未达标点再看一眼须走 gate 短句');
+assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '画好了未达标仍用 v2 长句');
+assert.match(propDoodleScript, /dismissPropLookGateHint/, '切后台须能清掉 gate 覆盖态');
+assert.match(pageScript, /resumePropEntryReveal/, '切后台回来须能继续等待 reveal');
+assert.match(pageScript, /initPropEntrySketchReadyState/, '简笔 bindload 早于 canvas 就绪时不得写回未就绪');
+const failPrepBlock = pageScript.slice(pageScript.indexOf('failCanvasPreparation'), pageScript.indexOf('failCanvasPreparation') + 520);
+assert.match(failPrepBlock, /showCanvasNotice\('画纸没有准备好/, '准备失败时用画布内提示，不用全屏 loading');
+assert.doesNotMatch(failPrepBlock, /propEntryLoadingVisible/, '准备失败时不得再打开进页 loading');
+assert.match(failPrepBlock, /canvasPreparationError:\s*true/, '准备失败时须标记错误文案');
+assert.doesNotMatch(wxml, /prop-look-gate-overlay|prop-look-hint--gate-covered|prop-look-hint--gate-out|layout="pill-fill"/, 'gate 不得再使用 Cover 叠层、pill-fill 或整颗 pill 淡出');
+assert.match(wxml, /propLookGateHintText && propLookGateHintVisible[\s\S]*prop-look-hint--gate/, 'gate 深色态须与可见文案同步');
+assert.match(wxml, /propLookGateHintVisible && propLookGateHintText[\s\S]*propLookHint/, 'gate 结束后须回到再看一眼计数文案');
+assert.match(wxss, /\.prop-look-hint--gate\s*\{[^}]*rgba\(18, 21, 18, 0\.72\)/, 'gate 态须使用标准深色胶囊底');
+assert.match(wxml, /prop-canvas-notice-anchor/, '道具模式须单独锚点展示画布内提示');
+assert.match(propDoodleScript, /propPeekTransitionMs/, '看一看动效须尊重 companionReducedMotion');
+assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase');
+assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
+assert.doesNotMatch(propDoodleScript, /renderPropLineOverlay|setPropLineOverlayVisible/, '不得再保留空 line overlay 桩');
+assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPopOutAnim|propPeekSketchAnim/, '简笔动效不得再使用 wx.createAnimation');
+assert.match(wxss, /\.prop-peek-anim--shown\s*\{[^}]*opacity:\s*1;/, '简笔须用 CSS transition 显示');
+assert.match(wxss, /\.prop-peek-anim--leave\s*\{[^}]*opacity:\s*0;/, '简笔须用 CSS transition 收起');
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');
-assert.match(wxss, /\.prop-tutorial-card\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*auto;/, '教程卡须用双列网格，使 progress dots 与下一步/开始画右缘对齐');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*grid-column:\s*2;[^}]*justify-self:\s*end;/, '教程主按钮须与 progress dots 共用右列对齐');
-assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教程标题必须单行显示');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*width:\s*194rpx;/, '教程主按钮须固定宽度，避免挤窄标题列');
-assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
-assert.match(wxml, /prop-peek-anchor--tutorial/, '教程第一步须复用同一张简笔，不得另挂一份');
+const propChallengeScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-challenge.js'), 'utf8');
+assert.doesNotMatch(wxss, /\.prop-tutorial-scrim\b/, '道具临摹不得再保留教程蒙层');
+assert.doesNotMatch(wxml, /propTutorialVisible|prop-tutorial|onPropTutorial|prop-look-cover-portal|prop-peek-anchor--tutorial/, '道具临摹不得再挂载教程 UI');
+assert.doesNotMatch(propDoodleScript, /propTutorialVisible|hasSeenTutorial|onPropTutorial/, '道具临摹逻辑不得再分支教程');
+assert.doesNotMatch(pageScript, /PROP_TUTORIAL|propTutorialScrimTopPx/, '页面定义不得再保留教程布局常量');
+assert.doesNotMatch(propChallengeScript, /TUTORIAL|教程|一起画/, '道具 challenge 模块不得再导出教程步骤');
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
+assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点');
+assert.doesNotMatch(wxml, /propLineOverlayCanvas/, '简笔不得再叠在画纸 propLineOverlayCanvas 上');
+assert.match(propDoodleScript, /beginPropEntryFlow[\s\S]*scheduleInitialPropPeek/, '进页须直接进入自动看一看，无教程');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');
 assert.match(wxml, /transform:scale\(\{\{canvasScale\}\}\)/, 'Canvas 必须绑定双指缩放倍率');
 assert.match(pageScript, /MAX_CANVAS_SCALE\s*=\s*1\.6/, '双指缩放必须限制在安全倍率内');
@@ -113,7 +159,17 @@ assert.equal(componentWxml, wxml, '首页内嵌编辑器与独立画画页必须
 assert.equal(componentWxss, wxss, '首页内嵌编辑器与独立画画页必须共用相同视觉布局');
 assert.equal(componentScript.includes("require('../../pages/doodle/doodle-definition')") && componentScript.includes('doodleDefinition.onReady.call(this)'), true, '内嵌编辑器必须复用画画页逻辑和 Canvas 就绪生命周期');
 assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'), true, '清空等轻量反馈必须使用可复用的画布内提示组件');
-assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
+assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
+assert.ok(
+  wxml.includes('prop-look-hint--gate') && wxml.includes('propLookGateHintVisible') && wxml.includes('prop-look-anchor'),
+  '道具临摹 gate 须同位替换「再看一眼」pill，不另占顶栏行'
+);
+assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
+assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
+assert.ok(
+  !wxml.includes('canvas-notice-anchor--prop'),
+  '道具临摹不得再把提示叠在 preview 内 canvas 之上（使用 prop-canvas-notice-anchor）'
+);
 assert.equal(noticeWxml.includes('inline-notice--{{tone}}') && noticeWxss.includes('.inline-notice--warning'), true, '标准轻提示只需提供普通与注意两种语义样式');
 assert.equal((noticeWxss.match(/\.inline-notice--(?:info|warning)\b/g) || []).length <= 2, true, '标准轻提示不得扩张为多套重复视觉');
 assert.match(noticeWxss, /\.inline-notice\s*\{[^}]*background:\s*rgba\(18,21,18,\.72\);[^}]*color:\s*#FFF;/, '画画提示必须统一使用白字半透明深色底');

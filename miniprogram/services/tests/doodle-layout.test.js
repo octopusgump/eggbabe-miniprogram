@@ -29,7 +29,8 @@ assert.equal(wxml.includes('class="doodle-back-cover"') && wxml.includes('catcht
 assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/, '导航 cover 必须通过 root-portal 抬到原生 Canvas 之上');
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'"), true, 'Canvas 准备期间须保持 waiting 阶段');
 assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
-assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS[\s\S]*schedulePropEntryLoadingFinish/, '道具临摹须在 canvas 与简笔就绪后至少展示一段 Orbit loading');
+assert.match(pageScript, /propEntryLoadingMinMs[\s\S]*schedulePropEntryLoadingFinish/, '道具临摹须在 canvas 与简笔就绪后再关闭进页 loading');
+assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS_RETURNING\s*=\s*400/, '已看过教程时进页 Orbit 最短约 400ms');
 assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再关闭进页 loading');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
 assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示进页 loading 层，不得整页透明');
@@ -182,7 +183,11 @@ assert.ok(
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
 assert.match(wxml, /propEntryLoadingVisible[\s\S]*prop-entry-loading[\s\S]*<loading-orbit[\s\S]*size="M" tone="light"/, '进页 loading 须绑定 propEntryLoadingVisible 与标准 Orbit');
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
-assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS\s*=\s*1000/, '进页 Orbit 最短展示须约 1 秒');
+assert.match(pageScript, /shouldShowPropEntryLoading/, '首次教程进页不得再闪 Orbit loading');
+assert.match(pageScript, /propEntryLoadingMinMs/, '进页 loading 须区分首次教程与回访时长');
+assert.match(wxss, /\.prop-chrome-stack--above-scrim[\s\S]*z-index:\s*145;/, '教程蒙层下「再看一眼」须 fixed 抬到 scrim 之上');
+assert.match(wxml, /prop-chrome-stack[\s\S]*prop-tutorial-scrim/, '「再看一眼」须在教程蒙层之后绘制');
+assert.match(wxss, /\.prop-chrome-stack\s*\{[^}]*position:\s*fixed;/, '「再看一眼」须 fixed 定位以压过教程 fixed scrim');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上（使用 prop-canvas-notice-anchor）'

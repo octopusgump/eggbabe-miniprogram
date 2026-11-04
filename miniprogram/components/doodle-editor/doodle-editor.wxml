@@ -55,25 +55,9 @@
 
   <view
     wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
-    class="prop-chrome-stack"
-  >
-    <view class="prop-look-row">
-      <view
-        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
-      >
-        <view class="prop-look-anchor">
-          <view
-            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText ? 'prop-look-hint--gate' : ''}} {{propLookGateHintText && !propLookGateHintVisible ? 'prop-look-hint--gate-out' : ''}}"
-            bindtap="onPropLookAgain"
-            aria-role="button"
-            aria-label="{{propLookGateHintText || propLookHint}}"
-          >
-            <text>{{propLookGateHintText || propLookHint}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-  </view>
+    class="prop-chrome-stack-spacer"
+    aria-hidden="true"
+  ></view>
 
   <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial-step-0' : ''}}" bindtap="onCanvasBackdropTap">
     <image
@@ -329,6 +313,29 @@
       <view class="prop-tutorial-foot">
         <text wx:if="{{propTutorialSteps[propTutorialStep].showSkip}}" class="prop-tutorial-skip" bindtap="onPropTutorialSkip">跳过教程</text>
         <button class="prop-tutorial-next" bindtap="onPropTutorialNext">{{propTutorialSteps[propTutorialStep].primaryLabel}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
+    class="prop-chrome-stack {{(propTutorialVisible && propTutorialStep === 0) || propLookGateHintText ? 'prop-chrome-stack--above-scrim' : ''}}"
+    style="top: {{navCoverHeightPx}}px;"
+  >
+    <view class="prop-look-row">
+      <view
+        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
+      >
+        <view class="prop-look-anchor">
+          <view
+            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText ? 'prop-look-hint--gate' : ''}} {{propLookGateHintText && !propLookGateHintVisible ? 'prop-look-hint--gate-out' : ''}}"
+            bindtap="onPropLookAgain"
+            aria-role="button"
+            aria-label="{{propLookGateHintText || propLookHint}}"
+          >
+            <text>{{propLookGateHintText || propLookHint}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>

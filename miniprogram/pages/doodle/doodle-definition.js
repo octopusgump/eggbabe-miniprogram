@@ -12,7 +12,22 @@ const { createInlineNoticeController } = require('../../utils/inline-notice-cont
 
 const PAGE_TRANSITION_MS = 320;
 /** 道具临摹进页：Orbit 最短可见时长（canvas + 简笔就绪后仍须满足） */
-const PROP_ENTRY_LOADING_MIN_MS = 1000;
+const PROP_ENTRY_LOADING_MIN_MS_RETURNING = 400;
+
+function propEntryLoadingMinMs() {
+  try {
+    const propChallenge = require('../../services/companion-prop-challenge');
+    return propChallenge.hasSeenTutorial()
+      ? PROP_ENTRY_LOADING_MIN_MS_RETURNING
+      : 0;
+  } catch (error) {
+    return PROP_ENTRY_LOADING_MIN_MS_RETURNING;
+  }
+}
+
+function shouldShowPropEntryLoading() {
+  return propEntryLoadingMinMs() > 0;
+}
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -129,7 +144,7 @@ const doodleDefinition = {
     this.setData({
       companionDrawing: this.companionDrawing,
       companionPropMode: this.companionPropMode,
-      propEntryLoadingVisible: this.companionPropMode
+      propEntryLoadingVisible: this.companionPropMode && shouldShowPropEntryLoading()
     });
     if (this.companionPropMode) {
       this.propEntryLoadingStartedAt = Date.now();
@@ -312,8 +327,12 @@ const doodleDefinition = {
   schedulePropEntryLoadingFinish(setupToken, reveal) {
     if (setupToken !== this.canvasSetupToken || typeof reveal !== 'function') return;
     clearTimeout(this.propEntrySketchFallbackTimer);
+    if (!this.data.propEntryLoadingVisible) {
+      reveal();
+      return;
+    }
     const started = this.propEntryLoadingStartedAt || Date.now();
-    const waitMs = Math.max(0, PROP_ENTRY_LOADING_MIN_MS - (Date.now() - started));
+    const waitMs = Math.max(0, propEntryLoadingMinMs() - (Date.now() - started));
     clearTimeout(this.propEntryLoadingFinishTimer);
     this.propEntryLoadingFinishTimer = setTimeout(() => {
       this.propEntryLoadingFinishTimer = null;

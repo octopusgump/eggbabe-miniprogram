@@ -33,7 +33,9 @@
 .preview { position: relative; z-index: 30; isolation: isolate; min-height: 0; flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 0; background: linear-gradient(180deg, #FFF 0%, #F7F5EE 100%); box-shadow: none; }
 .canvas-notice-anchor { position: absolute; z-index: 35; top: 28rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .prop-canvas-notice-anchor { position: absolute; z-index: 36; top: 20rpx; left: 48rpx; right: 48rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.prop-chrome-stack { position: relative; z-index: 50; flex: 0 0 auto; box-sizing: border-box; background: #F8F7EF; overflow: visible; }
+.prop-chrome-stack { position: fixed; z-index: 55; left: 0; right: 0; flex: none; box-sizing: border-box; background: transparent; overflow: visible; pointer-events: none; }
+.prop-chrome-stack--above-scrim { z-index: 145; }
+.prop-chrome-stack-spacer { flex: 0 0 auto; height: 0; padding: 20rpx 24rpx 12rpx; box-sizing: content-box; min-height: calc(26rpx * 1.2 + 28rpx); pointer-events: none; }
 .prop-look-row { display: flex; justify-content: center; padding: 20rpx 24rpx 12rpx; pointer-events: none; overflow: visible; }
 .prop-look-chrome { position: relative; flex: 0 0 auto; display: flex; justify-content: center; pointer-events: none; overflow: visible; }
 .prop-look-anchor { position: relative; display: inline-block; max-width: calc(100vw - 48rpx); overflow: visible; }
@@ -142,7 +144,7 @@
 .preview--prop-tutorial-step-0 .canvas-action-rail,
 .preview--prop-tutorial-step-0 .prop-finish-btn { opacity: 0.35; }
 .page--prop-tutorial-step-0 .prop-chrome-stack .prop-look-chrome,
-.preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; z-index: 145; }
+.preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; }
 .page--prop-tutorial-step-0 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
 .preview--prop-tutorial-step-0 .prop-peek-anim { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 28rpx; }
 .prop-finish-btn--tutorial-dim { opacity: 0.35; }

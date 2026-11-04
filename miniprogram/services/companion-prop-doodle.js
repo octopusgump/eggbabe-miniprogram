@@ -14,6 +14,22 @@ function schedulePropPeekPhase(editor, apply) {
   else setTimeout(apply, 16);
 }
 
+function preloadLocalImage(src) {
+  const path = String(src || '').trim();
+  if (!path) return Promise.resolve(false);
+  return new Promise(resolve => {
+    if (typeof wx.getImageInfo !== 'function') {
+      resolve(true);
+      return;
+    }
+    wx.getImageInfo({
+      src: path,
+      success: () => resolve(true),
+      fail: () => resolve(false)
+    });
+  });
+}
+
 function attach(definition) {
   const originalOnLoad = definition.onLoad;
   const originalOnHide = definition.onHide;
@@ -87,6 +103,18 @@ function attach(definition) {
     clearTimeout(this.propLookGateHintCleanupTimer);
     this.propLookGateHintTimer = null;
     this.propLookGateHintCleanupTimer = null;
+  };
+
+  definition.preloadPropEntryAssets = function preloadPropEntryAssets() {
+    if (!this.companionPropMode) return Promise.resolve(true);
+    const sketch = this.data.propSketchSrc || this.data.propSketchPath;
+    if (!sketch) return Promise.resolve(false);
+    const tasks = [preloadLocalImage(sketch)];
+    const colored = this.data.propColoredSrc || this.data.propColoredPath;
+    if (colored) tasks.push(preloadLocalImage(colored));
+    const fallback = this.data.propFallbackColoredPath;
+    if (fallback && fallback !== colored) tasks.push(preloadLocalImage(fallback));
+    return Promise.all(tasks).then(results => results[0] === true);
   };
 
   definition.showPropLookGateHint = function showPropLookGateHint(text, tone) {

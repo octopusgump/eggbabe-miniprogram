@@ -32,7 +32,8 @@ assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('th
 assert.match(pageScript, /PROP_PREPARE_MIN_MS[\s\S]*finishPropCanvasPrepare/, '道具临摹须在简笔解码完成后至少展示一段准备 loading');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
 assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示画纸加载层，不得整页透明');
-assert.match(wxml, /prop-prepare-screen[\s\S]*正在准备画纸/, '道具临摹须在整页展示加载动画与文案');
+assert.match(wxml, /prop-prepare-screen[\s\S]*prop-prepare-title[\s\S]*正在准备画纸/, '道具临摹须在整页展示 loading 标题与文案');
+assert.match(wxml, /page--prop-preparing/, '准备期间须隐藏画板与顶栏，仅展示 loading');
 assert.doesNotMatch(wxss, /\.page--waiting\s*\{[^}]*pointer-events:\s*none/, 'Canvas 准备期间必须阻止点击穿透到首页');
 assert.match(wxss, /\.page--entering\s*\{[^}]*doodle-page-fade-in 320ms/, '画画页入场必须仅使用 320ms 淡入');
 assert.match(wxss, /\.page--exiting\s*\{[^}]*doodle-page-fade-out 320ms/, '画画页离场必须仅使用 320ms 淡出');
@@ -73,6 +74,8 @@ assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必�
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
+assert.match(wxss, /\.prop-prepare-screen\s*\{[^}]*z-index:\s*10150;/, 'loading 须盖住 cover-view 返回层');
+assert.match(propDoodleScript, /preloadPropEntryAssets/, '道具临摹须在 reveal 前预载简笔等资源');
 assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须在再看一眼上方展示约 1.8 秒');
 assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '未达标须用再看一眼浮层提示，不得顶栏撑开画板');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');

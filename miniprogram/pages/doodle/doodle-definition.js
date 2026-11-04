@@ -248,7 +248,16 @@ const doodleDefinition = {
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
         this.renderAll();
-        this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
+        const runReveal = () => this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
+        if (typeof this.preloadPropEntryAssets === 'function') {
+          this.preloadPropEntryAssets().then(ok => {
+            if (setupToken !== this.canvasSetupToken) return;
+            if (!ok) { this.failCanvasPreparation(); return; }
+            runReveal();
+          });
+          return;
+        }
+        runReveal();
         return;
       }
       return Promise.all([

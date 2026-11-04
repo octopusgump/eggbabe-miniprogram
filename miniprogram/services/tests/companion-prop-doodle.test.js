@@ -56,6 +56,9 @@ global.wx = global.wx || {
     tutorialStorage[key] = value;
   },
   getMenuButtonBoundingClientRect: () => ({ left: 281 }),
+  getImageInfo: (options) => {
+    if (options && typeof options.success === 'function') options.success({ width: 100, height: 100 });
+  },
   nextTick: (fn) => { if (typeof fn === 'function') fn(); },
   createAnimation: (options) => {
     const duration = options && options.duration ? options.duration : 300;
@@ -77,6 +80,8 @@ global.wx = global.wx || {
   try {
     const editor = createEditor();
     assert.equal(editor.companionPropMode, true);
+    assert.equal(typeof editor.preloadPropEntryAssets, 'function');
+    assert.equal(await editor.preloadPropEntryAssets(), true, '简笔线稿须预载成功后再进入');
     editor.gateTracker = gate.createTracker();
     let canvasNoticeCalls = 0;
     editor.showCanvasNotice = () => { canvasNoticeCalls += 1; };

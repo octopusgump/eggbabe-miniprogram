@@ -1,5 +1,6 @@
-<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
+<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{companionPropMode && !canvasReady ? 'page--prop-preparing' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
   <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
+    <text class="prop-prepare-title">一起画</text>
     <view class="prop-prepare-spinner" aria-hidden="true"></view>
     <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
   </view>
@@ -22,7 +23,7 @@
     </view>
   </view>
 
-  <root-portal>
+  <root-portal wx:if="{{!companionPropMode || canvasReady || canvasPreparationError}}">
     <cover-view class="doodle-nav-cover" style="padding-top: {{statusBarHeight}}px; height: {{navCoverHeightPx}}px;">
       <cover-view class="doodle-nav-cover-row">
         <cover-view class="doodle-back-cover" catchtap="onBack" aria-role="button" aria-label="返回">

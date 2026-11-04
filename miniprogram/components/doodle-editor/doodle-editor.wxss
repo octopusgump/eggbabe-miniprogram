@@ -2,6 +2,9 @@
 .page--companion-prop { overflow: visible; }
 .page--waiting { opacity: 0; }
 .page.page--companion-prop.page--waiting { opacity: 1; }
+.page--prop-preparing .doodle-nav,
+.page--prop-preparing .preview,
+.page--prop-preparing .prop-chrome-stack { visibility: hidden; pointer-events: none; }
 .page--entering { animation: doodle-page-fade-in 320ms ease-out both; }
 .page--visible { opacity: 1; }
 .page--exiting { animation: doodle-page-fade-out 320ms ease-in both; pointer-events: none; }
@@ -150,7 +153,8 @@
 .preview--prop-preparing .prop-peek-anchor,
 .preview--prop-preparing .prop-peek-caption,
 .preview--prop-preparing .prop-finish-btn { visibility: hidden; pointer-events: none; }
-.prop-prepare-screen { position: fixed; z-index: 280; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; background: #F8F7EF; pointer-events: auto; }
+.prop-prepare-screen { position: fixed; z-index: 10150; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; padding: env(safe-area-inset-top) 48rpx env(safe-area-inset-bottom); box-sizing: border-box; background: #F8F7EF; pointer-events: auto; }
+.prop-prepare-title { color: #002900; font-size: 30rpx; font-weight: 600; line-height: 1.35; }
 .prop-prepare-spinner { width: 64rpx; height: 64rpx; border-radius: 50%; border: 6rpx solid rgba(53, 72, 60, 0.12); border-top-color: #35483C; animation: prop-prepare-spin 720ms linear infinite; }
 .prop-prepare-text { color: #566155; font-size: 28rpx; line-height: 1.4; }
 @keyframes prop-prepare-spin { to { transform: rotate(360deg); } }

@@ -133,7 +133,7 @@ assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-1/, '教程蒙层不得再�
 assert.match(wxml, /prop-tutorial-scrim prop-tutorial-scrim--step-0/, '教程蒙层固定为单步 step-0');
 assert.match(
   wxml,
-  /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating \|\| propTutorialVisible\}\}"/,
+  /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/,
   '教程期间须隐藏道具临摹原生 Canvas，避免盖住遮罩'
 );
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');

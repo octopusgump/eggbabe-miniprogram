@@ -139,7 +139,7 @@
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
 
 .preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; --prop-finish-btn-bottom: 210rpx; --prop-finish-btn-height: 96rpx; --canvas-action-rail-height: 224rpx; }
-.preview--prop-tutorial { overflow: visible; }
+.preview--prop-tutorial { overflow: visible; isolation: auto; }
 .preview--prop-tutorial .content,
 .preview--prop-tutorial .canvas-action-rail,
 .preview--prop-tutorial .prop-finish-btn { pointer-events: none; }
@@ -152,6 +152,7 @@
 .page--reduced-motion .prop-peek-anim { transition: none; opacity: 1; transform: none; }
 .page--reduced-motion .prop-peek-anim--shown,
 .page--reduced-motion .prop-peek-anim--leave { opacity: 1; transform: none; }
+.page--reduced-motion .prop-look-hint { transition: none; }
 .prop-finish-btn--tutorial-dim { opacity: 0.35; }
 .prop-entry-loading { position: fixed; z-index: 10150; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; padding: env(safe-area-inset-top) 48rpx env(safe-area-inset-bottom); box-sizing: border-box; background: #F8F7EF; pointer-events: auto; }
 .prop-entry-loading__title { color: #002900; font-size: 30rpx; font-weight: 600; line-height: 1.35; }
@@ -187,7 +188,8 @@
 /* 简笔只保留这一张 image：教程与看一看只切换 class，避免「开始画」后再解码一次。 */
 .prop-peek-anchor { position: absolute; z-index: 36; left: 0; right: 0; top: calc(50% - 168rpx + var(--prop-layout-nudge, 0)); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; pointer-events: none; visibility: hidden; transform: translateY(-50%); }
 .prop-peek-anchor--live { visibility: visible; pointer-events: auto; }
-.prop-peek-anchor--tutorial { position: fixed; z-index: 140; top: calc(env(safe-area-inset-top) + 120rpx); right: 0; bottom: 440rpx; left: 0; height: auto; visibility: visible; pointer-events: none; justify-content: center; transform: none; }
+.prop-peek-anchor--tutorial { position: fixed; z-index: 135; top: calc(env(safe-area-inset-top) + 120rpx); right: 0; bottom: 440rpx; left: 0; height: auto; visibility: visible; pointer-events: none; justify-content: center; transform: none; }
+.prop-peek-anchor--tutorial .prop-peek-anim { opacity: 1; transform: scale(1); }
 .prop-peek-anim { width: 52vw; max-width: 420rpx; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: scale(0.96); transform-origin: center center; transition: opacity 280ms ease-out, transform 280ms ease-out; }
 .prop-peek-anim--shown { opacity: 1; transform: scale(1); }
 .prop-peek-anim--leave { opacity: 0; transform: scale(0.96); }

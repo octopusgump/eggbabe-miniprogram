@@ -265,18 +265,29 @@ const doodleDefinition = {
         return;
       }
       const transitionDuration = this.pageTransitionDuration();
-      const revealPatch = { canvasReady: true, pageTransitionPhase: 'entering' };
+      const tutorialAlreadyUp = this.companionPropMode && this.data.propTutorialVisible;
+      const revealPatch = {
+        canvasReady: true,
+        pageTransitionPhase: tutorialAlreadyUp ? 'visible' : 'entering'
+      };
       if (this.companionPropMode) revealPatch.propEntryLoadingVisible = false;
       this.setData(revealPatch, () => {
         clearTimeout(this.pageTransitionTimer);
-        this.pageTransitionTimer = setTimeout(() => {
-          this.pageTransitionTimer = null;
-          if (this.pageActive) {
-            this.setData({ pageTransitionPhase: 'visible' }, () => {
-              if (typeof this.beginPropEntryFlow === 'function') this.beginPropEntryFlow();
-            });
+        const finishReveal = () => {
+          if (!this.pageActive) return;
+          if (!tutorialAlreadyUp) {
+            this.setData({ pageTransitionPhase: 'visible' });
           }
-        }, transitionDuration + 40);
+          if (typeof this.beginPropEntryFlow === 'function') this.beginPropEntryFlow();
+        };
+        if (tutorialAlreadyUp) {
+          finishReveal();
+        } else {
+          this.pageTransitionTimer = setTimeout(() => {
+            this.pageTransitionTimer = null;
+            finishReveal();
+          }, transitionDuration + 40);
+        }
         if (this.triggerEvent) this.triggerEvent('ready');
         if (this.companionDrawing) this.beginCompanionDrawing();
       });

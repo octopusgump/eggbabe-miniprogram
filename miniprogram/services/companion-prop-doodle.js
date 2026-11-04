@@ -150,10 +150,11 @@ function attach(definition) {
     this.propLookGateHintTimer = setTimeout(() => {
         this.propLookGateHintTimer = null;
         this.setData({ propLookGateHintVisible: false });
+        const fadeMs = this.data.companionReducedMotion ? 0 : PROP_LOOK_GATE_HINT_FADE_MS;
         this.propLookGateHintCleanupTimer = setTimeout(() => {
           this.propLookGateHintCleanupTimer = null;
           if (!this.data.propLookGateHintVisible) this.setData({ propLookGateHintText: '' });
-      }, PROP_LOOK_GATE_HINT_FADE_MS);
+      }, fadeMs);
     }, PROP_LOOK_GATE_HINT_MS);
     return true;
   };

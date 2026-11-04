@@ -111,13 +111,13 @@
             type="2d"
             id="eggBaseCanvas"
             class="egg-canvas egg-canvas--base"
-            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating || propTutorialVisible}}"
+            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating}}"
           ></canvas>
           <canvas
             type="2d"
             id="eggArtCanvas"
             class="egg-canvas egg-canvas--art"
-            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating || propTutorialVisible}}"
+            hidden="{{exitConfirmVisible || propUnlockVisible || propPeekVisible || propPeekAnimating}}"
             disable-scroll
             catchtouchstart="onCanvasTouchStart"
             catchtouchmove="onCanvasTouchMove"
@@ -300,7 +300,7 @@
     </view>
   </view>
 
-  <root-portal wx:if="{{companionPropMode && propTutorialVisible && propTutorialStep === 0 && canvasReady && propLookHint && !propUnlockVisible}}">
+  <root-portal wx:if="{{companionPropMode && propTutorialVisible && propTutorialStep === 0 && propLookHint && !propUnlockVisible}}">
     <cover-view
       class="prop-look-cover-portal"
       style="top: {{navCoverHeightPx}}px;"

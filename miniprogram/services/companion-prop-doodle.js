@@ -105,6 +105,16 @@ function attach(definition) {
     this.propLookGateHintCleanupTimer = null;
   };
 
+  definition.dismissPropLookGateHint = function dismissPropLookGateHint() {
+    this.clearPropLookGateHint();
+    if (!this.data.propLookGateHintText && !this.data.propLookGateHintVisible) return;
+    this.setData({
+      propLookGateHintText: '',
+      propLookGateHintVisible: false,
+      propLookGateHintTone: 'info'
+    });
+  };
+
   definition.preloadPropEntryAssets = function preloadPropEntryAssets() {
     if (!this.companionPropMode) return Promise.resolve(true);
     const sketch = this.data.propSketchSrc || this.data.propSketchPath;
@@ -120,19 +130,16 @@ function attach(definition) {
     this.setData({
       propLookGateHintText: message,
       propLookGateHintTone: tone === 'warning' ? 'warning' : 'info',
-      propLookGateHintVisible: false
-    }, () => {
-      if (this.pageActive === false) return;
-      this.setData({ propLookGateHintVisible: true });
-      this.propLookGateHintTimer = setTimeout(() => {
+      propLookGateHintVisible: true
+    });
+    this.propLookGateHintTimer = setTimeout(() => {
         this.propLookGateHintTimer = null;
         this.setData({ propLookGateHintVisible: false });
         this.propLookGateHintCleanupTimer = setTimeout(() => {
           this.propLookGateHintCleanupTimer = null;
           if (!this.data.propLookGateHintVisible) this.setData({ propLookGateHintText: '' });
-        }, PROP_LOOK_GATE_HINT_FADE_MS);
-      }, PROP_LOOK_GATE_HINT_MS);
-    });
+      }, PROP_LOOK_GATE_HINT_FADE_MS);
+    }, PROP_LOOK_GATE_HINT_MS);
     return true;
   };
 
@@ -481,6 +488,7 @@ function attach(definition) {
     clearTimeout(this.propPeekPopInSettleTimer);
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.clearPropLookGateHint();
+    this.dismissPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
@@ -491,6 +499,7 @@ function attach(definition) {
     clearTimeout(this.propPeekPopInSettleTimer);
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.clearPropLookGateHint();
+    this.dismissPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };

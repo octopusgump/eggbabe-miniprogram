@@ -80,7 +80,15 @@ assert.match(wxss, /\.prop-entry-loading\s*\{[^}]*z-index:\s*10150;/, 'loading �
 assert.match(propDoodleScript, /preloadPropEntryAssets/, '保留软预载辅助，但不得 hard-fail 阻断进入');
 assert.match(pageScript, /onPropEntrySketchLoad/, '简笔 decode 后再完成进页 loading');
 assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须覆盖再看一眼约 1.8 秒');
-assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '未达标须用再看一眼浮层提示，不得顶栏撑开画板');
+assert.match(propDoodleScript, /dismissPropLookGateHint/, '切后台须能清掉 gate 覆盖态');
+assert.match(pageScript, /resumePropEntryLoading/, '切后台回来须能继续进页 loading');
+assert.match(pageScript, /initPropEntrySketchReadyState/, '简笔 bindload 早于 canvas 就绪时不得写回未就绪');
+const failPrepBlock = pageScript.slice(pageScript.indexOf('failCanvasPreparation'), pageScript.indexOf('failCanvasPreparation') + 520);
+assert.match(failPrepBlock, /propEntryLoadingVisible:\s*true/, '准备失败时须留在 loading 层');
+assert.match(failPrepBlock, /canvasPreparationError:\s*true/, '准备失败时须标记错误文案');
+assert.match(wxml, /host-class="prop-look-gate-notice-host"/, 'gate 深色层须用 externalClasses 铺满宿主');
+assert.match(wxml, /prop-canvas-notice-anchor/, '道具模式须单独锚点展示画布内提示');
+assert.match(wxss, /\.prop-look-anchor--gate-active\s*\{[^}]*overflow:\s*hidden/, 'gate 文案须在胶囊 footprint 内裁切');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
 assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPopOutAnim|propPeekSketchAnim/, '简笔动效不得再使用 wx.createAnimation');
@@ -170,12 +178,12 @@ assert.ok(
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
 assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*inset:\s*0;/, 'gate 提示须与再看一眼同 footprint 覆盖展示');
 assert.match(wxml, /layout="pill-fill"[\s\S]*propLookGateHintText/, 'gate 须用 pill-fill 深色提示铺满按钮区域');
-assert.match(wxml, /propEntryLoadingVisible[\s\S]*loading-orbit size="M" tone="light"/, '进页 loading 须绑定 propEntryLoadingVisible 与标准 Orbit');
+assert.match(wxml, /propEntryLoadingVisible[\s\S]*prop-entry-loading[\s\S]*<loading-orbit[\s\S]*size="M" tone="light"/, '进页 loading 须绑定 propEntryLoadingVisible 与标准 Orbit');
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
 assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS\s*=\s*1000/, '进页 Orbit 最短展示须约 1 秒');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
-  '道具临摹不得再把提示叠在 preview 内 canvas 之上'
+  '道具临摹不得再把提示叠在 preview 内 canvas 之上（使用 prop-canvas-notice-anchor）'
 );
 assert.equal(noticeWxml.includes('inline-notice--{{tone}}') && noticeWxss.includes('.inline-notice--warning'), true, '标准轻提示只需提供普通与注意两种语义样式');
 assert.equal((noticeWxss.match(/\.inline-notice--(?:info|warning)\b/g) || []).length <= 2, true, '标准轻提示不得扩张为多套重复视觉');

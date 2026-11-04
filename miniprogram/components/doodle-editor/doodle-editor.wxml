@@ -7,7 +7,7 @@
     aria-busy="true"
   >
     <text class="prop-entry-loading__title">一起画</text>
-    <loading-orbit size="M" tone="light" reduced-motion="{{companionReducedMotion}}"></loading-orbit>
+    <loading-orbit wx:if="{{!canvasPreparationError}}" size="M" tone="light" reduced-motion="{{companionReducedMotion}}"></loading-orbit>
     <text class="prop-entry-loading__text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
   </view>
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
@@ -61,7 +61,7 @@
       <view
         class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
       >
-        <view class="prop-look-anchor">
+        <view class="prop-look-anchor {{propLookGateHintText ? 'prop-look-anchor--gate-active' : ''}}">
           <view
             class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText ? 'prop-look-hint--gate-covered' : ''}}"
             bindtap="onPropLookAgain"
@@ -73,6 +73,7 @@
           <view wx:if="{{propLookGateHintText}}" class="prop-look-gate-overlay">
             <inline-notice
               layout="pill-fill"
+              host-class="prop-look-gate-notice-host"
               text="{{propLookGateHintText}}"
               tone="{{propLookGateHintTone}}"
               visible="{{propLookGateHintVisible}}"
@@ -92,6 +93,13 @@
       bindload="onPropEntrySketchLoad"
       binderror="onPropEntrySketchError"
     ></image>
+    <view wx:if="{{companionPropMode && canvasReady && canvasNoticeText}}" class="prop-canvas-notice-anchor">
+      <inline-notice
+        text="{{canvasNoticeText}}"
+        tone="{{canvasNoticeTone}}"
+        visible="{{canvasNoticeVisible}}"
+      ></inline-notice>
+    </view>
     <view wx:if="{{!companionPropMode}}" class="canvas-notice-anchor">
       <inline-notice
         text="{{canvasNoticeText}}"

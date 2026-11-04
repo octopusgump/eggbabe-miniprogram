@@ -55,6 +55,17 @@ function markColorHintSeen() {
   } catch (error) {}
 }
 
+function readReducedMotionEnabled() {
+  try {
+    const system = wx.getSystemSetting
+      ? wx.getSystemSetting()
+      : (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {});
+    return Boolean(system.reducedMotion || system.enableReduceMotion);
+  } catch (error) {
+    return false;
+  }
+}
+
 const doodleDefinition = {
   data: {
     statusBarHeight: 20,
@@ -149,7 +160,8 @@ const doodleDefinition = {
       statusBarHeight: info.statusBarHeight || 20,
       navCoverHeightPx: (info.statusBarHeight || 20) + navRowPx,
       selectedBrushColor: initialBrush.value,
-      selectedBrushColorName: initialBrush.name
+      selectedBrushColorName: initialBrush.name,
+      companionReducedMotion: readReducedMotionEnabled()
     });
     this.syncViewState();
   },
@@ -162,6 +174,39 @@ const doodleDefinition = {
   onShow() {
     this.pageActive = true;
     if (this.data.toolPanelOpen && this.data.activeTool === 'brush') this.scheduleColorHint();
+    if (this.companionPropMode) {
+      if (this.propEntryRevealPending && !this.data.canvasReady) {
+        this.propEntryRevealPending = false;
+        this.revealEditor();
+      } else if (
+        (this.propEntryLoadingResumeOnShow || this.data.propEntryLoadingVisible)
+        && !this.data.canvasReady
+        && !this.data.canvasPreparationError
+      ) {
+        this.propEntryLoadingResumeOnShow = false;
+        this.resumePropEntryLoading();
+      }
+    }
+  },
+
+  resumePropEntryLoading() {
+    if (!this.companionPropMode || this.data.canvasReady || !this.data.propEntryLoadingVisible) return;
+    const token = this.canvasSetupToken;
+    if (!token) return;
+    if (!this.propEntrySketchReady && (this.data.propSketchSrc || this.data.propSketchPath)) {
+      clearTimeout(this.propEntrySketchFallbackTimer);
+      this.propEntrySketchFallbackTimer = setTimeout(() => {
+        if (!this.propEntrySketchReady && this.companionPropMode) {
+          this.propEntrySketchReady = true;
+          this.tryCompletePropEntryLoading(this.canvasSetupToken);
+        }
+      }, 3200);
+    }
+    if (this.propEntryCanvasReady && this.propEntrySketchReady) {
+      this.tryCompletePropEntryLoading(token);
+      return;
+    }
+    this.tryCompletePropEntryLoading(this.propEntryLoadingPendingToken || token);
   },
 
   pageTransitionDuration() {
@@ -190,7 +235,12 @@ const doodleDefinition = {
 
   revealEditor() {
     const reveal = () => {
-      if (!this.pageActive) return;
+      if (!this.pageActive) {
+        if (this.companionPropMode && this.data.propEntryLoadingVisible && !this.data.canvasReady) {
+          this.propEntryRevealPending = true;
+        }
+        return;
+      }
       const transitionDuration = this.pageTransitionDuration();
       const revealPatch = { canvasReady: true, pageTransitionPhase: 'entering' };
       if (this.companionPropMode) revealPatch.propEntryLoadingVisible = false;
@@ -231,11 +281,10 @@ const doodleDefinition = {
     clearTimeout(this.propEntryLoadingFinishTimer);
     this.setData({
       canvasPreparationError: true,
+      propEntryLoadingVisible: true,
       canvasReady: false,
-      propEntryLoadingVisible: false,
       pageTransitionPhase: 'visible'
     });
-    this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
   },
 
   tryCompletePropEntryLoading(setupToken) {
@@ -269,8 +318,17 @@ const doodleDefinition = {
     this.propEntryLoadingFinishTimer = setTimeout(() => {
       this.propEntryLoadingFinishTimer = null;
       if (setupToken !== this.canvasSetupToken || !this.data.propEntryLoadingVisible) return;
+      if (!this.pageActive) {
+        this.propEntryRevealPending = true;
+        return;
+      }
       reveal();
     }, waitMs);
+  },
+
+  initPropEntrySketchReadyState() {
+    if (this.propEntrySketchReady) return;
+    this.propEntrySketchReady = !(this.data.propSketchSrc || this.data.propSketchPath);
   },
 
   setupCanvases() {
@@ -285,7 +343,7 @@ const doodleDefinition = {
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
-        this.propEntrySketchReady = !(this.data.propSketchSrc || this.data.propSketchPath);
+        this.initPropEntrySketchReadyState();
         clearTimeout(this.propEntrySketchFallbackTimer);
         this.propEntrySketchFallbackTimer = setTimeout(() => {
           if (!this.propEntrySketchReady && this.companionPropMode) {
@@ -964,8 +1022,13 @@ const doodleDefinition = {
   onHide() {
     if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
     this.clearCompanionFeedback();
+    if (this.companionPropMode && this.data.propEntryLoadingVisible && !this.data.canvasReady && !this.data.canvasPreparationError) {
+      this.propEntryLoadingResumeOnShow = true;
+    }
     clearTimeout(this.propEntryLoadingFinishTimer);
+    this.propEntryLoadingFinishTimer = null;
     clearTimeout(this.propEntrySketchFallbackTimer);
+    this.propEntrySketchFallbackTimer = null;
     this.setData({ companionStartAwardVisible: false });
     this.pageActive = false;
     this.clearCanvasNoticeTimers();

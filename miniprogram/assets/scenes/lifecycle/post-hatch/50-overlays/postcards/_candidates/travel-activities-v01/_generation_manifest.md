@@ -4,7 +4,7 @@
 
 ## 2026-08-06 · 西双版纳傣锦工坊空景底图 v01
 
-- 文件：`china/xishuangbanna/scene_base_travel_xishuangbanna_dai_brocade_workshop_v01.webp`
+- 文件：`china/xishuangbanna/scene_base_travel_xishuangbanna_dai_brocade_workshop_v01.png`
 - 类型：旅行明信片动作系列的空景底图，用于后续局部生成玉兔动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -18,11 +18,11 @@
 
 ## 2026-08-06 · 西双版纳傣锦工坊空景底图 v02
 
-- 文件：`china/xishuangbanna/scene_base_travel_xishuangbanna_dai_brocade_workshop_v02.webp`
+- 文件：`china/xishuangbanna/scene_base_travel_xishuangbanna_dai_brocade_workshop_v02.png`
 - 类型：v01 的视角迭代；旅行明信片动作系列的空景底图，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`scene_base_travel_xishuangbanna_dai_brocade_workshop_v01.webp`（编辑目标）。
+- 参考图：`scene_base_travel_xishuangbanna_dai_brocade_workshop_v01.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -32,7 +32,7 @@
 
 ## 2026-08-06 · 东京自动贩卖机街角空景底图 v01
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_vending_machine_nook_v01.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_vending_machine_nook_v01.png`
 - 类型：旅行明信片动作系列的空景底图，用于“许愿 / 选择饮料 / 接住饮料罐”等同场景动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -46,7 +46,7 @@
 
 ## 2026-08-06 · 东京塔·芝公园街角·雨后黄昏空景底图 v01
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_shiba_vending_dusk_v01.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_shiba_vending_dusk_v01.png`
 - 类型：旅行明信片动作系列的空景底图，用于“自动贩卖机前许愿”等同场景动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -60,7 +60,7 @@
 
 ## 2026-08-06 · 东京都市霓虹小巷·仰视东京塔空景底图 v01
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_low_angle_v01.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_low_angle_v01.png`
 - 类型：旅行明信片动作系列的空景底图，用于“自动贩卖机前许愿”等同场景动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -74,11 +74,11 @@
 
 ## 2026-08-06 · 东京都市霓虹小巷·都市花园咖啡角空景底图 v02
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.png`
 - 类型：v01 的局部环境迭代；旅行明信片动作系列的空景底图，用于后续同背景的玉兔动作图；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_low_angle_v01.webp`（局部编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_low_angle_v01.png`（局部编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -88,11 +88,11 @@
 
 ## 2026-08-06 · 东京日间都市花园咖啡巷空景底图 v03
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_v03.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_v03.png`
 - 类型：v02 的日间与右侧环境迭代；旅行明信片动作系列的空景底图，用于后续同背景的玉兔动作图；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -102,11 +102,11 @@
 
 ## 2026-08-06 · 东京日间开阔都市花园咖啡巷空景底图 v04
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_open_cafe_garden_v04.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_open_cafe_garden_v04.png`
 - 类型：v03 的右侧花园开阔度迭代；旅行明信片动作系列的空景底图，用于后续同背景的玉兔动作图；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_v03.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_v03.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -116,11 +116,11 @@
 
 ## 2026-08-06 · 东京日间咖啡与开阔花园·45° 半俯视空景底图 v05
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_45deg_v05.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_daytime_cafe_garden_45deg_v05.png`
 - 类型：v04 的镜头迭代；旅行明信片动作系列的空景底图，用于后续同背景的玉兔动作图；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_daytime_open_cafe_garden_v04.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_daytime_open_cafe_garden_v04.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -130,11 +130,11 @@
 
 ## 2026-08-06 · 东京咖啡都市花园小巷·45° 半俯视干燥版 v06
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_45deg_dry_v06.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_45deg_dry_v06.png`
 - 类型：以 v02 都市花园咖啡巷为场景方向的 45° 半俯视迭代；旅行明信片动作系列的空景底图，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.webp`（场景方向）；首个镜头稿经横版画幅修正后导出。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_neon_alley_tower_cafe_garden_v02.png`（场景方向）；首个镜头稿经横版画幅修正后导出。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -144,11 +144,11 @@
 
 ## 2026-08-06 · 东京咖啡都市花园小巷·高位 45° 半俯视干燥版 v07
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_high_45deg_dry_v07.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_high_45deg_dry_v07.png`
 - 类型：v06 的抬高镜头迭代；旅行明信片动作系列的空景底图，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_45deg_dry_v06.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_cafe_alley_45deg_dry_v06.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -158,7 +158,7 @@
 
 ## 2026-08-06 · 东京咖啡与都市花园·用户选定 45° 基准底图 v08
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_garden_selected_45deg_v08.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_cafe_garden_selected_45deg_v08.png`
 - 类型：用户选定的东京旅行明信片动作系列空景基准底图；用于后续在同一环境中分别生成玉兔动作图；不是魔法窗素材。
 - 状态：`candidate / selected as current visual baseline`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -178,7 +178,7 @@
 
 ## 2026-08-07 · 东京塔与富士山·破壳后房间质感露台空景底图 v09
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_twilight_roomlike_v09.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_twilight_roomlike_v09.png`
 - 类型：旅行明信片动作系列的东京空景候选底图；用于后续同图生成玉兔动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -192,11 +192,11 @@
 
 ## 2026-08-07 · 东京塔与富士山·小露台大都市景观空景底图 v10
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.png`
 - 类型：v09 的构图迭代；旅行明信片动作系列的东京空景候选底图，用于后续同图生成玉兔动作；不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_twilight_roomlike_v09.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_twilight_roomlike_v09.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -206,11 +206,11 @@
 
 ## 2026-08-07 · 东京塔与富士山·清晨小露台空景底图 v11
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`
 - 类型：v10 的清晨时间迭代；旅行明信片动作系列的东京空景候选底图，用于后续同图生成玉兔动作；不是魔法窗素材。
 - 状态：`candidate / selected as current Tokyo terrace visual baseline`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.webp`（编辑目标）。
+- 参考图：`japan/tokyo/scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.png`（编辑目标）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -220,7 +220,7 @@
 
 ## 2026-08-07 · 东京详细咖啡巷·动作系列环境基准 v12
 
-- 文件：`japan/tokyo/scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.webp`
+- 文件：`japan/tokyo/scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.png`
 - 类型：东京咖啡巷动作系列空景基准；不是魔法窗素材。
 - 状态：`candidate / selected for Tokyo alley action series`
 - 格式：1600 × 900，不透明 WebP，q82。
@@ -232,47 +232,47 @@
 
 - 类型：旅行明信片正面插画候选；每张玉兔、动作、道具、接地阴影与环境均一次同图生成，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
-- 角色与环境参考：`JadeRabbit_ReferenceSheet_Standard_02.webp`（暖奶油 bouclé、蛋形身体、长耳、深色高光眼、蓝鼻、蓝色腮边刺绣及小尾巴比例）；咖啡巷使用 `scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.webp`；露台使用 `scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`。
+- 角色与环境参考：`JadeRabbit_ReferenceSheet_Standard_02.png`（暖奶油 bouclé、蛋形身体、长耳、深色高光眼、蓝鼻、蓝色腮边刺绣及小尾巴比例）；咖啡巷使用 `scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.png`；露台使用 `scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`。
 - 统一格式：1600 × 900，不透明 WebP，q82；无文字、Logo、品牌、二维码、UI、边框或水印；单只玉兔约占画高 32%，无透明扣图后贴。
 - 生成工具：Codex 内置 ImageGen。
 
 ### 咖啡巷：可爱动作
 
-- `japan/tokyo/postcard_travel_tokyo_alley_vending_tiptoe_jade_rabbit_v01.webp` — 踮脚按无品牌贩卖机按钮。
-- `japan/tokyo/postcard_travel_tokyo_alley_hug_drink_jade_rabbit_v01.webp` — 坐在路沿抱住饮料罐。
-- `japan/tokyo/postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v01.webp` — 木长凳自拍。
-- `japan/tokyo/postcard_travel_tokyo_alley_peek_cafe_table_jade_rabbit_v01.webp` — 探头看咖啡小桌。
-- `japan/tokyo/postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v01.webp` — 轻跳过干落叶。
-- `japan/tokyo/postcard_travel_tokyo_alley_vending_face_jade_rabbit_v01.webp` — 贴近贩卖机挑饮料。
-- `japan/tokyo/postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v01.webp` — 抱空白纸袋快步走。
-- `japan/tokyo/postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v01.webp` — 面向镜头对远处东京塔比剪刀手。
+- `japan/tokyo/postcard_travel_tokyo_alley_vending_tiptoe_jade_rabbit_v01.png` — 踮脚按无品牌贩卖机按钮。
+- `japan/tokyo/postcard_travel_tokyo_alley_hug_drink_jade_rabbit_v01.png` — 坐在路沿抱住饮料罐。
+- `japan/tokyo/postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v01.png` — 木长凳自拍。
+- `japan/tokyo/postcard_travel_tokyo_alley_peek_cafe_table_jade_rabbit_v01.png` — 探头看咖啡小桌。
+- `japan/tokyo/postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v01.png` — 轻跳过干落叶。
+- `japan/tokyo/postcard_travel_tokyo_alley_vending_face_jade_rabbit_v01.png` — 贴近贩卖机挑饮料。
+- `japan/tokyo/postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v01.png` — 抱空白纸袋快步走。
+- `japan/tokyo/postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v01.png` — 面向镜头对远处东京塔比剪刀手。
 
 ### 咖啡巷：共鸣动作
 
-- `japan/tokyo/postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v01.webp` — 长凳捧热饮。
-- `japan/tokyo/postcard_travel_tokyo_alley_wish_jade_rabbit_v01.webp` — 面向东京塔合爪许愿。
-- `japan/tokyo/postcard_travel_tokyo_alley_hug_knees_jade_rabbit_v01.webp` — 靠木门抱膝发呆。
-- `japan/tokyo/postcard_travel_tokyo_alley_draw_postcard_jade_rabbit_v01.webp` — 在小桌画无字明信片。
-- `japan/tokyo/postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v01.webp` — 看小相机回放。
-- `japan/tokyo/postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v01.webp` — 石板路晨间伸展。
-- `japan/tokyo/postcard_travel_tokyo_alley_two_drinks_jade_rabbit_v01.webp` — 在小桌摆两杯饮料。
-- `japan/tokyo/postcard_travel_tokyo_alley_back_tower_jade_rabbit_v01.webp` — 背对镜头看东京塔，小尾巴可见。
+- `japan/tokyo/postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v01.png` — 长凳捧热饮。
+- `japan/tokyo/postcard_travel_tokyo_alley_wish_jade_rabbit_v01.png` — 面向东京塔合爪许愿。
+- `japan/tokyo/postcard_travel_tokyo_alley_hug_knees_jade_rabbit_v01.png` — 靠木门抱膝发呆。
+- `japan/tokyo/postcard_travel_tokyo_alley_draw_postcard_jade_rabbit_v01.png` — 在小桌画无字明信片。
+- `japan/tokyo/postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v01.png` — 看小相机回放。
+- `japan/tokyo/postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v01.png` — 石板路晨间伸展。
+- `japan/tokyo/postcard_travel_tokyo_alley_two_drinks_jade_rabbit_v01.png` — 在小桌摆两杯饮料。
+- `japan/tokyo/postcard_travel_tokyo_alley_back_tower_jade_rabbit_v01.png` — 背对镜头看东京塔，小尾巴可见。
 
 ### 清晨露台：补齐动作
 
-- `japan/tokyo/postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v01.webp` — 捧热饮看富士山。
-- `japan/tokyo/postcard_travel_tokyo_morning_terrace_wish_jade_rabbit_v01.webp` — 面向富士山安静许愿。
-- `japan/tokyo/postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v01.webp` — 晨光伸懒腰。
+- `japan/tokyo/postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v01.png` — 捧热饮看富士山。
+- `japan/tokyo/postcard_travel_tokyo_morning_terrace_wish_jade_rabbit_v01.png` — 面向富士山安静许愿。
+- `japan/tokyo/postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v01.png` — 晨光伸懒腰。
 
 - 验收结论：本次新增 19 张；连同已生成的露台自拍、倒立、做鬼脸，共有 22 张东京玉兔动作候选图。自动尺寸／格式检查通过：全部为 1600 × 900、不透明 WebP。未改动运行时、页面、正式目的地配置，未提交或推送。
 
 ## 2026-08-07 · 东京清晨露台·玉兔自拍动作图 v01
 
-- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_selfie_jade_rabbit_v01.webp`
+- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_selfie_jade_rabbit_v01.png`
 - 类型：旅行明信片正面插画候选；玉兔与环境一次同图生成，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.webp`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`（环境基准）。
+- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.png`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`（环境基准）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -282,11 +282,11 @@
 
 ## 2026-08-07 · 东京清晨露台·玉兔倒立动作图 v01
 
-- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_handstand_jade_rabbit_v01.webp`
+- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_handstand_jade_rabbit_v01.png`
 - 类型：旅行明信片正面插画候选；玉兔与环境一次同图生成，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.webp`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`（环境基准）。
+- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.png`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`（环境基准）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 
@@ -296,11 +296,11 @@
 
 ## 2026-08-07 · 东京清晨露台·玉兔做鬼脸动作图 v01
 
-- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_funny_face_jade_rabbit_v01.webp`
+- 文件：`japan/tokyo/postcard_travel_tokyo_morning_terrace_funny_face_jade_rabbit_v01.png`
 - 类型：旅行明信片正面插画候选；玉兔与环境一次同图生成，不是魔法窗素材。
 - 状态：`candidate / pending user visual approval`
 - 格式：1600 × 900，不透明 WebP，q82。
-- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.webp`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`（环境基准）。
+- 参考图：`JadeRabbit_ReferenceSheet_Standard_02.png`（身份与比例）；`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`（环境基准）。
 - 生成工具：Codex 内置 ImageGen。
 - 生成提示词：
 

@@ -8,7 +8,7 @@ require('../../pages/iaa-memory-album-demo/iaa-memory-album-demo');
 const page = Object.assign({}, definition, { roomEntry: true, data: JSON.parse(JSON.stringify(definition.data)), setData(patch) { Object.assign(this.data, patch); } });
 (async () => {
   stars.configureRoom('tea-page-test'); stars.resetRoomStarView('AVAILABLE');
-  page.activityContext = { atHome: true, teaImage: '/test-photo.webp' };
+  page.activityContext = { atHome: true, teaImage: '/test-photo.png' };
   page.onStartTea();
   page.onChooseTea({ currentTarget: { dataset: { key: 'plain' } } });
   assert.equal(page.data.tea.phase, 'confirming');
@@ -27,11 +27,11 @@ const page = Object.assign({}, definition, { roomEntry: true, data: JSON.parse(J
   page.onCollectTea();
   assert.equal(stars.getMemories().length, 1);
   stars.configureRoom('tea-away-test');
-  page.activityContext = { atHome: false, teaImage: '/test-photo.webp' };
+  page.activityContext = { atHome: false, teaImage: '/test-photo.png' };
   page.onStartTea();
   assert.equal(stars.getActivityState().current, null, '外出不开始居家茶会');
   stars.configureRoom('tea-save-failure');
-  page.activityContext = { atHome: true, teaImage: '/test-photo.webp' };
+  page.activityContext = { atHome: true, teaImage: '/test-photo.png' };
   failWrite = true; page.onStartTea();
   assert.equal(toast, '刚才没有保存好，请再试一次。');
   assert.equal(stars.getActivityState().current, null);

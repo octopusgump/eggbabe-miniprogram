@@ -1,19 +1,19 @@
 // DEV-ONLY：实验页未注册且被排除出上传包；素材路径不进入正式运行时配置。
 const PRE_HATCH_ROOT = '/assets/scenes/lifecycle/pre-hatch';
 const dayAssets = {
-  nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/warm-day-v2/nest_pad.webp`,
+  nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/warm-day-v2/nest_pad.png`,
   egg: {
-    left45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_left_45.webp`,
-    front: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_front.webp`,
-    right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_right_45.webp`
+    left45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_left_45.png`,
+    front: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_front.png`,
+    right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/warm-day-v2/egg_right_45.png`
   }
 };
 const nightAssets = {
-  background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night_moonlight.webp`,
-  nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.webp`,
+  background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_night_moonlight.png`,
+  nestPad: `${PRE_HATCH_ROOT}/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.png`,
   egg: {
-    right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_right_45.webp`,
-    contactShadow: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.webp`
+    right45: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_right_45.png`,
+    contactShadow: `${PRE_HATCH_ROOT}/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.png`
   }
 };
 const DAY_ORIENTATIONS = [
@@ -26,7 +26,7 @@ const NIGHT_ORIENTATIONS = [
 ];
 const LIGHTING_MODES = {
   day: {
-    background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_day.webp`,
+    background: `${PRE_HATCH_ROOT}/10-background/incubation-room/season-weather-full-scenes/spring_clear_day.png`,
     nest: dayAssets.nestPad,
     eggShadow: '',
     orientations: DAY_ORIENTATIONS,

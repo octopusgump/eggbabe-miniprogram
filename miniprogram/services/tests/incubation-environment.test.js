@@ -17,10 +17,10 @@ const day = resolveAt(12, 0, 26);
 assert.equal(day.season, 'spring');
 assert.equal(day.period, 'day');
 assert.equal(day.valid, true);
-assert.ok(day.fullSceneImage.endsWith(`/${day.sceneKey}.webp`) || (day.sceneKey === 'spring_clear_night' && day.fullSceneImage.endsWith('/spring_clear_night_moonlight.webp')));
+assert.ok(day.fullSceneImage.endsWith(`/${day.sceneKey}.png`) || (day.sceneKey === 'spring_clear_night' && day.fullSceneImage.endsWith('/spring_clear_night_moonlight.png')));
 assert.equal(day.backgroundImage, '', '正式运行时不得静默回退到候选房间底图');
-assert.equal(day.eggImage.endsWith(`/${day.sceneKey}_egg_right45.webp`), true, '每个环境键必须读取同名蛋体层');
-assert.equal(day.nestImage.endsWith(`/${day.sceneKey}_nest_pad.webp`), true, '每个环境键必须读取同名窝垫层');
+assert.equal(day.eggImage.endsWith(`/${day.sceneKey}_egg_right45.png`), true, '每个环境键必须读取同名蛋体层');
+assert.equal(day.nestImage.endsWith(`/${day.sceneKey}_nest_pad.png`), true, '每个环境键必须读取同名窝垫层');
 assert.equal(day.weatherOverlay, '');
 assert.equal(environment.resolve({ weather: 'rain' }, Object.assign({}, pet, { timestamp: new Date(2026, 6, 26, 12).getTime() })).weather, day.weather, '旧服务端天气字段不得影响应用内随机结果');
 
@@ -35,7 +35,7 @@ assert.equal(resolveAt(19, 0).period, 'night');
 assert.equal(environment.millisecondsUntilNextEnvironmentBoundary(new Date(2026, 6, 26, 16, 59).getTime()), 60 * 1000);
 assert.equal(environment.millisecondsUntilNextEnvironmentBoundary(new Date(2026, 6, 26, 23, 59).getTime()), 60 * 1000);
 assert.equal(resolveAt(12, 0, 26, true).season, 'summer', '破壳后按中国上海月份映射季节');
-assert.equal(environment.resolveAssetUrl('/assets/scenes/lifecycle/pre-hatch/x.webp', 'https://cdn.example.com/').startsWith('https://cdn.example.com/assets/'), true);
+assert.equal(environment.resolveAssetUrl('/assets/scenes/lifecycle/pre-hatch/x.png', 'https://cdn.example.com/').startsWith('https://cdn.example.com/assets/'), true);
 
 const exactWindowScenes = Object.keys(preHatchAssets.windowWeather.bySceneKey || {});
 assert.equal(exactWindowScenes.length, 16, '16 张新增窗景必须按完整 scene_key 登记');

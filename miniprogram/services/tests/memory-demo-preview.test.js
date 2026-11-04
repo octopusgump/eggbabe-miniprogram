@@ -9,7 +9,7 @@ const pet = {
   collectionCard: {
     card_id: 'memory-preview-card',
     display_name: '小月',
-    illustration_url: '/assets/cards/YT-S01/yt-s01-001.webp',
+    illustration_url: '/assets/cards/YT-S01/yt-s01-001.png',
     style: '月白桂花款'
   }
 };

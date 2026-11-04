@@ -14,7 +14,7 @@ assert.deepEqual(Object.keys(panoramaSets), periods, '破壳后空房全景必�
 
 periodOptions.forEach(option => {
   const set = panoramaSets[option.key];
-  assert.equal(set.expected.panorama.endsWith(`/panorama-three-screen/scene-sets/${option.panoramaSource}_post_hatch_panorama_v01.webp`), true, `${option.key} 全景文件名不符合规范`);
+  assert.equal(set.expected.panorama.endsWith(`/panorama-three-screen/scene-sets/${option.panoramaSource}_post_hatch_panorama_v01.png`), true, `${option.key} 全景文件名不符合规范`);
   assert.equal(set.panorama, set.expected.panorama, `${option.key} 必须精确使用约定的完整全景路径`);
   const absolute = path.resolve(__dirname, '../..', `.${set.panorama}`);
   assert.equal(fs.existsSync(absolute), true, `${option.key} 正式运行时全景资源缺失：${set.panorama}`);
@@ -46,12 +46,12 @@ Object.entries(actionScenesByCharacter).forEach(([characterKey, scenes]) => {
 const jadeRabbit = { prototype: '玉兔' };
 const sleepState = { atHome: true, key: 'sleep', action: { id: 'lamp_off' } };
 const dayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { period: 'day' }, 'https://cdn.example.com');
-assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp', '玉兔日间睡觉必须读取根目录正式基础图');
+assert.equal(dayAction && dayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.png', '玉兔日间睡觉必须读取根目录正式基础图');
 const sunsetAction = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { period: 'sunset' }, 'https://cdn.example.com');
-assert.equal(sunsetAction && sunsetAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_sunset_v01.webp', '玉兔日落睡觉必须读取根目录正式基础图');
+assert.equal(sunsetAction && sunsetAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_nap_sunset_v01.png', '玉兔日落睡觉必须读取根目录正式基础图');
 const lazyState = { atHome: true, key: 'lazy' };
 const lazyDayAction = postHatchAssets.resolveActionPanorama(jadeRabbit, lazyState, { period: 'day' }, 'https://cdn.example.com');
-assert.equal(lazyDayAction && lazyDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_lazy_day_v01.webp', '玉兔日间小憩必须读取根目录正式基础图');
+assert.equal(lazyDayAction && lazyDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_lazy_day_v01.png', '玉兔日间小憩必须读取根目录正式基础图');
 periods.forEach(period => {
   const sleepPanorama = postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { period });
   const lazyPanorama = postHatchAssets.resolveActionPanorama(jadeRabbit, lazyState, { period });
@@ -59,19 +59,19 @@ periods.forEach(period => {
   assert.notEqual(sleepPanorama.panorama, lazyPanorama.panorama, `玉兔 ${period} 的睡觉与小憩不得复用同一张图片`);
 });
 const koiLazyDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, lazyState, { period: 'day' });
-assert.equal(koiLazyDayAction && koiLazyDayAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_lazy_day_v01.webp'), true, '锦鲤日间小憩必须读取自己的正式动作全景');
+assert.equal(koiLazyDayAction && koiLazyDayAction.panorama.endsWith('/boon-koi/home-bedroom/home_bedroom_lazy_day_v01.png'), true, '锦鲤日间小憩必须读取自己的正式动作全景');
 const stareState = { atHome: true, key: 'stare' };
 periods.forEach(period => {
   const jadeStare = postHatchAssets.resolveActionPanorama(jadeRabbit, stareState, { period });
   const koiStare = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, stareState, { period });
-  assert.equal(jadeStare && jadeStare.panorama.endsWith(`/jade-rabbit/home-bedroom/home_bedroom_stare_${period}_v01.webp`), true, `玉兔 ${period} 发呆必须读取自己的正式基础图`);
-  assert.equal(koiStare && koiStare.panorama.endsWith(`/boon-koi/home-bedroom/home_bedroom_stare_${period}_v01.webp`), true, `锦鲤 ${period} 发呆必须读取自己的正式动作全景`);
+  assert.equal(jadeStare && jadeStare.panorama.endsWith(`/jade-rabbit/home-bedroom/home_bedroom_stare_${period}_v01.png`), true, `玉兔 ${period} 发呆必须读取自己的正式基础图`);
+  assert.equal(koiStare && koiStare.panorama.endsWith(`/boon-koi/home-bedroom/home_bedroom_stare_${period}_v01.png`), true, `锦鲤 ${period} 发呆必须读取自己的正式动作全景`);
 });
 const lightsOffAction = postHatchAssets.resolveActionPanorama(jadeRabbit, Object.assign({}, sleepState, { actionDone: true }), { period: 'night' });
-assert.equal(lightsOffAction && lightsOffAction.panorama.endsWith('/home_bedroom_nap_night_v01.webp') && lightsOffAction.variant === 'default', true, '删除关灯特例后必须继续使用夜间正式基础图');
-assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { period: 'day' }).panorama.endsWith('/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.webp'), true, '破壳后动作只需时段即可精确解析');
+assert.equal(lightsOffAction && lightsOffAction.panorama.endsWith('/home_bedroom_nap_night_v01.png') && lightsOffAction.variant === 'default', true, '删除关灯特例后必须继续使用夜间正式基础图');
+assert.equal(postHatchAssets.resolveActionPanorama(jadeRabbit, sleepState, { period: 'day' }).panorama.endsWith('/jade-rabbit/home-bedroom/home_bedroom_nap_day_v01.png'), true, '破壳后动作只需时段即可精确解析');
 const koiDayAction = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { period: 'day' }, 'https://cdn.example.com');
-assert.equal(koiDayAction && koiDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom/home_bedroom_nap_day_v01.webp', '锦鲤日间睡觉必须读取自己的正式动作全景');
+assert.equal(koiDayAction && koiDayAction.panorama, 'https://cdn.example.com/assets/scenes/lifecycle/post-hatch/60-action-scenes/boon-koi/home-bedroom/home_bedroom_nap_day_v01.png', '锦鲤日间睡觉必须读取自己的正式动作全景');
 periods.forEach(period => {
   const sleepPanorama = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, sleepState, { period });
   const lazyPanorama = postHatchAssets.resolveActionPanorama({ prototype: '锦鲤' }, lazyState, { period });

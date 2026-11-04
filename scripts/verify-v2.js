@@ -58,7 +58,7 @@ assert.equal(homeLogic.includes("result: 'daily_detail_opened'") && homeLogic.in
 assert.equal(homeTemplate.includes('wx:if="{{!dailyWindowVisible}}" class="window-effects"') && homeLogic.includes("this.setData({ dailyWindowVisible: false }, () => {") && homeLogic.includes('this.setupWindowWeatherCanvas();'), true, '进入日常窗外详情时必须卸载首页窗玻璃遮罩，返回后重新创建首页天气 Canvas');
 assert.equal(windowWeatherCanvas.includes('function drawFog') && windowWeatherCanvas.includes('function drawRain') && windowWeatherCanvas.includes('function drawSnow'), true, '雾、雨、雪必须由共用窗户 Canvas 模块绘制');
 assert.equal(/incubation-weather-overlay|window-fog-overlay|weather-overlays\//.test(`${homeTemplate}\n${homeLogic}\n${read('miniprogram/config/pre-hatch-assets.js')}`), false, '窗户天气不得再引用透明 overlay 图片');
-['w_f_fog.webp', 'w_r_rain.webp', 'w_s_snow.webp'].forEach(file => {
+['w_f_fog.png', 'w_r_rain.png', 'w_s_snow.png'].forEach(file => {
   assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/shared/40-interaction-fx/weather-overlays', file)), false, `${file} 已由 Canvas 替代，不得残留`);
 });
 assert.match(homeStyles, /\.window-effects\s*\{[^}]*right:\s*0;[^}]*left:\s*58%;[^}]*height:\s*50%;[^}]*border-radius:\s*0 0 0 30rpx;/s, '窗户互动区必须覆盖包含透视下沿的完整玻璃区域');
@@ -175,7 +175,7 @@ assert.equal(
   true,
   '窗外必须随机展示多条第一人称陪伴文案，并支持点击淡出淡入换句'
 );
-const windowWeatherAssets = ['w_01_clear_day.webp', 'w_02_clear_sunset.webp', 'w_03_clear_night.webp', 'w_04_cloudy_day.webp', 'w_05_cloudy_night.webp', 'w_06_snow_day.webp', 'w_07_snow_night.webp'];
+const windowWeatherAssets = ['w_01_clear_day.png', 'w_02_clear_sunset.png', 'w_03_clear_night.png', 'w_04_cloudy_day.png', 'w_05_cloudy_night.png', 'w_06_snow_day.png', 'w_07_snow_night.png'];
 windowWeatherAssets.forEach(file => assert.equal(fs.existsSync(path.join(root, 'miniprogram/assets/scenes/lifecycle/shared/10-background/window-weather', file)), true, `缺少日常窗外素材：${file}`));
 assert.equal(homeTemplate.includes('room-lamp-hotspot') && homeLogic.includes('onLampTap'), true, '台灯必须融入房间画面并可直接开关');
 assert.equal(homeTemplate.includes('incubation-scene-error') && homeTemplate.includes('bindtap="onRetryFullSceneImage"') && homeTemplate.includes('incubation-room-lighting-image') === false, true, '完整房间图失败时必须显示明确错误与重试，不能叠加未完成的房间光影占位层');
@@ -190,7 +190,7 @@ assert.equal(fs.existsSync(path.join(root, 'miniprogram/services/room-sound.js')
 const incubationEnvironment = read('miniprogram/services/incubation-environment.js');
 assert.equal(incubationEnvironment.includes("require('./environment-state')") && incubationEnvironment.includes('environmentCdnBase'), true, '环境必须由本机时段与稳定种子计算，并支持备案 CDN');
 assert.equal(/tapEggCurrency|currencyAccount|requestDewForTap/.test(homeLogic), false, '轻触蛋体不得请求虚拟资源');
-assert.equal(homeTemplate.includes('egg_on_nest.webp') || homeLogic.includes('shellArtService.drawEggBase'), true, '必须保留真实蛋体渲染');
+assert.equal(homeTemplate.includes('egg_on_nest.png') || homeLogic.includes('shellArtService.drawEggBase'), true, '必须保留真实蛋体渲染');
 
 const lifeScene = lifeSceneLogic;
 assert.equal(/scene-card|attemptDrop|cardDrop|collectorLabel|drop-mask/.test(`${lifeScene}\n${lifeSceneTemplate}`), false, '生活场景只能返回内容反馈');
@@ -215,7 +215,7 @@ const toolboxItemIcons = require('../miniprogram/config/post-hatch-assets').POST
 assert.equal(
   toolboxItemIcons.my.endsWith('/ui_3d_tabbar_interaction_gear_flat_96_v04_p8_v01.png')
     && ['card', 'postcards', 'keepsakes'].every(key => toolboxItemIcons[key])
-    && Object.values(toolboxItemIcons).some(icon => icon.includes('ui_3d_toolbox_settings_gear_96_v03.webp')) === false,
+    && Object.values(toolboxItemIcons).some(icon => icon.includes('ui_3d_toolbox_settings_gear_96_v03.png')) === false,
   true,
   '我的/设置必须复用现有设置图标，并保留已完成的复杂内容图标资产'
 );
@@ -278,7 +278,7 @@ const card = {
   identity_code: 'EGG-YT-20260724-000001',
   source_batch: 'BATCH-01',
   illustration_key: 'YT__moon_white',
-  illustration_url: 'https://cdn.eggbabe.com/cards/yt-moon-white.webp'
+  illustration_url: 'https://cdn.eggbabe.com/cards/yt-moon-white.png'
 };
 assert.equal(petStore.applyCloudHatchCard(card).ok, true, '收藏卡必须消费服务端已确定结果');
 assert.equal(petStore.applyCloudHatchCard(Object.assign({}, card, { mode: undefined })).ok, false, '不得把缺少 mode 的卡包装成 live');

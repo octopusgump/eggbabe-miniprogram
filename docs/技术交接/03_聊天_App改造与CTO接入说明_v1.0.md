@@ -784,7 +784,7 @@ done
 - `miniprogram/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_boon_koi_96_v02.png`（新增，聊天页与生活空间入口共用）
 - `miniprogram/assets/ui/3d-scene-actions/runtime/ui_3d_scene_chat_jade_rabbit_96_v02.png`（新增，聊天页与生活空间入口共用）
 
-`miniprogram/assets/ui/chat-avatars/*.webp` 当前没有运行时代码或配置引用，不属于本轮正式聊天资源清单；不得因文件存在而标记为已接入。原始 v01 头像未覆盖。
+`miniprogram/assets/ui/chat-avatars/*.png` 当前没有运行时代码或配置引用，不属于本轮正式聊天资源清单；不得因文件存在而标记为已接入。原始 v01 头像未覆盖。
 
 ### 19.3 测试与门禁
 

@@ -56,7 +56,7 @@ git diff --check
 
 #### B1 · 动作全景跨季节复用 → 改为按环境键精确匹配
 
-**原问题**：`panoramaByPeriod` 只按 `day/sunset/night` 建索引，`resolveActionPanorama` 只校验 `weather === 'sunny'` + `period`，**完全不校验季节**。实测 `home_bedroom_read_day_v01.webp` 窗外是浅绿嫩叶，却会被送给 `winter_clear_day`（空房图窗外是雪景）和 `autumn_clear_day`（金黄）。
+**原问题**：`panoramaByPeriod` 只按 `day/sunset/night` 建索引，`resolveActionPanorama` 只校验 `weather === 'sunny'` + `period`，**完全不校验季节**。实测 `home_bedroom_read_day_v01.png` 窗外是浅绿嫩叶，却会被送给 `winter_clear_day`（空房图窗外是雪景）和 `autumn_clear_day`（金黄）。
 
 **改动**（`miniprogram/config/post-hatch-assets.js`）：
 
@@ -272,7 +272,7 @@ winter_cloudy_night     winter_snow_sunset      winter_post_snow_sunset winter_p
 | --- | --- |
 | i1 | `docs/蛋宝宝小程序_V3.5_实现口径.md` 仍在活动仓库内可被检索到（另 3 份文档提及 V3.5）。V3.5 不得作为当前合规依据。不要删除文件 |
 | i2 | **已统一当前动作口径**：8 个居家状态为睡觉、小憩、发呆、涂涂画画、看书、打游戏、听音乐、看窗外。小憩沿用内部键 `lazy`（历史文档称赖床），睡觉沿用内部键 `sleep`；两者使用独立动作图，不得重复计数。旧版结构说明与 PRD 仍作为历史资料保留。 |
-| i3 | **窗洞透明架构已被取代**。实现已是「36 键预合成整图 + 独立透明蛋体层 + 独立透明窝垫层 + 只画在窗玻璃范围的天气 Canvas」，分层天气系统（7 底图 + 3 叠加层）不再使用，`weatherOverlayPath()` 恒返回空串。仓库内提到 `room_base.webp` 透明窗洞的 handoff / manifest 属历史资料，**不得据此要求代码恢复透明窗洞** |
+| i3 | **窗洞透明架构已被取代**。实现已是「36 键预合成整图 + 独立透明蛋体层 + 独立透明窝垫层 + 只画在窗玻璃范围的天气 Canvas」，分层天气系统（7 底图 + 3 叠加层）不再使用，`weatherOverlayPath()` 恒返回空串。仓库内提到 `room_base.png` 透明窗洞的 handoff / manifest 属历史资料，**不得据此要求代码恢复透明窗洞** |
 | i6 | 主 PRD 内仍混有「20 套环境图」的旧段落，顶部优先修订与当前运行时均为 36 键 |
 
 ### 3.6 无法静态验证，需真机

@@ -3,11 +3,11 @@
 > 所属主 PRD：[01 全产品](../../../主PRD/01_蛋宝宝_全产品_PRD_v3.6.md)。
 
 - 生成方式：Codex 内置 ImageGen。
-- 角色参考：`JadeRabbit_ReferenceSheet_Standard_02.webp`。
-- 项目材质参考：`post-hatch/30-character/jade-rabbit/stare.webp`。
+- 角色参考：`JadeRabbit_ReferenceSheet_Standard_02.png`。
+- 项目材质参考：`post-hatch/30-character/jade-rabbit/stare.png`。
 - 绿色工作底：`jade_rabbit_lying_floor_chroma_v01.png`。
-- 透明候选：`jade_rabbit_lying_floor_transparent_v01.webp`。
-- 正式运行时素材：`miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.webp`。
+- 透明候选：`jade_rabbit_lying_floor_transparent_v01.png`。
+- 正式运行时素材：`miniprogram/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/sleep.png`。
 
 ## 最终提示词
 

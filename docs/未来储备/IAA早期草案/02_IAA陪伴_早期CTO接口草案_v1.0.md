@@ -126,7 +126,7 @@ CTO 返回：
     "name": "没画完的画",
     "line": "它说还差一点，第二天真的把颜色补完了。",
     "rarity": "SPECIAL",
-    "imageUrl": "https://example.invalid/memory.webp"
+    "imageUrl": "https://example.invalid/memory.png"
   }
 }
 ```
@@ -147,12 +147,12 @@ CTO 返回：
       "character": "玉兔",
       "line": "它说还差一点，第二天真的把颜色补完了。",
       "rarity": "SPECIAL",
-      "imageUrl": "https://example.invalid/memory.webp"
+      "imageUrl": "https://example.invalid/memory.png"
     },
     {
       "id": "memory_first_snow",
       "status": "LOCKED",
-      "silhouetteUrl": "https://example.invalid/silhouette.webp"
+      "silhouetteUrl": "https://example.invalid/silhouette.png"
     }
   ]
 }

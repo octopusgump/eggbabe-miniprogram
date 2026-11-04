@@ -41,7 +41,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'morning_stretch',
     actionLabel: '晨光里的伸展',
     line: '巷子刚亮起来，我先在石板路上伸了个懒腰，远处的塔也像刚刚醒来。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-leaf-hop',
@@ -50,7 +50,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'leaf_hop',
     actionLabel: '跳过一片落叶',
     line: '有片叶子正好落在路中间，我轻轻跳了过去，落地时它又被风吹远了一点。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-bench-selfie',
@@ -59,7 +59,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'bench_selfie',
     actionLabel: '木凳上的自拍',
     line: '木凳比看起来更暖，我坐下来拍了一张，照片里还装进了巷子尽头的一点红色。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-camera-playback',
@@ -68,7 +68,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'camera_playback',
     actionLabel: '看看刚才的照片',
     line: '我低头看了看刚拍的照片，最清楚的不是塔，是被晨光照亮的一小块木门。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-bench-hot-drink',
@@ -77,7 +77,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'bench_hot_drink',
     actionLabel: '捧一杯热饮',
     line: '杯子暖得刚刚好，我捧着它坐了一会儿，巷子里的声音也慢慢变多了。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-peace-tower',
@@ -86,7 +86,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'peace_tower',
     actionLabel: '和东京塔合影',
     line: '我对着远处的塔比了一个小小的手势，快门响的时候，风正好把耳朵吹到一边。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-wish',
@@ -95,7 +95,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'wish',
     actionLabel: '在塔下许愿',
     line: '我朝远处合起爪子，没有把愿望说出来，只记得那一刻巷子特别安静。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_wish_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_wish_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-alley-back-tower',
@@ -104,7 +104,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'back_tower',
     actionLabel: '再看一会儿东京塔',
     line: '走到巷子中央时我又回头看了一会儿，塔没有变小，只是天变得更亮了。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-terrace-morning-hot-drink',
@@ -113,7 +113,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'morning_hot_drink_view',
     actionLabel: '晨光里看富士山',
     line: '清晨的城市还没有完全醒，我捧着杯子坐在露台上，远处的山先被太阳照亮了。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-terrace-morning-stretch',
@@ -122,7 +122,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'morning_stretch',
     actionLabel: '露台上的伸展',
     line: '风从城市上面吹过来，我伸开爪子站稳了一会儿，耳朵里都是很轻的声音。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-terrace-night-selfie',
@@ -131,7 +131,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'night_selfie',
     actionLabel: '城市亮灯后的自拍',
     line: '天色变成桃蓝色以后，城市的灯一盏一盏亮起来，我把塔和远山都装进了照片里。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_night_terrace_selfie_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_night_terrace_selfie_jade_rabbit_v02.png`
   }),
   Object.freeze({
     id: 'tokyo-terrace-night-wish',
@@ -140,7 +140,7 @@ const TOKYO_POSTCARD_FIXTURES = Object.freeze([
     actionId: 'night_wish',
     actionLabel: '暮色里的愿望',
     line: '最后一束光落到山后面时，我安静地合起爪子，这次也没有把愿望说出来。',
-    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_night_terrace_wish_jade_rabbit_v02.webp`
+    asset: `${TOKYO_POSTCARD_ROOT}postcard_travel_tokyo_night_terrace_wish_jade_rabbit_v02.png`
   })
 ]);
 

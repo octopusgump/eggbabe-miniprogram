@@ -37,8 +37,8 @@ SCENE_KEYS = [
 
 def background_path(scene_key: str) -> Path:
     if scene_key == "spring_clear_night":
-        return BACKGROUND_ROOT / "spring_clear_night_moonlight.webp"
-    return BACKGROUND_ROOT / f"{scene_key}.webp"
+        return BACKGROUND_ROOT / "spring_clear_night_moonlight.png"
+    return BACKGROUND_ROOT / f"{scene_key}.png"
 
 
 def place_layer(canvas: Image.Image, source: Path, size: int, x: int, y: int) -> None:
@@ -58,8 +58,8 @@ def build_preview(scene_key: str) -> Path:
     nest_y = round(height / 2 - 20 * rpx)
     egg_y = round(height / 2 - 190 * rpx)
 
-    place_layer(canvas, NEST_ROOT / f"{scene_key}_nest_pad.webp", layer_size, layer_x, nest_y)
-    place_layer(canvas, EGG_ROOT / f"{scene_key}_egg_right45.webp", layer_size, layer_x, egg_y)
+    place_layer(canvas, NEST_ROOT / f"{scene_key}_nest_pad.png", layer_size, layer_x, nest_y)
+    place_layer(canvas, EGG_ROOT / f"{scene_key}_egg_right45.png", layer_size, layer_x, egg_y)
 
     output = OUTPUT_ROOT / f"{scene_key}_composite_preview.png"
     output.parent.mkdir(parents=True, exist_ok=True)

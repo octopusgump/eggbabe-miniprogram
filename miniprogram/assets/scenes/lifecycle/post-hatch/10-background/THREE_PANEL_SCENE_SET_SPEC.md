@@ -6,7 +6,7 @@
 
 - 20 个场景状态严格跟随 `miniprogram/config/pre-hatch-assets.js` 中启用的 scene key。
 - 每个状态只有一张正式运行图：`2823 × 1672 px`、不透明 WebP。
-- 运行路径：`panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.webp`。
+- 运行路径：`panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.png`。
 - 左、中、右只是滚动定位和互动热区容器，不单独加载或裁切背景图。
 - 不再维护 `941 × 1672 px` 的左、中、右运行切图，避免窄长设备对每屏独立 `aspectFill` 裁切时产生接缝。
 

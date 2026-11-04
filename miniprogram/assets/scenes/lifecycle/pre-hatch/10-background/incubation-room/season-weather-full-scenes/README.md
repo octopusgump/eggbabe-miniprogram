@@ -6,35 +6,35 @@
 
 ### 春季（5）
 
-- `spring_clear_day.webp`
-- `spring_clear_sunset.webp`
-- `spring_clear_night.webp`
-- `spring_cloudy_day.webp`
-- `spring_rain_day.webp`
+- `spring_clear_day.png`
+- `spring_clear_sunset.png`
+- `spring_clear_night.png`
+- `spring_cloudy_day.png`
+- `spring_rain_day.png`
 
 ### 夏季（5）
 
-- `summer_clear_day.webp`
-- `summer_clear_sunset.webp`
-- `summer_clear_night.webp`
-- `summer_cloudy_day.webp`
-- `summer_storm_night.webp`
+- `summer_clear_day.png`
+- `summer_clear_sunset.png`
+- `summer_clear_night.png`
+- `summer_cloudy_day.png`
+- `summer_storm_night.png`
 
 ### 秋季（4）
 
-- `autumn_clear_day.webp`
-- `autumn_clear_sunset.webp`
-- `autumn_clear_night.webp`
-- `autumn_rain_day.webp`
+- `autumn_clear_day.png`
+- `autumn_clear_sunset.png`
+- `autumn_clear_night.png`
+- `autumn_rain_day.png`
 
 ### 冬季（6）
 
-- `winter_clear_day.webp`
-- `winter_clear_night.webp`
-- `winter_cloudy_day.webp`
-- `winter_snow_day.webp`
-- `winter_snow_night.webp`
-- `winter_post_snow_day.webp`
+- `winter_clear_day.png`
+- `winter_clear_night.png`
+- `winter_cloudy_day.png`
+- `winter_snow_day.png`
+- `winter_snow_night.png`
+- `winter_post_snow_day.png`
 
 ## 动态层规则
 
@@ -48,4 +48,4 @@
 - `afterRain`：Canvas 少量下滑水珠与清透光斑。
 - `postSnow`：雪后初晴整图 + Canvas 低强度反光光斑。
 
-旧的 `room_base_candidate_v2.webp + window-weather/` 分层仍保留为加载失败回退，不再作为首选渲染路径。
+旧的 `room_base_candidate_v2.png + window-weather/` 分层仍保留为加载失败回退，不再作为首选渲染路径。

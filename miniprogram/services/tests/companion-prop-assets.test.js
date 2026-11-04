@@ -6,30 +6,29 @@ const catalog = require('../companion-prop-catalog');
 
 const entry = catalog.getById('dried_tea_tag');
 assert.ok(entry);
-assert.equal(assets.lineSketchPath('dried_tea_tag'), '/assets/keepsakes/turnarounds/line/dried_tea_tag.webp');
+assert.equal(assets.lineSketchPath('dried_tea_tag'), '/assets/keepsakes/turnarounds/line/dried_tea_tag.png');
 const duck = catalog.getById('k_r01_yellow_rubber_duck');
 assert.ok(duck);
 const duckPaths = assets.coloredPaths(duck);
-assert.ok(duckPaths[0].includes('card_square'), '小黄鸭解锁应优先方形单件图');
-assert.ok(duckPaths.some(item => item.includes('keepsake_k-r01_yellow_rubber_duck_card_square')));
+assert.equal(duckPaths[0], '/assets/keepsakes/turnarounds/png/k_r01_yellow_rubber_duck.png');
 assert.equal(assets.resolveLinePath(entry), assets.lineSketchPath('dried_tea_tag'));
-assert.equal(assets.resolveColoredPath(entry), assets.coloredPaths(entry)[0]);
-assert.ok(assets.coloredPaths(entry).some(item => item.includes('keepsake_dried_tea_tag')));
+assert.equal(
+  assets.resolveColoredPath(entry),
+  '/assets/keepsakes/turnarounds/png/dried_tea_tag.png'
+);
 assert.equal(catalog.PROPS.length, 41);
 
 const lineDir = path.join(__dirname, '../../assets/keepsakes/turnarounds/line');
-const lineFiles = fs.readdirSync(lineDir).filter(name => name.endsWith('.webp'));
+const lineFiles = fs.readdirSync(lineDir).filter(name => name.endsWith('.png'));
 assert.equal(lineFiles.length, 41);
+assert.equal(fs.readdirSync(lineDir).some(name => name.endsWith('.webp')), false, 'line 目录不得再保留 webp');
 catalog.PROPS.forEach(prop => {
   assert.ok(
-    fs.existsSync(path.join(lineDir, `${prop.id}.webp`)),
-    `缺少简笔 ${prop.id}.webp`
+    fs.existsSync(path.join(lineDir, `${prop.id}.png`)),
+    `缺少简笔 ${prop.id}.png`
   );
-  const colorCandidates = assets.coloredPaths(prop).map(item => path.join(__dirname, '../..', item.replace(/^\//, '')));
-  assert.ok(
-    colorCandidates.some(file => fs.existsSync(file)),
-    `缺少彩色资源 ${prop.id}（catalog colorFile 或 webp）`
-  );
+  const colorPath = path.join(__dirname, '../..', `assets/keepsakes/turnarounds/png/${prop.id}.png`);
+  assert.ok(fs.existsSync(colorPath), `缺少彩色 ${prop.id}.png`);
 });
 
 console.log('道具资源路径与 catalog / line 素材校验通过。');

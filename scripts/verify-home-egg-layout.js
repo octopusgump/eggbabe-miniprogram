@@ -6,8 +6,8 @@ const root = path.resolve(process.argv[2] || path.join(__dirname, '..'));
 const template = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.wxss'), 'utf8');
 const source = fs.readFileSync(path.join(root, 'miniprogram/pages/home/home.js'), 'utf8');
-const depthOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_depth_overlay_512_v01.webp');
-const specularOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_specular_overlay_512_v01.webp');
+const depthOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_depth_overlay_512_v01.png');
+const specularOverlay = path.join(root, 'miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_shell_specular_overlay_512_v01.png');
 
 const visibleEggMatch = template.match(/<view wx:if="\{\{stage !== 'hatched' && !fullSceneImageFailed\}\}" class="egg egg-shell[\s\S]*?<\/view>/);
 assert.ok(visibleEggMatch, '首页必须保留位于孵化窝中的可交互蛋体容器');
@@ -88,8 +88,8 @@ const preHatch = require(path.join(root, 'miniprogram/config/pre-hatch-assets'))
 assert.equal(preHatch.sceneTesterOptions.length, 36, '季节天气验收器必须完整覆盖 36 个选项');
 preHatch.sceneTesterOptions.forEach(option => {
   assert.ok(fs.existsSync(path.join(root, 'miniprogram', option.background)), `缺少场景背景：${option.key}`);
-  assert.equal(option.egg.endsWith(`/${option.key}_egg_right45.webp`), true, `蛋体层必须与环境 key 精确匹配：${option.key}`);
-  assert.equal(option.nest.endsWith(`/${option.key}_nest_pad.webp`), true, `窝垫层必须与环境 key 精确匹配：${option.key}`);
+  assert.equal(option.egg.endsWith(`/${option.key}_egg_right45.png`), true, `蛋体层必须与环境 key 精确匹配：${option.key}`);
+  assert.equal(option.nest.endsWith(`/${option.key}_nest_pad.png`), true, `窝垫层必须与环境 key 精确匹配：${option.key}`);
 });
 assert.equal(new Set(preHatch.sceneTesterOptions.map(option => option.egg)).size, 36, '36 个环境键不得静默复用其他天气或时段的蛋体层');
 assert.equal(new Set(preHatch.sceneTesterOptions.map(option => option.nest)).size, 36, '36 个环境键不得静默复用其他天气或时段的窝垫层');

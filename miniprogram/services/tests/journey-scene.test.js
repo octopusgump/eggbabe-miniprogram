@@ -62,7 +62,7 @@ function slide(id, overrides) {
     sceneLabel: '东京 · 咖啡巷',
     actionLabel: '晨光里的伸展',
     line: '我在晨光里伸了个懒腰。',
-    asset: `/assets/${id}.webp`
+    asset: `/assets/${id}.png`
   }, overrides || {});
 }
 

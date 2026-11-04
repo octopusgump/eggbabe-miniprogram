@@ -17,19 +17,19 @@
 
 ### 玉兔身份参考（所有图片）
 
-`/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.webp`
+`/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.png`
 
 ### 咖啡巷底图
 
-`scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.webp`
+`scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.png`
 
 ### 暮色露台底图
 
-`scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.webp`
+`scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.png`
 
 ### 清晨露台底图
 
-`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`
+`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`
 
 ## 共享提示词
 
@@ -54,18 +54,18 @@ No text, labels, brands, logos, QR codes, UI, watermark, frame, caption, second 
 
 | 文件 | 场景底图 | 本张动作提示补充 | 状态 | 验收结论 |
 |---|---|---|---|---|
-| `postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v02.webp` | v12 咖啡巷 | Sit securely on the existing wooden bench/stool; hold one tiny blank unbranded selfie camera/phone and wave with the other paw. | accepted | 坐姿有家具承重；比例在硬范围内；无第二角色、Logo 或 UI。 |
-| `postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v02.webp` | v12 咖啡巷 | Make a tiny low believable hop over existing dry leaves; feet only centimeters above stone; tight landing shadow directly below and minimal local leaf motion. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；低跳和落地阴影清楚；未使用旧动作图作参考。 |
-| `postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v02.webp` | v12 咖啡巷 | Turn the body 3/4 toward Tokyo Tower, face the camera, keep both feet planted, and make a clear two-finger V sign near the cheek. | accepted-tolerance | 比例约 36%；东京塔未遮挡；剪刀手、蓝色五官和接地阴影清楚。 |
-| `postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v02.webp` | v12 咖啡巷 | Sit securely on the existing wooden bench/stool and hold one plain ceramic mug with both paws; faint steam only. | accepted | 角色约 32%；座面承重和杯子握持可信；无字无品牌。 |
-| `postcard_travel_tokyo_alley_wish_jade_rabbit_v02.webp` | v12 咖啡巷 | Stand back/3/4 back toward camera facing Tokyo Tower, feet planted, paws clasped at chest, round tail visible. | accepted | 角色约 35%；尾巴可见；东京塔、道路与受光方向稳定。 |
-| `postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v02.webp` | v12 咖啡巷 | Stand grounded in the mid-road, hold one small plain unbranded compact camera with both paws and look down at its blank rear playback screen. | accepted | 角色约 34%；相机无 UI/品牌；阴影和道路透视一致。 |
-| `postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.webp` | v12 咖啡巷 | Stand with both feet flat in the mid-road and stretch both paws upward/outward while keeping compact canonical proportions. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；双脚落地、耳朵和头身比例稳定。 |
-| `postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.webp` | v12 咖啡巷 | Stand fully back-facing toward Tokyo Tower, both feet planted, paws relaxed, exact round white tail clearly visible. | accepted | 角色约 32%；小尾巴清楚；东京塔未遮挡；接地阴影稳定。 |
-| `postcard_travel_tokyo_night_terrace_selfie_jade_rabbit_v02.webp` | v10 暮色露台 | Stand center-left on the deck, hold one tiny blank unbranded selfie camera/phone and wave; keep Tokyo Tower and Fuji unobstructed. | accepted-tolerance | 角色约 36%；脚落在木地板；暮色受光和城市灯光匹配。 |
-| `postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v02.webp` | v11 清晨露台 | Sit center-left, 3/4 back looking at Fuji, hold one plain mug with both paws, tail visible; keep Tower and Fuji unobstructed. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；坐姿、杯子、尾巴与清晨光影可信。 |
-| `postcard_travel_tokyo_night_terrace_wish_jade_rabbit_v02.webp` | v10 暮色露台 | Stand back/3/4 back facing Fuji, feet planted, paws clasped at chest, round tail visible; skyline unobstructed. | accepted-tolerance | 角色约 37%，低于 38% 硬上限；尾巴和地板接触清楚；暮色光影匹配。 |
-| `postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v02.webp` | v11 清晨露台 | Stand on both feet near center, turn 3/4 toward Fuji and stretch both paws upward/outward. | accepted | 角色约 33%；双脚压地、阴影清楚；富士山和东京塔未遮挡。 |
+| `postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v02.png` | v12 咖啡巷 | Sit securely on the existing wooden bench/stool; hold one tiny blank unbranded selfie camera/phone and wave with the other paw. | accepted | 坐姿有家具承重；比例在硬范围内；无第二角色、Logo 或 UI。 |
+| `postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v02.png` | v12 咖啡巷 | Make a tiny low believable hop over existing dry leaves; feet only centimeters above stone; tight landing shadow directly below and minimal local leaf motion. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；低跳和落地阴影清楚；未使用旧动作图作参考。 |
+| `postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v02.png` | v12 咖啡巷 | Turn the body 3/4 toward Tokyo Tower, face the camera, keep both feet planted, and make a clear two-finger V sign near the cheek. | accepted-tolerance | 比例约 36%；东京塔未遮挡；剪刀手、蓝色五官和接地阴影清楚。 |
+| `postcard_travel_tokyo_alley_bench_hot_drink_jade_rabbit_v02.png` | v12 咖啡巷 | Sit securely on the existing wooden bench/stool and hold one plain ceramic mug with both paws; faint steam only. | accepted | 角色约 32%；座面承重和杯子握持可信；无字无品牌。 |
+| `postcard_travel_tokyo_alley_wish_jade_rabbit_v02.png` | v12 咖啡巷 | Stand back/3/4 back toward camera facing Tokyo Tower, feet planted, paws clasped at chest, round tail visible. | accepted | 角色约 35%；尾巴可见；东京塔、道路与受光方向稳定。 |
+| `postcard_travel_tokyo_alley_camera_playback_jade_rabbit_v02.png` | v12 咖啡巷 | Stand grounded in the mid-road, hold one small plain unbranded compact camera with both paws and look down at its blank rear playback screen. | accepted | 角色约 34%；相机无 UI/品牌；阴影和道路透视一致。 |
+| `postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.png` | v12 咖啡巷 | Stand with both feet flat in the mid-road and stretch both paws upward/outward while keeping compact canonical proportions. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；双脚落地、耳朵和头身比例稳定。 |
+| `postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.png` | v12 咖啡巷 | Stand fully back-facing toward Tokyo Tower, both feet planted, paws relaxed, exact round white tail clearly visible. | accepted | 角色约 32%；小尾巴清楚；东京塔未遮挡；接地阴影稳定。 |
+| `postcard_travel_tokyo_night_terrace_selfie_jade_rabbit_v02.png` | v10 暮色露台 | Stand center-left on the deck, hold one tiny blank unbranded selfie camera/phone and wave; keep Tokyo Tower and Fuji unobstructed. | accepted-tolerance | 角色约 36%；脚落在木地板；暮色受光和城市灯光匹配。 |
+| `postcard_travel_tokyo_morning_terrace_hot_drink_view_jade_rabbit_v02.png` | v11 清晨露台 | Sit center-left, 3/4 back looking at Fuji, hold one plain mug with both paws, tail visible; keep Tower and Fuji unobstructed. | accepted-tolerance | 角色约 36%–37%，低于 38% 硬上限；坐姿、杯子、尾巴与清晨光影可信。 |
+| `postcard_travel_tokyo_night_terrace_wish_jade_rabbit_v02.png` | v10 暮色露台 | Stand back/3/4 back facing Fuji, feet planted, paws clasped at chest, round tail visible; skyline unobstructed. | accepted-tolerance | 角色约 37%，低于 38% 硬上限；尾巴和地板接触清楚；暮色光影匹配。 |
+| `postcard_travel_tokyo_morning_terrace_morning_stretch_jade_rabbit_v02.png` | v11 清晨露台 | Stand on both feet near center, turn 3/4 toward Fuji and stretch both paws upward/outward. | accepted | 角色约 33%；双脚压地、阴影清楚；富士山和东京塔未遮挡。 |
 
 ## 用户复核淘汰并删除（2026-08-07）
 
@@ -73,19 +73,19 @@ No text, labels, brands, logos, QR codes, UI, watermark, frame, caption, second 
 
 | 已删除文件 | 用户确认的问题 | 后续必须避免 |
 |---|---|---|
-| `postcard_travel_tokyo_alley_hug_drink_jade_rabbit_v02.webp` | 图片被压扁 | 禁止非等比缩放；生成后核对画布比例、圆形眼睛与蛋形头身是否保持自然纵横比。 |
-| `postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v01.webp` | 视角偏移，导致图片过大 | 严格锁定 v12 镜头、裁切、地平线和地面位置；不得以动作需求重构或放大底图。 |
-| `postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v01.webp` | 玉兔比例过大 | 完整身高锁定 32%–36%，超过 38% 直接淘汰。 |
-| `postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v02.webp` | 玉兔比例太小 | 完整身高锁定 32%–36%，低于 30% 直接淘汰。 |
-| `postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v01.webp` | 玉兔比例过大 | 完整身高锁定 32%–36%，超过 38% 直接淘汰。 |
-| `postcard_travel_tokyo_alley_peek_cafe_table_jade_rabbit_v02.webp` | 玉兔被压缩 | 禁止压扁、压缩或拉伸角色；核对耳朵、眼睛、蛋形身体和四肢的标准比例。 |
-| `postcard_travel_tokyo_alley_two_drinks_jade_rabbit_v02.webp` | 玉兔形变 | 严格匹配四视图的一体式蛋形头身、耳朵与四肢结构；任何角色形变直接淘汰。 |
-| `postcard_travel_tokyo_alley_vending_face_jade_rabbit_v02.webp` | 玉兔形变 | 严格匹配四视图；动作不得改变标准头身、五官、耳朵或四肢比例。 |
-| `postcard_travel_tokyo_alley_vending_tiptoe_jade_rabbit_v02.webp` | 玉兔身体比例太小 | 不仅核对总身高，还要核对身体相对耳朵和头部的体积；保持宽圆蛋形躯干。 |
-| `postcard_travel_tokyo_alley_wish_jade_rabbit_v01.webp` | 视角偏移 | 严格以 v12 原底图为唯一构图基准，不得改变建筑、道路、东京塔、镜头高度或透视。 |
-| `postcard_travel_tokyo_alley_hug_knees_jade_rabbit_v02.webp` | 玉兔腿太长或腿部弯曲 | 腿必须保持四视图中的短小、圆润、近乎直立结构；不得拉长、折弯或产生膝关节式肢体。 |
-| `postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v01.webp` | 玉兔身材比例太小 | 即使是跳跃动作，耳尖到脚底仍须锁定画高 32%–36%；不得用缩小角色来制造跳跃空间。 |
-| `postcard_travel_tokyo_alley_draw_postcard_jade_rabbit_v02.webp` | 桌子方向和坐姿逻辑错误，玉兔屁股朝向自动贩卖机不合理 | 生成前先验证桌椅朝向、座位可达性、身体朝向与操作面的空间逻辑；玉兔必须面向桌面自然落座并能合理绘画。 |
+| `postcard_travel_tokyo_alley_hug_drink_jade_rabbit_v02.png` | 图片被压扁 | 禁止非等比缩放；生成后核对画布比例、圆形眼睛与蛋形头身是否保持自然纵横比。 |
+| `postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v01.png` | 视角偏移，导致图片过大 | 严格锁定 v12 镜头、裁切、地平线和地面位置；不得以动作需求重构或放大底图。 |
+| `postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v01.png` | 玉兔比例过大 | 完整身高锁定 32%–36%，超过 38% 直接淘汰。 |
+| `postcard_travel_tokyo_alley_paper_bag_walk_jade_rabbit_v02.png` | 玉兔比例太小 | 完整身高锁定 32%–36%，低于 30% 直接淘汰。 |
+| `postcard_travel_tokyo_alley_peace_tower_jade_rabbit_v01.png` | 玉兔比例过大 | 完整身高锁定 32%–36%，超过 38% 直接淘汰。 |
+| `postcard_travel_tokyo_alley_peek_cafe_table_jade_rabbit_v02.png` | 玉兔被压缩 | 禁止压扁、压缩或拉伸角色；核对耳朵、眼睛、蛋形身体和四肢的标准比例。 |
+| `postcard_travel_tokyo_alley_two_drinks_jade_rabbit_v02.png` | 玉兔形变 | 严格匹配四视图的一体式蛋形头身、耳朵与四肢结构；任何角色形变直接淘汰。 |
+| `postcard_travel_tokyo_alley_vending_face_jade_rabbit_v02.png` | 玉兔形变 | 严格匹配四视图；动作不得改变标准头身、五官、耳朵或四肢比例。 |
+| `postcard_travel_tokyo_alley_vending_tiptoe_jade_rabbit_v02.png` | 玉兔身体比例太小 | 不仅核对总身高，还要核对身体相对耳朵和头部的体积；保持宽圆蛋形躯干。 |
+| `postcard_travel_tokyo_alley_wish_jade_rabbit_v01.png` | 视角偏移 | 严格以 v12 原底图为唯一构图基准，不得改变建筑、道路、东京塔、镜头高度或透视。 |
+| `postcard_travel_tokyo_alley_hug_knees_jade_rabbit_v02.png` | 玉兔腿太长或腿部弯曲 | 腿必须保持四视图中的短小、圆润、近乎直立结构；不得拉长、折弯或产生膝关节式肢体。 |
+| `postcard_travel_tokyo_alley_leaf_hop_jade_rabbit_v01.png` | 玉兔身材比例太小 | 即使是跳跃动作，耳尖到脚底仍须锁定画高 32%–36%；不得用缩小角色来制造跳跃空间。 |
+| `postcard_travel_tokyo_alley_draw_postcard_jade_rabbit_v02.png` | 桌子方向和坐姿逻辑错误，玉兔屁股朝向自动贩卖机不合理 | 生成前先验证桌椅朝向、座位可达性、身体朝向与操作面的空间逻辑；玉兔必须面向桌面自然落座并能合理绘画。 |
 
 ## 未保存 / 淘汰
 

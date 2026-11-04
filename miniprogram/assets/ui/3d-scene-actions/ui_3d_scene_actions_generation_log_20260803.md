@@ -28,13 +28,13 @@ PNG 母版（1024×1024 RGBA）：
 
 WebP 母版（1024×1024，Alpha，质量 92／Alpha 100）：
 
-- `webp/ui_3d_scene_message_envelope_v01.webp`
-- `webp/ui_3d_scene_toolbox_closed_chest_v01.webp`
+- `webp/ui_3d_scene_message_envelope_v01.png`
+- `webp/ui_3d_scene_toolbox_closed_chest_v01.png`
 
 运行时版本（96×96）：
 
-- `runtime/ui_3d_scene_message_envelope_96_v01.png`／`.webp`
-- `runtime/ui_3d_scene_toolbox_closed_chest_96_v01.png`／`.webp`
+- `runtime/ui_3d_scene_message_envelope_96_v01.png`／`.png`
+- `runtime/ui_3d_scene_toolbox_closed_chest_96_v01.png`／`.png`
 
 ## 接入记录
 

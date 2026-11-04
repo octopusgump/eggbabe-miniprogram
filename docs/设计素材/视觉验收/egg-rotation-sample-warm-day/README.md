@@ -17,7 +17,7 @@ pages/egg-rotation-sample/egg-rotation-sample
 - 蛋层：`miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample/warm-day-v2/`
 - 垫子层：`miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample/warm-day-v2/`
 - 三帧均使用 1254 × 1254 透明画布；蛋体按 640 × 880 安全框等比缩放并底部对齐，不拉伸面容。
-- `egg_rotation_sprite.webp` 是三帧横向图集，单帧顺序为左 45°、正面、右 45°。
+- `egg_rotation_sprite.png` 是三帧横向图集，单帧顺序为左 45°、正面、右 45°。
 - v1 素材继续保留在同级 `warm-day/`，用于视觉回退和并排校验。
 
 ## 视觉校验资料
@@ -38,6 +38,6 @@ pages/egg-rotation-sample/egg-rotation-sample
 
 v2 使用右上方暖窗光，保留蛋体高光纹理，并加强左下方暖色体积阴影、底部接触阴影与焦糖色软垫的厚度。
 
-夜晚 v2 使用窗侧冷蓝月光与左侧微暖补光。蛋层移除了轮廓外的独立投影；接触阴影改由夜晚垫子顶面的冷灰蓝暗部承载。垫子使用连续短卷毛结构和低饱和冷棕灰，不再复用高饱和日间焦糖色。`spring_clear_night_v2.webp` 同时移除了桌面上的斜向光束、蓝色光池和左右冷暖分界，避免底图阴影与独立蛋/垫子图层冲突。背景、垫子、蛋体和 UI 仍保持独立分层。
+夜晚 v2 使用窗侧冷蓝月光与左侧微暖补光。蛋层移除了轮廓外的独立投影；接触阴影改由夜晚垫子顶面的冷灰蓝暗部承载。垫子使用连续短卷毛结构和低饱和冷棕灰，不再复用高饱和日间焦糖色。`spring_clear_night_v2.png` 同时移除了桌面上的斜向光束、蓝色光池和左右冷暖分界，避免底图阴影与独立蛋/垫子图层冲突。背景、垫子、蛋体和 UI 仍保持独立分层。
 
 源图和无损中间文件放在 `docs`，不会进入小程序运行素材目录。

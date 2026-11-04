@@ -2,10 +2,10 @@ const TOKYO_POSTCARD =
   '/assets/scenes/lifecycle/post-hatch/50-overlays/postcards/_candidates/travel-activities-v01/japan/tokyo/';
 
 const MEET_HERO =
-  '/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_outing_v01.webp';
+  '/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_outing_v01.png';
 
-const POSTCARD_STREET = `${TOKYO_POSTCARD}postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.webp`;
-const POSTCARD_TERRACE = `${TOKYO_POSTCARD}postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.webp`;
+const POSTCARD_STREET = `${TOKYO_POSTCARD}postcard_travel_tokyo_alley_morning_stretch_jade_rabbit_v02.png`;
+const POSTCARD_TERRACE = `${TOKYO_POSTCARD}postcard_travel_tokyo_alley_back_tower_jade_rabbit_v02.png`;
 
 const ALBUM_MODES = Object.freeze({
   READY: 'READY',

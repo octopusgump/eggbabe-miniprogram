@@ -28,7 +28,7 @@ const TODAY_SCENARIOS = Object.freeze({
     interactionLabel: '一起画',
     interactionFeedback: '你坐下以后，房间里好像更安静了。',
     atHome: true,
-    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_draw_day_v01.webp`,
+    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_draw_day_v01.png`,
     accent: 'sage'
   }),
   surprise: Object.freeze({
@@ -41,7 +41,7 @@ const TODAY_SCENARIOS = Object.freeze({
     interactionLabel: '一起听完这一段',
     interactionFeedback: '它没有说话，只是把收音机往你这边挪了挪。',
     atHome: true,
-    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_music_sunset_v01.webp`,
+    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_music_sunset_v01.png`,
     accent: 'amber'
   }),
   away: Object.freeze({
@@ -54,7 +54,7 @@ const TODAY_SCENARIOS = Object.freeze({
     interactionLabel: '替他收好信件',
     interactionFeedback: '你把信件压在杯子旁边，等它回来。',
     atHome: false,
-    sceneImage: `${SCENE_ROOT}/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.webp`,
+    sceneImage: `${SCENE_ROOT}/10-background/panorama-three-screen/post_hatch_room_panorama_empty_day_placeholder.png`,
     accent: 'sky'
   }),
   return: Object.freeze({
@@ -67,7 +67,7 @@ const TODAY_SCENARIOS = Object.freeze({
     interactionLabel: '听它讲回来的路',
     interactionFeedback: '玉兔讲得很慢，像是怕漏掉路上的一点风。',
     atHome: true,
-    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_read_sunset_v01.webp`,
+    sceneImage: `${SCENE_ROOT}/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_read_sunset_v01.png`,
     accent: 'rose'
   })
 });

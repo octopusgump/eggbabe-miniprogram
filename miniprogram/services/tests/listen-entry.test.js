@@ -125,7 +125,7 @@ Date.now = () => now;
 
     assert.equal(page.data.todayCompanionAwardedStars, 12, '跨日自动重开信发放当日基础星动效');
     const view = page.data.todayCompanionView;
-    page.data.pendingCompanionMemory = { id: 'saved-drawing', image: '/test.webp' };
+    page.data.pendingCompanionMemory = { id: 'saved-drawing', image: '/test.png' };
     now += 86400000; page.onShow();
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(page.data.todayCompanionView, view, '待收下作品不被跨日邀请替换');

@@ -14,7 +14,7 @@
 | 听音乐 | `music` | 自然鱼鳍抱住收音机，闭眼聆听。 |
 
 - 所有图均为 `2823×1672` 不透明 WebP，角色、动作与道具已烘焙。
-- 文件名为 `home_bedroom_{nap|lazy|stare|read|game|window|draw|music}_{day|sunset|night}_v01.webp`。
+- 文件名为 `home_bedroom_{nap|lazy|stare|read|game|window|draw|music}_{day|sunset|night}_v01.png`。
 - `nap` 只是睡觉资源沿用的历史文件名；产品“小憩”使用独立内部键 `lazy`，不得复用睡觉图片。
 - 目录由 `project.config.json` 排除出主包，运行时应通过 `environmentCdnBase` 加载。
 - 生成源稿和早期审核稿保留在同级 `candidates/`，不作为运行时资源引用。

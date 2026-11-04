@@ -17,52 +17,52 @@
 
 | # | 文件路径（相对 lifecycle） | 章节 / 图层 | 尺寸 / 字节 | Alpha | 状态 |
 |---:|---|---|---|---|---|
-| 1 | `shared/10-background/window-weather/w_01_clear_day.webp` | 共用窗外 / 背景 | 941×1672 / 162032 | 不透明 RGB | 正式·复用 |
-| 2 | `shared/10-background/window-weather/w_02_clear_sunset.webp` | 共用窗外 / 背景 | 941×1672 / 168892 | 不透明 RGB | 正式·复用 |
-| 3 | `shared/10-background/window-weather/w_03_clear_night.webp` | 共用窗外 / 背景 | 941×1672 / 75306 | 不透明 RGB | 正式·复用 |
-| 4 | `shared/10-background/window-weather/w_04_cloudy_day.webp` | 共用窗外 / 背景 | 941×1672 / 169864 | 不透明 RGB | 正式·复用 |
-| 5 | `shared/10-background/window-weather/w_05_cloudy_night.webp` | 共用窗外 / 背景 | 941×1672 / 79768 | 不透明 RGB | 正式·复用 |
-| 6 | `shared/10-background/window-weather/w_06_snow_day.webp` | 共用窗外 / 背景 | 941×1672 / 175980 | 不透明 RGB | 正式·复用 |
-| 7 | `shared/10-background/window-weather/w_07_snow_night.webp` | 共用窗外 / 背景 | 941×1672 / 111392 | 不透明 RGB | 正式·复用 |
+| 1 | `shared/10-background/window-weather/w_01_clear_day.png` | 共用窗外 / 背景 | 941×1672 / 162032 | 不透明 RGB | 正式·复用 |
+| 2 | `shared/10-background/window-weather/w_02_clear_sunset.png` | 共用窗外 / 背景 | 941×1672 / 168892 | 不透明 RGB | 正式·复用 |
+| 3 | `shared/10-background/window-weather/w_03_clear_night.png` | 共用窗外 / 背景 | 941×1672 / 75306 | 不透明 RGB | 正式·复用 |
+| 4 | `shared/10-background/window-weather/w_04_cloudy_day.png` | 共用窗外 / 背景 | 941×1672 / 169864 | 不透明 RGB | 正式·复用 |
+| 5 | `shared/10-background/window-weather/w_05_cloudy_night.png` | 共用窗外 / 背景 | 941×1672 / 79768 | 不透明 RGB | 正式·复用 |
+| 6 | `shared/10-background/window-weather/w_06_snow_day.png` | 共用窗外 / 背景 | 941×1672 / 175980 | 不透明 RGB | 正式·复用 |
+| 7 | `shared/10-background/window-weather/w_07_snow_night.png` | 共用窗外 / 背景 | 941×1672 / 111392 | 不透明 RGB | 正式·复用 |
 | 8–10 | 雾 / 雨 / 雪 overlay | 共用天气 / 前景 FX | — | 改由首页窗户 Canvas 绘制 | 已删除 |
-| 11 | `post-hatch/50-overlays/magic-window/dali.webp` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
-| 12 | `post-hatch/50-overlays/magic-window/beijing.webp` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
-| 13 | `post-hatch/50-overlays/magic-window/xishuangbanna.webp` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
-| 14 | `pre-hatch/10-background/incubation-room/room_base.webp` | 破壳前 / 房间背景 | 941×1672 / 114454 | RGBA，窗洞透明 | 正式·复用 |
-| 15 | `pre-hatch/20-room-objects/window-and-nest/nest_pad.webp` | 破壳前 / 中景物件 | 1254×1254 / 69190 | RGBA，四角透明 | 正式·新增 |
-| 16 | `pre-hatch/30-character/egg/egg_on_nest.webp` | 破壳前 / 蛋体 | 1254×1254 / 64580 | RGBA，四角透明 | 正式·新增 |
-| 17 | `pre-hatch/30-character/egg/egg_window_back.webp` | 破壳前 / 蛋体 | — | 待检 | 待生成 |
-| 18 | `pre-hatch/20-room-objects/interactive-props/table_lamp.webp` | 破壳前 / 互动小物 | 1254×1254 / 63260 | RGBA，四角透明 | 正式·新增 |
-| 19 | `pre-hatch/20-room-objects/interactive-props/coffee_machine.webp` | 破壳前 / 互动小物 | 1254×1254 / 43274 | RGBA，四角透明 | 正式·新增 |
-| 20 | `pre-hatch/20-room-objects/interactive-props/drawing_paper_set.webp` | 破壳前 / 互动小物 | 1254×1254 / 47810 | RGBA，四角透明 | 正式·新增 |
-| 21 | `pre-hatch/20-room-objects/interactive-props/scarf.webp` | 破壳前 / 互动小物 | 1254×1254 / 76220 | RGBA，四角透明 | 正式·新增 |
-| 22 | `post-hatch/10-background/panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.webp`（20 张） | 破壳后 / 连续房间全景 | 2823×1672 | 不透明 WebP | 正式·单图覆盖三屏 |
+| 11 | `post-hatch/50-overlays/magic-window/dali.png` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
+| 12 | `post-hatch/50-overlays/magic-window/beijing.png` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
+| 13 | `post-hatch/50-overlays/magic-window/xishuangbanna.png` | 魔法窗 / 窗景 | — | 待检 | 待生成 |
+| 14 | `pre-hatch/10-background/incubation-room/room_base.png` | 破壳前 / 房间背景 | 941×1672 / 114454 | RGBA，窗洞透明 | 正式·复用 |
+| 15 | `pre-hatch/20-room-objects/window-and-nest/nest_pad.png` | 破壳前 / 中景物件 | 1254×1254 / 69190 | RGBA，四角透明 | 正式·新增 |
+| 16 | `pre-hatch/30-character/egg/egg_on_nest.png` | 破壳前 / 蛋体 | 1254×1254 / 64580 | RGBA，四角透明 | 正式·新增 |
+| 17 | `pre-hatch/30-character/egg/egg_window_back.png` | 破壳前 / 蛋体 | — | 待检 | 待生成 |
+| 18 | `pre-hatch/20-room-objects/interactive-props/table_lamp.png` | 破壳前 / 互动小物 | 1254×1254 / 63260 | RGBA，四角透明 | 正式·新增 |
+| 19 | `pre-hatch/20-room-objects/interactive-props/coffee_machine.png` | 破壳前 / 互动小物 | 1254×1254 / 43274 | RGBA，四角透明 | 正式·新增 |
+| 20 | `pre-hatch/20-room-objects/interactive-props/drawing_paper_set.png` | 破壳前 / 互动小物 | 1254×1254 / 47810 | RGBA，四角透明 | 正式·新增 |
+| 21 | `pre-hatch/20-room-objects/interactive-props/scarf.png` | 破壳前 / 互动小物 | 1254×1254 / 76220 | RGBA，四角透明 | 正式·新增 |
+| 22 | `post-hatch/10-background/panorama-three-screen/scene-sets/{scene_key}_post_hatch_panorama_v01.png`（20 张） | 破壳后 / 连续房间全景 | 2823×1672 | 不透明 WebP | 正式·单图覆盖三屏 |
 | 23 | 左／中／右独立背景切图 | 破壳后 / 已停用 | — | — | 不再生成或接入运行时 |
-| 24 | `post-hatch/30-character/jade-rabbit/sleep.webp` | 玉兔 / 角色 | 1254×1254 / 82112 | RGBA，四角透明 | 正式·新增 |
-| 25 | `post-hatch/30-character/jade-rabbit/lazy.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
-| 26 | `post-hatch/30-character/jade-rabbit/stare.webp` | 玉兔 / 角色 | 1254×1254 / 93122 | RGBA，四角透明 | 正式·复用基准 |
-| 28 | `post-hatch/30-character/jade-rabbit/drawing.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
-| 29 | `post-hatch/30-character/jade-rabbit/gaming.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
-| 30 | `post-hatch/30-character/jade-rabbit/window_back.webp` | 玉兔 / 角色 | — | 待检 | 待生成 |
-| 31 | `post-hatch/30-character/boon-koi/sleep.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
-| 32 | `post-hatch/30-character/boon-koi/lazy.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
-| 33 | `post-hatch/30-character/boon-koi/stare.webp` | 锦鲤 / 角色 | 1254×1254 / 80776 | RGBA，四角透明 | 正式·复用基准 |
-| 35 | `post-hatch/30-character/boon-koi/drawing.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
-| 36 | `post-hatch/30-character/boon-koi/gaming.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
-| 37 | `post-hatch/30-character/boon-koi/window_back.webp` | 锦鲤 / 角色 | — | 待检 | 待生成 |
-| 38 | `post-hatch/20-room-objects/left-living/blanket_open.webp` | 互动反馈 / 左屏物件 | — | 待检 | 待生成 |
-| 39 | `post-hatch/20-room-objects/left-living/blanket_covered.webp` | 互动反馈 / 左屏物件 | — | 待检 | 待生成 |
-| 40 | `post-hatch/20-room-objects/left-living/lamp_dark_overlay.webp` | 互动反馈 / 左屏叠加 | — | 待检 | 待生成 |
-| 41 | `post-hatch/20-room-objects/center-desk/paper_back.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
-| 42 | `post-hatch/20-room-objects/center-desk/paper_front.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
-| 43 | `post-hatch/20-room-objects/center-desk/game_screen_idle.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
-| 44 | `post-hatch/20-room-objects/center-desk/game_screen_active.webp` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
-| 46 | `post-hatch/50-overlays/magic-window/jade_rabbit_back_silhouette.webp` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
-| 47 | `post-hatch/50-overlays/magic-window/boon_koi_back_silhouette.webp` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
+| 24 | `post-hatch/30-character/jade-rabbit/sleep.png` | 玉兔 / 角色 | 1254×1254 / 82112 | RGBA，四角透明 | 正式·新增 |
+| 25 | `post-hatch/30-character/jade-rabbit/lazy.png` | 玉兔 / 角色 | — | 待检 | 待生成 |
+| 26 | `post-hatch/30-character/jade-rabbit/stare.png` | 玉兔 / 角色 | 1254×1254 / 93122 | RGBA，四角透明 | 正式·复用基准 |
+| 28 | `post-hatch/30-character/jade-rabbit/drawing.png` | 玉兔 / 角色 | — | 待检 | 待生成 |
+| 29 | `post-hatch/30-character/jade-rabbit/gaming.png` | 玉兔 / 角色 | — | 待检 | 待生成 |
+| 30 | `post-hatch/30-character/jade-rabbit/window_back.png` | 玉兔 / 角色 | — | 待检 | 待生成 |
+| 31 | `post-hatch/30-character/boon-koi/sleep.png` | 锦鲤 / 角色 | — | 待检 | 待生成 |
+| 32 | `post-hatch/30-character/boon-koi/lazy.png` | 锦鲤 / 角色 | — | 待检 | 待生成 |
+| 33 | `post-hatch/30-character/boon-koi/stare.png` | 锦鲤 / 角色 | 1254×1254 / 80776 | RGBA，四角透明 | 正式·复用基准 |
+| 35 | `post-hatch/30-character/boon-koi/drawing.png` | 锦鲤 / 角色 | — | 待检 | 待生成 |
+| 36 | `post-hatch/30-character/boon-koi/gaming.png` | 锦鲤 / 角色 | — | 待检 | 待生成 |
+| 37 | `post-hatch/30-character/boon-koi/window_back.png` | 锦鲤 / 角色 | — | 待检 | 待生成 |
+| 38 | `post-hatch/20-room-objects/left-living/blanket_open.png` | 互动反馈 / 左屏物件 | — | 待检 | 待生成 |
+| 39 | `post-hatch/20-room-objects/left-living/blanket_covered.png` | 互动反馈 / 左屏物件 | — | 待检 | 待生成 |
+| 40 | `post-hatch/20-room-objects/left-living/lamp_dark_overlay.png` | 互动反馈 / 左屏叠加 | — | 待检 | 待生成 |
+| 41 | `post-hatch/20-room-objects/center-desk/paper_back.png` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
+| 42 | `post-hatch/20-room-objects/center-desk/paper_front.png` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
+| 43 | `post-hatch/20-room-objects/center-desk/game_screen_idle.png` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
+| 44 | `post-hatch/20-room-objects/center-desk/game_screen_active.png` | 互动反馈 / 中屏物件 | — | 待检 | 待生成 |
+| 46 | `post-hatch/50-overlays/magic-window/jade_rabbit_back_silhouette.png` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
+| 47 | `post-hatch/50-overlays/magic-window/boon_koi_back_silhouette.png` | 魔法窗 / 角色背影 | — | 待检 | 待生成 |
 
 ## 本轮完整生成提示词
 
-### `egg_on_nest.webp`
+### `egg_on_nest.png`
 
 本文件未重新生成角色造型。以 `egg_base_chroma_reference.png` 为唯一造型来源，执行背景提取：自动采样绿色边界、柔化蒙版、去除绿色溢色、转换为 1254×1254 RGBA WebP。视觉检查确认奶白织物纹理、闭眼五官和原始比例未改变，四角 Alpha=0，正式文件不含窝垫或房间。
 
@@ -70,7 +70,7 @@
 
 本组透明 overlay 图片已删除，不再生成。运行时由首页 `windowWeatherCanvas` 绘制均匀雾幕、动态雨线和雪粒。
 
-### `nest_pad.webp`
+### `nest_pad.png`
 
 ```text
 Use case: stylized-concept
@@ -83,7 +83,7 @@ Lighting/mood: soft natural warm daylight from upper right, gentle contact shadi
 Constraints: nest pad only; no egg, no room, no desk, no window, no characters, no props, no text, no UI, no logo, no watermark, no floor, no separate cast shadow outside the object. The magenta background must be perfectly uniform with no gradient, texture, shadow, glow or vignette. Magenta may appear nowhere in the object. Output only one image.
 ```
 
-### `table_lamp.webp`
+### `table_lamp.png`
 
 ```text
 Use case: stylized-concept
@@ -96,7 +96,7 @@ Lighting/mood: soft natural warm daylight from upper right; lamp is switched off
 Constraints: lamp only; no desk, no room, no cable, no switch text, no characters, no other objects, no floor, no text, no UI, no logo, no watermark, no separate cast shadow outside the object. Magenta background perfectly uniform with no gradient, texture, shadow, glow or vignette; magenta nowhere in object. Output only one image.
 ```
 
-### `coffee_machine.webp`
+### `coffee_machine.png`
 
 ```text
 Use case: stylized-concept
@@ -109,7 +109,7 @@ Lighting/mood: soft natural warm daylight from upper right; neutral cream and li
 Constraints: one coffee machine and its tiny cup only; no desk, no room, no cable, no steam, no coffee beans, no readable markings, no characters, no other props, no floor, no text, no UI, no logo, no watermark, no separate cast shadow outside the object. Magenta background perfectly uniform with no gradient, texture, shadow, glow or vignette; magenta nowhere in object. Output only one image.
 ```
 
-### `drawing_paper_set.webp`
+### `drawing_paper_set.png`
 
 ```text
 Use case: stylized-concept
@@ -122,7 +122,7 @@ Lighting/mood: soft natural warm daylight from upper right; neutral cream and li
 Constraints: exactly one paper, one pencil and one sharpener only; no desk, no room, no characters, no cup, no extra stationery, no text, no UI, no logo, no watermark, no floor, no separate cast shadow outside the objects. Magenta background perfectly uniform with no gradient, texture, shadow, glow or vignette; magenta nowhere in objects. Output only one image.
 ```
 
-### `scarf.webp`
+### `scarf.png`
 
 ```text
 Use case: stylized-concept
@@ -139,5 +139,5 @@ Constraints: scarf only; no desk, no room, no hooks, no characters, no other pro
 
 - 天气叠加层：均为 941×1672 RGBA WebP，文件小于 150000 字节；分别叠加到既有窗景检查，无洋红残边。
 - 蛋窝与四件互动小物：均为 1254×1254 RGBA WebP，四角 Alpha=0；视觉检查未发现文字、UI、Logo 或额外场景。
-- `coffee_machine.webp` 使用边界连通蒙版修正过度半透明问题；主体保持不透明，透明储水槽的视觉材质由 RGB 高光保留。
+- `coffee_machine.png` 使用边界连通蒙版修正过度半透明问题；主体保持不透明，透明储水槽的视觉材质由 RGB 高光保留。
 - 后续每生成一项，即补写完整提示词、尺寸、字节、Alpha 与正式/候选状态。

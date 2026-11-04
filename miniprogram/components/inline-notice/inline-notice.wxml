@@ -1,8 +1,5 @@
 <view
-  wx:if="{{text}}"
-  class="inline-notice inline-notice--{{tone}} {{layout === 'pill-fill' ? 'inline-notice--pill-fill' : ''}} {{visible ? 'inline-notice--visible' : ''}}"
-  aria-role="status"
-  aria-label="{{text}}"
+  class="inline-notice inline-notice--{{tone}} {{visible ? 'inline-notice--visible' : ''}}"
 >
   <text class="inline-notice__text">{{text}}</text>
 </view>

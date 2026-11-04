@@ -1,5 +1,4 @@
 {
   "component": true,
-  "styleIsolation": "isolated",
-  "externalClasses": ["host-class"]
+  "styleIsolation": "isolated"
 }

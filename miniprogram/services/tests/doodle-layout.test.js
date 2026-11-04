@@ -90,12 +90,15 @@ assert.match(pageScript, /initPropEntrySketchReadyState/, '简笔 bindload 早�
 const failPrepBlock = pageScript.slice(pageScript.indexOf('failCanvasPreparation'), pageScript.indexOf('failCanvasPreparation') + 520);
 assert.match(failPrepBlock, /propEntryLoadingVisible:\s*true/, '准备失败时须留在 loading 层');
 assert.match(failPrepBlock, /canvasPreparationError:\s*true/, '准备失败时须标记错误文案');
-assert.doesNotMatch(wxml, /prop-look-gate-overlay|prop-look-hint--gate-covered|layout="pill-fill"/, 'gate 不得再使用 Cover 叠层或 pill-fill');
-assert.match(wxml, /prop-look-hint--gate[\s\S]*propLookGateHintText \|\| propLookHint/, 'gate 须同位替换 pill 文案并随内容变宽');
+assert.doesNotMatch(wxml, /prop-look-gate-overlay|prop-look-hint--gate-covered|prop-look-hint--gate-out|layout="pill-fill"/, 'gate 不得再使用 Cover 叠层、pill-fill 或整颗 pill 淡出');
+assert.match(wxml, /propLookGateHintText && propLookGateHintVisible[\s\S]*prop-look-hint--gate/, 'gate 深色态须与可见文案同步');
+assert.match(wxml, /propLookGateHintVisible && propLookGateHintText[\s\S]*propLookHint/, 'gate 结束后须回到再看一眼计数文案');
 assert.match(wxss, /\.prop-look-hint--gate\s*\{[^}]*rgba\(18, 21, 18, 0\.72\)/, 'gate 态须使用标准深色胶囊底');
 assert.match(wxml, /prop-canvas-notice-anchor/, '道具模式须单独锚点展示画布内提示');
-assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
+assert.match(propDoodleScript, /propPeekTransitionMs/, '看一看动效须尊重 companionReducedMotion');
+assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
+assert.doesNotMatch(propDoodleScript, /renderPropLineOverlay|setPropLineOverlayVisible/, '不得再保留空 line overlay 桩');
 assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPopOutAnim|propPeekSketchAnim/, '简笔动效不得再使用 wx.createAnimation');
 assert.match(wxss, /\.prop-peek-anim--shown\s*\{[^}]*opacity:\s*1;/, '简笔须用 CSS transition 显示');
 assert.match(wxss, /\.prop-peek-anim--leave\s*\{[^}]*opacity:\s*0;/, '简笔须用 CSS transition 收起');
@@ -122,8 +125,8 @@ assert.ok(
 );
 assert.match(
   wxss,
-  /\.page--prop-tutorial-step-0 \.prop-look-hint\s*\{[^}]*#f7d774/,
-  '教程须高亮再看一眼入口'
+  /\.prop-look-hint-cover\s*\{[^}]*border:\s*6rpx solid #f7d774/,
+  '教程须高亮再看一眼入口（cover-view border）'
 );
 assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-1/, '不得再保留第二步 preview 修饰类');
 assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-1/, '教程蒙层不得再保留第二步 padding');
@@ -185,7 +188,9 @@ assert.match(wxml, /propEntryLoadingVisible[\s\S]*prop-entry-loading[\s\S]*<load
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
 assert.match(pageScript, /shouldShowPropEntryLoading/, '首次教程进页不得再闪 Orbit loading');
 assert.match(pageScript, /propEntryLoadingMinMs/, '进页 loading 须区分首次教程与回访时长');
-assert.match(pageScript, /propTutorialScrimTopPx/, '教程 scrim 须从「再看一眼」下方开始');
+assert.match(pageScript, /PROP_TUTORIAL_SPOTLIGHT_BUFFER_RPX/, '教程 scrim top 须计入聚光外圈缓冲');
+assert.match(wxss, /\.prop-look-hint-cover\s*\{[^}]*border:\s*6rpx solid #f7d774;/, '教程 pill cover-view 须用 border 聚光');
+assert.match(propDoodleScript, /hasSeenTutorial\(\)[\s\S]*propTutorialVisible:\s*true/, '首次进页须尽早展示教程蒙层');
 assert.match(wxml, /prop-tutorial-scrim[\s\S]*propTutorialScrimTopPx/, '教程 scrim 须绑定顶部留白');
 assert.match(wxml, /prop-look-cover-portal[\s\S]*prop-look-hint-cover/, '教程步骤须用 cover-view 绘制「再看一眼」');
 assert.doesNotMatch(wxss, /\.prop-tutorial-scrim\s*\{[^}]*inset:\s*0;/, '教程 scrim 不得再全屏 inset 盖住 pill');

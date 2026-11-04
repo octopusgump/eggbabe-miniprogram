@@ -1,4 +1,4 @@
-<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
+<view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{companionReducedMotion ? 'page--reduced-motion' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
   <view
     wx:if="{{companionPropMode && propEntryLoadingVisible}}"
     class="prop-entry-loading"
@@ -347,12 +347,12 @@
       >
         <view class="prop-look-anchor">
           <view
-            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText ? 'prop-look-hint--gate' : ''}} {{propLookGateHintText && !propLookGateHintVisible ? 'prop-look-hint--gate-out' : ''}}"
+            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText && propLookGateHintVisible ? 'prop-look-hint--gate' : ''}}"
             bindtap="onPropLookAgain"
             aria-role="button"
-            aria-label="{{propLookGateHintText || propLookHint}}"
+            aria-label="{{(propLookGateHintVisible && propLookGateHintText) ? propLookGateHintText : propLookHint}}"
           >
-            <text>{{propLookGateHintText || propLookHint}}</text>
+            <text>{{(propLookGateHintVisible && propLookGateHintText) ? propLookGateHintText : propLookHint}}</text>
           </view>
         </view>
       </view>

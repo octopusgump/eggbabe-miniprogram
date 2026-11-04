@@ -32,6 +32,11 @@ function preloadLocalImage(src) {
   });
 }
 
+function propPeekTransitionMs(editor, normalMs) {
+  if (editor.data && editor.data.companionReducedMotion) return 0;
+  return normalMs;
+}
+
 function attach(definition) {
   const originalOnLoad = definition.onLoad;
   const originalOnHide = definition.onHide;
@@ -72,6 +77,14 @@ function attach(definition) {
         navSlotWidthPx = Math.round(Number(menu.left));
       }
     } catch (error) {}
+    const tutorialPatch = !propChallenge.hasSeenTutorial()
+      ? {
+        propTutorialVisible: true,
+        propTutorialStep: 0,
+        propGuideSketchVisible: true,
+        propDrawingLocked: true
+      }
+      : {};
     this.setData({
       companionPropMode: this.companionPropMode,
       navSlotWidthPx,
@@ -92,11 +105,11 @@ function attach(definition) {
       propTutorialVisible: false,
       propTutorialStep: 0,
       propTutorialSteps: propChallenge.TUTORIAL_STEPS,
-      propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
       propFinishVisible: false,
       propLookGateHintText: '',
       propLookGateHintTone: 'info',
-      propLookGateHintVisible: false
+      propLookGateHintVisible: false,
+      ...tutorialPatch
     });
   };
 
@@ -229,15 +242,19 @@ function attach(definition) {
     });
   };
 
-  // 简笔出现/收起只用 CSS transition，与 companionReducedMotion 无关，避免 wx.createAnimation 真机异常。
+  // 简笔出现/收起用 CSS transition；减少动态效果时跳过位移/缩放动画。
   definition.dismissPropPeek = function dismissPropPeek() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
-    const outMs = propChallenge.PEEK_POP_OUT_MS;
+    const outMs = propPeekTransitionMs(this, propChallenge.PEEK_POP_OUT_MS);
     const generation = (this.propPeekGeneration || 0) + 1;
     this.propPeekGeneration = generation;
+    if (outMs === 0) {
+      this.finishPropPeekDismiss();
+      return;
+    }
     this.setData({
       propPeekAnimating: true,
       propPeekAnimPhase: 'leave'
@@ -273,14 +290,16 @@ function attach(definition) {
     this.propSession.drawingLocked = true;
     const generation = this.propPeekGeneration;
     clearTimeout(this.propPeekPopInSettleTimer);
+    const reducedMotion = Boolean(this.data.companionReducedMotion);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekAnimPhase: 'enter',
+      propPeekAnimPhase: reducedMotion ? 'shown' : 'enter',
       propFinishVisible: false
     }, () => {
       if (generation !== this.propPeekGeneration) return;
+      if (reducedMotion) return;
       schedulePropPeekPhase(this, () => {
         if (generation !== this.propPeekGeneration) return;
         this.setData({ propPeekAnimPhase: 'shown' });
@@ -399,21 +418,6 @@ function attach(definition) {
       this.gateTracker = drawingGate.rebuildFromOperations(this.shellArt.operations, this.propGateOptions);
       this.gateTracker.activeMs = prevMs;
     }
-  };
-
-  const originalRenderAll = definition.renderAll;
-
-  definition.renderPropLineOverlay = function renderPropLineOverlay() {
-    // 简笔只在「再看一眼」卡片展示，不再叠在画纸原生 canvas 上。
-  };
-
-  definition.clearPropLineOverlay = function clearPropLineOverlay() {};
-
-  definition.setPropLineOverlayVisible = function setPropLineOverlayVisible() {};
-
-  definition.renderAll = function renderAll() {
-    if (originalRenderAll) originalRenderAll.call(this);
-    this.renderPropLineOverlay();
   };
 
   definition.onPropSketchError = function onPropSketchError() {

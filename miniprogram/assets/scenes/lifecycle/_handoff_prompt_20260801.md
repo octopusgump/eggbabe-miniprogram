@@ -54,34 +54,34 @@
 已经就绪的 19 张不得重新生成或覆盖：
 
 1. 7 张窗外底图：
-   - shared/10-background/window-weather/w_01_clear_day.webp
-   - shared/10-background/window-weather/w_02_clear_sunset.webp
-   - shared/10-background/window-weather/w_03_clear_night.webp
-   - shared/10-background/window-weather/w_04_cloudy_day.webp
-   - shared/10-background/window-weather/w_05_cloudy_night.webp
-   - shared/10-background/window-weather/w_06_snow_day.webp
-   - shared/10-background/window-weather/w_07_snow_night.webp
+   - shared/10-background/window-weather/w_01_clear_day.png
+   - shared/10-background/window-weather/w_02_clear_sunset.png
+   - shared/10-background/window-weather/w_03_clear_night.png
+   - shared/10-background/window-weather/w_04_cloudy_day.png
+   - shared/10-background/window-weather/w_05_cloudy_night.png
+   - shared/10-background/window-weather/w_06_snow_day.png
+   - shared/10-background/window-weather/w_07_snow_night.png
 
 2. 雾、雨、雪已改为首页窗户 Canvas 绘制，不再生成或放入透明天气 overlay 图片。
 
 3. 破壳前房间：
-   - pre-hatch/10-background/incubation-room/room_base.webp
+   - pre-hatch/10-background/incubation-room/room_base.png
 
 4. 蛋窝：
-   - pre-hatch/20-room-objects/window-and-nest/nest_pad.webp
+   - pre-hatch/20-room-objects/window-and-nest/nest_pad.png
 
 5. 四件破壳前互动小物：
-   - pre-hatch/20-room-objects/interactive-props/table_lamp.webp
-   - pre-hatch/20-room-objects/interactive-props/coffee_machine.webp
-   - pre-hatch/20-room-objects/interactive-props/drawing_paper_set.webp
-   - pre-hatch/20-room-objects/interactive-props/scarf.webp
+   - pre-hatch/20-room-objects/interactive-props/table_lamp.png
+   - pre-hatch/20-room-objects/interactive-props/coffee_machine.png
+   - pre-hatch/20-room-objects/interactive-props/drawing_paper_set.png
+   - pre-hatch/20-room-objects/interactive-props/scarf.png
 
 6. 两张角色表现基准：
-   - post-hatch/30-character/jade-rabbit/stare.webp
-   - post-hatch/30-character/boon-koi/stare.webp
+   - post-hatch/30-character/jade-rabbit/stare.png
+   - post-hatch/30-character/boon-koi/stare.png
 
 7. 正面蛋体：
-   - pre-hatch/30-character/egg/egg_on_nest.webp
+   - pre-hatch/30-character/egg/egg_on_nest.png
 
 这些文件已经完成尺寸、格式、Alpha 或不透明通道检查。详细尺寸、字节数和完整提示词见 _generation_manifest.md。
 
@@ -93,12 +93,12 @@ A. 剩余一张蛋体，优先完成
 
 目录：pre-hatch/30-character/egg/
 
-- egg_window_back.webp
+- egg_window_back.png
 
 蛋体标准参考：
 /Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/02_产品与网站项目/03_蛋宝宝C端小程序/01_MiniProgram_MVP/miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/egg_base_chroma_reference.png
 
-要求：严格对齐现有 egg_on_nest.webp，保持同一枚奶白色织物纹理蛋、相同 1254×1254 画布、缩放和中心锚点。egg_window_back 必须是真正背影，不出现正面五官。透明底，不含房间、窗户、桌面或整体投影。
+要求：严格对齐现有 egg_on_nest.png，保持同一枚奶白色织物纹理蛋、相同 1254×1254 画布、缩放和中心锚点。egg_window_back 必须是真正背影，不出现正面五官。透明底，不含房间、窗户、桌面或整体投影。
 
 B. 破壳后三屏背景（本段已由 2026-08-02 三屏规范替代）
 
@@ -108,46 +108,46 @@ C. 玉兔剩余姿态，6 张
 
 目录：post-hatch/30-character/jade-rabbit/
 
-- sleep.webp
-- lazy.webp
-- drawing.webp
-- gaming.webp
-- window_back.webp
+- sleep.png
+- lazy.png
+- drawing.png
+- gaming.png
+- window_back.png
 
 玉兔标准参考：
-/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.webp
+/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.png
 
-同目录 stare.webp 是当前正式比例、画布、材质和光向基准，必须优先对齐。
+同目录 stare.png 是当前正式比例、画布、材质和光向基准，必须优先对齐。
 
 D. 锦鲤剩余姿态，6 张
 
 目录：post-hatch/30-character/boon-koi/
 
-- sleep.webp
-- lazy.webp
-- drawing.webp
-- gaming.webp
-- window_back.webp
+- sleep.png
+- lazy.png
+- drawing.png
+- gaming.png
+- window_back.png
 
 锦鲤标准参考：
 /Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/02_锦鲤 Boon Koi/00_View_References/01_Character_Turnaround/Koi_ReferenceSheet_Standard_02.png
 
-同目录 stare.webp 是当前正式比例、画布、材质和光向基准，必须优先对齐。
+同目录 stare.png 是当前正式比例、画布、材质和光向基准，必须优先对齐。
 
 E. 破壳后互动反馈，8 张
 
 左屏：post-hatch/20-room-objects/left-living/
 
-- blanket_open.webp
-- blanket_covered.webp
-- lamp_dark_overlay.webp
+- blanket_open.png
+- blanket_covered.png
+- lamp_dark_overlay.png
 
 中屏：post-hatch/20-room-objects/center-desk/
 
-- paper_back.webp
-- paper_front.webp
-- game_screen_idle.webp
-- game_screen_active.webp
+- paper_back.png
+- paper_front.png
+- game_screen_idle.png
+- game_screen_active.png
 
 前景效果：post-hatch/40-interaction-fx/
 
@@ -158,9 +158,9 @@ F. 魔法窗景区，3 张
 
 目录：post-hatch/50-overlays/magic-window/
 
-- dali.webp
-- beijing.webp
-- xishuangbanna.webp
+- dali.png
+- beijing.png
+- xishuangbanna.png
 
 严格采用辅助 PRD §10.11.5。景区画面必须原创，不含窗框、角色、文字、招牌、Logo 或 UI。预留四边 15% 出血，边缘使用克制的柔和魔法光晕和细小光点。
 
@@ -168,8 +168,8 @@ G. 独立魔法窗角色背影，2 张
 
 目录：post-hatch/50-overlays/magic-window/
 
-- jade_rabbit_back_silhouette.webp
-- boon_koi_back_silhouette.webp
+- jade_rabbit_back_silhouette.png
+- boon_koi_back_silhouette.png
 
 角色位于透明画布下方，只表现真正的背面轮廓和背面材质；不含景区、窗框、文字、正面五官或额外光效。
 
@@ -208,7 +208,7 @@ G. 独立魔法窗角色背影，2 张
 角色统一规格：
 
 - 1254×1254 固定画布；
-- 对齐现有 stare.webp 的角色整体缩放、脚底锚点、底部约 8% 安全区、主光方向、白位、黑位和饱和度；
+- 对齐现有 stare.png 的角色整体缩放、脚底锚点、底部约 8% 安全区、主光方向、白位、黑位和饱和度；
 - 透明底、四角 Alpha=0；
 - 不含床、桌、房间、窗框、屏幕或整体场景；
 - 茶杯、笔等动作必需的小型手持物可以保留；
@@ -219,7 +219,7 @@ G. 独立魔法窗角色背影，2 张
 六、落盘与质检规则
 
 1. 开始前扫描上述 29 个目标路径。
-2. 如果目标文件已经存在，不得直接覆盖；先检查，合格则复用，不合格则保留原文件并输出 `_candidate_v2.webp`。
+2. 如果目标文件已经存在，不得直接覆盖；先检查，合格则复用，不合格则保留原文件并输出 `_candidate_v2.png`。
 3. 每张正式文件生成后立即检查：
    - 文件路径；
    - WebP 格式；

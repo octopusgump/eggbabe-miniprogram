@@ -1,4 +1,4 @@
-const MEMORY_IMAGE = '/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_draw_day_v01.webp';
+const MEMORY_IMAGE = '/assets/scenes/lifecycle/post-hatch/60-action-scenes/jade-rabbit/home-bedroom/home_bedroom_draw_day_v01.png';
 
 const MEMORY = Object.freeze({
   id: 'memory-unfinished-drawing',

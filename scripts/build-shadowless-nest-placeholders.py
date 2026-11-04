@@ -57,7 +57,7 @@ def main() -> None:
     night = night_grade(day)
     for scene_key in SCENE_KEYS:
         image = night if scene_key in NIGHT_KEYS else day
-        image.save(OUTPUT_ROOT / f"{scene_key}_nest_pad.webp", format="WEBP", lossless=True, method=6)
+        image.save(OUTPUT_ROOT / f"{scene_key}_nest_pad.png", format="PNG")
     print(f"Updated {len(SCENE_KEYS)} shadowless nest placeholders")
 
 

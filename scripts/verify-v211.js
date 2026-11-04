@@ -28,8 +28,8 @@ assert.equal(homeTemplate.includes('id="homeEggBaseCanvas"') && homeTemplate.inc
 assert.equal(homeLogic.includes('shellArtService.drawEggBase') && homeLogic.includes('shellArtService.drawEggArt'), true, '首页必须回显免费蛋壳创作');
 assert.equal(homeTemplate.includes('src="{{eggShellOverlays.depth}}"') && homeTemplate.includes('src="{{eggShellOverlays.specular}}"'), true, '真实蛋体光影必须使用透明 WebP image 层，路径从配置读取');
 assert.equal(
-  preHatchAssets.eggShellOverlays.depth.endsWith('/egg_shell_depth_overlay_512_v01.webp')
-    && preHatchAssets.eggShellOverlays.specular.endsWith('/egg_shell_specular_overlay_512_v01.webp'),
+  preHatchAssets.eggShellOverlays.depth.endsWith('/egg_shell_depth_overlay_512_v01.png')
+    && preHatchAssets.eggShellOverlays.specular.endsWith('/egg_shell_specular_overlay_512_v01.png'),
   true,
   '蛋体光影层必须登记为审核通过的 512 WebP'
 );

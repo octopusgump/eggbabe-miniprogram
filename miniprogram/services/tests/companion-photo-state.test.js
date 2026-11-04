@@ -6,9 +6,9 @@ const savedCatalog = catalog.PHOTOS.splice(0);
 const originalNow = Date.now;
 let now = Date.parse('2026-10-04T23:59:59.999+08:00');
 Date.now = () => now;
-const outing = { id: 'outing', kind: 'outing', image: '/outing.webp', approved: true, line: '出门前拍的，给你留一张。' };
-const solar = { id: 'qiufen', kind: 'solar', image: '/qiufen.webp', approved: true, windows: [{start:'2026-09-23',end:'2026-10-08'}] };
-const exchange = { id: 'exchange', kind: 'exchange', image: '/afternoon.webp', approved: true };
+const outing = { id: 'outing', kind: 'outing', image: '/outing.png', approved: true, line: '出门前拍的，给你留一张。' };
+const solar = { id: 'qiufen', kind: 'solar', image: '/qiufen.png', approved: true, windows: [{start:'2026-09-23',end:'2026-10-08'}] };
+const exchange = { id: 'exchange', kind: 'exchange', image: '/afternoon.png', approved: true };
 (async () => {
   const state = createPhotoState();
   assert.equal(state.offer([outing,solar], { random: () => { throw Error('节气必得无需随机'); } }).id, 'qiufen');

@@ -147,9 +147,9 @@
 
 | 场景 ID | 锁定底图 | 内容定位 |
 |---|---|---|
-| `alley` | `scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.webp` | 温暖晨光中的东京生活巷，适合小动作与生活观察 |
-| `night_terrace` | `scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.webp` | 桃蓝暮色、东京塔、城市灯光与富士山 |
-| `morning_terrace` | `scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp` | 淡蓝天空、杏金晨光、轻雾与安静远望 |
+| `alley` | `scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.png` | 温暖晨光中的东京生活巷，适合小动作与生活观察 |
+| `night_terrace` | `scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.png` | 桃蓝暮色、东京塔、城市灯光与富士山 |
+| `morning_terrace` | `scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png` | 淡蓝天空、杏金晨光、轻雾与安静远望 |
 
 ### 6.2 首发门槛
 
@@ -199,7 +199,7 @@
 
 唯一身份参考：
 
-`/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.webp`
+`/Users/octopusgump/Library/Mobile Documents/com~apple~CloudDocs/ClaudeCowork/蛋宝宝_eggbabe/01_IP角色设计/01_玉兔 Jade Moon Rabbit/00_View_References/01_Character_Turnaround/JadeRabbit_ReferenceSheet_Standard_02.png`
 
 必须满足：
 
@@ -303,11 +303,11 @@
 
 ### 9.1 候选文件
 
-`postcard_travel_<destination>_<scene>_<action>_<character>_vNN.webp`
+`postcard_travel_<destination>_<scene>_<action>_<character>_vNN.png`
 
 例如：
 
-`postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v03.webp`
+`postcard_travel_tokyo_alley_bench_selfie_jade_rabbit_v03.png`
 
 候选文件保存在 `_candidates/` 下，不进入运行时配置。
 
@@ -315,7 +315,7 @@
 
 正式晋级后使用不带生成轮次的稳定文件名：
 
-`postcard_travel_<destination>_<scene>_<action>_<character>.webp`
+`postcard_travel_<destination>_<scene>_<action>_<character>.png`
 
 对应资产键：
 

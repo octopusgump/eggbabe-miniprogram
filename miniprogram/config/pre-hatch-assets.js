@@ -56,20 +56,20 @@ const SCENE_TESTER_OPTIONS = [
   period,
   lightPhase,
   className: `season-${season} weather-${weather} period-${period} light-${lightPhase}`,
-  background: `${FULL_SCENE_ROOT}/${key}.webp`,
-  egg: `${EGG_SCENE_ROOT}/${key}_egg_right45.webp`,
-  nest: `${NEST_SCENE_ROOT}/${key}_nest_pad.webp`
+  background: `${FULL_SCENE_ROOT}/${key}.png`,
+  egg: `${EGG_SCENE_ROOT}/${key}_egg_right45.png`,
+  nest: `${NEST_SCENE_ROOT}/${key}_nest_pad.png`
 }));
 
 module.exports = {
   ROOT,
   PRE_HATCH: {
     sceneTesterOptions: SCENE_TESTER_OPTIONS,
-    eggOnNest: `${PRE_HATCH_ROOT}/30-character/egg/egg_on_nest.webp`,
+    eggOnNest: `${PRE_HATCH_ROOT}/30-character/egg/egg_on_nest.png`,
     // 蛋体的景深与高光叠加层：首页直接读这里，不在页面里写死路径。
     eggShellOverlays: {
-      depth: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_depth_overlay_512_v01.webp`,
-      specular: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_specular_overlay_512_v01.webp`
+      depth: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_depth_overlay_512_v01.png`,
+      specular: `${PRE_HATCH_ROOT}/30-character/egg/egg_shell_specular_overlay_512_v01.png`
     },
     // 画蛋壳工具条与右侧撤销／清空图标，禁用态使用专用置灰图。
     doodleToolbar: {
@@ -82,31 +82,31 @@ module.exports = {
       clearDisabled: `${UI_TOOLBAR_ROOT}/ui_3d_toolbar_clear_disabled_96_v01_p8_v01.png`
     },
     windowWeather: {
-      clearDay: `${SHARED_ROOT}/10-background/window-weather/w_01_clear_day.webp`,
-      clearSunset: `${SHARED_ROOT}/10-background/window-weather/w_02_clear_sunset.webp`,
-      clearNight: `${SHARED_ROOT}/10-background/window-weather/w_03_clear_night.webp`,
-      cloudyDay: `${SHARED_ROOT}/10-background/window-weather/w_04_cloudy_day.webp`,
-      cloudyNight: `${SHARED_ROOT}/10-background/window-weather/w_05_cloudy_night.webp`,
-      snowDay: `${SHARED_ROOT}/10-background/window-weather/w_06_snow_day.webp`,
-      snowNight: `${SHARED_ROOT}/10-background/window-weather/w_07_snow_night.webp`,
+      clearDay: `${SHARED_ROOT}/10-background/window-weather/w_01_clear_day.png`,
+      clearSunset: `${SHARED_ROOT}/10-background/window-weather/w_02_clear_sunset.png`,
+      clearNight: `${SHARED_ROOT}/10-background/window-weather/w_03_clear_night.png`,
+      cloudyDay: `${SHARED_ROOT}/10-background/window-weather/w_04_cloudy_day.png`,
+      cloudyNight: `${SHARED_ROOT}/10-background/window-weather/w_05_cloudy_night.png`,
+      snowDay: `${SHARED_ROOT}/10-background/window-weather/w_06_snow_day.png`,
+      snowNight: `${SHARED_ROOT}/10-background/window-weather/w_07_snow_night.png`,
       // 其余 16 个环境键不再跨季节/天气复用；全屏窗外详情优先按 scene_key 精确取图。
       bySceneKey: Object.freeze({
-        spring_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_cloudy_sunset_v01.webp`,
-        spring_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_day_v01.webp`,
-        spring_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_sunset_v01.webp`,
-        spring_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_night_v01.webp`,
-        summer_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_cloudy_sunset_v01.webp`,
-        summer_storm_day: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_day_v01.webp`,
-        summer_storm_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_sunset_v01.webp`,
-        summer_storm_night: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_night_v01.webp`,
-        autumn_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_day_v01.webp`,
-        autumn_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_sunset_v01.webp`,
-        autumn_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_night_v01.webp`,
-        winter_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_cloudy_sunset_v01.webp`,
-        winter_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_snow_sunset_v01.webp`,
-        winter_post_snow_day: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_day_v01.webp`,
-        winter_post_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_sunset_v01.webp`,
-        winter_post_snow_night: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_night_v01.webp`
+        spring_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_cloudy_sunset_v01.png`,
+        spring_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_day_v01.png`,
+        spring_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_sunset_v01.png`,
+        spring_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_spring_rain_night_v01.png`,
+        summer_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_cloudy_sunset_v01.png`,
+        summer_storm_day: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_day_v01.png`,
+        summer_storm_sunset: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_sunset_v01.png`,
+        summer_storm_night: `${SHARED_ROOT}/10-background/window-weather/window_summer_storm_night_v01.png`,
+        autumn_rain_day: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_day_v01.png`,
+        autumn_rain_sunset: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_sunset_v01.png`,
+        autumn_rain_night: `${SHARED_ROOT}/10-background/window-weather/window_autumn_rain_night_v01.png`,
+        winter_cloudy_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_cloudy_sunset_v01.png`,
+        winter_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_snow_sunset_v01.png`,
+        winter_post_snow_day: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_day_v01.png`,
+        winter_post_snow_sunset: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_sunset_v01.png`,
+        winter_post_snow_night: `${SHARED_ROOT}/10-background/window-weather/window_winter_post_snow_night_v01.png`
       })
     },
     interactionIcons: {

@@ -6,7 +6,7 @@ const PHOTOS = [
     "pet": "jade-rabbit",
     "kind": "outing",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_outing_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_outing_v01.png",
     "title": "出门前的小留影",
     "line": "出门前拍的，给你留一张。"
   },
@@ -15,7 +15,7 @@ const PHOTOS = [
     "pet": "jade-rabbit",
     "kind": "exchange",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_afternoon_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/jade-rabbit_afternoon_v01.png",
     "title": "窗边午后",
     "line": "午后的光刚好，给你留一张我的照片。"
   },
@@ -24,7 +24,7 @@ const PHOTOS = [
     "pet": "boon-koi",
     "kind": "outing",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/boon-koi_outing_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/boon-koi_outing_v01.png",
     "title": "出门前的小留影",
     "line": "出门前拍的，给你留一张。"
   },
@@ -33,7 +33,7 @@ const PHOTOS = [
     "pet": "boon-koi",
     "kind": "exchange",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/boon-koi_afternoon_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/boon-koi_afternoon_v01.png",
     "title": "窗边午后",
     "line": "午后的光刚好，给你留一张我的照片。"
   },
@@ -41,7 +41,7 @@ const PHOTOS = [
     "id": "solar-chushu-shared-v01",
     "kind": "solar",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_chushu_shared_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_chushu_shared_v01.png",
     "title": "池畔的晚光",
     "line": "水面上，冒出几个小泡泡。",
     "windows": [
@@ -55,7 +55,7 @@ const PHOTOS = [
     "id": "solar-bailu-shared-v01",
     "kind": "solar",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_bailu_shared_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_bailu_shared_v01.png",
     "title": "叶尖的水珠",
     "line": "叶尖挂着一颗亮亮的水珠。",
     "windows": [
@@ -69,7 +69,7 @@ const PHOTOS = [
     "id": "solar-qiufen-shared-v01",
     "kind": "solar",
     "approved": true,
-    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_qiufen_shared_v01.webp",
+    "image": "/assets/scenes/lifecycle/post-hatch/50-overlays/companion-photos/eggbabe_solar_term_qiufen_shared_v01.png",
     "title": "落叶旁的小径",
     "line": "落叶旁，还有几个小脚印。",
     "windows": [

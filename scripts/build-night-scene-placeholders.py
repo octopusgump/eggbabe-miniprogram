@@ -7,8 +7,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 EGG_SOURCE = ROOT / "docs/设计素材/视觉验收/egg-rotation-sample-warm-day/runtime-sample/clear-night-v2/normalized/egg_right_45.png"
-SHADOW_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.webp"
-NEST_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.webp"
+SHADOW_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/rotation-sample/clear-night-v2/egg_contact_shadow.png"
+NEST_SOURCE = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/rotation-sample/clear-night-v2/nest_pad.png"
 EGG_OUTPUT_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/30-character/egg/season-weather"
 NEST_OUTPUT_ROOT = ROOT / "miniprogram/assets/scenes/lifecycle/pre-hatch/20-room-objects/window-and-nest/season-weather"
 NIGHT_KEYS = [
@@ -31,8 +31,8 @@ def main() -> None:
         nest = nest_image.convert("RGBA")
 
     for scene_key in NIGHT_KEYS:
-        merged.save(EGG_OUTPUT_ROOT / f"{scene_key}_egg_right45.webp", format="WEBP", lossless=True, method=6)
-        nest.save(NEST_OUTPUT_ROOT / f"{scene_key}_nest_pad.webp", format="WEBP", lossless=True, method=6)
+        merged.save(EGG_OUTPUT_ROOT / f"{scene_key}_egg_right45.png", format="PNG")
+        nest.save(NEST_OUTPUT_ROOT / f"{scene_key}_nest_pad.png", format="PNG")
 
     print(f"Updated {len(NIGHT_KEYS)} night placeholder pairs")
 

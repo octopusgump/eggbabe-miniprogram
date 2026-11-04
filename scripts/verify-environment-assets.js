@@ -26,21 +26,21 @@ assert.equal(scenes.length, expectedPreHatchCount, `破壳前环境场景必须�
 assert.equal(new Set(scenes.map(scene => scene.key)).size, expectedPreHatchCount, '破壳前环境 scene key 不得重复');
 
 scenes.forEach(scene => {
-  assert.ok(scene.background.endsWith('.webp'), `${scene.key} 预孵化图必须为 WebP`);
+  assert.ok(scene.background.endsWith('.png'), `${scene.key} 预孵化图必须为 PNG`);
   const preFile = absolute(scene.background);
   assert.ok(fs.existsSync(preFile), `${scene.key} 缺少预孵化中央裁图：${scene.background}`);
   const preInfo = imageInfo(preFile);
   assert.deepEqual({ width: preInfo.width, height: preInfo.height }, { width: 941, height: 1672 }, `${scene.key} 预孵化图尺寸必须为 941×1672`);
 
-  assert.ok(scene.egg.endsWith(`/${scene.key}_egg_right45.webp`), `${scene.key} 必须读取同名蛋体层`);
+  assert.ok(scene.egg.endsWith(`/${scene.key}_egg_right45.png`), `${scene.key} 必须读取同名蛋体层`);
   const eggFile = absolute(scene.egg);
   assert.ok(fs.existsSync(eggFile), `${scene.key} 缺少蛋体层：${scene.egg}`);
-  assert.deepEqual(imageInfo(eggFile), { width: 1254, height: 1254, hasAlpha: true }, `${scene.key} 蛋体层必须为带透明通道的 1254×1254 WebP`);
+  assert.deepEqual(imageInfo(eggFile), { width: 1254, height: 1254, hasAlpha: true }, `${scene.key} 蛋体层必须为带透明通道的 1254×1254 PNG`);
 
-  assert.ok(scene.nest.endsWith(`/${scene.key}_nest_pad.webp`), `${scene.key} 必须读取同名窝垫层`);
+  assert.ok(scene.nest.endsWith(`/${scene.key}_nest_pad.png`), `${scene.key} 必须读取同名窝垫层`);
   const nestFile = absolute(scene.nest);
   assert.ok(fs.existsSync(nestFile), `${scene.key} 缺少窝垫层：${scene.nest}`);
-  assert.deepEqual(imageInfo(nestFile), { width: 1254, height: 1254, hasAlpha: true }, `${scene.key} 窝垫层必须为带透明通道的 1254×1254 WebP`);
+  assert.deepEqual(imageInfo(nestFile), { width: 1254, height: 1254, hasAlpha: true }, `${scene.key} 窝垫层必须为带透明通道的 1254×1254 PNG`);
 
 });
 
@@ -48,7 +48,7 @@ assert.deepEqual(Object.keys(postHatch.panoramaSceneSets), expectedPostHatchPeri
 expectedPostHatchPeriods.forEach(period => {
   const panorama = postHatch.panoramaSceneSets[period];
   assert.ok(panorama, `${period} 缺少破壳后正式全景配置`);
-  assert.ok(panorama.panorama.endsWith('.webp'), `${period} 全景图必须为 WebP`);
+  assert.ok(panorama.panorama.endsWith('.png'), `${period} 全景图必须为 PNG`);
   const panoramaFile = absolute(panorama.panorama);
   assert.ok(fs.existsSync(panoramaFile), `${period} 缺少破壳后全景图：${panorama.panorama}`);
   const panoramaInfo = imageInfo(panoramaFile);

@@ -31,7 +31,7 @@ const POST_HATCH_PERIOD_OPTIONS = Object.freeze([
   Object.freeze({ key: 'night', label: '黑夜', period: 'night', lightPhase: 'night', panoramaSource: 'spring_clear_night' })
 ]);
 const PANORAMA_SCENE_SETS = Object.freeze(POST_HATCH_PERIOD_OPTIONS.reduce((result, option) => {
-  const panorama = `${PANORAMA_SCENE_ROOT}/${option.panoramaSource}_post_hatch_panorama_v01.webp`;
+  const panorama = `${PANORAMA_SCENE_ROOT}/${option.panoramaSource}_post_hatch_panorama_v01.png`;
   result[option.key] = Object.freeze({
     id: option.key,
     label: option.label,
@@ -48,17 +48,17 @@ const PANORAMA_SCENE_SETS = Object.freeze(POST_HATCH_PERIOD_OPTIONS.reduce((resu
 // 产品口径中的“小憩”使用独立状态 `lazy` 和独立 `home_bedroom_lazy_*` 文件，不得复用本组图片。
 const ACTION_PANORAMA_FILES = Object.freeze({
   sleep: Object.freeze({
-    day: 'home_bedroom_nap_day_v01.webp',
-    sunset: 'home_bedroom_nap_sunset_v01.webp',
-    night: 'home_bedroom_nap_night_v01.webp'
+    day: 'home_bedroom_nap_day_v01.png',
+    sunset: 'home_bedroom_nap_sunset_v01.png',
+    night: 'home_bedroom_nap_night_v01.png'
   }),
-  lazy: Object.freeze({ day: 'home_bedroom_lazy_day_v01.webp', sunset: 'home_bedroom_lazy_sunset_v01.webp', night: 'home_bedroom_lazy_night_v01.webp' }),
-  stare: Object.freeze({ day: 'home_bedroom_stare_day_v01.webp', sunset: 'home_bedroom_stare_sunset_v01.webp', night: 'home_bedroom_stare_night_v01.webp' }),
-  reading: Object.freeze({ day: 'home_bedroom_read_day_v01.webp', sunset: 'home_bedroom_read_sunset_v01.webp', night: 'home_bedroom_read_night_v01.webp' }),
-  gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.webp', sunset: 'home_bedroom_game_sunset_v01.webp', night: 'home_bedroom_game_night_v01.webp' }),
-  window: Object.freeze({ day: 'home_bedroom_window_day_v01.webp', sunset: 'home_bedroom_window_sunset_v01.webp', night: 'home_bedroom_window_night_v01.webp' }),
-  drawing: Object.freeze({ day: 'home_bedroom_draw_day_v01.webp', sunset: 'home_bedroom_draw_sunset_v01.webp', night: 'home_bedroom_draw_night_v01.webp' }),
-  music: Object.freeze({ day: 'home_bedroom_music_day_v01.webp', sunset: 'home_bedroom_music_sunset_v01.webp', night: 'home_bedroom_music_night_v01.webp' })
+  lazy: Object.freeze({ day: 'home_bedroom_lazy_day_v01.png', sunset: 'home_bedroom_lazy_sunset_v01.png', night: 'home_bedroom_lazy_night_v01.png' }),
+  stare: Object.freeze({ day: 'home_bedroom_stare_day_v01.png', sunset: 'home_bedroom_stare_sunset_v01.png', night: 'home_bedroom_stare_night_v01.png' }),
+  reading: Object.freeze({ day: 'home_bedroom_read_day_v01.png', sunset: 'home_bedroom_read_sunset_v01.png', night: 'home_bedroom_read_night_v01.png' }),
+  gaming: Object.freeze({ day: 'home_bedroom_game_day_v01.png', sunset: 'home_bedroom_game_sunset_v01.png', night: 'home_bedroom_game_night_v01.png' }),
+  window: Object.freeze({ day: 'home_bedroom_window_day_v01.png', sunset: 'home_bedroom_window_sunset_v01.png', night: 'home_bedroom_window_night_v01.png' }),
+  drawing: Object.freeze({ day: 'home_bedroom_draw_day_v01.png', sunset: 'home_bedroom_draw_sunset_v01.png', night: 'home_bedroom_draw_night_v01.png' }),
+  music: Object.freeze({ day: 'home_bedroom_music_day_v01.png', sunset: 'home_bedroom_music_sunset_v01.png', night: 'home_bedroom_music_night_v01.png' })
 });
 function actionSceneDescriptor(character, stateKey, panoramaByPeriod) {
   return Object.freeze({
@@ -187,8 +187,8 @@ function resolveActionPanorama(pet, currentState, environment, cdnBase) {
 
 module.exports = {
   expectedPaths: {
-    panoramaSceneSets: `${PANORAMA_SCENE_ROOT}/spring_clear_{day|sunset|night}_post_hatch_panorama_v01.webp`,
-    actionPanoramas: '/assets/scenes/lifecycle/post-hatch/60-action-scenes/{jade-rabbit|boon-koi}/home-bedroom/home_bedroom_{nap|lazy|stare|read|game|window|draw|music}_{day|sunset|night}_v01.webp',
+    panoramaSceneSets: `${PANORAMA_SCENE_ROOT}/spring_clear_{day|sunset|night}_post_hatch_panorama_v01.png`,
+    actionPanoramas: '/assets/scenes/lifecycle/post-hatch/60-action-scenes/{jade-rabbit|boon-koi}/home-bedroom/home_bedroom_{nap|lazy|stare|read|game|window|draw|music}_{day|sunset|night}_v01.png',
     jadeRabbit: '/assets/scenes/lifecycle/post-hatch/30-character/jade-rabbit/',
     boonKoi: '/assets/scenes/lifecycle/post-hatch/30-character/boon-koi/',
     magicWindow: '/assets/scenes/lifecycle/post-hatch/50-overlays/magic-window/',
@@ -231,15 +231,15 @@ module.exports = {
       destinations: { dali: '', beijing: '', xishuangbanna: '' }
     },
     keepsakes: {
-      'soft-button': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_old_wooden_button_card_square_3d_transparent_v01.webp',
-      'short-pencil': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_short_pencil_card_square_3d_transparent_v01.webp',
-      'dali-cloud': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_dali_cloud_stone_card_square_3d_transparent_v01.webp',
-      'cafe-coaster': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_cork_coaster_card_square_3d_transparent_v01.webp',
-      'wood-rattle': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_small_wood_rattle_card_square_3d_transparent_v01.webp',
-      'ginkgo-leaf': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_ginkgo_leaf_card_square_3d_transparent_v01.webp',
-      'rain-seed': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_rainforest_seed_pod_card_square_3d_transparent_v01.webp',
-      'delivery-clip': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_red_order_clip_card_square_3d_transparent_v01.webp',
-      'rainbow-cloth': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_rainbow_carwash_cloth_card_square_3d_transparent_v01.webp'
+      'soft-button': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_old_wooden_button_card_square_3d_transparent_v01.png',
+      'short-pencil': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_short_pencil_card_square_3d_transparent_v01.png',
+      'dali-cloud': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_dali_cloud_stone_card_square_3d_transparent_v01.png',
+      'cafe-coaster': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_cork_coaster_card_square_3d_transparent_v01.png',
+      'wood-rattle': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_small_wood_rattle_card_square_3d_transparent_v01.png',
+      'ginkgo-leaf': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_ginkgo_leaf_card_square_3d_transparent_v01.png',
+      'rain-seed': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_rainforest_seed_pod_card_square_3d_transparent_v01.png',
+      'delivery-clip': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_red_order_clip_card_square_3d_transparent_v01.png',
+      'rainbow-cloth': '/assets/scenes/lifecycle/post-hatch/50-overlays/keepsakes/turnarounds/webp/keepsake_rainbow_carwash_cloth_card_square_3d_transparent_v01.png'
     },
     postcards: {},
     moodFaces: {}

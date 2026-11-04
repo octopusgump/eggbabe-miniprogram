@@ -39,22 +39,22 @@
 “我的”位于 `../3d-actions/`：
 
 - `png/ui_3d_profile_wood_plaque_v05.png` — 1024×1024 RGBA PNG
-- `webp/ui_3d_profile_wood_plaque_v05.webp` — 1024×1024 Alpha WebP
-- `runtime/ui_3d_profile_wood_plaque_256_v05.webp` — 256×256 Alpha WebP
+- `webp/ui_3d_profile_wood_plaque_v05.png` — 1024×1024 Alpha WebP
+- `runtime/ui_3d_profile_wood_plaque_256_v05.png` — 256×256 Alpha WebP
 - `runtime/ui_3d_profile_wood_plaque_96_v05.png` — 96×96 RGBA PNG
-- `runtime/ui_3d_profile_wood_plaque_96_v05.webp` — 96×96 Alpha WebP
+- `runtime/ui_3d_profile_wood_plaque_96_v05.png` — 96×96 Alpha WebP
 
 百宝箱其余 3 项：
 
 - `png/ui_3d_toolbox_collection_cards_v01.png`
 - `png/ui_3d_toolbox_postcard_v01.png`
 - `png/ui_3d_toolbox_keepsake_box_v01.png`
-- `webp/ui_3d_toolbox_collection_cards_v01.webp`
-- `webp/ui_3d_toolbox_postcard_v01.webp`
-- `webp/ui_3d_toolbox_keepsake_box_v01.webp`
-- `runtime/ui_3d_toolbox_collection_cards_96_v01.png`／`.webp`
-- `runtime/ui_3d_toolbox_postcard_96_v01.png`／`.webp`
-- `runtime/ui_3d_toolbox_keepsake_box_96_v01.png`／`.webp`
+- `webp/ui_3d_toolbox_collection_cards_v01.png`
+- `webp/ui_3d_toolbox_postcard_v01.png`
+- `webp/ui_3d_toolbox_keepsake_box_v01.png`
+- `runtime/ui_3d_toolbox_collection_cards_96_v01.png`／`.png`
+- `runtime/ui_3d_toolbox_postcard_96_v01.png`／`.png`
+- `runtime/ui_3d_toolbox_keepsake_box_96_v01.png`／`.png`
 
 WebP 母版参数：质量 92，Alpha 质量 100。运行时 WebP：质量 90，Alpha 质量 100。
 
@@ -87,15 +87,15 @@ WebP 母版参数：质量 92，Alpha 质量 100。运行时 WebP：质量 90，
 
 1024×1024 Alpha WebP：
 
-- `webp/ui_3d_toolbox_settings_gear_v02.webp`
-- `webp/ui_3d_toolbox_collection_card_front_v02.webp`
-- `webp/ui_3d_toolbox_postcard_two_color_front_v02.webp`
+- `webp/ui_3d_toolbox_settings_gear_v02.png`
+- `webp/ui_3d_toolbox_collection_card_front_v02.png`
+- `webp/ui_3d_toolbox_postcard_two_color_front_v02.png`
 
 96×96 运行时 Alpha WebP：
 
-- `runtime/ui_3d_toolbox_settings_gear_96_v02.webp`
-- `runtime/ui_3d_toolbox_collection_card_front_96_v02.webp`
-- `runtime/ui_3d_toolbox_postcard_two_color_front_96_v02.webp`
+- `runtime/ui_3d_toolbox_settings_gear_96_v02.png`
+- `runtime/ui_3d_toolbox_collection_card_front_96_v02.png`
+- `runtime/ui_3d_toolbox_postcard_two_color_front_96_v02.png`
 
 本批次遵循项目 WebP 偏好：PNG 只保存在 `tmp/imagegen/ui-3d-toolbox-redesign-v02/` 作为色键处理与预览中间文件，没有复制到正式资源目录。
 
@@ -123,13 +123,13 @@ WebP 母版参数：质量 92，Alpha 质量 100。运行时 WebP：质量 90，
 
 1024×1024 Alpha WebP：
 
-- `webp/ui_3d_toolbox_collection_card_front_v03.webp`
-- `webp/ui_3d_toolbox_postcard_vintage_front_v03.webp`
+- `webp/ui_3d_toolbox_collection_card_front_v03.png`
+- `webp/ui_3d_toolbox_postcard_vintage_front_v03.png`
 
 96×96 运行时 Alpha WebP：
 
-- `runtime/ui_3d_toolbox_collection_card_front_96_v03.webp`
-- `runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.webp`
+- `runtime/ui_3d_toolbox_collection_card_front_96_v03.png`
+- `runtime/ui_3d_toolbox_postcard_vintage_front_96_v03.png`
 
 PNG 仅作为 `tmp/imagegen/ui-3d-toolbox-refinement-v03/` 内的生成与透明化中间文件。未引用的 v01／v02 图标及旧设置齿轮已于 2026-08-04 清理。
 

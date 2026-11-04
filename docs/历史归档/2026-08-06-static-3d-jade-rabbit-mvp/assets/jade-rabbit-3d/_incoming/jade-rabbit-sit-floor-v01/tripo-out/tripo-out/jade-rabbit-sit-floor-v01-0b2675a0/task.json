@@ -7,25 +7,25 @@
     "files": [
       {
         "object": {
-          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/e5b8c60c-8b3e-4128-8a78-25a386305f3c/file.webp",
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/e5b8c60c-8b3e-4128-8a78-25a386305f3c/file.png",
           "bucket": "cn-openapi"
         }
       },
       {
         "object": {
-          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/a31ac873-6457-4e3c-a658-78f89709421f/file.webp",
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/a31ac873-6457-4e3c-a658-78f89709421f/file.png",
           "bucket": "cn-openapi"
         }
       },
       {
         "object": {
-          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/43edeb89-c133-4298-9905-2d94d944fca6/file.webp",
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/43edeb89-c133-4298-9905-2d94d944fca6/file.png",
           "bucket": "cn-openapi"
         }
       },
       {
         "object": {
-          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/bd8104f2-3ae9-4cf8-89af-767f7d0e2b75/file.webp",
+          "key": "tcli_1a0a7e3273344e688ff6b2198fd19aa6/20260806/bd8104f2-3ae9-4cf8-89af-767f7d0e2b75/file.png",
           "bucket": "cn-openapi"
         }
       }
@@ -45,7 +45,7 @@
   "completed_at": "2026-08-06T01:37:21.689630Z",
   "files": [
     "model.glb",
-    "rendered_image.webp",
+    "rendered_image.png",
     "preview.png"
   ]
 }

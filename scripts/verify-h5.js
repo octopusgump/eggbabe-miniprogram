@@ -18,7 +18,7 @@ const raw = {
   identity_code: 'EGG-YT-20260724-000001',
   source_batch: 'BATCH-01',
   illustration_key: 'YT__moon_white',
-  illustration_url: 'https://cdn.eggbabe.com/cards/yt-moon-white.webp',
+  illustration_url: 'https://cdn.eggbabe.com/cards/yt-moon-white.png',
   mini_program_code_url: 'https://cdn.eggbabe.com/codes/card-1.png'
 };
 const card = model.normalizeCard(raw);

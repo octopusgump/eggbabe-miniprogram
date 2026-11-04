@@ -74,7 +74,7 @@ const previewKoi = demoExperience.setPreviewPrototype('锦鲤');
 assert.equal(previewKoi.ok, true, '开发验收器必须可以切换到锦鲤');
 assert.equal(previewKoi.pet.prototype, '锦鲤', '切换后本地 demo 蛋宝宝必须保留锦鲤原型');
 assert.equal(previewKoi.pet.collectionCard.prototype, 'KOI', '已破壳 demo 收藏卡必须同步为锦鲤代码');
-assert.equal(previewKoi.pet.collectionCard.illustration_url, '/assets/cards/KOI-S01/koi-s01-001.webp', '锦鲤 demo 收藏卡必须读取本地锦鲤卡图');
+assert.equal(previewKoi.pet.collectionCard.illustration_url, '/assets/cards/KOI-S01/koi-s01-001.png', '锦鲤 demo 收藏卡必须读取本地锦鲤卡图');
 
 const previewJade = demoExperience.setPreviewPrototype('YT');
 assert.equal(previewJade.ok, true, '开发验收器必须接受玉兔代码切换');

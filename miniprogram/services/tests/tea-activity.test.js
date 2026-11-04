@@ -1,6 +1,6 @@
 const assert = require('assert');
 const stars = require('../iaa-star-unlock-adapter');
-const photo = { image: '/test-fixture-photo.webp', title: '窗边茶会', line: '本地测试素材' };
+const photo = { image: '/test-fixture-photo.png', title: '窗边茶会', line: '本地测试素材' };
 const options = id => ({ id, photo });
 (async () => {
   stars.configureRoom('tea-test-rabbit');

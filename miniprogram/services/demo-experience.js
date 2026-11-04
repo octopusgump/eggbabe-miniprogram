@@ -8,8 +8,8 @@ const DEMO_EGG_ID = 'demo-egg-v228';
 const DAY_MS = 86400000;
 const DEMO_TIMELINE_VERSION = 2;
 const PREVIEW_PROTOTYPES = Object.freeze([
-  Object.freeze({ key: '玉兔', label: '玉兔', cardCode: 'YT', cardSeries: 'YT-S01', cardFile: 'yt-s01-001.webp' }),
-  Object.freeze({ key: '锦鲤', label: '锦鲤', cardCode: 'KOI', cardSeries: 'KOI-S01', cardFile: 'koi-s01-001.webp' })
+  Object.freeze({ key: '玉兔', label: '玉兔', cardCode: 'YT', cardSeries: 'YT-S01', cardFile: 'yt-s01-001.png' }),
+  Object.freeze({ key: '锦鲤', label: '锦鲤', cardCode: 'KOI', cardSeries: 'KOI-S01', cardFile: 'koi-s01-001.png' })
 ]);
 const PREVIEW_STAGES = Object.freeze([
   { key: 'day1', label: '第 1 天', day: 1 },

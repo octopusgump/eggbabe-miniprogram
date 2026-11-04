@@ -10,7 +10,7 @@ global.wx={showToast(){},getImageInfo(options){loader=options;},saveImageToPhoto
 require('../../pages/iaa-memory-album-demo/iaa-memory-album-demo');
 const page=Object.assign({},definition,{roomEntry:true,data:JSON.parse(JSON.stringify(definition.data)),setData(patch){Object.assign(this.data,patch);}});
 (async()=>{
-  catalog.PHOTOS.push({id:'page-exchange',kind:'exchange',image:'/page.webp',line:'午后的光刚好，给你留一张我的照片。',approved:true});
+  catalog.PHOTOS.push({id:'page-exchange',kind:'exchange',image:'/page.png',line:'午后的光刚好，给你留一张我的照片。',approved:true});
   stars.configureRoom('page-exchange-test',{prototype:'玉兔'});
   const view=(await stars.getRoomStarView()).data;
   await stars.recordCompanion(view);
@@ -43,7 +43,7 @@ const page=Object.assign({},definition,{roomEntry:true,data:JSON.parse(JSON.stri
   room.syncPendingPaperPhoto();assert.equal(room.data.pendingCompanionMemory,null,'旧日纸条不阻塞新动作，状态仍由纪念册保留');
   room.data.pendingCompanionMemory={id:'collected',source:'paper',date:require('../companion-star-rules').shanghaiDate()};
   room.syncPendingPaperPhoto();assert.equal(room.data.pendingCompanionMemory,null,'纪念册收下后同步房间');
-  catalog.PHOTOS.push({id:'room-paper',kind:'outing',image:'/paper.webp',approved:true});
+  catalog.PHOTOS.push({id:'room-paper',kind:'outing',image:'/paper.png',approved:true});
   stars.configureRoom('room-paper-entry',{prototype:'玉兔'});
   room.data={todayCompanionView:{},todayCompanionStarView:(await stars.getRoomStarView()).data,currentState:{atHome:false}};
   room.pageActive=true;let paperResult;

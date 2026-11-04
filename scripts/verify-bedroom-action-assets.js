@@ -21,8 +21,8 @@ function imageInfo(file) {
 }
 characters.forEach(character => {
   const bedroom = path.join(root, 'miniprogram/assets/scenes/lifecycle/post-hatch/60-action-scenes', character, 'home-bedroom');
-  const expected = actions.flatMap(action => periods.map(period => `home_bedroom_${action}_${period}_v01.webp`)).sort();
-  const available = new Set(fs.readdirSync(bedroom).filter(file => file.endsWith('.webp')));
+  const expected = actions.flatMap(action => periods.map(period => `home_bedroom_${action}_${period}_v01.png`)).sort();
+  const available = new Set(fs.readdirSync(bedroom).filter(file => file.endsWith('.png')));
   const missing = expected.filter(file => !available.has(file));
   assert.deepEqual(missing, [], `${character} 必须包含 24 张 canonical 正式动作 WebP`);
   assert.deepEqual(Array.from(available).sort(), expected, `${character} 根目录必须恰好包含 24 张 canonical 正式动作 WebP`);

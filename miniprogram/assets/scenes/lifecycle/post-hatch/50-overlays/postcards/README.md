@@ -12,7 +12,7 @@
 
 发布门禁：候选图不进入 `post-hatch-assets.js`，trial / release 不渲染开发预览控件。当前微信 `packOptions.ignore` 同时作用于预览与上传，不能在保留微信开发版候选验收的同时仅对 trial / release 排除目录；发布前必须在开发者工具的上传文件清单人工确认候选目录未被带入。
 
-正式待补：`postcard_travel_dali.webp`、`postcard_travel_beijing.webp`、`postcard_travel_xishuangbanna.webp`、东京正式动作明信片组、`postcard_work_cafe.webp`、`postcard_work_restaurant.webp`、`postcard_work_delivery.webp`、`postcard_work_carwash.webp`、`postcard_school_ai.webp`、`postcard_school_english.webp`、`postcard_school_weather.webp`。
+正式待补：`postcard_travel_dali.png`、`postcard_travel_beijing.png`、`postcard_travel_xishuangbanna.png`、东京正式动作明信片组、`postcard_work_cafe.png`、`postcard_work_restaurant.png`、`postcard_work_delivery.png`、`postcard_work_carwash.png`、`postcard_school_ai.png`、`postcard_school_english.png`、`postcard_school_weather.png`。
 
 要求：正面插画不含用户信件正文；文字由小程序原生层渲染。当前使用固定比例纸张占位。
 

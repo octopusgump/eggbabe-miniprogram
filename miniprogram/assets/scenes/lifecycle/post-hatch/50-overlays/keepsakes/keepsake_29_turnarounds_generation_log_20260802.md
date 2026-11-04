@@ -26,44 +26,44 @@
 
 ### A 线 · 通用祈愿物（6）
 
-1. `webp/keepsake_k-a01_prayer_stick_four_view_3d.webp` — 祈福签
-2. `webp/keepsake_k-a02_copper_coin_four_view_3d.webp` — 铜钱
-3. `webp/keepsake_k-a03_peace_amulet_four_view_3d.webp` — 平安符
-4. `webp/keepsake_k-a04_sachet_four_view_3d.webp` — 香囊
-5. `webp/keepsake_k-a05_red_string_bracelet_four_view_3d.webp` — 红绳
-6. `webp/keepsake_k-a06_small_brass_bell_four_view_3d.webp` — 小铃铛
+1. `webp/keepsake_k-a01_prayer_stick_four_view_3d.png` — 祈福签
+2. `webp/keepsake_k-a02_copper_coin_four_view_3d.png` — 铜钱
+3. `webp/keepsake_k-a03_peace_amulet_four_view_3d.png` — 平安符
+4. `webp/keepsake_k-a04_sachet_four_view_3d.png` — 香囊
+5. `webp/keepsake_k-a05_red_string_bracelet_four_view_3d.png` — 红绳
+6. `webp/keepsake_k-a06_small_brass_bell_four_view_3d.png` — 小铃铛
 
 ### B 线 · 玉兔定制物（11）
 
-1. `webp/keepsake_k-r01_yellow_rubber_duck_four_view_3d.webp` — 小黄鸭
-2. `webp/keepsake_k-r02_bicycle_bell_four_view_3d.webp` — 自行车铃铛
-3. `webp/keepsake_k-r04_traditional_shuttlecock_four_view_3d.webp` — 毽子
-4. `webp/keepsake_k-r05_old_newspaper_corner_four_view_3d.webp` — 一角旧报纸
-5. `webp/keepsake_k-r06_incense_and_holder_four_view_3d.webp` — 线香与香座
-6. `webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d.webp` — 小徽章
-7. `webp/keepsake_k-r08_blue_paw_print_card_four_view_3d.webp` — 爪印卡
-8. `webp/keepsake_jade_rabbit_mini_jade_pestle_four_view_3d.webp` — 迷你玉杵
-9. `webp/keepsake_jade_rabbit_osmanthus_branch_four_view_3d.webp` — 桂花枝
-10. `webp/keepsake_jade_rabbit_moon_phase_cards_four_view_3d.webp` — 月相卡
-11. `webp/keepsake_jade_rabbit_herb_pouch_four_view_3d.webp` — 药草包
+1. `webp/keepsake_k-r01_yellow_rubber_duck_four_view_3d.png` — 小黄鸭
+2. `webp/keepsake_k-r02_bicycle_bell_four_view_3d.png` — 自行车铃铛
+3. `webp/keepsake_k-r04_traditional_shuttlecock_four_view_3d.png` — 毽子
+4. `webp/keepsake_k-r05_old_newspaper_corner_four_view_3d.png` — 一角旧报纸
+5. `webp/keepsake_k-r06_incense_and_holder_four_view_3d.png` — 线香与香座
+6. `webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d.png` — 小徽章
+7. `webp/keepsake_k-r08_blue_paw_print_card_four_view_3d.png` — 爪印卡
+8. `webp/keepsake_jade_rabbit_mini_jade_pestle_four_view_3d.png` — 迷你玉杵
+9. `webp/keepsake_jade_rabbit_osmanthus_branch_four_view_3d.png` — 桂花枝
+10. `webp/keepsake_jade_rabbit_moon_phase_cards_four_view_3d.png` — 月相卡
+11. `webp/keepsake_jade_rabbit_herb_pouch_four_view_3d.png` — 药草包
 
 ### B 线 · 锦鲤定制物（11，本轮不含已有 K-K03）
 
-1. `webp/keepsake_k-k01_lotus_leaf_bookmark_four_view_3d.webp` — 荷叶书签
-2. `webp/keepsake_k-k02_polaroid_stone_bridge_four_view_3d.webp` — 拍立得照片
-3. `webp/keepsake_k-k04_origami_paper_boat_four_view_3d.webp` — 折纸船
-4. `webp/keepsake_k-k05_coffee_cup_sleeve_four_view_3d.webp` — 咖啡杯套
-5. `webp/keepsake_k-k06_fish_shaped_bobber_four_view_3d.webp` — 鱼形浮漂
-6. `webp/keepsake_k-k07_dried_paint_palette_four_view_3d.webp` — 干掉的调色盘
-7. `webp/keepsake_k-k08_burnt_candle_stub_four_view_3d.webp` — 蜡烛头
-8. `webp/keepsake_boon_koi_fish_wooden_plaque_four_view_3d.webp` — 鱼形木牌
-9. `webp/keepsake_boon_koi_fortune_bead_four_view_3d.webp` — 转运珠
-10. `webp/keepsake_boon_koi_water_ripple_jade_pendant_four_view_3d.webp` — 水纹玉佩
-11. `webp/keepsake_boon_koi_lotus_lantern_four_view_3d.webp` — 莲花灯
+1. `webp/keepsake_k-k01_lotus_leaf_bookmark_four_view_3d.png` — 荷叶书签
+2. `webp/keepsake_k-k02_polaroid_stone_bridge_four_view_3d.png` — 拍立得照片
+3. `webp/keepsake_k-k04_origami_paper_boat_four_view_3d.png` — 折纸船
+4. `webp/keepsake_k-k05_coffee_cup_sleeve_four_view_3d.png` — 咖啡杯套
+5. `webp/keepsake_k-k06_fish_shaped_bobber_four_view_3d.png` — 鱼形浮漂
+6. `webp/keepsake_k-k07_dried_paint_palette_four_view_3d.png` — 干掉的调色盘
+7. `webp/keepsake_k-k08_burnt_candle_stub_four_view_3d.png` — 蜡烛头
+8. `webp/keepsake_boon_koi_fish_wooden_plaque_four_view_3d.png` — 鱼形木牌
+9. `webp/keepsake_boon_koi_fortune_bead_four_view_3d.png` — 转运珠
+10. `webp/keepsake_boon_koi_water_ripple_jade_pendant_four_view_3d.png` — 水纹玉佩
+11. `webp/keepsake_boon_koi_lotus_lantern_four_view_3d.png` — 莲花灯
 
 ### 保留物（1）
 
-1. `webp/keepsake_retained_sugar_painting_ladle_four_view_3d.webp` — 糖画勺
+1. `webp/keepsake_retained_sugar_painting_ladle_four_view_3d.png` — 糖画勺
 
 ## QA 结果
 
@@ -76,10 +76,10 @@
 
 ## 修订记录
 
-- K-R05 旧报纸新增 `webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v2.webp`：将原先过小的三角形报纸角改为完整的民国／20 世纪初期折叠报纸，头版加入圆月与胖玉兔旧式木刻插图。
-- K-R05 最终指定报头版为 `webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v3.webp`：正面与 3/4 视图的报头均准确显示四字“蛋宝宝报”；后续应优先使用 v3。
+- K-R05 旧报纸新增 `webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v2.png`：将原先过小的三角形报纸角改为完整的民国／20 世纪初期折叠报纸，头版加入圆月与胖玉兔旧式木刻插图。
+- K-R05 最终指定报头版为 `webp/keepsake_k-r05_vintage_moon_rabbit_newspaper_four_view_3d_v3.png`：正面与 3/4 视图的报头均准确显示四字“蛋宝宝报”；后续应优先使用 v3。
 - K-R05 原版与 v2 均保留，分别作为旧构图和无指定报头版本回退。
-- K-R07 小徽章新增 `webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d_v2.webp`。
+- K-R07 小徽章新增 `webp/keepsake_k-r07_rabbit_silhouette_badge_four_view_3d_v2.png`。
 - v2 仅将正面蓝色图案由“兔子侧身全身剪影”改为“玉兔胖圆头像剪影”：正面圆润大头、两只长圆耳，无身体、肩膀、五官或内耳细节。
 - 黄铜边框、奶油色珐琅、徽章厚度、背面别针、四视结构、光照和背景保持一致。
 - v1 保留作为可回退版本；后续应优先使用 v2。
@@ -189,34 +189,34 @@
 
 1. 苍山脚下的云石
    - `png/keepsake_dali_cloud_stone_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_dali_cloud_stone_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_dali_cloud_stone_card_square_3d_transparent_v01.png`
 2. 雨林里的种荚
    - `png/keepsake_rainforest_seed_pod_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_rainforest_seed_pod_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_rainforest_seed_pod_card_square_3d_transparent_v01.png`
 3. 小拨浪鼓
    - `png/keepsake_small_wood_rattle_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_small_wood_rattle_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_small_wood_rattle_card_square_3d_transparent_v01.png`
 4. 旧木纽扣
    - `png/keepsake_old_wooden_button_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_old_wooden_button_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_old_wooden_button_card_square_3d_transparent_v01.png`
 5. 短短的铅笔
    - `png/keepsake_short_pencil_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_short_pencil_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_short_pencil_card_square_3d_transparent_v01.png`
 6. 晒干的茶签
    - `png/keepsake_dried_tea_tag_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_dried_tea_tag_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_dried_tea_tag_card_square_3d_transparent_v01.png`
 7. 软木杯垫
    - `png/keepsake_cork_coaster_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_cork_coaster_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_cork_coaster_card_square_3d_transparent_v01.png`
 8. 红色订单夹
    - `png/keepsake_red_order_clip_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_red_order_clip_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_red_order_clip_card_square_3d_transparent_v01.png`
 9. 一片银杏叶
    - `png/keepsake_ginkgo_leaf_card_square_3d_transparent_v01.png`
-   - `webp/keepsake_ginkgo_leaf_card_square_3d_transparent_v01.webp`
+   - `webp/keepsake_ginkgo_leaf_card_square_3d_transparent_v01.png`
 10. 彩虹擦车布
     - `png/keepsake_rainbow_carwash_cloth_card_square_3d_transparent_v01.png`
-    - `webp/keepsake_rainbow_carwash_cloth_card_square_3d_transparent_v01.webp`
+    - `webp/keepsake_rainbow_carwash_cloth_card_square_3d_transparent_v01.png`
 
 ### QA 结果
 

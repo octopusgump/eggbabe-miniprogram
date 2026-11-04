@@ -126,7 +126,7 @@
 
 参考：
 
-`miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_left_living_with_jade_rabbit_reference.webp`
+`miniprogram/assets/scenes/lifecycle/post-hatch/10-background/panorama-three-screen/post_hatch_left_living_with_jade_rabbit_reference.png`
 
 必须转译的特征：
 
@@ -152,7 +152,7 @@
 
 锁定底图：
 
-`scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.webp`
+`scene_base_travel_tokyo_detailed_cafe_alley_45deg_v12.png`
 
 空间锚点：
 
@@ -169,7 +169,7 @@
 
 锁定底图：
 
-`scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.webp`
+`scene_base_travel_tokyo_tower_fuji_compact_terrace_v10.png`
 
 空间锚点：下方小露台为动作区，东京塔、城市灯光与富士山是主要远景；不得扩大露台、移动塔或改天际线比例。
 
@@ -177,7 +177,7 @@
 
 锁定底图：
 
-`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.webp`
+`scene_base_travel_tokyo_tower_fuji_morning_compact_terrace_v11.png`
 
 空间锚点：下方约 25%–30% 的木露台用于角色；淡蓝天空、杏金晨光、轻雾城市、东京塔和富士山是固定氛围。适合热饮看景、许愿、自拍、轻伸展等安静动作。
 

@@ -9,7 +9,7 @@ adapter.getDiaryDetail({ pet, entry: 'room' }).then(result => {
   assert.equal(result.ok, true);
   assert.equal(typeof result.data.id, 'string');
   assert.equal(result.data.salutation, '亲爱的主人，');
-  assert.match(result.data.imageUrl, /home_bedroom_window_day_v01\.webp$/);
+  assert.match(result.data.imageUrl, /home_bedroom_window_day_v01\.png$/);
   assert.match(result.data.signOff, /dbb/);
   assert.equal(result.data.shareBrandName, 'eggbabe');
   assert.equal(result.data.shareQrHint, '长按识别小程序码');

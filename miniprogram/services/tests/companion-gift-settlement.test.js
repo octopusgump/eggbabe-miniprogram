@@ -4,7 +4,7 @@ const originalNow = Date.now;
 let now = Date.parse('2026-10-04T23:59:59.999+08:00');
 Date.now = () => now;
 const day = () => stars.getRoomStarView().then(result => result.data);
-const photo = { image: 'fixture-photo.webp', title: '窗边茶会', line: '一起在窗边喝了一杯茶。' };
+const photo = { image: 'fixture-photo.png', title: '窗边茶会', line: '一起在窗边喝了一杯茶。' };
 (async () => {
   stars.configureRoom('gift-settlement');
   await stars.recordLetterOpen(await day());

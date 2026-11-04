@@ -37,7 +37,7 @@ const SAMPLE_BODY =
 
 function sampleHeroImageUrl(pet) {
   const folder = companionPetImage.resolveCompanionPetCharacterFolder(pet);
-  return `/assets/scenes/lifecycle/post-hatch/60-action-scenes/${folder}/home-bedroom/home_bedroom_window_day_v01.webp`;
+  return `/assets/scenes/lifecycle/post-hatch/60-action-scenes/${folder}/home-bedroom/home_bedroom_window_day_v01.png`;
 }
 
 function buildSampleDetail(pet) {

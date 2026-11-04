@@ -11,8 +11,8 @@
 
 ### 正式文件
 
-- `webp/ui_3d_toolbar_canvas_expand_v01.webp` — 1024×1024 Alpha WebP。
-- `runtime/ui_3d_toolbar_canvas_expand_96_v01.webp` — 96×96 Alpha WebP。
+- `webp/ui_3d_toolbar_canvas_expand_v01.png` — 1024×1024 Alpha WebP。
+- `runtime/ui_3d_toolbar_canvas_expand_96_v01.png` — 96×96 Alpha WebP。
 
 ### 页面接入
 

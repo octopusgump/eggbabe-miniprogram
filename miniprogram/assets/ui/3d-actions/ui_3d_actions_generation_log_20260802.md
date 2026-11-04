@@ -63,21 +63,21 @@
 
 ### 1024×1024 带 Alpha WebP
 
-1. `webp/ui_3d_early_learning_open_book_v01.webp`
-2. `webp/ui_3d_drawing_sketchbook_pencil_v01.webp`
-3. `webp/ui_3d_wishing_pool_coin_v01.webp`
-4. `webp/ui_3d_profile_egg_cameo_v03.webp`
-5. `webp/ui_3d_schedule_calendar_clock_v01.webp`
+1. `webp/ui_3d_early_learning_open_book_v01.png`
+2. `webp/ui_3d_drawing_sketchbook_pencil_v01.png`
+3. `webp/ui_3d_wishing_pool_coin_v01.png`
+4. `webp/ui_3d_profile_egg_cameo_v03.png`
+5. `webp/ui_3d_schedule_calendar_clock_v01.png`
 
 WebP 参数：质量 92，Alpha 质量 100。
 
 ### 256×256 运行时 WebP
 
-1. `runtime/ui_3d_early_learning_open_book_256_v01.webp`
-2. `runtime/ui_3d_drawing_sketchbook_pencil_256_v01.webp`
-3. `runtime/ui_3d_wishing_pool_coin_256_v01.webp`
-4. `runtime/ui_3d_profile_egg_cameo_256_v03.webp`
-5. `runtime/ui_3d_schedule_calendar_clock_256_v01.webp`
+1. `runtime/ui_3d_early_learning_open_book_256_v01.png`
+2. `runtime/ui_3d_drawing_sketchbook_pencil_256_v01.png`
+3. `runtime/ui_3d_wishing_pool_coin_256_v01.png`
+4. `runtime/ui_3d_profile_egg_cameo_256_v03.png`
+5. `runtime/ui_3d_schedule_calendar_clock_256_v01.png`
 
 运行时 WebP 参数：质量 90，Alpha 质量 100。
 
@@ -113,7 +113,7 @@ WebP 参数：质量 92，Alpha 质量 100。
 
 - `config/pre-hatch-assets.js` 中的 `wish`、`learn`、`draw` 已由旧 SVG 路径切换为本批次 256×256 WebP：许愿池、早教班和画画首页入口会直接使用新的透明 3D 图标。
 - `app.json` 与 `custom-tab-bar/index.js` 中“我的”图标已切换为 `runtime/ui_3d_profile_egg_cameo_96_v03.png`。
-- 时间表图标已注册为 `PRE_HATCH.interactionIcons.schedule`，路径为 `runtime/ui_3d_schedule_calendar_clock_256_v01.webp`。
+- 时间表图标已注册为 `PRE_HATCH.interactionIcons.schedule`，路径为 `runtime/ui_3d_schedule_calendar_clock_256_v01.png`。
 - 当前项目没有时间表页面、路由或既有入口；未将该图标错误绑定到“回忆”页面，也未新增无行为按钮。
 - 原有 SVG 和 `assets/tab/me*.png` 均保留，未覆盖或删除，可随时回退。
 
@@ -159,19 +159,19 @@ WebP 参数：质量 92，Alpha 质量 100。
 
 主功能 WebP（1024×1024，Alpha，质量 92／Alpha 100）：
 
-- `webp/ui_3d_early_learning_picture_book_v02.webp`
-- `webp/ui_3d_drawing_palette_v02.webp`
-- `webp/ui_3d_wishing_fountain_v02.webp`
-- `webp/ui_3d_profile_egg_cameo_v04.webp`
-- `webp/ui_3d_schedule_flip_calendar_v02.webp`
+- `webp/ui_3d_early_learning_picture_book_v02.png`
+- `webp/ui_3d_drawing_palette_v02.png`
+- `webp/ui_3d_wishing_fountain_v02.png`
+- `webp/ui_3d_profile_egg_cameo_v04.png`
+- `webp/ui_3d_schedule_flip_calendar_v02.png`
 
 主功能运行时 WebP（256×256，Alpha，质量 90／Alpha 100）：
 
-- `runtime/ui_3d_early_learning_picture_book_256_v02.webp`
-- `runtime/ui_3d_drawing_palette_256_v02.webp`
-- `runtime/ui_3d_wishing_fountain_256_v02.webp`
-- `runtime/ui_3d_profile_egg_cameo_256_v04.webp`
-- `runtime/ui_3d_schedule_flip_calendar_256_v02.webp`
+- `runtime/ui_3d_early_learning_picture_book_256_v02.png`
+- `runtime/ui_3d_drawing_palette_256_v02.png`
+- `runtime/ui_3d_wishing_fountain_256_v02.png`
+- `runtime/ui_3d_profile_egg_cameo_256_v04.png`
+- `runtime/ui_3d_schedule_flip_calendar_256_v02.png`
 
 “我的”Tab 运行时 PNG：
 
@@ -179,9 +179,9 @@ WebP 参数：质量 92，Alpha 质量 100。
 
 画板工具文件位于相邻目录 `../3d-toolbar/`：
 
-- `png/ui_3d_toolbar_brush_v02.png`、`webp/ui_3d_toolbar_brush_v02.webp`、`runtime/ui_3d_toolbar_brush_96_v02.png`、`runtime/ui_3d_toolbar_brush_96_v02.webp`
-- `png/ui_3d_toolbar_eraser_v02.png`、`webp/ui_3d_toolbar_eraser_v02.webp`、`runtime/ui_3d_toolbar_eraser_96_v02.png`、`runtime/ui_3d_toolbar_eraser_96_v02.webp`
-- `png/ui_3d_toolbar_sticker_v02.png`、`webp/ui_3d_toolbar_sticker_v02.webp`、`runtime/ui_3d_toolbar_sticker_96_v02.png`、`runtime/ui_3d_toolbar_sticker_96_v02.webp`
+- `png/ui_3d_toolbar_brush_v02.png`、`webp/ui_3d_toolbar_brush_v02.png`、`runtime/ui_3d_toolbar_brush_96_v02.png`、`runtime/ui_3d_toolbar_brush_96_v02.png`
+- `png/ui_3d_toolbar_eraser_v02.png`、`webp/ui_3d_toolbar_eraser_v02.png`、`runtime/ui_3d_toolbar_eraser_96_v02.png`、`runtime/ui_3d_toolbar_eraser_96_v02.png`
+- `png/ui_3d_toolbar_sticker_v02.png`、`webp/ui_3d_toolbar_sticker_v02.png`、`runtime/ui_3d_toolbar_sticker_96_v02.png`、`runtime/ui_3d_toolbar_sticker_96_v02.png`
 
 ### 接入与清理
 
@@ -245,13 +245,13 @@ WebP 参数：质量 92，Alpha 质量 100。
 
 1024×1024 Alpha WebP：
 
-- `webp/ui_3d_wishing_fountain_simple_v03.webp`
-- `webp/ui_3d_early_learning_picture_book_simple_v03.webp`
+- `webp/ui_3d_wishing_fountain_simple_v03.png`
+- `webp/ui_3d_early_learning_picture_book_simple_v03.png`
 
 256×256 运行时 Alpha WebP：
 
-- `runtime/ui_3d_wishing_fountain_simple_256_v03.webp`
-- `runtime/ui_3d_early_learning_picture_book_simple_256_v03.webp`
+- `runtime/ui_3d_wishing_fountain_simple_256_v03.png`
+- `runtime/ui_3d_early_learning_picture_book_simple_256_v03.png`
 
 ### 接入
 
@@ -273,11 +273,11 @@ WebP 参数：质量 92，Alpha 质量 100。
 
 ### 正式文件
 
-- `webp/ui_3d_wishing_fountain_two_tier_simple_v04.webp` — 1024×1024 Alpha WebP。
-- `runtime/ui_3d_wishing_fountain_two_tier_simple_256_v04.webp` — 256×256 Alpha WebP。
+- `webp/ui_3d_wishing_fountain_two_tier_simple_v04.png` — 1024×1024 Alpha WebP。
+- `runtime/ui_3d_wishing_fountain_two_tier_simple_256_v04.png` — 256×256 Alpha WebP。
 
 ### 接入
 
 - `config/pre-hatch-assets.js` 中 `wish` 已切换到 v04 运行时 WebP。
-- 早教班继续使用 `ui_3d_early_learning_picture_book_simple_256_v03.webp`。
+- 早教班继续使用 `ui_3d_early_learning_picture_book_simple_256_v03.png`。
 - 许愿池 v02、v03 文件均完整保留，没有覆盖或删除。

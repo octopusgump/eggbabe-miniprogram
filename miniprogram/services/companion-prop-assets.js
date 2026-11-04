@@ -10,9 +10,7 @@ function squareCardFileName(colorFile) {
   if (!name.includes('four_view')) return '';
   return name
     .replace(/_four_view_3d_v2\.png$/i, '_card_square_3d_transparent_v01.png')
-    .replace(/_four_view_3d\.png$/i, '_card_square_3d_transparent_v01.png')
-    .replace(/_four_view_3d_v2\.webp$/i, '_card_square_3d_transparent_v01.png')
-    .replace(/_four_view_3d\.webp$/i, '_card_square_3d_transparent_v01.png');
+    .replace(/_four_view_3d\.png$/i, '_card_square_3d_transparent_v01.png');
 }
 
 function coloredPaths(entry) {
@@ -20,19 +18,21 @@ function coloredPaths(entry) {
   const paths = [];
   if (id) paths.push(`${COLOR_ROOT}${id}.png`);
   if (entry && entry.colorFile) {
-    const pngFile = entry.colorFile.replace(/\.webp$/i, '.png');
+    const pngFile = entry.colorFile;
     if (pngFile !== `${id}.png`) paths.push(`${COLOR_ROOT}${pngFile}`);
-    const square = squareCardFileName(pngFile) || squareCardFileName(entry.colorFile);
+    const square = squareCardFileName(pngFile);
     if (square) {
       paths.push(`${COLOR_ROOT}${square}`);
       paths.push(`${LEGACY_PNG_ROOT}${square}`);
+      paths.push(`${LEGACY_COLOR_ROOT}${square}`);
     }
     if (pngFile.includes('card_square')) {
       paths.push(`${COLOR_ROOT}${pngFile}`);
       paths.push(`${LEGACY_PNG_ROOT}${pngFile}`);
+      paths.push(`${LEGACY_COLOR_ROOT}${pngFile}`);
     }
     paths.push(`${LEGACY_PNG_ROOT}${pngFile}`);
-    paths.push(`${LEGACY_COLOR_ROOT}${entry.colorFile}`);
+    paths.push(`${LEGACY_COLOR_ROOT}${pngFile}`);
   }
   return paths.filter((value, index, list) => value && list.indexOf(value) === index);
 }

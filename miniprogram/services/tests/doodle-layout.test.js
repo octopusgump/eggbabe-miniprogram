@@ -86,7 +86,6 @@ assert.match(propDoodleScript, /preloadPropEntryAssets/, '保留软预载辅助�
 assert.match(pageScript, /onPropEntrySketchLoad/, '简笔 decode 后再 reveal');
 assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须在再看一眼同位展示约 1.8 秒');
 assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT\s*=\s*'再画一会儿吧'/, '再看一眼 gate 须使用 COO 定稿短句');
-assert.match(propDoodleScript, /showPropLookGateHint\(PROP_LOOK_GATE_HINT/, '未达标点再看一眼须走 gate 短句');
 assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '画好了未达标仍用 v2 长句');
 assert.match(propDoodleScript, /dismissPropLookGateHint/, '切后台须能清掉 gate 覆盖态');
 assert.match(pageScript, /resumePropEntryReveal/, '切后台回来须能继续等待 reveal');

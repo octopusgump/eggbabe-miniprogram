@@ -89,8 +89,11 @@ const canvas = require('../../utils/canvas-2d');
     editor.propSession = propChallenge.createSession();
     editor.setData({ propDrawingLocked: false, propUnlockVisible: false, propPeekVisible: false });
     editor.onPropLookAgain();
-    assert.equal(editor.data.propLookGateHintText, '再画一会儿吧', '再看一眼未达标须显示 gate 短句');
-    assert.equal(editor.data.propPeekVisible, false, 'gate 短句期间不得打开看一看');
+    assert.equal(editor.data.propPeekVisible, true, '再看一眼有余额须直接打开简笔卡片，不受 v2 门槛拦截');
+    assert.equal(editor.data.propSessionLookRemaining, 2, '手动再看须扣减额度');
+    editor.onPropPeekCardTap();
+    await new Promise(resolve => setTimeout(resolve, propChallenge.PEEK_POP_OUT_MS + 40));
+    assert.equal(editor.data.propPeekVisible, false);
 
     editor.gateTracker = buildPassingTracker();
     editor.artLayer = {};

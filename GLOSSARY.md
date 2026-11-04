@@ -15,6 +15,7 @@ Canonical reading surface for IAA companion product rules: `docs/主PRD/02_蛋�
 | 道具简笔 | Line-art of the day’s prop (`keepsakes/turnarounds/line/{propId}.webp`) shown briefly on the egg during 看一看; not a separate preview window; unlock uses colored webp. |
 | 主题画画（废止） | Superseded draft (not on `main`): square canvas, full theme reference, 60%/30%/10% random tier stars decoupled from §5.2, tier celebration copy (“一起画完啦！” / “有份小礼物！” / “惊喜加倍！” as tier titles). Replaced by §5.2 + §7.5.1 + §6.4. See PRD §6.5. |
 | 看一看次数 | Manual “再看一眼” quota in one prop session (UI e.g. 「再看一眼 · n/3 次」). First auto glimpse ~5s does **not** consume it. Each glimpse ~5s on the egg; no strokes while line is visible. Unrelated to star payout count (each v2 pass is independent +10✦). |
+| 再看一眼 gate 反馈 | When v2 is not met and the user taps 「再看一眼」, the same chrome pill **replaces** its label with the v2 incomplete hint (dark capsule, ~1.8s); the pill may widen with the copy; no extra top row; canvas layout unchanged. |
 | 窗边茶会 | Album activity: confirm completion yields a photo; no base stars; never +1s 一起 X 天. |
 | 陪伴事件 | One shared experience built around a concrete small thing with the pet: something happens, the user participates, the pet responds, the user gets a result, and the moment may continue into later companionship or memories. |
 | 玩法闭环 | The five ordered segments of a companion event: 事情发生 → 用户参与 → 宠物回应 → 获得结果 → 后续延续. Each event SKU must define all five before the design is complete. |

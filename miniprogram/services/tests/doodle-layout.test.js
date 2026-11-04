@@ -30,6 +30,9 @@ assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'"), true, 'Canvas 准备期间须保持 waiting 阶段');
 assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
 assert.match(pageScript, /tryCompletePropEntryLoading[\s\S]*revealEditor/, '道具临摹须在 canvas 与简笔就绪后直接 reveal，无进页 loading');
+assert.match(pageScript, /schedulePropCanvasSetup[\s\S]*PROP_CANVAS_SETUP_DEFER_MS/, '道具临摹须等路由滑入后再 init Canvas');
+assert.match(pageScript, /revealEditor\(\)[\s\S]*if \(this\.companionPropMode\)[\s\S]*revealPatch\.pageTransitionPhase = 'visible'/, '道具临摹 reveal 须跳过二次 page--entering 淡入');
+assert.match(pageScript, /propEntryFlowDeferTimer[\s\S]*PROP_ENTRY_FLOW_DEFER_MS/, '道具临摹须延后自动看一看，避免与 reveal 同帧');
 assert.doesNotMatch(pageScript, /propEntryLoadingMinMs|schedulePropEntryLoadingFinish|propEntryLoadingVisible/, '不得再保留进页 Orbit loading 逻辑');
 assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再 reveal');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');

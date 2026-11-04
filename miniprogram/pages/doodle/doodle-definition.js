@@ -11,6 +11,10 @@ const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
+/** 等微信路由滑入结束后再初始化 Canvas，避免与系统转场抢主线程 */
+const PROP_CANVAS_SETUP_DEFER_MS = PAGE_TRANSITION_MS;
+/** 页完全稳定后再开自动「看一看」，避免与 chrome 同帧 setData */
+const PROP_ENTRY_FLOW_DEFER_MS = 200;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -162,8 +166,20 @@ const doodleDefinition = {
   },
 
   onReady() {
-    this.setupCanvases();
+    if (this.companionPropMode) this.schedulePropCanvasSetup();
+    else this.setupCanvases();
     this.cacheBrushSizeTrack();
+  },
+
+  schedulePropCanvasSetup() {
+    if (!this.companionPropMode || this.data.canvasReady || this.data.canvasPreparationError) return;
+    clearTimeout(this.propCanvasSetupTimer);
+    const delay = this.data.companionReducedMotion ? 0 : PROP_CANVAS_SETUP_DEFER_MS;
+    this.propCanvasSetupTimer = setTimeout(() => {
+      this.propCanvasSetupTimer = null;
+      if (!this.pageActive || this.pageDisposed) return;
+      this.setupCanvases();
+    }, delay);
   },
 
   onShow() {
@@ -174,6 +190,9 @@ const doodleDefinition = {
         this.propEntryRevealPending = false;
         this.revealEditor();
       } else if (!this.data.canvasReady && !this.data.canvasPreparationError) {
+        if (!this.propCanvasSetupTimer && !this.propEntryCanvasReady && !this.canvasSetupToken) {
+          this.schedulePropCanvasSetup();
+        }
         this.resumePropEntryReveal();
       }
     }
@@ -228,7 +247,27 @@ const doodleDefinition = {
         return;
       }
       const transitionDuration = this.pageTransitionDuration();
-      const revealPatch = { canvasReady: true, pageTransitionPhase: 'entering' };
+      const revealPatch = { canvasReady: true };
+      const finishReveal = () => {
+        if (this.triggerEvent) this.triggerEvent('ready');
+        if (this.companionDrawing) this.beginCompanionDrawing();
+      };
+      if (this.companionPropMode) {
+        revealPatch.pageTransitionPhase = 'visible';
+        this.setData(revealPatch, () => {
+          clearTimeout(this.propEntryFlowDeferTimer);
+          const deferMs = this.data.companionReducedMotion ? 0 : PROP_ENTRY_FLOW_DEFER_MS;
+          this.propEntryFlowDeferTimer = setTimeout(() => {
+            this.propEntryFlowDeferTimer = null;
+            if (this.pageActive && typeof this.beginPropEntryFlow === 'function') {
+              this.beginPropEntryFlow();
+            }
+          }, deferMs);
+          finishReveal();
+        });
+        return;
+      }
+      revealPatch.pageTransitionPhase = 'entering';
       this.setData(revealPatch, () => {
         clearTimeout(this.pageTransitionTimer);
         this.pageTransitionTimer = setTimeout(() => {
@@ -239,8 +278,7 @@ const doodleDefinition = {
             });
           }
         }, transitionDuration + 40);
-        if (this.triggerEvent) this.triggerEvent('ready');
-        if (this.companionDrawing) this.beginCompanionDrawing();
+        finishReveal();
       });
     };
     if (wx.nextTick) wx.nextTick(reveal);
@@ -995,6 +1033,10 @@ const doodleDefinition = {
     this.clearCompanionFeedback();
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.propEntrySketchFallbackTimer = null;
+    clearTimeout(this.propCanvasSetupTimer);
+    this.propCanvasSetupTimer = null;
+    clearTimeout(this.propEntryFlowDeferTimer);
+    this.propEntryFlowDeferTimer = null;
     this.setData({ companionStartAwardVisible: false });
     this.pageActive = false;
     this.clearCanvasNoticeTimers();
@@ -1013,6 +1055,10 @@ const doodleDefinition = {
     if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
     this.clearCompanionFeedback();
     clearTimeout(this.propEntrySketchFallbackTimer);
+    clearTimeout(this.propCanvasSetupTimer);
+    this.propCanvasSetupTimer = null;
+    clearTimeout(this.propEntryFlowDeferTimer);
+    this.propEntryFlowDeferTimer = null;
     this.pageActive = false;
     clearTimeout(this.pageTransitionTimer);
     this.pageTransitionTimer = null;

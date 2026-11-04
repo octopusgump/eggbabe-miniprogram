@@ -3,6 +3,7 @@ const config = require('../../config/v2');
 const stars = require('../../services/iaa-star-unlock-adapter');
 const pageModel = require('../../services/companion-activities-page');
 const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
+const propPaperRoute = require('../../services/doodle-prop-share-route');
 
 Page({
   data: {
@@ -19,7 +20,8 @@ Page({
     comingSoonModalTag: '下期',
     comingSoonModalLines: [],
     wishBursts: [],
-    wishPressKey: ''
+    wishPressKey: '',
+    propPaperShareActive: false
   },
 
   onLoad() {
@@ -53,7 +55,15 @@ Page({
     return pageModel.buildViewAsync().then(view => {
       if (!this) return;
       const { wishBursts, wishPressKey } = this.data;
-      this.setData({ ...view, wishBursts, wishPressKey });
+      this.setData({
+        ...view,
+        wishBursts,
+        wishPressKey,
+        propPaperShareActive: propPaperRoute.shouldMountActivityListShare({
+          renderer: this.renderer,
+          router: wx.router
+        })
+      });
       propEntryPrefetch.warmPropDoodleEntry({
         pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity'
       });
@@ -87,9 +97,11 @@ Page({
           this.showNotice(result.error && result.error.message || '暂时打不开，请稍后再试。', 'warning');
           return;
         }
-        wx.navigateTo({
+        propPaperRoute.navigateToActivityPropDoodle({
+          wx,
           url: route,
-          fail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
+          renderer: this.renderer,
+          onFail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
         });
       });
       return;

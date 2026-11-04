@@ -18,7 +18,22 @@
         <block wx:for="{{playable}}" wx:key="key">
           <view wx:if="{{index > 0}}" class="activities-card__divider"></view>
           <view class="activities-row {{item.dimmed ? 'activities-row--dimmed' : ''}}" data-key="{{item.key}}" data-section="play" bindtap="onTapRow" aria-role="button" aria-label="{{item.title}}">
-            <image class="activities-row__icon" src="{{item.icon}}" mode="aspectFill"></image>
+            <view wx:if="{{propPaperShareActive && item.key === 'drawing'}}" class="activities-row__lead">
+              <share-element
+                class="activities-prop-paper-share"
+                key="propPaperCard"
+                transition-on-gesture="{{true}}"
+                shuttle-on-push="to"
+                shuttle-on-pop="from"
+                rect-tween-type="materialRectArc"
+              >
+                <view class="activities-prop-paper-card" aria-hidden="true">
+                  <view class="activities-prop-paper-dash"></view>
+                </view>
+              </share-element>
+              <image class="activities-row__icon" src="{{item.icon}}" mode="aspectFill"></image>
+            </view>
+            <image wx:else class="activities-row__icon" src="{{item.icon}}" mode="aspectFill"></image>
             <text class="activities-row__title">{{item.title}}</text>
             <view class="activities-cta {{item.disabled ? 'activities-cta--disabled' : ''}} {{item.ctaWide ? 'activities-cta--wide' : ''}}">
               <block wx:if="{{item.ctaText}}">

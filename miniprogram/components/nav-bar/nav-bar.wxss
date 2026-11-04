@@ -19,7 +19,7 @@
 
 .nav-row {
   height: 112rpx; /* 与圆形导航按钮等高 */
-  display: flex;
+  display: flex; flex-direction: row;
   align-items: center;
   position: relative;
   /* 横屏与刘海机型下状态栏高度不覆盖左右安全区，这里单独让开。 */
@@ -31,7 +31,7 @@
 .nav-side {
   width: 112rpx;
   height: 112rpx;
-  display: flex;
+  display: flex; flex-direction: row;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -62,7 +62,7 @@
   flex: 1;
   min-width: 0;
   height: 112rpx;
-  display: flex;
+  display: flex; flex-direction: row;
   align-items: center;
   justify-content: center;
 }
@@ -84,7 +84,7 @@
   min-width: 0;
   max-width: 100%;
   min-height: 88rpx;
-  display: flex;
+  display: flex; flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 10rpx;

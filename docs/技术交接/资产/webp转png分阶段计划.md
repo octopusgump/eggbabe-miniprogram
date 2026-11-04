@@ -6,7 +6,7 @@
 |------|------|---------:|----------|------|
 | **1** | `miniprogram/assets/ui/**` + 左下信封/宠物 stare | ~39 WebP + 2 角色 | `life-scene`、`companion-pet-image` | 待合入（PR） |
 | **2** | `30-character` 破壳后头像/姿势、`cards/*` 收藏卡 | ~10 + 20 | `companion-pet-image`、demo、纪念册 | 待办 |
-| **3** | `keepsakes/turnarounds/line` + 道具 catalog 彩色 | ~41 + catalog | `companion-prop-*`、PRD 同步 | 待办 |
+| **3** | `keepsakes/turnarounds/line` + 道具 catalog 彩色 | ~41 + catalog | `companion-prop-*`、PRD 同步 | 已合入（PNG canonical 路径） |
 | **4** | 陪伴照片、fixtures、demo 明信片 | ~20+ | `companion-photo-catalog`、`fixtures/*` | 待办 |
 | **5** | `pre-hatch` 季节场景 + 蛋/窝垫 + 窗口天气 | ~200+ | `pre-hatch-assets.js` | 待办（包体风险最高） |
 | **6** | `post-hatch` 全景 + 动作全景 + archived | ~400+ | `post-hatch-assets.js` | 最后；需分包/体积评估 |

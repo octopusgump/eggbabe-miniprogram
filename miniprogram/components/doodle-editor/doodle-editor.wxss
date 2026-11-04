@@ -147,14 +147,10 @@
 .page--prop-tutorial-step-0 .prop-look-hint { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); }
 .preview--prop-tutorial-step-0 .prop-peek-anim { box-shadow: 0 0 0 6rpx #f7d774, 0 0 14rpx rgba(247, 215, 116, 0.6); border-radius: 28rpx; }
 .prop-finish-btn--tutorial-dim { opacity: 0.35; }
-.preview--prop-preparing .prop-paper-stage,
-.preview--prop-preparing .prop-peek-anchor,
-.preview--prop-preparing .prop-peek-caption,
-.preview--prop-preparing .prop-finish-btn { visibility: hidden; pointer-events: none; }
-.prop-prepare-screen { position: fixed; z-index: 10150; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; padding: env(safe-area-inset-top) 48rpx env(safe-area-inset-bottom); box-sizing: border-box; background: #F8F7EF; pointer-events: auto; }
-.prop-prepare-preload { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.prop-prepare-title { color: #002900; font-size: 30rpx; font-weight: 600; line-height: 1.35; }
-.prop-prepare-text { color: #566155; font-size: 28rpx; line-height: 1.4; }
+.prop-entry-loading { position: fixed; z-index: 10150; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; padding: env(safe-area-inset-top) 48rpx env(safe-area-inset-bottom); box-sizing: border-box; background: #F8F7EF; pointer-events: auto; }
+.prop-entry-loading__title { color: #002900; font-size: 30rpx; font-weight: 600; line-height: 1.35; }
+.prop-entry-loading__text { color: #566155; font-size: 28rpx; line-height: 1.4; }
+.prop-entry-sketch-preload { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .preview--prop-unlock .prop-paper-stage,
 .page--prop-unlock .prop-chrome-stack,
 .preview--prop-unlock .prop-sketch-layer,

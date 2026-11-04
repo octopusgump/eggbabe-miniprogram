@@ -1,16 +1,14 @@
 <view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
-  <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
-    <text class="prop-prepare-title">一起画</text>
+  <view
+    wx:if="{{companionPropMode && propEntryLoadingVisible}}"
+    class="prop-entry-loading"
+    catchtouchmove="true"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <text class="prop-entry-loading__title">一起画</text>
     <loading-orbit size="M" tone="light" reduced-motion="{{companionReducedMotion}}"></loading-orbit>
-    <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
-    <image
-      wx:if="{{propSketchSrc || propSketchPath}}"
-      class="prop-prepare-preload"
-      src="{{propSketchSrc || propSketchPath}}"
-      mode="aspectFit"
-      bindload="onPropPrepareSketchLoad"
-      binderror="onPropPrepareSketchError"
-    ></image>
+    <text class="prop-entry-loading__text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
   </view>
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
@@ -85,7 +83,15 @@
     </view>
   </view>
 
-  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{companionPropMode && !canvasReady ? 'preview--prop-preparing' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial-step-0' : ''}}" bindtap="onCanvasBackdropTap">
+  <view class="preview {{companionPropMode ? 'preview--prop' : ''}} {{propUnlockVisible ? 'preview--prop-unlock' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial' : ''}} {{propTutorialVisible ? 'preview--prop-tutorial-step-0' : ''}}" bindtap="onCanvasBackdropTap">
+    <image
+      wx:if="{{companionPropMode && (propSketchSrc || propSketchPath)}}"
+      class="prop-entry-sketch-preload"
+      src="{{propSketchSrc || propSketchPath}}"
+      mode="aspectFit"
+      bindload="onPropEntrySketchLoad"
+      binderror="onPropEntrySketchError"
+    ></image>
     <view wx:if="{{!companionPropMode}}" class="canvas-notice-anchor">
       <inline-notice
         text="{{canvasNoticeText}}"

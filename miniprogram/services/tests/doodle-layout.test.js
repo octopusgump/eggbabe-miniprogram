@@ -29,13 +29,13 @@ assert.equal(wxml.includes('class="doodle-back-cover"') && wxml.includes('catcht
 assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/, '导航 cover 必须通过 root-portal 抬到原生 Canvas 之上');
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'"), true, 'Canvas 准备期间须保持 waiting 阶段');
 assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
-assert.match(pageScript, /PROP_PREPARE_MIN_MS[\s\S]*finishPropCanvasPrepare/, '道具临摹须在简笔解码完成后至少展示一段准备 loading');
-assert.match(pageScript, /tryFinishPropCanvasPrepare/, 'Canvas 与简笔就绪后再 reveal');
+assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS[\s\S]*schedulePropEntryLoadingFinish/, '道具临摹须在 canvas 与简笔就绪后至少展示一段 Orbit loading');
+assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再关闭进页 loading');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
-assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示画纸加载层，不得整页透明');
-assert.match(wxml, /prop-prepare-screen[\s\S]*prop-prepare-title[\s\S]*正在准备画纸/, '道具临摹须在整页展示 loading 标题与文案');
-assert.match(wxml, /prop-prepare-preload/, 'loading 层须预载简笔，但不得阻断 Canvas 初始化');
-assert.doesNotMatch(wxml, /page--prop-preparing/, '准备期间不得 visibility:hidden 隐藏 preview，否则 Canvas 无法初始化');
+assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示进页 loading 层，不得整页透明');
+assert.match(wxml, /prop-entry-loading[\s\S]*prop-entry-loading__title[\s\S]*正在准备画纸/, '道具临摹须在整页展示 loading 标题与文案');
+assert.match(wxml, /prop-entry-sketch-preload/, '简笔预载须在 preview 内 decode，不得阻断 Canvas 初始化');
+assert.doesNotMatch(wxml, /prop-prepare-screen|prop-prepare-preload|preview--prop-preparing/, '不得再使用旧 prop-prepare 或 preview 隐藏方案');
 assert.doesNotMatch(wxss, /\.page--waiting\s*\{[^}]*pointer-events:\s*none/, 'Canvas 准备期间必须阻止点击穿透到首页');
 assert.match(wxss, /\.page--entering\s*\{[^}]*doodle-page-fade-in 320ms/, '画画页入场必须仅使用 320ms 淡入');
 assert.match(wxss, /\.page--exiting\s*\{[^}]*doodle-page-fade-out 320ms/, '画画页离场必须仅使用 320ms 淡出');
@@ -76,9 +76,9 @@ assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必�
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
-assert.match(wxss, /\.prop-prepare-screen\s*\{[^}]*z-index:\s*10150;/, 'loading 须盖住 cover-view 返回层');
+assert.match(wxss, /\.prop-entry-loading\s*\{[^}]*z-index:\s*10150;/, 'loading 须盖住 cover-view 返回层');
 assert.match(propDoodleScript, /preloadPropEntryAssets/, '保留软预载辅助，但不得 hard-fail 阻断进入');
-assert.match(pageScript, /onPropPrepareSketchLoad/, '简笔须在 loading 层 decode 后再 finish prepare');
+assert.match(pageScript, /onPropEntrySketchLoad/, '简笔 decode 后再完成进页 loading');
 assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须覆盖再看一眼约 1.8 秒');
 assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '未达标须用再看一眼浮层提示，不得顶栏撑开画板');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
@@ -170,9 +170,9 @@ assert.ok(
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
 assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*inset:\s*0;/, 'gate 提示须与再看一眼同 footprint 覆盖展示');
 assert.match(wxml, /layout="pill-fill"[\s\S]*propLookGateHintText/, 'gate 须用 pill-fill 深色提示铺满按钮区域');
-assert.match(wxml, /<loading-orbit size="M" tone="light"/, '道具临摹准备页须使用标准 Loading / Orbit');
+assert.match(wxml, /propEntryLoadingVisible[\s\S]*loading-orbit size="M" tone="light"/, '进页 loading 须绑定 propEntryLoadingVisible 与标准 Orbit');
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
-assert.match(pageScript, /PROP_PREPARE_MIN_MS\s*=\s*1000/, '准备 loading 最短展示须约 1 秒以便看见 Orbit');
+assert.match(pageScript, /PROP_ENTRY_LOADING_MIN_MS\s*=\s*1000/, '进页 Orbit 最短展示须约 1 秒');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上'

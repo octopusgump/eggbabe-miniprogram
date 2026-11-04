@@ -11,8 +11,8 @@ const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
-/** 道具临摹：至少展示「正在准备画纸」时长，避免解码过快导致用户看不到 loading */
-const PROP_PREPARE_MIN_MS = 1000;
+/** 道具临摹进页：Orbit 最短可见时长（canvas + 简笔就绪后仍须满足） */
+const PROP_ENTRY_LOADING_MIN_MS = 1000;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -100,6 +100,7 @@ const doodleDefinition = {
     exitConfirmSaving: false,
     exitConfirmErrorText: '',
     canvasReady: false,
+    propEntryLoadingVisible: false,
     canvasPreparationError: false,
     canvasScale: MIN_CANVAS_SCALE,
     canvasNoticeText: '',
@@ -116,8 +117,14 @@ const doodleDefinition = {
     this.companionPropMode = this.companionDrawing;
     this.setData({
       companionDrawing: this.companionDrawing,
-      companionPropMode: this.companionPropMode
+      companionPropMode: this.companionPropMode,
+      propEntryLoadingVisible: this.companionPropMode
     });
+    if (this.companionPropMode) {
+      this.propEntryLoadingStartedAt = Date.now();
+      this.propEntrySketchReady = false;
+      this.propEntryCanvasReady = false;
+    }
     this.pageActive = true;
     this.colorHintSeen = hasSeenColorHint();
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -185,7 +192,9 @@ const doodleDefinition = {
     const reveal = () => {
       if (!this.pageActive) return;
       const transitionDuration = this.pageTransitionDuration();
-      this.setData({ canvasReady: true, pageTransitionPhase: 'entering' }, () => {
+      const revealPatch = { canvasReady: true, pageTransitionPhase: 'entering' };
+      if (this.companionPropMode) revealPatch.propEntryLoadingVisible = false;
+      this.setData(revealPatch, () => {
         clearTimeout(this.pageTransitionTimer);
         this.pageTransitionTimer = setTimeout(() => {
           this.pageTransitionTimer = null;
@@ -218,43 +227,48 @@ const doodleDefinition = {
 
   failCanvasPreparation() {
     if (!this.pageActive || !this.companionDrawing) return;
-    clearTimeout(this.propPrepareSketchFallbackTimer);
-    this.setData({ canvasPreparationError: true, canvasReady: false, pageTransitionPhase: 'visible' });
+    clearTimeout(this.propEntrySketchFallbackTimer);
+    clearTimeout(this.propEntryLoadingFinishTimer);
+    this.setData({
+      canvasPreparationError: true,
+      canvasReady: false,
+      propEntryLoadingVisible: false,
+      pageTransitionPhase: 'visible'
+    });
     this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
   },
 
-  tryFinishPropCanvasPrepare(setupToken) {
+  tryCompletePropEntryLoading(setupToken) {
     if (setupToken !== this.canvasSetupToken || !this.companionPropMode || this.data.canvasReady) return;
-    if (!this.baseLayer || !this.artLayer) return;
-    if (!this.propPrepareSketchReady) {
-      this.propPrepareRevealPending = setupToken;
+    if (!this.propEntryCanvasReady || !this.propEntrySketchReady) {
+      this.propEntryLoadingPendingToken = setupToken;
       return;
     }
-    this.propPrepareRevealPending = null;
-    this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
+    this.propEntryLoadingPendingToken = null;
+    this.schedulePropEntryLoadingFinish(setupToken, () => this.revealEditor());
   },
 
-  onPropPrepareSketchLoad() {
+  onPropEntrySketchLoad() {
     if (!this.companionPropMode) return;
-    this.propPrepareSketchReady = true;
-    this.tryFinishPropCanvasPrepare(this.propPrepareRevealPending || this.canvasSetupToken);
+    this.propEntrySketchReady = true;
+    this.tryCompletePropEntryLoading(this.propEntryLoadingPendingToken || this.canvasSetupToken);
   },
 
-  onPropPrepareSketchError() {
+  onPropEntrySketchError() {
     if (!this.companionPropMode) return;
-    this.propPrepareSketchReady = true;
-    this.tryFinishPropCanvasPrepare(this.propPrepareRevealPending || this.canvasSetupToken);
+    this.propEntrySketchReady = true;
+    this.tryCompletePropEntryLoading(this.propEntryLoadingPendingToken || this.canvasSetupToken);
   },
 
-  finishPropCanvasPrepare(setupToken, reveal) {
+  schedulePropEntryLoadingFinish(setupToken, reveal) {
     if (setupToken !== this.canvasSetupToken || typeof reveal !== 'function') return;
-    clearTimeout(this.propPrepareSketchFallbackTimer);
-    const started = this.propPrepareStartedAt || Date.now();
-    const waitMs = Math.max(0, PROP_PREPARE_MIN_MS - (Date.now() - started));
-    clearTimeout(this.propPrepareRevealTimer);
-    this.propPrepareRevealTimer = setTimeout(() => {
-      this.propPrepareRevealTimer = null;
-      if (setupToken !== this.canvasSetupToken) return;
+    clearTimeout(this.propEntrySketchFallbackTimer);
+    const started = this.propEntryLoadingStartedAt || Date.now();
+    const waitMs = Math.max(0, PROP_ENTRY_LOADING_MIN_MS - (Date.now() - started));
+    clearTimeout(this.propEntryLoadingFinishTimer);
+    this.propEntryLoadingFinishTimer = setTimeout(() => {
+      this.propEntryLoadingFinishTimer = null;
+      if (setupToken !== this.canvasSetupToken || !this.data.propEntryLoadingVisible) return;
       reveal();
     }, waitMs);
   },
@@ -262,7 +276,6 @@ const doodleDefinition = {
   setupCanvases() {
     const setupToken = (this.canvasSetupToken || 0) + 1;
     this.canvasSetupToken = setupToken;
-    if (this.companionPropMode) this.propPrepareStartedAt = Date.now();
     Promise.all([
       canvas2d.createLayer(this, '#eggBaseCanvas'),
       canvas2d.createLayer(this, '#eggArtCanvas')
@@ -272,16 +285,17 @@ const doodleDefinition = {
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
-        this.propPrepareSketchReady = !(this.data.propSketchSrc || this.data.propSketchPath);
-        clearTimeout(this.propPrepareSketchFallbackTimer);
-        this.propPrepareSketchFallbackTimer = setTimeout(() => {
-          if (!this.propPrepareSketchReady && this.companionPropMode) {
-            this.propPrepareSketchReady = true;
-            this.tryFinishPropCanvasPrepare(this.canvasSetupToken);
+        this.propEntrySketchReady = !(this.data.propSketchSrc || this.data.propSketchPath);
+        clearTimeout(this.propEntrySketchFallbackTimer);
+        this.propEntrySketchFallbackTimer = setTimeout(() => {
+          if (!this.propEntrySketchReady && this.companionPropMode) {
+            this.propEntrySketchReady = true;
+            this.tryCompletePropEntryLoading(this.canvasSetupToken);
           }
         }, 3200);
         this.renderAll();
-        this.tryFinishPropCanvasPrepare(setupToken);
+        this.propEntryCanvasReady = true;
+        this.tryCompletePropEntryLoading(setupToken);
         return;
       }
       return Promise.all([
@@ -950,6 +964,8 @@ const doodleDefinition = {
   onHide() {
     if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
     this.clearCompanionFeedback();
+    clearTimeout(this.propEntryLoadingFinishTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
     this.setData({ companionStartAwardVisible: false });
     this.pageActive = false;
     this.clearCanvasNoticeTimers();
@@ -967,6 +983,8 @@ const doodleDefinition = {
     if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }
     if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
     this.clearCompanionFeedback();
+    clearTimeout(this.propEntryLoadingFinishTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
     this.pageActive = false;
     clearTimeout(this.pageTransitionTimer);
     this.pageTransitionTimer = null;

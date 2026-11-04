@@ -479,7 +479,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
-    clearTimeout(this.propPrepareSketchFallbackTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
     this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
@@ -489,7 +489,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
-    clearTimeout(this.propPrepareSketchFallbackTimer);
+    clearTimeout(this.propEntrySketchFallbackTimer);
     this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);

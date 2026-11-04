@@ -154,9 +154,6 @@
 .page--reduced-motion .prop-peek-anim--leave { opacity: 1; transform: none; }
 .page--reduced-motion .prop-look-hint { transition: none; }
 .prop-finish-btn--tutorial-dim { opacity: 0.35; }
-.prop-entry-loading { position: fixed; z-index: 10150; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rpx; padding: env(safe-area-inset-top) 48rpx env(safe-area-inset-bottom); box-sizing: border-box; background: #F8F7EF; pointer-events: auto; }
-.prop-entry-loading__title { color: #002900; font-size: 30rpx; font-weight: 600; line-height: 1.35; }
-.prop-entry-loading__text { color: #566155; font-size: 28rpx; line-height: 1.4; }
 .prop-entry-sketch-preload { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .preview--prop-unlock .prop-paper-stage,
 .page--prop-unlock .prop-chrome-stack,

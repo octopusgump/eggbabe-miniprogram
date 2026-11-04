@@ -1,15 +1,4 @@
 <view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{companionReducedMotion ? 'page--reduced-motion' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
-  <view
-    wx:if="{{companionPropMode && propEntryLoadingVisible}}"
-    class="prop-entry-loading"
-    catchtouchmove="true"
-    aria-live="polite"
-    aria-busy="true"
-  >
-    <text class="prop-entry-loading__title">一起画</text>
-    <loading-orbit wx:if="{{!canvasPreparationError}}" size="M" tone="light" reduced-motion="{{companionReducedMotion}}"></loading-orbit>
-    <text class="prop-entry-loading__text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
-  </view>
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>

@@ -11,27 +11,10 @@ const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
-/** 道具临摹进页：Orbit 最短可见时长（canvas + 简笔就绪后仍须满足） */
-const PROP_ENTRY_LOADING_MIN_MS_RETURNING = 400;
 /** 与 prop-look-row + pill 同高，教程 scrim 从该高度以下开始，不盖住「再看一眼」 */
 const PROP_LOOK_CHROME_BLOCK_RPX = 20 + 12 + Math.ceil(26 * 1.2 + 28) + 12;
 /** cover-view 教程聚光外圈（6rpx 环 + 余量），计入 scrim top */
 const PROP_TUTORIAL_SPOTLIGHT_BUFFER_RPX = 24;
-
-function propEntryLoadingMinMs() {
-  try {
-    const propChallenge = require('../../services/companion-prop-challenge');
-    return propChallenge.hasSeenTutorial()
-      ? PROP_ENTRY_LOADING_MIN_MS_RETURNING
-      : 0;
-  } catch (error) {
-    return PROP_ENTRY_LOADING_MIN_MS_RETURNING;
-  }
-}
-
-function shouldShowPropEntryLoading() {
-  return propEntryLoadingMinMs() > 0;
-}
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -130,7 +113,6 @@ const doodleDefinition = {
     exitConfirmSaving: false,
     exitConfirmErrorText: '',
     canvasReady: false,
-    propEntryLoadingVisible: false,
     canvasPreparationError: false,
     canvasScale: MIN_CANVAS_SCALE,
     canvasNoticeText: '',
@@ -148,11 +130,9 @@ const doodleDefinition = {
     this.companionPropMode = this.companionDrawing;
     this.setData({
       companionDrawing: this.companionDrawing,
-      companionPropMode: this.companionPropMode,
-      propEntryLoadingVisible: this.companionPropMode && shouldShowPropEntryLoading()
+      companionPropMode: this.companionPropMode
     });
     if (this.companionPropMode) {
-      this.propEntryLoadingStartedAt = Date.now();
       this.propEntrySketchReady = false;
       this.propEntryCanvasReady = false;
     }
@@ -201,19 +181,14 @@ const doodleDefinition = {
       if (this.propEntryRevealPending && !this.data.canvasReady) {
         this.propEntryRevealPending = false;
         this.revealEditor();
-      } else if (
-        (this.propEntryLoadingResumeOnShow || this.data.propEntryLoadingVisible)
-        && !this.data.canvasReady
-        && !this.data.canvasPreparationError
-      ) {
-        this.propEntryLoadingResumeOnShow = false;
-        this.resumePropEntryLoading();
+      } else if (!this.data.canvasReady && !this.data.canvasPreparationError) {
+        this.resumePropEntryReveal();
       }
     }
   },
 
-  resumePropEntryLoading() {
-    if (!this.companionPropMode || this.data.canvasReady || !this.data.propEntryLoadingVisible) return;
+  resumePropEntryReveal() {
+    if (!this.companionPropMode || this.data.canvasReady) return;
     const token = this.canvasSetupToken;
     if (!token) return;
     if (!this.propEntrySketchReady && (this.data.propSketchSrc || this.data.propSketchPath)) {
@@ -224,10 +199,6 @@ const doodleDefinition = {
           this.tryCompletePropEntryLoading(this.canvasSetupToken);
         }
       }, 3200);
-    }
-    if (this.propEntryCanvasReady && this.propEntrySketchReady) {
-      this.tryCompletePropEntryLoading(token);
-      return;
     }
     this.tryCompletePropEntryLoading(this.propEntryLoadingPendingToken || token);
   },
@@ -259,7 +230,7 @@ const doodleDefinition = {
   revealEditor() {
     const reveal = () => {
       if (!this.pageActive) {
-        if (this.companionPropMode && this.data.propEntryLoadingVisible && !this.data.canvasReady) {
+        if (this.companionPropMode && !this.data.canvasReady) {
           this.propEntryRevealPending = true;
         }
         return;
@@ -270,7 +241,6 @@ const doodleDefinition = {
         canvasReady: true,
         pageTransitionPhase: tutorialAlreadyUp ? 'visible' : 'entering'
       };
-      if (this.companionPropMode) revealPatch.propEntryLoadingVisible = false;
       this.setData(revealPatch, () => {
         clearTimeout(this.pageTransitionTimer);
         const finishReveal = () => {
@@ -312,13 +282,12 @@ const doodleDefinition = {
   failCanvasPreparation() {
     if (!this.pageActive || !this.companionDrawing) return;
     clearTimeout(this.propEntrySketchFallbackTimer);
-    clearTimeout(this.propEntryLoadingFinishTimer);
     this.setData({
       canvasPreparationError: true,
-      propEntryLoadingVisible: true,
       canvasReady: false,
       pageTransitionPhase: 'visible'
     });
+    this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
   },
 
   tryCompletePropEntryLoading(setupToken) {
@@ -328,7 +297,11 @@ const doodleDefinition = {
       return;
     }
     this.propEntryLoadingPendingToken = null;
-    this.schedulePropEntryLoadingFinish(setupToken, () => this.revealEditor());
+    if (!this.pageActive) {
+      this.propEntryRevealPending = true;
+      return;
+    }
+    this.revealEditor();
   },
 
   onPropEntrySketchLoad() {
@@ -341,27 +314,6 @@ const doodleDefinition = {
     if (!this.companionPropMode) return;
     this.propEntrySketchReady = true;
     this.tryCompletePropEntryLoading(this.propEntryLoadingPendingToken || this.canvasSetupToken);
-  },
-
-  schedulePropEntryLoadingFinish(setupToken, reveal) {
-    if (setupToken !== this.canvasSetupToken || typeof reveal !== 'function') return;
-    clearTimeout(this.propEntrySketchFallbackTimer);
-    if (!this.data.propEntryLoadingVisible) {
-      reveal();
-      return;
-    }
-    const started = this.propEntryLoadingStartedAt || Date.now();
-    const waitMs = Math.max(0, propEntryLoadingMinMs() - (Date.now() - started));
-    clearTimeout(this.propEntryLoadingFinishTimer);
-    this.propEntryLoadingFinishTimer = setTimeout(() => {
-      this.propEntryLoadingFinishTimer = null;
-      if (setupToken !== this.canvasSetupToken || !this.data.propEntryLoadingVisible) return;
-      if (!this.pageActive) {
-        this.propEntryRevealPending = true;
-        return;
-      }
-      reveal();
-    }, waitMs);
   },
 
   initPropEntrySketchReadyState() {
@@ -1060,11 +1012,6 @@ const doodleDefinition = {
   onHide() {
     if (this.companionDrawing && !this.savedForReturn) { if (this.currentStroke) this.finishStroke(); companionAdapter.setCompanionDraft(this.shellArt); }
     this.clearCompanionFeedback();
-    if (this.companionPropMode && this.data.propEntryLoadingVisible && !this.data.canvasReady && !this.data.canvasPreparationError) {
-      this.propEntryLoadingResumeOnShow = true;
-    }
-    clearTimeout(this.propEntryLoadingFinishTimer);
-    this.propEntryLoadingFinishTimer = null;
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.propEntrySketchFallbackTimer = null;
     this.setData({ companionStartAwardVisible: false });
@@ -1084,7 +1031,6 @@ const doodleDefinition = {
     if (this.pageExitResolve) { this.pageExitResolve(); this.pageExitResolve = null; }
     if (this.companionDrawing && !this.savedForReturn) companionAdapter.setCompanionDraft(this.shellArt);
     this.clearCompanionFeedback();
-    clearTimeout(this.propEntryLoadingFinishTimer);
     clearTimeout(this.propEntrySketchFallbackTimer);
     this.pageActive = false;
     clearTimeout(this.pageTransitionTimer);

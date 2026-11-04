@@ -35,9 +35,6 @@
 .prop-canvas-notice-anchor { position: absolute; z-index: 36; top: 20rpx; left: 48rpx; right: 48rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .prop-chrome-stack { position: fixed; z-index: 55; left: 0; right: 0; flex: none; box-sizing: border-box; background: transparent; overflow: visible; pointer-events: none; }
 .prop-chrome-stack--above-scrim { z-index: 145; }
-.prop-look-cover-portal { position: fixed; left: 0; right: 0; z-index: 10100; display: flex; justify-content: center; padding: 20rpx 24rpx 12rpx; box-sizing: border-box; pointer-events: none; }
-.prop-look-hint-cover { pointer-events: auto; padding: 12rpx 26rpx; border-radius: 999rpx; border: 6rpx solid #f7d774; background-color: rgba(255, 255, 255, 0.92); color: #35483C; font-size: 26rpx; font-weight: 500; line-height: 31rpx; text-align: center; box-sizing: border-box; }
-.prop-look-hint-cover--empty { opacity: 0.55; }
 .prop-chrome-stack-spacer { flex: 0 0 auto; height: 0; padding: 20rpx 24rpx 12rpx; box-sizing: content-box; min-height: calc(26rpx * 1.2 + 28rpx); pointer-events: none; }
 .prop-look-row { display: flex; justify-content: center; padding: 20rpx 24rpx 12rpx; pointer-events: none; overflow: visible; }
 .prop-look-chrome { position: relative; flex: 0 0 auto; display: flex; justify-content: center; pointer-events: none; overflow: visible; }
@@ -139,21 +136,10 @@
 .companion-drawing-award{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;color:#355A43}.companion-drawing-award text{font-size:40rpx;margin-top:-8rpx}
 
 .preview--prop { background: #F8F7EF; overflow: visible; --prop-layout-nudge: 10rpx; --prop-paper-fill: #F7EEE5; --prop-finish-btn-bottom: 210rpx; --prop-finish-btn-height: 96rpx; --canvas-action-rail-height: 224rpx; }
-.preview--prop-tutorial { overflow: visible; isolation: auto; }
-.preview--prop-tutorial .content,
-.preview--prop-tutorial .canvas-action-rail,
-.preview--prop-tutorial .prop-finish-btn { pointer-events: none; }
-.preview--prop-tutorial-step-0 .content,
-.preview--prop-tutorial-step-0 .canvas-action-rail,
-.preview--prop-tutorial-step-0 .prop-finish-btn { opacity: 0.35; }
-.page--prop-tutorial-step-0 .prop-chrome-stack .prop-look-chrome,
-.preview--prop-tutorial-step-0 .prop-peek-anchor--tutorial { opacity: 1; }
-.preview--prop-tutorial-step-0 .prop-peek-anim { border: 6rpx solid #f7d774; border-radius: 28rpx; box-sizing: border-box; }
 .page--reduced-motion .prop-peek-anim { transition: none; opacity: 1; transform: none; }
 .page--reduced-motion .prop-peek-anim--shown,
 .page--reduced-motion .prop-peek-anim--leave { opacity: 1; transform: none; }
 .page--reduced-motion .prop-look-hint { transition: none; }
-.prop-finish-btn--tutorial-dim { opacity: 0.35; }
 .prop-entry-sketch-preload { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .preview--prop-unlock .prop-paper-stage,
 .page--prop-unlock .prop-chrome-stack,
@@ -182,11 +168,9 @@
 .egg-canvas-stack--prop .egg-canvas--base { opacity: 0; }
 
 .prop-sketch-layer { position: absolute; z-index: 5; width: 52vw; height: 52vw; max-width: 420rpx; max-height: 420rpx; top: calc(50% - 168rpx + var(--prop-layout-nudge, 0)); left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; }
-/* 简笔只保留这一张 image：教程与看一看只切换 class，避免「开始画」后再解码一次。 */
+/* 简笔只保留这一张 image：看一看只切换 class，避免再次解码。 */
 .prop-peek-anchor { position: absolute; z-index: 36; left: 0; right: 0; top: calc(50% - 168rpx + var(--prop-layout-nudge, 0)); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; pointer-events: none; visibility: hidden; transform: translateY(-50%); }
 .prop-peek-anchor--live { visibility: visible; pointer-events: auto; }
-.prop-peek-anchor--tutorial { position: fixed; z-index: 135; top: calc(env(safe-area-inset-top) + 120rpx); right: 0; bottom: 440rpx; left: 0; height: auto; visibility: visible; pointer-events: none; justify-content: center; transform: none; }
-.prop-peek-anchor--tutorial .prop-peek-anim { opacity: 1; transform: scale(1); }
 .prop-peek-anim { width: 52vw; max-width: 420rpx; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: scale(0.96); transform-origin: center center; transition: opacity 280ms ease-out, transform 280ms ease-out; }
 .prop-peek-anim--shown { opacity: 1; transform: scale(1); }
 .prop-peek-anim--leave { opacity: 0; transform: scale(0.96); }
@@ -221,18 +205,3 @@
   65% { transform: translate3d(0, 4rpx, 0) rotate(-4deg) scale(0.97); }
   100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
 }
-
-.prop-tutorial-scrim { position: fixed; z-index: 130; left: 0; right: 0; bottom: 0; background: rgba(22, 36, 26, 0.8); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; padding: 0 24rpx calc(36rpx + env(safe-area-inset-bottom)); box-sizing: border-box; }
-.prop-tutorial-scrim--step-0 { padding-bottom: calc(110rpx + env(safe-area-inset-bottom)); }
-.prop-tutorial-bg-sketch { flex: 1 1 auto; min-height: 0; pointer-events: none; }
-.prop-tutorial-card { width: 100%; flex: 0 0 auto; display: flex; flex-direction: column; gap: 0; padding: 40rpx 44rpx 36rpx; border-radius: 48rpx; background: #FFFDF6; box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15); box-sizing: border-box; }
-.prop-tutorial-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; width: 100%; }
-.prop-tutorial-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; color: #002900; font-size: 38rpx; font-weight: 700; line-height: 1.35; }
-.prop-tutorial-dots { flex: 0 0 auto; display: flex; align-items: center; gap: 8rpx; }
-.prop-tutorial-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: rgba(0, 41, 0, 0.2); }
-.prop-tutorial-dot--active { width: 36rpx; background: #002900; }
-.prop-tutorial-body { margin-top: 36rpx; color: #3E4C42; font-size: 28rpx; line-height: 44rpx; white-space: pre-line; }
-.prop-tutorial-foot { display: flex; align-items: center; justify-content: flex-end; width: 100%; min-height: 76rpx; margin-top: 40rpx; }
-.prop-tutorial-skip { margin-right: auto; color: #7A877D; font-size: 28rpx; line-height: 1.4; padding: 8rpx 0; flex-shrink: 0; }
-.prop-tutorial-next { display: inline-block; flex: 0 0 auto; width: auto; max-width: none; min-width: 194rpx; height: 76rpx; margin: 0 0 0 auto; padding: 0 52rpx; border: 0; border-radius: 999rpx; background: #002900; color: #FFF; font-size: 30rpx; font-weight: 600; line-height: 76rpx; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; text-align: center; }
-.prop-tutorial-next::after { border: none; }

@@ -4,7 +4,6 @@ const propChallenge = require('./companion-prop-challenge');
 const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
 
-const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const PROP_LOOK_GATE_HINT_MS = 1800;
 const PROP_LOOK_GATE_HINT_FADE_MS = 180;
@@ -77,14 +76,6 @@ function attach(definition) {
         navSlotWidthPx = Math.round(Number(menu.left));
       }
     } catch (error) {}
-    const tutorialPatch = !propChallenge.hasSeenTutorial()
-      ? {
-        propTutorialVisible: true,
-        propTutorialStep: 0,
-        propGuideSketchVisible: true,
-        propDrawingLocked: true
-      }
-      : {};
     this.setData({
       companionPropMode: this.companionPropMode,
       navSlotWidthPx,
@@ -99,17 +90,12 @@ function attach(definition) {
       propPeekVisible: false,
       propPeekAnimating: false,
       propPeekAnimPhase: 'enter',
-      propGuideSketchVisible: false,
       propDrawingLocked: true,
       propUnlockVisible: false,
-      propTutorialVisible: false,
-      propTutorialStep: 0,
-      propTutorialSteps: propChallenge.TUTORIAL_STEPS,
       propFinishVisible: false,
       propLookGateHintText: '',
       propLookGateHintTone: 'info',
-      propLookGateHintVisible: false,
-      ...tutorialPatch
+      propLookGateHintVisible: false
     });
   };
 
@@ -204,15 +190,6 @@ function attach(definition) {
   definition.beginPropEntryFlow = function beginPropEntryFlow() {
     if (!this.companionPropMode || this.propEntryFlowStarted) return;
     this.propEntryFlowStarted = true;
-    if (!propChallenge.hasSeenTutorial()) {
-      this.setData({
-        propTutorialVisible: true,
-        propTutorialStep: 0,
-        propDrawingLocked: true,
-        propGuideSketchVisible: true
-      });
-      return;
-    }
     this.scheduleInitialPropPeek();
   };
 
@@ -271,7 +248,6 @@ function attach(definition) {
 
   definition.onPropPeekCardTap = function onPropPeekCardTap() {
     if (!this.data.propPeekVisible || this.data.propPeekAnimating) return;
-    if (this.data.propTutorialVisible) return;
     this.dismissPropPeek();
   };
 
@@ -312,7 +288,7 @@ function attach(definition) {
   };
 
   definition.onPropLookAgain = function onPropLookAgain() {
-    if (this.data.propDrawingLocked || this.data.propUnlockVisible || this.data.propTutorialVisible) return;
+    if (this.data.propDrawingLocked || this.data.propUnlockVisible) return;
     if (this.propSession.lookRemaining <= 0) return;
     if (this.currentStroke) this.finishStroke();
     const gateResult = drawingGate.evaluate(this.gateTracker);
@@ -321,27 +297,6 @@ function attach(definition) {
       return;
     }
     this.startPropPeek({ countsAgainstManual: true });
-  };
-
-  definition.onPropTutorialSkip = function onPropTutorialSkip() {
-    propChallenge.markTutorialSeen();
-    this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-    this.scheduleInitialPropPeek();
-  };
-
-  definition.onPropTutorialNext = function onPropTutorialNext() {
-    const step = Number(this.data.propTutorialStep) || 0;
-    if (step >= propChallenge.TUTORIAL_STEPS.length - 1) {
-      propChallenge.markTutorialSeen();
-      this.setData({ propTutorialVisible: false, propGuideSketchVisible: false });
-      this.scheduleInitialPropPeek();
-      return;
-    }
-    const nextStep = step + 1;
-    this.setData({
-      propTutorialStep: nextStep,
-      propGuideSketchVisible: nextStep === 0
-    });
   };
 
   definition.onPropUnlockOk = async function onPropUnlockOk() {
@@ -368,7 +323,7 @@ function attach(definition) {
   };
 
   definition.onCanvasTouchStart = function onCanvasTouchStart(event) {
-    if (this.companionPropMode && (this.data.propDrawingLocked || this.data.propUnlockVisible || this.data.propTutorialVisible)) return;
+    if (this.companionPropMode && (this.data.propDrawingLocked || this.data.propUnlockVisible)) return;
     if (originalTouchStart) originalTouchStart.call(this, event);
     if (!this.companionPropMode || !this.gateTracker) return;
     const tool = this.data.activeTool;
@@ -449,7 +404,7 @@ function attach(definition) {
       return originalComplete ? originalComplete.call(this) : { ok: false };
     }
     if (this.companionCompleting || this.pageDisposed || this.pageActive === false) return { ok: false };
-    if (this.data.propDrawingLocked || this.data.propTutorialVisible) return { ok: false };
+    if (this.data.propDrawingLocked) return { ok: false };
     const gate = drawingGate.evaluate(this.gateTracker);
     if (!gate.ok) {
       this.showPropLookGateHint(gate.hint, 'info');
@@ -517,4 +472,4 @@ function attach(definition) {
   };
 }
 
-module.exports = { attach, TUTORIAL_FINAL_LABEL, PROP_LOOK_GATE_HINT_MS, PROP_LOOK_GATE_HINT };
+module.exports = { attach, PROP_LOOK_GATE_HINT_MS, PROP_LOOK_GATE_HINT };

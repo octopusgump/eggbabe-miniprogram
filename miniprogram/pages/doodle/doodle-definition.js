@@ -11,10 +11,6 @@ const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 
 const PAGE_TRANSITION_MS = 320;
-/** 与 prop-look-row + pill 同高，教程 scrim 从该高度以下开始，不盖住「再看一眼」 */
-const PROP_LOOK_CHROME_BLOCK_RPX = 20 + 12 + Math.ceil(26 * 1.2 + 28) + 12;
-/** cover-view 教程聚光外圈（6rpx 环 + 余量），计入 scrim top */
-const PROP_TUTORIAL_SPOTLIGHT_BUFFER_RPX = 24;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -75,7 +71,6 @@ const doodleDefinition = {
     navSlotWidthPx: 86,
     companionPropMode: false,
     propFinishVisible: false,
-    propGuideSketchVisible: false,
     propLineOverlayVisible: false,
     propPeekAnimPhase: 'enter',
     propUnlockActive: false,
@@ -121,8 +116,7 @@ const doodleDefinition = {
     companionStartAward: 0,
     companionStartAwardVisible: false,
     companionReducedMotion: false,
-    pageTransitionPhase: 'waiting',
-    propTutorialScrimTopPx: 0
+    pageTransitionPhase: 'waiting'
   },
 
   onLoad(query) {
@@ -157,11 +151,9 @@ const doodleDefinition = {
     const windowWidth = info.windowWidth || 375;
     const navRowPx = Math.round(windowWidth / 750 * 112);
     const navCoverHeightPx = (info.statusBarHeight || 20) + navRowPx;
-    const propTutorialScrimTopPx = navCoverHeightPx + Math.round(windowWidth / 750 * (PROP_LOOK_CHROME_BLOCK_RPX + PROP_TUTORIAL_SPOTLIGHT_BUFFER_RPX));
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
       navCoverHeightPx,
-      propTutorialScrimTopPx,
       selectedBrushColor: initialBrush.value,
       selectedBrushColorName: initialBrush.name,
       companionReducedMotion: readReducedMotionEnabled()
@@ -236,28 +228,17 @@ const doodleDefinition = {
         return;
       }
       const transitionDuration = this.pageTransitionDuration();
-      const tutorialAlreadyUp = this.companionPropMode && this.data.propTutorialVisible;
-      const revealPatch = {
-        canvasReady: true,
-        pageTransitionPhase: tutorialAlreadyUp ? 'visible' : 'entering'
-      };
+      const revealPatch = { canvasReady: true, pageTransitionPhase: 'entering' };
       this.setData(revealPatch, () => {
         clearTimeout(this.pageTransitionTimer);
-        const finishReveal = () => {
-          if (!this.pageActive) return;
-          if (!tutorialAlreadyUp) {
-            this.setData({ pageTransitionPhase: 'visible' });
+        this.pageTransitionTimer = setTimeout(() => {
+          this.pageTransitionTimer = null;
+          if (this.pageActive) {
+            this.setData({ pageTransitionPhase: 'visible' }, () => {
+              if (typeof this.beginPropEntryFlow === 'function') this.beginPropEntryFlow();
+            });
           }
-          if (typeof this.beginPropEntryFlow === 'function') this.beginPropEntryFlow();
-        };
-        if (tutorialAlreadyUp) {
-          finishReveal();
-        } else {
-          this.pageTransitionTimer = setTimeout(() => {
-            this.pageTransitionTimer = null;
-            finishReveal();
-          }, transitionDuration + 40);
-        }
+        }, transitionDuration + 40);
         if (this.triggerEvent) this.triggerEvent('ready');
         if (this.companionDrawing) this.beginCompanionDrawing();
       });

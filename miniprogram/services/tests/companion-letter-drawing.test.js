@@ -115,8 +115,7 @@ async function main(){
   const propChallenge=require('../companion-prop-challenge');
   const editor=Object.assign({},editorDefinition,{pageActive:true,data:{},shellArt:{operations:[]},setData(patch){Object.assign(this.data,patch);},pageTransitionDuration:()=>20,showCanvasNotice:()=>{},leaveEditor:async()=>{}});
   editor.onLoad({entry:'companion',mode:'prop',source:'letter',propId:'dried_tea_tag'});
-  propChallenge.markTutorialSeen();
-  editor.setData({propDrawingLocked:false,propTutorialVisible:false,propPeekVisible:false});
+  editor.setData({propDrawingLocked:false,propPeekVisible:false});
   assert.equal(editor.companionPropMode,true,'陪伴画画入口须走道具临摹模式');
   assert.equal((await adapter.getRoomStarView()).data.star.companionDays,0,'开信不计一天');
   await editor.beginCompanionDrawing();assert.equal(Number(editor.data.companionStartAward || 0),0);assert.equal((await adapter.getRoomStarView()).data.star.companionDays,0,'进入画纸不加天');

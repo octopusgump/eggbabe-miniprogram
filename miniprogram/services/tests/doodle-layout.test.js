@@ -33,7 +33,7 @@ assert.match(pageScript, /tryCompletePropEntryLoading[\s\S]*revealEditor/, '道�
 assert.doesNotMatch(pageScript, /propEntryLoadingMinMs|schedulePropEntryLoadingFinish|propEntryLoadingVisible/, '不得再保留进页 Orbit loading 逻辑');
 assert.match(pageScript, /tryCompletePropEntryLoading/, 'Canvas 与简笔就绪后再 reveal');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
-assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须可见（教程或画纸），不得整页透明');
+assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须可见画纸，不得整页透明');
 assert.doesNotMatch(wxml, /prop-entry-loading|propEntryLoadingVisible|loading-orbit/, '道具临摹不得再展示进页 loading / Orbit');
 assert.match(wxml, /prop-entry-sketch-preload/, '简笔预载须在 preview 内 decode，不得阻断 Canvas 初始化');
 assert.doesNotMatch(wxml, /prop-prepare-screen|prop-prepare-preload|preview--prop-preparing/, '不得再使用旧 prop-prepare 或 preview 隐藏方案');
@@ -104,40 +104,16 @@ assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPop
 assert.match(wxss, /\.prop-peek-anim--shown\s*\{[^}]*opacity:\s*1;/, '简笔须用 CSS transition 显示');
 assert.match(wxss, /\.prop-peek-anim--leave\s*\{[^}]*opacity:\s*0;/, '简笔须用 CSS transition 收起');
 assert.doesNotMatch(wxss, /@keyframes prop-peek-card-flip-out/, '收起动效不得再叠加 CSS 翻页，避免和 wx.createAnimation 抢 transform');
-assert.match(wxss, /\.prop-tutorial-scrim\s*\{[^}]*background:\s*rgba\(22, 36, 26, 0\.8\);/, '教程蒙层须对齐 Figma 09b 深色 scrim');
-assert.match(wxss, /\.prop-tutorial-head\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;/, '教程卡标题行须与步骤点对齐');
-assert.match(wxss, /\.prop-tutorial-body\s*\{[^}]*margin-top:\s*36rpx;/, '教程正文须与标题留出间距');
-assert.match(wxss, /\.prop-tutorial-foot\s*\{[^}]*justify-content:\s*flex-end;[^}]*margin-top:\s*40rpx;/, '教程主按钮须靠右并与正文留出间距');
-assert.match(wxss, /\.prop-tutorial-skip\s*\{[^}]*margin-right:\s*auto;/, '跳过教程须顶在左侧，主按钮靠右');
-assert.match(wxss, /\.prop-tutorial-next\s*\{[^}]*display:\s*inline-block;[^}]*margin:\s*0 0 0 auto;/, '教程主按钮须靠右且不得被默认 button 样式拉满整行');
-assert.match(wxss, /\.prop-tutorial-title\s*\{[^}]*white-space:\s*nowrap;/, '教程标题必须单行显示');
-assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.showStepDots/, '教程步骤点须在第二步卡片显示');
-assert.match(wxml, /propTutorialSteps\[propTutorialStep\]\.primaryLabel/, '教程主按钮文案须按步骤配置');
 const propChallengeScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-challenge.js'), 'utf8');
-assert.equal(propChallengeScript.includes('第二步'), false, '道具临摹教程不得再出现第二步卡片');
-assert.equal((propChallengeScript.match(/title:\s*'/g) || []).length, 1, '教程仅保留「一起画」一步');
-assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点，避免教程结束再次解码');
-assert.match(wxml, /prop-peek-anchor--tutorial/, '教程须复用同一张简笔，不得另挂一份');
-assert.doesNotMatch(wxml, /propLineOverlayCanvas/, '简笔不得再叠在画纸 propLineOverlayCanvas 上');
-assert.doesNotMatch(wxml, /prop-finish-cover/, '教程不得再演示第二步 cover 画好了');
-assert.ok(
-  wxml.indexOf('class="prop-tutorial-scrim') > wxml.indexOf('preview--prop-tutorial'),
-  '教程遮罩须在 preview 之后，全屏 fixed'
-);
-assert.match(
-  wxss,
-  /\.prop-look-hint-cover\s*\{[^}]*border:\s*6rpx solid #f7d774/,
-  '教程须高亮再看一眼入口（cover-view border）'
-);
-assert.doesNotMatch(wxss, /\.preview--prop-tutorial-step-1/, '不得再保留第二步 preview 修饰类');
-assert.doesNotMatch(wxss, /prop-tutorial-scrim--step-1/, '教程蒙层不得再保留第二步 padding');
-assert.match(wxml, /prop-tutorial-scrim prop-tutorial-scrim--step-0/, '教程蒙层固定为单步 step-0');
-assert.match(
-  wxml,
-  /id="eggArtCanvas"[\s\S]*hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/,
-  '教程期间须隐藏道具临摹原生 Canvas，避免盖住遮罩'
-);
+assert.doesNotMatch(wxss, /\.prop-tutorial-scrim\b/, '道具临摹不得再保留教程蒙层');
+assert.doesNotMatch(wxml, /propTutorialVisible|prop-tutorial|onPropTutorial|prop-look-cover-portal|prop-peek-anchor--tutorial/, '道具临摹不得再挂载教程 UI');
+assert.doesNotMatch(propDoodleScript, /propTutorialVisible|hasSeenTutorial|onPropTutorial/, '道具临摹逻辑不得再分支教程');
+assert.doesNotMatch(pageScript, /PROP_TUTORIAL|propTutorialScrimTopPx/, '页面定义不得再保留教程布局常量');
+assert.doesNotMatch(propChallengeScript, /TUTORIAL|教程|一起画/, '道具 challenge 模块不得再导出教程步骤');
 assert.match(wxml, /hidden="\{\{exitConfirmVisible \|\| propUnlockVisible \|\| propPeekVisible \|\| propPeekAnimating\}\}"/, '看一看期间须隐藏原生 Canvas，让简笔卡片能收到点击');
+assert.equal((wxml.match(/class="prop-sketch-image"/g) || []).length, 1, '简笔线稿只能有一个 image 节点');
+assert.doesNotMatch(wxml, /propLineOverlayCanvas/, '简笔不得再叠在画纸 propLineOverlayCanvas 上');
+assert.match(propDoodleScript, /beginPropEntryFlow[\s\S]*scheduleInitialPropPeek/, '进页须直接进入自动看一看，无教程');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*top:\s*calc\(50% \+ 216rpx\);/, '撤销与清空按钮组必须在上一位置基础上再次下移 72rpx');
 assert.match(wxml, /transform:scale\(\{\{canvasScale\}\}\)/, 'Canvas 必须绑定双指缩放倍率');
 assert.match(pageScript, /MAX_CANVAS_SCALE\s*=\s*1\.6/, '双指缩放必须限制在安全倍率内');
@@ -186,13 +162,6 @@ assert.ok(
 );
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
-assert.match(pageScript, /PROP_TUTORIAL_SPOTLIGHT_BUFFER_RPX/, '教程 scrim top 须计入聚光外圈缓冲');
-assert.match(wxss, /\.prop-look-hint-cover\s*\{[^}]*border:\s*6rpx solid #f7d774;/, '教程 pill cover-view 须用 border 聚光');
-assert.match(propDoodleScript, /hasSeenTutorial\(\)[\s\S]*propTutorialVisible:\s*true/, '首次进页须尽早展示教程蒙层');
-assert.match(wxml, /prop-tutorial-scrim[\s\S]*propTutorialScrimTopPx/, '教程 scrim 须绑定顶部留白');
-assert.match(wxml, /prop-look-cover-portal[\s\S]*prop-look-hint-cover/, '教程步骤须用 cover-view 绘制「再看一眼」');
-assert.doesNotMatch(wxss, /\.prop-tutorial-scrim\s*\{[^}]*inset:\s*0;/, '教程 scrim 不得再全屏 inset 盖住 pill');
-assert.match(wxss, /\.prop-look-cover-portal[\s\S]*z-index:\s*10100;/, '教程 pill cover 须高于 scrim');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上（使用 prop-canvas-notice-anchor）'

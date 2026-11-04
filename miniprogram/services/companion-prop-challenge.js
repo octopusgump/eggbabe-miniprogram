@@ -1,32 +1,8 @@
-const TUTORIAL_STORAGE_KEY = 'eggbabe_draw_prop_tutorial_seen_v1';
 const LOOK_DURATION_MS = 5000;
 /** Must match prop-peek-anim CSS transition duration (companion-prop-doodle.js). */
 const PEEK_POP_IN_MS = 280;
 const PEEK_POP_OUT_MS = 280;
 const MANUAL_LOOKS = 3;
-const TUTORIAL_STEPS = Object.freeze([
-  Object.freeze({
-    title: '一起画',
-    body: '先看一眼简笔，几秒后会收起来。拿起画笔临摹，忘了就点「再看一眼」，画完点「画好了」。',
-    showStepDots: false,
-    showSkip: false,
-    primaryLabel: '开始画'
-  })
-]);
-
-function hasSeenTutorial() {
-  try {
-    return Boolean(wx.getStorageSync(TUTORIAL_STORAGE_KEY));
-  } catch (error) {
-    return false;
-  }
-}
-
-function markTutorialSeen() {
-  try {
-    wx.setStorageSync(TUTORIAL_STORAGE_KEY, true);
-  } catch (error) {}
-}
 
 function createSession() {
   return {
@@ -44,14 +20,10 @@ function lookHintText(lookRemaining) {
 }
 
 module.exports = {
-  TUTORIAL_STORAGE_KEY,
   LOOK_DURATION_MS,
   PEEK_POP_IN_MS,
   PEEK_POP_OUT_MS,
   MANUAL_LOOKS,
-  TUTORIAL_STEPS,
-  hasSeenTutorial,
-  markTutorialSeen,
   createSession,
   lookHintText
 };

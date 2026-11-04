@@ -36,25 +36,18 @@ function createEditor() {
     leaveEditor: async () => {}
   });
   editor.onLoad({ entry: 'companion', mode: 'prop', source: 'letter', propId: 'dried_tea_tag' });
-  propChallenge.markTutorialSeen();
   editor.setData({
     propDrawingLocked: false,
-    propTutorialVisible: false,
     propPeekVisible: false
   });
   return editor;
 }
 
-const canvas = require('../../utils/canvas-2d');
-
-const tutorialStorage = {};
 global.wx = global.wx || {
   getWindowInfo: () => ({ windowWidth: 375, statusBarHeight: 20 }),
   getSystemInfoSync: () => ({ windowWidth: 375, statusBarHeight: 20 }),
-  getStorageSync: (key) => tutorialStorage[key],
-  setStorageSync: (key, value) => {
-    tutorialStorage[key] = value;
-  },
+  getStorageSync: () => undefined,
+  setStorageSync: () => {},
   getMenuButtonBoundingClientRect: () => ({ left: 281 }),
   getImageInfo: (options) => {
     if (options && typeof options.success === 'function') options.success({ width: 100, height: 100 });
@@ -75,6 +68,8 @@ global.wx = global.wx || {
   }
 };
 
+const canvas = require('../../utils/canvas-2d');
+
 (async () => {
   const oldExport = canvas.exportImage;
   try {
@@ -92,7 +87,7 @@ global.wx = global.wx || {
 
     editor.gateTracker = gate.createTracker();
     editor.propSession = propChallenge.createSession();
-    editor.setData({ propDrawingLocked: false, propTutorialVisible: false, propUnlockVisible: false, propPeekVisible: false });
+    editor.setData({ propDrawingLocked: false, propUnlockVisible: false, propPeekVisible: false });
     editor.onPropLookAgain();
     assert.equal(editor.data.propLookGateHintText, '再画一会儿吧', '再看一眼未达标须显示 gate 短句');
     assert.equal(editor.data.propPeekVisible, false, 'gate 短句期间不得打开看一看');
@@ -143,7 +138,6 @@ global.wx = global.wx || {
     clearTimeout(peekEditor.propPeekTimer);
 
     peekEditor.data.propDrawingLocked = false;
-    peekEditor.data.propTutorialVisible = false;
     peekEditor.data.propUnlockVisible = false;
     peekEditor.gateTracker = buildPassingTracker();
     peekEditor.onPropLookAgain();
@@ -154,23 +148,14 @@ global.wx = global.wx || {
     assert.notEqual(peekEditor.data.propLineOverlayVisible, true, '收起后画纸仍须保持空白，不铺简笔 canvas');
     clearTimeout(peekEditor.propPeekTimer);
 
-    delete tutorialStorage[propChallenge.TUTORIAL_STORAGE_KEY];
-    const tutorialEditor = createEditor();
-    delete tutorialStorage[propChallenge.TUTORIAL_STORAGE_KEY];
-    tutorialEditor.propEntryFlowStarted = false;
-    tutorialEditor.propSession = propChallenge.createSession();
-    tutorialEditor.beginPropEntryFlow();
-    assert.equal(tutorialEditor.data.propTutorialVisible, true);
-    assert.equal(tutorialEditor.data.propTutorialStep, 0);
-    assert.equal(propChallenge.TUTORIAL_STEPS.length, 1);
-    assert.equal(propChallenge.TUTORIAL_STEPS[0].title, '一起画');
-    const peekStartedAt = Date.now();
-    tutorialEditor.onPropTutorialNext();
-    const peekDelayMs = Date.now() - peekStartedAt;
-    assert.equal(tutorialEditor.data.propTutorialVisible, false);
-    assert.equal(tutorialEditor.data.propPeekVisible, true, '开始画后应立刻进入看一看');
-    assert.ok(peekDelayMs < 50, `开始画到简笔可见不得再等待准备 loading，实际 ${peekDelayMs}ms`);
-    clearTimeout(tutorialEditor.propPeekTimer);
+    const entryEditor = createEditor();
+    entryEditor.propEntryFlowStarted = false;
+    entryEditor.propSession = propChallenge.createSession();
+    entryEditor.setData({ pageTransitionPhase: 'visible' }, () => {
+      entryEditor.beginPropEntryFlow();
+    });
+    assert.equal(entryEditor.data.propPeekVisible, true, '首次进页应直接进入看一看，无教程');
+    clearTimeout(entryEditor.propPeekTimer);
 
     assert.doesNotMatch(
       fs.readFileSync(require('path').join(__dirname, '../../pages/doodle/doodle.wxml'), 'utf8'),

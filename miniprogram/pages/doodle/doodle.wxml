@@ -89,7 +89,20 @@
       </view>
     </view>
     <view wx:if="{{companionPropMode}}" class="prop-paper-stage">
-      <view class="prop-paper-board">
+      <share-element
+        wx:if="{{propPaperShareActive}}"
+        class="prop-paper-share"
+        key="propPaperCard"
+        transition-on-gesture="{{true}}"
+        shuttle-on-push="to"
+        shuttle-on-pop="from"
+        rect-tween-type="materialRectArc"
+      >
+        <view class="prop-paper-board">
+          <view class="prop-paper-dash"></view>
+        </view>
+      </share-element>
+      <view wx:else class="prop-paper-board">
         <view class="prop-paper-dash"></view>
       </view>
       <view class="prop-canvas-slot {{propUnlockVisible ? 'prop-canvas-slot--hidden' : ''}}">

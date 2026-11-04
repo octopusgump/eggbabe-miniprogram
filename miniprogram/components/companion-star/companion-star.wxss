@@ -1,7 +1,7 @@
 :host{display:inline-block;flex:none;line-height:0;vertical-align:middle}
 .companion-star{position:relative;z-index:0;pointer-events:none}
-.companion-star__body{position:absolute;z-index:1;inset:0}
-.companion-star__pose{position:absolute;inset:0;width:100%;height:100%;display:block;transform-origin:50% 62%;backface-visibility:hidden}
+.companion-star__body{position:absolute;z-index:1;top:0;right:0;bottom:0;left:0}
+.companion-star__pose{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;display:block;transform-origin:50% 62%;backface-visibility:hidden}
 .companion-star__pose--squeezed{opacity:0}
 .companion-star__halo{position:absolute;z-index:0;left:-50%;top:-50%;width:200%;height:200%;border-radius:50%;opacity:0;background:radial-gradient(circle,rgba(255,221,121,.95) 0,rgba(247,204,110,.5) 34%,rgba(243,187,90,0) 70%)}
 .companion-star__spark,.companion-star__dust{position:absolute;z-index:2;border-radius:50%;opacity:0;background:#FFE7A3;box-shadow:0 0 6rpx rgba(255,221,121,.75)}

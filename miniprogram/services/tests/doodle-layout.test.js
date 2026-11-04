@@ -135,11 +135,14 @@ assert.match(wxss, /\.content\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*flex-
 assert.equal(wxml.includes('class="section tool-section'), false, '二级设置和主工具 Dock 外部不得再包裹整块白色大面板');
 assert.match(wxss, /\.tool-section\s*\{[^}]*width:\s*100%;[^}]*padding:\s*0;/, '展开工具时只允许二级设置卡自身占满宽度');
 assert.match(wxss, /\.tool-section--compact\s*\{[^}]*width:\s*368rpx;[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;/, '收起状态不得保留工具面板底板');
-assert.match(wxss, /\.figma-toolbar--compact\s*\{[^}]*width:\s*368rpx;[^}]*height:\s*112rpx;[^}]*grid-template-columns:\s*repeat\(3,\s*112rpx\);[^}]*padding:\s*0 15rpx;[^}]*border-radius:\s*56rpx;[^}]*background:\s*#FFF;/, '收起工具 Dock 必须复用首页三按钮的尺寸、留白、圆角和白色悬浮质感');
+assert.match(wxss, /\.figma-toolbar\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;/, '工具 Dock 必须用横向 flex，Skyline 不支持 grid');
+assert.match(wxss, /\.figma-toolbar--compact\s*\{[^}]*width:\s*368rpx;[^}]*height:\s*112rpx;[^}]*padding:\s*0 15rpx;[^}]*border-radius:\s*56rpx;[^}]*background:\s*#FFF;/, '收起工具 Dock 必须复用首页三按钮的尺寸、留白、圆角和白色悬浮质感');
+assert.match(wxss, /\.figma-toolbar--compact \.tool-button\s*\{[^}]*flex:\s*0 0 112rpx;/, '收起 Dock 的三颗按钮必须各占 112rpx');
 assert.match(wxss, /\.figma-toolbar--with-options\s*\{[^}]*margin:\s*12rpx auto 0;/, '显示二级设置时纯图标 Dock 必须保持居中且只增加上下间距');
 assert.equal(eraserOptionsStart >= 0 && stickerOptionsStart > eraserOptionsStart && eraserOptionsMarkup.includes('wx:for="{{eraserSizes}}"') && eraserOptionsMarkup.includes('onEraserSize') && !eraserOptionsMarkup.includes('<slider') && !eraserOptionsMarkup.includes('brush-color-row') && !eraserOptionsMarkup.includes('pattern-row'), true, '橡皮擦展开后只能显示五档面状尺寸选项');
 assert.equal(/>\s*(?:画笔|橡皮擦|贴纸)\s*<\/text>/.test(wxml), false, '底部三个工具不得在展开后增加文字标签');
-assert.match(wxss, /\.brush-settings-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) 112rpx;[^}]*gap:\s*12rpx;/, '五档粗细必须占据约八成宽度，颜色入口只保留紧凑区域');
+assert.match(wxss, /\.brush-settings-grid\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;[^}]*gap:\s*12rpx;/, '五档粗细必须占据约八成宽度，颜色入口只保留紧凑区域');
+assert.match(wxss, /\.brush-setting-group--color\s*\{[^}]*flex:\s*0 0 112rpx;[^}]*width:\s*112rpx;/, '颜色入口必须固定 112rpx，其余宽度留给粗细');
 assert.match(wxss, /\.brush-setting-group\s*\{[^}]*border-radius:\s*22rpx;[^}]*background:\s*#F7F8F5;/, '两组画笔设置必须使用设计系统的圆角浅色面');
 assert.match(wxss, /\.brush-setting-title\s*\{[^}]*font-size:\s*24rpx;/, '粗细与颜色标题必须放大到清晰可读的 24rpx');
 assert.match(wxss, /\.brush-color-popover\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*120;[^}]*left:\s*-12rpx;[^}]*right:\s*-12rpx;[^}]*bottom:\s*calc\(100% \+ 12rpx\);[^}]*background:\s*#FFF;/, '十色色块必须在工具卡上方以接近屏幕宽度的最高原生覆盖层展开');
@@ -151,7 +154,8 @@ assert.equal(!wxml.includes('brush-color-trigger-mark') && !wxss.includes('.brus
 assert.equal(wxml.includes('点这里选颜色') && wxml.includes('colorHintRendered') && pageScript.includes('eggbabe_doodle_color_hint_seen_v1'), true, '首次进入画笔设置必须复用首页胶囊提示节奏，引导用户点击颜色');
 assert.match(wxss, /\.brush-color-hint\s*\{[^}]*border-radius:\s*999rpx;[^}]*opacity:\s*0;[^}]*transform:\s*translateY\(6rpx\);/, '颜色首次提示必须使用白色胶囊和轻微上浮渐入');
 assert.equal(wxml.includes('class="brush-size-label"') && wxml.includes('{{item.pixels}} px'), true, '五档笔触必须直接显示像素值，便于快速比较');
-assert.match(wxss, /\.eraser-size-grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*1fr\)/, '橡皮擦五档必须使用等宽面状触控区域');
+assert.match(wxss, /\.eraser-size-grid\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*row;/, '橡皮擦五档必须使用等宽面状触控区域');
+assert.match(wxss, /\.eraser-size-option\s*\{[^}]*flex:\s*1 1 0rpx;/, '橡皮擦五档必须等分');
 assert.match(wxss, /\.eraser-size-option--selected\s*\{[^}]*background:\s*#E6EED0;/, '橡皮擦选中档位必须使用设计系统绿色面，而不是细线框');
 assert.match(wxss, /\.tool-button--selected:first-child\s*\{[^}]*box-shadow:\s*-15rpx 0 0 #FFF0DD;/, '左侧工具选中面必须填满胶囊左端留白');
 assert.match(wxss, /\.tool-button--selected:last-child\s*\{[^}]*box-shadow:\s*15rpx 0 0 #FFF0DD;/, '右侧工具选中面必须填满胶囊右端留白');

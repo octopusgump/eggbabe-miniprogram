@@ -53,6 +53,15 @@
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "tagNameStyleIsolation": "legacy",
+      "enableScrollViewAutoSize": true,
+      "keyframeStyleIsolation": "legacy"
+    }
+  },
   "usingComponents": {
     "loading-orbit": "/components/loading-orbit/loading-orbit"
   },

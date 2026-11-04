@@ -5,6 +5,7 @@ const cloudApi = require('./services/cloud-api');
 const petStore = require('./utils/pet-store');
 const syncQueue = require('./services/sync-queue');
 const runtime = require('./services/runtime-context');
+const propPaperRoute = require('./services/doodle-prop-share-route');
 
 App({
   globalData: {
@@ -16,6 +17,11 @@ App({
   },
 
   onLaunch() {
+    try {
+      propPaperRoute.ensurePropPaperRoute(typeof wx === 'undefined' ? null : wx);
+    } catch (error) {
+      // 自定义路由注册失败时，一起画仍走默认右滑。
+    }
     const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     const menu = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
     this.globalData.windowMetrics = {

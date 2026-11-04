@@ -9,6 +9,7 @@ const canvas2d = require('../../utils/canvas-2d');
 const practice = require('../../services/incubation-practice');
 const preHatchAssets = require('../../config/pre-hatch-assets').PRE_HATCH;
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
+const propPaperRoute = require('../../services/doodle-prop-share-route');
 
 const PAGE_TRANSITION_MS = 320;
 /** 等微信路由滑入结束后再初始化 Canvas，避免与系统转场抢主线程 */
@@ -120,7 +121,8 @@ const doodleDefinition = {
     companionStartAward: 0,
     companionStartAwardVisible: false,
     companionReducedMotion: false,
-    pageTransitionPhase: 'waiting'
+    pageTransitionPhase: 'waiting',
+    propPaperShareActive: false
   },
 
   onLoad(query) {
@@ -128,7 +130,12 @@ const doodleDefinition = {
     this.companionPropMode = Boolean(this.companionDrawing && query && query.mode === 'prop');
     this.setData({
       companionDrawing: this.companionDrawing,
-      companionPropMode: this.companionPropMode
+      companionPropMode: this.companionPropMode,
+      propPaperShareActive: propPaperRoute.shouldMountDoodlePropPaperShare({
+        renderer: this.renderer,
+        router: wx.router,
+        query: query || {}
+      })
     });
     if (this.companionPropMode) {
       this.propEntrySketchReady = false;

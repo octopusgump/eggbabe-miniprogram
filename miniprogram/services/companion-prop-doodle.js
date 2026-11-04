@@ -282,15 +282,16 @@ function attach(definition) {
     const generation = this.propPeekGeneration;
     clearTimeout(this.propPeekPopInSettleTimer);
     const reducedMotion = Boolean(this.data.companionReducedMotion);
+    const manualPeek = Boolean(settings.countsAgainstManual);
     this.setData({
       propDrawingLocked: true,
       propPeekVisible: true,
       propPeekAnimating: false,
-      propPeekAnimPhase: reducedMotion ? 'shown' : 'enter',
+      propPeekAnimPhase: reducedMotion || manualPeek ? 'shown' : 'enter',
       propFinishVisible: false
     }, () => {
       if (generation !== this.propPeekGeneration) return;
-      if (reducedMotion) return;
+      if (reducedMotion || manualPeek) return;
       schedulePropPeekPhase(this, () => {
         if (generation !== this.propPeekGeneration) return;
         this.setData({ propPeekAnimPhase: 'shown' });
@@ -302,14 +303,10 @@ function attach(definition) {
   };
 
   definition.onPropLookAgain = function onPropLookAgain() {
-    if (this.data.propDrawingLocked || this.data.propUnlockVisible) return;
+    if (this.data.propUnlockVisible) return;
+    if (this.data.propPeekVisible || this.data.propPeekAnimating) return;
     if (this.propSession.lookRemaining <= 0) return;
     if (this.currentStroke) this.finishStroke();
-    const gateResult = drawingGate.evaluate(this.gateTracker);
-    if (!gateResult.ok) {
-      this.showPropLookGateHint(PROP_LOOK_GATE_HINT, 'info');
-      return;
-    }
     this.startPropPeek({ countsAgainstManual: true });
   };
 

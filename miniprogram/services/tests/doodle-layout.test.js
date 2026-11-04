@@ -185,9 +185,11 @@ assert.match(wxml, /propEntryLoadingVisible[\s\S]*prop-entry-loading[\s\S]*<load
 assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
 assert.match(pageScript, /shouldShowPropEntryLoading/, '首次教程进页不得再闪 Orbit loading');
 assert.match(pageScript, /propEntryLoadingMinMs/, '进页 loading 须区分首次教程与回访时长');
-assert.match(wxss, /\.prop-chrome-stack--above-scrim[\s\S]*z-index:\s*145;/, '教程蒙层下「再看一眼」须 fixed 抬到 scrim 之上');
-assert.match(wxml, /prop-chrome-stack[\s\S]*prop-tutorial-scrim/, '「再看一眼」须在教程蒙层之后绘制');
-assert.match(wxss, /\.prop-chrome-stack\s*\{[^}]*position:\s*fixed;/, '「再看一眼」须 fixed 定位以压过教程 fixed scrim');
+assert.match(pageScript, /propTutorialScrimTopPx/, '教程 scrim 须从「再看一眼」下方开始');
+assert.match(wxml, /prop-tutorial-scrim[\s\S]*propTutorialScrimTopPx/, '教程 scrim 须绑定顶部留白');
+assert.match(wxml, /prop-look-cover-portal[\s\S]*prop-look-hint-cover/, '教程步骤须用 cover-view 绘制「再看一眼」');
+assert.doesNotMatch(wxss, /\.prop-tutorial-scrim\s*\{[^}]*inset:\s*0;/, '教程 scrim 不得再全屏 inset 盖住 pill');
+assert.match(wxss, /\.prop-look-cover-portal[\s\S]*z-index:\s*10100;/, '教程 pill cover 须高于 scrim');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上（使用 prop-canvas-notice-anchor）'

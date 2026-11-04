@@ -54,7 +54,7 @@
   </root-portal>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible}}"
     class="prop-chrome-stack-spacer"
     aria-hidden="true"
   ></view>
@@ -300,7 +300,26 @@
     </view>
   </view>
 
-  <view wx:if="{{companionPropMode && propTutorialVisible}}" class="prop-tutorial-scrim prop-tutorial-scrim--step-0" catchtouchmove="true">
+  <root-portal wx:if="{{companionPropMode && propTutorialVisible && propTutorialStep === 0 && canvasReady && propLookHint && !propUnlockVisible}}">
+    <cover-view
+      class="prop-look-cover-portal"
+      style="top: {{navCoverHeightPx}}px;"
+    >
+      <cover-view
+        class="prop-look-hint-cover {{propSessionLookRemaining === 0 ? 'prop-look-hint-cover--empty' : ''}}"
+        catchtap="onPropLookAgain"
+        aria-role="button"
+        aria-label="{{propLookHint}}"
+      >{{propLookHint}}</cover-view>
+    </cover-view>
+  </root-portal>
+
+  <view
+    wx:if="{{companionPropMode && propTutorialVisible}}"
+    class="prop-tutorial-scrim prop-tutorial-scrim--step-0"
+    style="top: {{propTutorialScrimTopPx}}px;"
+    catchtouchmove="true"
+  >
     <view class="prop-tutorial-bg-sketch" aria-hidden="true"></view>
     <view class="prop-tutorial-card">
       <view class="prop-tutorial-head">
@@ -318,13 +337,13 @@
   </view>
 
   <view
-    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && (!propTutorialVisible || propTutorialStep === 0)}}"
-    class="prop-chrome-stack {{(propTutorialVisible && propTutorialStep === 0) || propLookGateHintText ? 'prop-chrome-stack--above-scrim' : ''}}"
+    wx:if="{{companionPropMode && canvasReady && propLookHint && !propUnlockVisible && !(propTutorialVisible && propTutorialStep === 0)}}"
+    class="prop-chrome-stack {{propLookGateHintText ? 'prop-chrome-stack--above-scrim' : ''}}"
     style="top: {{navCoverHeightPx}}px;"
   >
     <view class="prop-look-row">
       <view
-        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
+        class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}}"
       >
         <view class="prop-look-anchor">
           <view

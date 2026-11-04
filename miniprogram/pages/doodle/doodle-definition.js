@@ -13,6 +13,8 @@ const { createInlineNoticeController } = require('../../utils/inline-notice-cont
 const PAGE_TRANSITION_MS = 320;
 /** 道具临摹进页：Orbit 最短可见时长（canvas + 简笔就绪后仍须满足） */
 const PROP_ENTRY_LOADING_MIN_MS_RETURNING = 400;
+/** 与 prop-look-row + pill 同高，教程 scrim 从该高度以下开始，不盖住「再看一眼」 */
+const PROP_LOOK_CHROME_BLOCK_RPX = 20 + 12 + Math.ceil(26 * 1.2 + 28) + 12;
 
 function propEntryLoadingMinMs() {
   try {
@@ -135,7 +137,8 @@ const doodleDefinition = {
     companionStartAward: 0,
     companionStartAwardVisible: false,
     companionReducedMotion: false,
-    pageTransitionPhase: 'waiting'
+    pageTransitionPhase: 'waiting',
+    propTutorialScrimTopPx: 0
   },
 
   onLoad(query) {
@@ -171,9 +174,12 @@ const doodleDefinition = {
     this.savedRevision = 0;
     const windowWidth = info.windowWidth || 375;
     const navRowPx = Math.round(windowWidth / 750 * 112);
+    const navCoverHeightPx = (info.statusBarHeight || 20) + navRowPx;
+    const propTutorialScrimTopPx = navCoverHeightPx + Math.round(windowWidth / 750 * PROP_LOOK_CHROME_BLOCK_RPX);
     this.setData({
       statusBarHeight: info.statusBarHeight || 20,
-      navCoverHeightPx: (info.statusBarHeight || 20) + navRowPx,
+      navCoverHeightPx,
+      propTutorialScrimTopPx,
       selectedBrushColor: initialBrush.value,
       selectedBrushColorName: initialBrush.name,
       companionReducedMotion: readReducedMotionEnabled()

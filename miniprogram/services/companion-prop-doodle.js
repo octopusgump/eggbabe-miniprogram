@@ -56,7 +56,7 @@ function attach(definition) {
     if (!this.companionPropMode) return;
     this.propEntrySource = (query && query.source) || 'activity';
     this.propEntry = propCatalog.getById(query && query.propId)
-      || propCatalog.pickDaily(require('./companion-star-rules').shanghaiDate(), companionAdapter.getRoomScope());
+      || propCatalog.pickRandom(companionAdapter.getRoomScope());
     this.gateTracker = drawingGate.createTracker();
     this.gateStrokeId = null;
     this.propGateOptions = { paper: true };

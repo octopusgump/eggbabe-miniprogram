@@ -63,8 +63,21 @@ function pickDaily(dateKey, scopeKey) {
   return PROPS[index];
 }
 
+/** 每次进入一起画：从 catalog 均匀随机一件（`query.propId` 仍可强制指定）。 */
+function pickRandom(scopeKey, options) {
+  if (!PROPS.length) return null;
+  const opts = options || {};
+  if (typeof opts.roll === 'number') {
+    const roll = Math.max(0, Math.min(0.999999999, opts.roll));
+    return PROPS[Math.floor(roll * PROPS.length)];
+  }
+  const index = hashSeed(`${scopeKey || ''}:${Date.now()}:${Math.random()}`) % PROPS.length;
+  return PROPS[index];
+}
+
 module.exports = {
   PROPS,
   getById,
-  pickDaily
+  pickDaily,
+  pickRandom
 };

@@ -78,7 +78,12 @@ global.wx = global.wx || {
     const editor = createEditor();
     assert.equal(editor.companionPropMode, true);
     editor.gateTracker = gate.createTracker();
+    let canvasNoticeCalls = 0;
+    editor.showCanvasNotice = () => { canvasNoticeCalls += 1; };
     assert.equal((await editor.completeCompanionDrawing()).ok, false, '未达标不得完成');
+    assert.equal(canvasNoticeCalls, 0, '未达标须用再看一眼浮层，不得走画布顶栏提示');
+    assert.equal(editor.data.propLookGateHintVisible, true);
+    assert.match(editor.data.propLookGateHintText, /再画一会儿/);
 
     editor.gateTracker = buildPassingTracker();
     editor.artLayer = {};

@@ -73,6 +73,8 @@ assert.match(wxss, /\.preview\s*\{[^}]*isolation:\s*isolate;/, '画布舞台必�
 assert.doesNotMatch(wxss, /\.egg-canvas-stack\s*\{[^}]*will-change:/, '蛋体不得使用可能越过工具浮层的强制合成提示');
 assert.match(wxss, /\.canvas-action-rail\s*\{[^}]*z-index:\s*30;/, '撤销与清空必须明确位于蛋体之上');
 const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/companion-prop-doodle.js'), 'utf8');
+assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须在再看一眼上方展示约 1.8 秒');
+assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '未达标须用再看一眼浮层提示，不得顶栏撑开画板');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
 assert.doesNotMatch(propDoodleScript, /exportPropPeekPopInAnim|exportPropPeekPopOutAnim|propPeekSketchAnim/, '简笔动效不得再使用 wx.createAnimation');
@@ -156,16 +158,11 @@ assert.equal(componentScript.includes("require('../../pages/doodle/doodle-defini
 assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'), true, '清空等轻量反馈必须使用可复用的画布内提示组件');
 assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
 assert.ok(
-  wxml.includes('prop-chrome-stack') && wxml.includes('prop-gate-notice-bar') && wxml.includes('prop-look-row'),
-  '道具临摹 gate 提示与「再看一眼」须分行，避免叠压'
+  wxml.includes('prop-look-gate-overlay') && wxml.includes('propLookGateHintVisible'),
+  '道具临摹 gate 提示须浮在「再看一眼」上方，不占布局'
 );
-assert.ok(
-  wxml.indexOf('class="prop-gate-notice-bar"') > 0
-    && wxml.indexOf('class="prop-gate-notice-bar"') < wxml.indexOf('class="prop-look-row"'),
-  'gate 提示须在「再看一眼」行上方'
-);
-assert.match(wxss, /\.prop-gate-notice-bar\s*\{[^}]*margin:\s*0 0 32rpx;/, 'gate 提示与再看一眼之间须用 margin 留出间距（不依赖 flex gap）');
-assert.match(wxml, /canvasNoticeText && canvasNoticeVisible/, 'gate 提示仅在可见时占用顶栏，避免与再看一眼占位冲突');
+assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
+assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*calc\(100% \+ 12rpx\);/, 'gate 提示须绝对定位在再看一眼上方');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上'

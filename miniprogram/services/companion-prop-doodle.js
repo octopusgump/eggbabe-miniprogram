@@ -6,6 +6,8 @@ const companionAdapter = require('./iaa-star-unlock-adapter');
 
 const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
+const PROP_LOOK_GATE_HINT_MS = 1800;
+const PROP_LOOK_GATE_HINT_FADE_MS = 180;
 
 function schedulePropPeekPhase(editor, apply) {
   if (wx.nextTick) wx.nextTick(apply);
@@ -73,8 +75,42 @@ function attach(definition) {
       propTutorialStep: 0,
       propTutorialSteps: propChallenge.TUTORIAL_STEPS,
       propTutorialFinalLabel: TUTORIAL_FINAL_LABEL,
-      propFinishVisible: false
+      propFinishVisible: false,
+      propLookGateHintText: '',
+      propLookGateHintTone: 'info',
+      propLookGateHintVisible: false
     });
+  };
+
+  definition.clearPropLookGateHint = function clearPropLookGateHint() {
+    clearTimeout(this.propLookGateHintTimer);
+    clearTimeout(this.propLookGateHintCleanupTimer);
+    this.propLookGateHintTimer = null;
+    this.propLookGateHintCleanupTimer = null;
+  };
+
+  definition.showPropLookGateHint = function showPropLookGateHint(text, tone) {
+    if (!this.companionPropMode || this.pageActive === false) return false;
+    const message = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!message) return false;
+    this.clearPropLookGateHint();
+    this.setData({
+      propLookGateHintText: message,
+      propLookGateHintTone: tone === 'warning' ? 'warning' : 'info',
+      propLookGateHintVisible: false
+    }, () => {
+      if (this.pageActive === false) return;
+      this.setData({ propLookGateHintVisible: true });
+      this.propLookGateHintTimer = setTimeout(() => {
+        this.propLookGateHintTimer = null;
+        this.setData({ propLookGateHintVisible: false });
+        this.propLookGateHintCleanupTimer = setTimeout(() => {
+          this.propLookGateHintCleanupTimer = null;
+          if (!this.data.propLookGateHintVisible) this.setData({ propLookGateHintText: '' });
+        }, PROP_LOOK_GATE_HINT_FADE_MS);
+      }, PROP_LOOK_GATE_HINT_MS);
+    });
+    return true;
   };
 
   definition.playPropUnlockAward = function playPropUnlockAward() {
@@ -374,7 +410,7 @@ function attach(definition) {
     if (this.data.propDrawingLocked || this.data.propTutorialVisible) return { ok: false };
     const gate = drawingGate.evaluate(this.gateTracker);
     if (!gate.ok) {
-      this.showCanvasNotice(gate.hint, 'info');
+      this.showPropLookGateHint(gate.hint, 'info');
       return { ok: false };
     }
     this.companionCompleting = true;
@@ -420,6 +456,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
+    this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
   };
@@ -428,9 +465,10 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
+    this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);
   };
 }
 
-module.exports = { attach, TUTORIAL_FINAL_LABEL };
+module.exports = { attach, TUTORIAL_FINAL_LABEL, PROP_LOOK_GATE_HINT_MS };

@@ -33,10 +33,9 @@
 .preview { position: relative; z-index: 30; isolation: isolate; min-height: 0; flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 0; background: linear-gradient(180deg, #FFF 0%, #F7F5EE 100%); box-shadow: none; }
 .canvas-notice-anchor { position: absolute; z-index: 35; top: 28rpx; left: 132rpx; right: 132rpx; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .prop-chrome-stack { position: relative; z-index: 50; flex: 0 0 auto; box-sizing: border-box; background: #F8F7EF; }
-.prop-chrome-stack--with-gate + .preview--prop { --prop-layout-nudge: 28rpx; }
-.prop-gate-notice-bar { display: flex; align-items: center; justify-content: center; padding: 12rpx 24rpx 0; margin: 0 0 32rpx; pointer-events: none; }
 .prop-look-row { display: flex; justify-content: center; padding: 20rpx 24rpx 12rpx; pointer-events: none; }
-.prop-gate-notice-bar + .prop-look-row { padding-top: 0; }
+.prop-look-chrome { position: relative; flex: 0 0 auto; display: flex; justify-content: center; pointer-events: none; }
+.prop-look-gate-overlay { position: absolute; z-index: 4; left: 50%; bottom: calc(100% + 12rpx); transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: max-content; max-width: calc(100vw - 48rpx); pointer-events: none; }
 .page--prop-unlock .prop-chrome-stack { visibility: hidden; pointer-events: none; }
 .canvas-action-button { width: 112rpx; height: 112rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; border: 0; border-radius: 0; background: transparent; color: #536047; box-shadow: none; transition: transform 180ms ease, opacity 180ms ease, color 180ms ease; }
 .canvas-action-button + .canvas-action-button { border-top: 1rpx solid #E5E3DF; }
@@ -169,7 +168,6 @@
 .prop-chrome--dimmed { opacity: 0.35; pointer-events: none; }
 
 .prop-paper-stage { position: absolute; z-index: 0; top: calc(50% - 200rpx + var(--prop-layout-nudge, 0)); left: 50%; width: 88vw; height: 120vw; max-height: 936rpx; transform: translate(-50%, -50%); pointer-events: none; }
-.prop-look-chrome { position: relative; flex: 0 0 auto; display: flex; justify-content: center; pointer-events: none; }
 .prop-look-hint { pointer-events: auto; padding: 14rpx 28rpx; border-radius: 999rpx; border: 1rpx solid rgba(53, 72, 60, 0.12); background: rgba(255, 255, 255, 0.92); color: #35483C; font-size: 26rpx; font-weight: 500; line-height: 1.2; box-shadow: 0 4rpx 16rpx rgba(54, 71, 61, 0.08); }
 .prop-look-hint--empty { opacity: 0.55; }
 

@@ -79,7 +79,7 @@ const propDoodleScript = fs.readFileSync(path.join(miniprogramRoot, 'services/co
 assert.match(wxss, /\.prop-prepare-screen\s*\{[^}]*z-index:\s*10150;/, 'loading 须盖住 cover-view 返回层');
 assert.match(propDoodleScript, /preloadPropEntryAssets/, '保留软预载辅助，但不得 hard-fail 阻断进入');
 assert.match(pageScript, /onPropPrepareSketchLoad/, '简笔须在 loading 层 decode 后再 finish prepare');
-assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须在再看一眼上方展示约 1.8 秒');
+assert.match(propDoodleScript, /PROP_LOOK_GATE_HINT_MS\s*=\s*1800/, 'gate 提示须覆盖再看一眼约 1.8 秒');
 assert.match(propDoodleScript, /showPropLookGateHint\(gate\.hint/, '未达标须用再看一眼浮层提示，不得顶栏撑开画板');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'leave'/, '看一看收起须走 CSS phase，不读 companionReducedMotion');
 assert.match(propDoodleScript, /propPeekAnimPhase:\s*'shown'/, '看一看出现须走 CSS phase');
@@ -165,10 +165,14 @@ assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'
 assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
 assert.ok(
   wxml.includes('prop-look-gate-overlay') && wxml.includes('propLookGateHintVisible') && wxml.includes('prop-look-anchor'),
-  '道具临摹 gate 提示须浮在「再看一眼」上方，不占布局'
+  '道具临摹 gate 提示须覆盖「再看一眼」，不占布局'
 );
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
-assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*bottom:\s*100%;[^}]*margin-bottom:\s*24rpx;/, 'gate 提示须锚定在再看一眼顶边上方（避免 calc(100%+…) 真机失效叠压）');
+assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*inset:\s*0;/, 'gate 提示须与再看一眼同 footprint 覆盖展示');
+assert.match(wxml, /layout="pill-fill"[\s\S]*propLookGateHintText/, 'gate 须用 pill-fill 深色提示铺满按钮区域');
+assert.match(wxml, /<loading-orbit size="M" tone="light"/, '道具临摹准备页须使用标准 Loading / Orbit');
+assert.doesNotMatch(wxml, /prop-prepare-spinner/, '不得再使用自定义 CSS spinner');
+assert.match(pageScript, /PROP_PREPARE_MIN_MS\s*=\s*1000/, '准备 loading 最短展示须约 1 秒以便看见 Orbit');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上'

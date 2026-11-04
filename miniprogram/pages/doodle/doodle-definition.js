@@ -12,7 +12,7 @@ const { createInlineNoticeController } = require('../../utils/inline-notice-cont
 
 const PAGE_TRANSITION_MS = 320;
 /** 道具临摹：至少展示「正在准备画纸」时长，避免解码过快导致用户看不到 loading */
-const PROP_PREPARE_MIN_MS = 520;
+const PROP_PREPARE_MIN_MS = 1000;
 const COLOR_HINT_STORAGE_KEY = 'eggbabe_doodle_color_hint_seen_v1';
 const COLOR_HINT_DELAY_MS = 420;
 const COLOR_HINT_DURATION_MS = 2400;
@@ -248,6 +248,7 @@ const doodleDefinition = {
 
   finishPropCanvasPrepare(setupToken, reveal) {
     if (setupToken !== this.canvasSetupToken || typeof reveal !== 'function') return;
+    clearTimeout(this.propPrepareSketchFallbackTimer);
     const started = this.propPrepareStartedAt || Date.now();
     const waitMs = Math.max(0, PROP_PREPARE_MIN_MS - (Date.now() - started));
     clearTimeout(this.propPrepareRevealTimer);

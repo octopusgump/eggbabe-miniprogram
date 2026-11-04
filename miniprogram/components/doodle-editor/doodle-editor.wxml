@@ -1,7 +1,7 @@
 <view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'page--prop-tutorial-step-0' : ''}}">
   <view wx:if="{{companionPropMode && !canvasReady}}" class="prop-prepare-screen" catchtouchmove="true" aria-live="polite">
     <text class="prop-prepare-title">一起画</text>
-    <view class="prop-prepare-spinner" aria-hidden="true"></view>
+    <loading-orbit size="M" tone="light" reduced-motion="{{companionReducedMotion}}"></loading-orbit>
     <text class="prop-prepare-text">{{canvasPreparationError ? '画纸没有准备好，请返回后重试' : '正在准备画纸…'}}</text>
     <image
       wx:if="{{propSketchSrc || propSketchPath}}"
@@ -64,20 +64,21 @@
         class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
       >
         <view class="prop-look-anchor">
-          <view wx:if="{{propLookGateHintText}}" class="prop-look-gate-overlay">
-            <inline-notice
-              text="{{propLookGateHintText}}"
-              tone="{{propLookGateHintTone}}"
-              visible="{{propLookGateHintVisible}}"
-            ></inline-notice>
-          </view>
           <view
-            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}} {{propLookGateHintText ? 'prop-look-hint--gate-covered' : ''}}"
             bindtap="onPropLookAgain"
             aria-role="button"
             aria-label="{{propLookHint}}"
           >
             <text>{{propLookHint}}</text>
+          </view>
+          <view wx:if="{{propLookGateHintText}}" class="prop-look-gate-overlay">
+            <inline-notice
+              layout="pill-fill"
+              text="{{propLookGateHintText}}"
+              tone="{{propLookGateHintTone}}"
+              visible="{{propLookGateHintVisible}}"
+            ></inline-notice>
           </view>
         </view>
       </view>

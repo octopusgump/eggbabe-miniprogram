@@ -158,11 +158,11 @@ assert.equal(componentScript.includes("require('../../pages/doodle/doodle-defini
 assert.equal(wxml.includes('<inline-notice') && wxml.includes('canvasNoticeText'), true, '清空等轻量反馈必须使用可复用的画布内提示组件');
 assert.match(wxss, /\.canvas-notice-anchor\s*\{[^}]*top:\s*28rpx;[^}]*left:\s*132rpx;[^}]*right:\s*132rpx;/, '非道具模式画布内提示必须固定在导航栏下方的画布顶部并避开右侧操作按钮');
 assert.ok(
-  wxml.includes('prop-look-gate-overlay') && wxml.includes('propLookGateHintVisible'),
+  wxml.includes('prop-look-gate-overlay') && wxml.includes('propLookGateHintVisible') && wxml.includes('prop-look-anchor'),
   '道具临摹 gate 提示须浮在「再看一眼」上方，不占布局'
 );
 assert.doesNotMatch(wxml, /prop-gate-notice-bar/, 'gate 提示不得再单独占一行顶栏');
-assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*calc\(100% \+ 12rpx\);/, 'gate 提示须绝对定位在再看一眼上方');
+assert.match(wxss, /\.prop-look-gate-overlay\s*\{[^}]*bottom:\s*100%;[^}]*margin-bottom:\s*24rpx;/, 'gate 提示须锚定在再看一眼顶边上方（避免 calc(100%+…) 真机失效叠压）');
 assert.ok(
   !wxml.includes('canvas-notice-anchor--prop'),
   '道具临摹不得再把提示叠在 preview 内 canvas 之上'

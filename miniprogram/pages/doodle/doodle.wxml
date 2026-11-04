@@ -54,20 +54,22 @@
       <view
         class="prop-look-chrome {{propDrawingLocked ? 'prop-chrome--dimmed' : ''}} {{propTutorialVisible && propTutorialStep === 0 ? 'prop-look-chrome--tutorial-spotlight' : ''}}"
       >
-        <view wx:if="{{propLookGateHintText}}" class="prop-look-gate-overlay">
-          <inline-notice
-            text="{{propLookGateHintText}}"
-            tone="{{propLookGateHintTone}}"
-            visible="{{propLookGateHintVisible}}"
-          ></inline-notice>
-        </view>
-        <view
-          class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
-          bindtap="onPropLookAgain"
-          aria-role="button"
-          aria-label="{{propLookHint}}"
-        >
-          <text>{{propLookHint}}</text>
+        <view class="prop-look-anchor">
+          <view wx:if="{{propLookGateHintText}}" class="prop-look-gate-overlay">
+            <inline-notice
+              text="{{propLookGateHintText}}"
+              tone="{{propLookGateHintTone}}"
+              visible="{{propLookGateHintVisible}}"
+            ></inline-notice>
+          </view>
+          <view
+            class="prop-look-hint {{propSessionLookRemaining === 0 ? 'prop-look-hint--empty' : ''}}"
+            bindtap="onPropLookAgain"
+            aria-role="button"
+            aria-label="{{propLookHint}}"
+          >
+            <text>{{propLookHint}}</text>
+          </view>
         </view>
       </view>
     </view>

@@ -30,6 +30,7 @@ assert.match(wxml, /<root-portal[\s\S]*doodle-nav-cover[\s\S]*doodle-back-cover/
 assert.equal(pageScript.includes("pageTransitionPhase: 'waiting'"), true, 'Canvas 准备期间须保持 waiting 阶段');
 assert.equal(pageScript.includes('this.renderAll();') && pageScript.includes('this.revealEditor();'), true, '蛋体与旧作品渲染完成前必须隐藏整页，之后再统一渐入');
 assert.match(pageScript, /PROP_PREPARE_MIN_MS[\s\S]*finishPropCanvasPrepare/, '道具临摹须在简笔解码完成后至少展示一段准备 loading');
+assert.match(pageScript, /preloadPropEntryAssets/, 'Canvas 就绪后须等待简笔等资源预载再 reveal');
 assert.match(wxss, /\.page--waiting\s*\{[^}]*opacity:\s*0;[^}]*\}/, 'Canvas 准备期间必须隐藏整页');
 assert.match(wxss, /\.page\.page--companion-prop\.page--waiting\s*\{[^}]*opacity:\s*1;/, '道具临摹准备期间须显示画纸加载层，不得整页透明');
 assert.match(wxml, /prop-prepare-screen[\s\S]*prop-prepare-title[\s\S]*正在准备画纸/, '道具临摹须在整页展示 loading 标题与文案');

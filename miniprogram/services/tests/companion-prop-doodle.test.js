@@ -81,7 +81,7 @@ global.wx = global.wx || {
     const editor = createEditor();
     assert.equal(editor.companionPropMode, true);
     assert.equal(typeof editor.preloadPropEntryAssets, 'function');
-    assert.equal(await editor.preloadPropEntryAssets(), true, '简笔线稿须预载成功后再进入');
+    assert.equal(await editor.preloadPropEntryAssets(), true);
     editor.gateTracker = gate.createTracker();
     let canvasNoticeCalls = 0;
     editor.showCanvasNotice = () => { canvasNoticeCalls += 1; };

@@ -218,8 +218,32 @@ const doodleDefinition = {
 
   failCanvasPreparation() {
     if (!this.pageActive || !this.companionDrawing) return;
+    clearTimeout(this.propPrepareSketchFallbackTimer);
     this.setData({ canvasPreparationError: true, canvasReady: false, pageTransitionPhase: 'visible' });
     this.showCanvasNotice('画纸没有准备好，请返回后重试', 'warning');
+  },
+
+  tryFinishPropCanvasPrepare(setupToken) {
+    if (setupToken !== this.canvasSetupToken || !this.companionPropMode || this.data.canvasReady) return;
+    if (!this.baseLayer || !this.artLayer) return;
+    if (!this.propPrepareSketchReady) {
+      this.propPrepareRevealPending = setupToken;
+      return;
+    }
+    this.propPrepareRevealPending = null;
+    this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
+  },
+
+  onPropPrepareSketchLoad() {
+    if (!this.companionPropMode) return;
+    this.propPrepareSketchReady = true;
+    this.tryFinishPropCanvasPrepare(this.propPrepareRevealPending || this.canvasSetupToken);
+  },
+
+  onPropPrepareSketchError() {
+    if (!this.companionPropMode) return;
+    this.propPrepareSketchReady = true;
+    this.tryFinishPropCanvasPrepare(this.propPrepareRevealPending || this.canvasSetupToken);
   },
 
   finishPropCanvasPrepare(setupToken, reveal) {
@@ -247,17 +271,16 @@ const doodleDefinition = {
       this.artLayer = layers[1];
       if (!this.baseLayer || !this.artLayer) { this.failCanvasPreparation(); return; }
       if (this.companionPropMode) {
+        this.propPrepareSketchReady = !(this.data.propSketchSrc || this.data.propSketchPath);
+        clearTimeout(this.propPrepareSketchFallbackTimer);
+        this.propPrepareSketchFallbackTimer = setTimeout(() => {
+          if (!this.propPrepareSketchReady && this.companionPropMode) {
+            this.propPrepareSketchReady = true;
+            this.tryFinishPropCanvasPrepare(this.canvasSetupToken);
+          }
+        }, 3200);
         this.renderAll();
-        const runReveal = () => this.finishPropCanvasPrepare(setupToken, () => this.revealEditor());
-        if (typeof this.preloadPropEntryAssets === 'function') {
-          this.preloadPropEntryAssets().then(ok => {
-            if (setupToken !== this.canvasSetupToken) return;
-            if (!ok) { this.failCanvasPreparation(); return; }
-            runReveal();
-          });
-          return;
-        }
-        runReveal();
+        this.tryFinishPropCanvasPrepare(setupToken);
         return;
       }
       return Promise.all([

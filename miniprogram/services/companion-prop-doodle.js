@@ -108,13 +108,8 @@ function attach(definition) {
   definition.preloadPropEntryAssets = function preloadPropEntryAssets() {
     if (!this.companionPropMode) return Promise.resolve(true);
     const sketch = this.data.propSketchSrc || this.data.propSketchPath;
-    if (!sketch) return Promise.resolve(false);
-    const tasks = [preloadLocalImage(sketch)];
-    const colored = this.data.propColoredSrc || this.data.propColoredPath;
-    if (colored) tasks.push(preloadLocalImage(colored));
-    const fallback = this.data.propFallbackColoredPath;
-    if (fallback && fallback !== colored) tasks.push(preloadLocalImage(fallback));
-    return Promise.all(tasks).then(results => results[0] === true);
+    if (!sketch) return Promise.resolve(true);
+    return preloadLocalImage(sketch).then(() => true, () => true);
   };
 
   definition.showPropLookGateHint = function showPropLookGateHint(text, tone) {
@@ -484,6 +479,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
+    clearTimeout(this.propPrepareSketchFallbackTimer);
     this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnHide) originalOnHide.call(this);
@@ -493,6 +489,7 @@ function attach(definition) {
     clearTimeout(this.propPeekTimer);
     clearTimeout(this.propPeekHideTimer);
     clearTimeout(this.propPeekPopInSettleTimer);
+    clearTimeout(this.propPrepareSketchFallbackTimer);
     this.clearPropLookGateHint();
     this.clearPropUnlockAward();
     if (originalOnUnload) originalOnUnload.call(this);

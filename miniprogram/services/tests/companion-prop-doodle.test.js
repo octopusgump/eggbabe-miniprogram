@@ -88,7 +88,14 @@ global.wx = global.wx || {
     assert.equal((await editor.completeCompanionDrawing()).ok, false, '未达标不得完成');
     assert.equal(canvasNoticeCalls, 0, '未达标须用再看一眼浮层，不得走画布顶栏提示');
     assert.equal(editor.data.propLookGateHintVisible, true);
-    assert.match(editor.data.propLookGateHintText, /再画一会儿/);
+    assert.equal(editor.data.propLookGateHintText, gate.INCOMPLETE_HINT);
+
+    editor.gateTracker = gate.createTracker();
+    editor.propSession = propChallenge.createSession();
+    editor.setData({ propDrawingLocked: false, propTutorialVisible: false, propUnlockVisible: false, propPeekVisible: false });
+    editor.onPropLookAgain();
+    assert.equal(editor.data.propLookGateHintText, '再画一会儿吧', '再看一眼未达标须显示 gate 短句');
+    assert.equal(editor.data.propPeekVisible, false, 'gate 短句期间不得打开看一看');
 
     editor.gateTracker = buildPassingTracker();
     editor.artLayer = {};
@@ -138,6 +145,7 @@ global.wx = global.wx || {
     peekEditor.data.propDrawingLocked = false;
     peekEditor.data.propTutorialVisible = false;
     peekEditor.data.propUnlockVisible = false;
+    peekEditor.gateTracker = buildPassingTracker();
     peekEditor.onPropLookAgain();
     assert.equal(peekEditor.data.propPeekVisible, true, '再看一眼须再次打开同一张简笔');
     peekEditor.onPropPeekCardTap();

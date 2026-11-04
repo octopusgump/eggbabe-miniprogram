@@ -8,6 +8,8 @@ const TUTORIAL_FINAL_LABEL = '开始画';
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const PROP_LOOK_GATE_HINT_MS = 1800;
 const PROP_LOOK_GATE_HINT_FADE_MS = 180;
+/** 未达标点「再看一眼」时的 pill 文案（与「画好了」v2 长句分开） */
+const PROP_LOOK_GATE_HINT = '再画一会儿吧';
 
 function schedulePropPeekPhase(editor, apply) {
   if (wx.nextTick) wx.nextTick(apply);
@@ -293,6 +295,11 @@ function attach(definition) {
     if (this.data.propDrawingLocked || this.data.propUnlockVisible || this.data.propTutorialVisible) return;
     if (this.propSession.lookRemaining <= 0) return;
     if (this.currentStroke) this.finishStroke();
+    const gateResult = drawingGate.evaluate(this.gateTracker);
+    if (!gateResult.ok) {
+      this.showPropLookGateHint(PROP_LOOK_GATE_HINT, 'info');
+      return;
+    }
     this.startPropPeek({ countsAgainstManual: true });
   };
 
@@ -505,4 +512,4 @@ function attach(definition) {
   };
 }
 
-module.exports = { attach, TUTORIAL_FINAL_LABEL, PROP_LOOK_GATE_HINT_MS };
+module.exports = { attach, TUTORIAL_FINAL_LABEL, PROP_LOOK_GATE_HINT_MS, PROP_LOOK_GATE_HINT };

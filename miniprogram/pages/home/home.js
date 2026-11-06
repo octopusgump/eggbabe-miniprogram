@@ -559,6 +559,7 @@ Page({
         if (this.returningFromPropDoodle || this.pendingPropDoodleReturn) {
           this.returningFromPropDoodle = false;
           this.pendingPropDoodleReturn = false;
+          this.companionNavigationPending = false;
           this.loadCompanionStar({ deferAward: true });
         } else {
           this.loadCompanionStar();

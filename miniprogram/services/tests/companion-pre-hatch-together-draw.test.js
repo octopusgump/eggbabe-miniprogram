@@ -11,6 +11,11 @@ const homeTemplate = fs.readFileSync(path.join(root, 'pages/home/home.wxml'), 'u
 assert.match(homeLogic, /title: '一起画'/);
 assert.match(homeLogic, /openPropTogetherDraw\(\)/);
 assert.match(homeLogic, /buildPropDoodleUrl\(\{ source: 'home' \}\)/);
+assert.match(
+  homeLogic,
+  /pendingPropDoodleReturn[\s\S]*companionNavigationPending = false/,
+  '从一起画返回后须解除导航锁，允许再次短按一起画'
+);
 assert.match(homeLogic, /onCompanionLongPress[\s\S]*key === 'draw'[\s\S]*openDoodleEditor\(\)/, '长按仍保留画我的蛋壳编辑器');
 assert.match(homeTemplate, /star-balance="\{\{companionStarBalance\}\}"/);
 assert.equal(entry.buildPropDoodleUrl({ source: 'home' }).includes('source=home'), true);

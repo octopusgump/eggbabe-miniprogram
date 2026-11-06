@@ -93,7 +93,8 @@ async function main() {
   assert.match(navigation.url,/pages\/chat\/chat/,'聊天展开现有完整页');
   page.data.companionNavigating=false;
   page.data.todayCompanionInteractionDone=true;
-  page.onTodayCompanionAction();assert.match(navigation.url,/entry=companion/,'得星后仍能继续画画');
+  await page.onTodayCompanionAction();
+  assert.match(navigation.url, /entry=companion&mode=prop&source=letter/, '得星后仍能继续一起画');
   navigation.events.companionDrawingCompleted({id:'second-drawing',image:'local.png',line:'一起画的'});
   page.startClock=()=>{};page.loadCompanionStar=()=>adapter.getRoomStarView();page.refreshEnvironment=()=>{};page.loadSnapshot=()=>{};page.scheduleEnvironmentRefresh=()=>{};
   page.returnToCompanion=false; page.onShow(); await new Promise(resolve=>setImmediate(resolve)); assert.equal(page.data.pendingCompanionMemory.id,'second-drawing','当天第二次创作仍可收录');

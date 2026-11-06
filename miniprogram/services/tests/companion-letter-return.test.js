@@ -54,7 +54,7 @@ global.clearTimeout = global.clearInterval = () => {};
       const before = (await stars.getRoomStarView()).data.star;
       assert.equal(page.data.todayCompanionTomorrowAvailable, false);
       const sameLetter = page.data.todayCompanionView;
-      page.onTodayCompanionAction();
+      await page.onTodayCompanionAction();
       assert.match(navigation.url, /\/pages\/doodle\/doodle\?entry=companion&mode=prop&source=letter/);
       if (!successAfterHide) navigation.success();
       page.onHide();

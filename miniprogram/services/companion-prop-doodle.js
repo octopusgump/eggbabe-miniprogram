@@ -3,6 +3,7 @@ const propAssets = require('./companion-prop-assets');
 const propChallenge = require('./companion-prop-challenge');
 const drawingGate = require('./companion-drawing-gate');
 const companionAdapter = require('./iaa-star-unlock-adapter');
+const propDoodleEntry = require('./companion-prop-doodle-entry');
 
 const PROP_AWARD_SOUND = '/assets/scenes/lifecycle/post-hatch/40-interaction-fx/companion-star/companion-star-award.mp3';
 const PROP_LOOK_GATE_HINT_MS = 1800;
@@ -63,9 +64,11 @@ function attach(definition) {
   const originalFinishStroke = definition.finishStroke;
   const originalComplete = definition.completeCompanionDrawing;
 
-  definition.onLoad = function onLoad(query) {
+  definition.onLoad = function onLoad(rawQuery) {
+    const normalized = propDoodleEntry.normalizeCompanionEntryQuery(rawQuery || {});
+    const query = normalized.query;
     if (originalOnLoad) originalOnLoad.call(this, query);
-    this.companionPropMode = Boolean(this.companionDrawing && query && query.mode === 'prop');
+    this.companionPropMode = Boolean(this.companionDrawing && query.mode === 'prop');
     if (!this.companionPropMode) return;
     companionAdapter.setCompanionDraft(null);
     this.propEntrySource = (query && query.source) || 'activity';

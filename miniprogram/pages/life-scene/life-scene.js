@@ -15,6 +15,7 @@ const starAdapter = require('../../services/iaa-star-unlock-adapter');
 const todayCompanionAdapter = require('../../services/iaa-today-companion-adapter');
 const companionActivities = require('../../services/companion-activity-catalog');
 const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
+const propDoodleEntry = require('../../services/companion-prop-doodle-entry');
 const letterActivityProgress = require('../../services/companion-letter-progress');
 const companionPetImage = require('../../utils/companion-pet-image');
 const { rollDurationMs } = require('../../utils/companion-star-roll');
@@ -1769,18 +1770,45 @@ Page({
     const entryDate = require('../../services/companion-star-rules').shanghaiDate();
     this.returningFromChild = true;
     this.setData({ companionNavigating: true });
-    if (kind === 'drawing' && activity.route) {
-      propEntryPrefetch.warmPropDoodleEntry({ pageUrl: activity.route });
+    if (kind !== 'drawing' || !activity.route) {
+      wx.navigateTo({
+        url: activity.route,
+        success: () => {
+          if (entryScope !== starAdapter.getRoomScope() || entryDate !== require('../../services/companion-star-rules').shanghaiDate()) return;
+          letterActivityProgress.markEntered(entryScope, kind, entryDate);
+          this.syncLetterProgress();
+        },
+        events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
+        fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('活动没有打开，请重试', 'warning'); }
+      });
+      return;
     }
-    wx.navigateTo({
+    return propDoodleEntry.openPropDoodleNavigation({
+      wx,
       url: activity.route,
-      success: () => {
-        if (entryScope !== starAdapter.getRoomScope() || entryDate !== require('../../services/companion-star-rules').shanghaiDate()) return;
-        letterActivityProgress.markEntered(entryScope, kind, entryDate);
-        this.syncLetterProgress();
+      source: 'letter',
+      stars: starAdapter,
+      prefetch: propEntryPrefetch,
+      navigateOptions: {
+        success: () => {
+          if (entryScope !== starAdapter.getRoomScope() || entryDate !== require('../../services/companion-star-rules').shanghaiDate()) return;
+          letterActivityProgress.markEntered(entryScope, kind, entryDate);
+          this.syncLetterProgress();
+        },
+        events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } }
       },
-      events: { companionDrawingCompleted: memory => { this.completedCompanionDrawing = memory; } },
-      fail: () => { this.returningFromChild = false; this.setData({ companionNavigating: false, todayCompanionVisible: true }); this.showSystemNotice('活动没有打开，请重试', 'warning'); }
+      onFail: () => {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false, todayCompanionVisible: true });
+        this.showSystemNotice('活动没有打开，请重试', 'warning');
+      }
+    }).then(result => {
+      if (result && !result.ok) {
+        this.returningFromChild = false;
+        this.setData({ companionNavigating: false, todayCompanionVisible: true });
+        this.showSystemNotice(result.error && result.error.message || '活动没有打开，请重试', 'warning');
+      }
+      return result;
     });
   },
 

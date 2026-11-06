@@ -18,6 +18,10 @@ const demoExperience = require('../../services/demo-experience');
 const windowWeatherCanvas = require('../../utils/window-weather-canvas');
 const { createInlineNoticeController } = require('../../utils/inline-notice-controller');
 const { createSceneFeedbackController } = require('../../utils/scene-feedback-controller');
+const starAdapter = require('../../services/iaa-star-unlock-adapter');
+const propDoodleEntry = require('../../services/companion-prop-doodle-entry');
+const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
+const roomStarController = require('../../services/companion-room-star-controller');
 const dailyMoodConfig = require('../../config/daily-mood');
 
 const SCENE_PREVIEW_STORAGE_KEY = 'eggbabe_scene_preview';
@@ -118,7 +122,7 @@ function hasCustomizedShell(pet) {
 const COMPANION_ACTIONS = [
   { key: 'wish', title: '许愿池', desc: '今天想和我做什么', icon: preHatchAssets.interactionIcons.wish },
   { key: 'learn', title: '早教班', desc: '教我一件小事', icon: preHatchAssets.interactionIcons.learn },
-  { key: 'draw', title: '画画', desc: '画下我们的记号', icon: preHatchAssets.interactionIcons.draw }
+  { key: 'draw', title: '一起画', desc: '临摹小道具', icon: preHatchAssets.interactionIcons.draw }
 ];
 const DAILY_ACTION_MODULES = {
   wish: 'wish_pool',
@@ -144,7 +148,7 @@ function companionActionsFor(records, serverDate) {
       appearance,
       ariaLabel: completed
         ? `${item.title}，今天已经回答，点击查看`
-        : (item.key === 'draw' ? '画画，点击打开绘图工具' : item.title)
+        : (item.key === 'draw' ? '一起画，点击开始临摹' : item.title)
     });
   });
 }
@@ -226,6 +230,13 @@ Page({
     sceneTransitionStyle: '',
     eggShellOverlays: preHatchAssets.eggShellOverlays,
     reducedMotion: false,
+    companionStarBalance: -1,
+    companionStarRollValue: -1,
+    companionStarAwardVisible: false,
+    companionStarGainLabel: '',
+    companionStarClaimed: false,
+    companionStarProgressText: '',
+    companionDays: 0,
     isDemo: config.localDemoEnabled,
     acceptanceToolsOpen: false,
     stageTesterOpen: false,
@@ -544,6 +555,14 @@ Page({
           this.setupHomeEgg();
         }
         this.scheduleCompanionFirstHint(stage, showNameSheet);
+        starAdapter.configureRoom(pet.id, pet);
+        if (this.returningFromPropDoodle || this.pendingPropDoodleReturn) {
+          this.returningFromPropDoodle = false;
+          this.pendingPropDoodleReturn = false;
+          this.loadCompanionStar({ deferAward: true });
+        } else {
+          this.loadCompanionStar();
+        }
       } else {
         this.stopClock();
         this.stopWindowWeatherAnimation();
@@ -1296,6 +1315,10 @@ Page({
     this.cancelCompanionFirstHint();
     this.companionLongPressKey = key;
     this.showCompanionHint(key);
+    if (key === 'draw') {
+      this.companionLongPressTapKey = key;
+      this.openDoodleEditor();
+    }
   },
 
   clearCompanionNavigation() {
@@ -1374,6 +1397,56 @@ Page({
     this.homeEggSetupPending = false;
   },
 
+  canShowHomeStarAward() {
+    return Boolean(
+      this.pageActive
+      && this.data.pet
+      && this.data.stage !== 'hatched'
+      && !this.data.doodleEditorVisible
+      && !this.data.dailyWindowVisible
+    );
+  },
+
+  loadCompanionStar(options) {
+    return roomStarController.loadCompanionStar(this, starAdapter, Object.assign({
+      canShowAward: () => this.canShowHomeStarAward()
+    }, options || {}));
+  },
+
+  openPropTogetherDraw() {
+    if (this.companionNavigationPending || this.data.stage === 'hatched') return;
+    const pet = this.data.pet;
+    if (!pet) return;
+    this.returningFromPropDoodle = true;
+    this.companionNavigationPending = true;
+    starAdapter.configureRoom(pet.id, pet);
+    propDoodleEntry.openPropDoodleNavigation({
+      wx,
+      url: propDoodleEntry.buildPropDoodleUrl({ source: 'home' }),
+      source: 'home',
+      stars: starAdapter,
+      prefetch: propEntryPrefetch,
+      navigateOptions: {
+        events: {
+          companionDrawingCompleted: () => {
+            this.pendingPropDoodleReturn = true;
+          }
+        }
+      },
+      onFail: () => {
+        this.returningFromPropDoodle = false;
+        this.companionNavigationPending = false;
+        this.showSystemNotice('一起画没有打开，请重试', 'warning', 'prop-doodle');
+      }
+    }).then(result => {
+      if (result && !result.ok) {
+        this.returningFromPropDoodle = false;
+        this.companionNavigationPending = false;
+        this.showSystemNotice(result.error && result.error.message || '一起画没有打开，请重试', 'warning', 'prop-doodle');
+      }
+    });
+  },
+
   openDoodleEditor() {
     if (this.doodleEditorPending || this.data.doodleEditorVisible) return;
     this.doodleEditorPending = true;
@@ -1441,7 +1514,7 @@ Page({
     if (key === 'wish' && !this.data.wishUnlocked) return this.showSystemNotice('许愿池还在准备中。', 'info', 'wish-locked');
     if (key === 'learn' && !this.data.learnUnlocked) return this.showSystemNotice('蛋宝宝还没到早教的年龄。', 'info', 'learn-locked');
     if (key === 'draw') {
-      this.openDoodleEditor();
+      this.openPropTogetherDraw();
       return;
     }
     const routes = {
@@ -1742,6 +1815,7 @@ Page({
 
   onHide() {
     this.pageActive = false;
+    clearTimeout(this.companionStarAwardTimer);
     if (this.doodleReturnNoticeController) this.doodleReturnNoticeController.destroy();
     this.manualStateRequestToken = (this.manualStateRequestToken || 0) + 1;
     this.pendingSceneTarget = null;

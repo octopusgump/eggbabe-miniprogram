@@ -25,6 +25,11 @@
         id="petMoodTab"
         pet-name="{{pet.name || '还没有名字'}}"
         mood="{{dailyMood}}"
+        star-balance="{{companionStarBalance}}"
+        star-gain-label="{{companionStarGainLabel}}"
+        star-award-visible="{{companionStarAwardVisible}}"
+        star-claimed="{{companionStarClaimed}}"
+        star-progress-text="{{companionStarProgressText}}"
         intro-ready="{{homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed}}"
         reduced-motion="{{reducedMotion}}"
         name-interactive="{{true}}"
@@ -154,7 +159,7 @@
         <view class="companion-grid">
           <text wx:if="{{companionHintKey === 'wish' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--wish {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">许愿池</text>
           <text wx:if="{{companionHintKey === 'learn' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--learn {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">早教班</text>
-          <text wx:if="{{companionHintKey === 'draw' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--draw {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">画画</text>
+          <text wx:if="{{companionHintKey === 'draw' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--draw {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">一起画</text>
           <view class="companion-primary-dock">
             <block wx:for="{{companionActions}}" wx:key="key">
               <view

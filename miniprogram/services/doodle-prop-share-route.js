@@ -4,9 +4,11 @@
  * TODO(v2): 信件（source=letter）和房间入口仍走默认 navigateTo，接入同一 routeType 前那些页也要先切 Skyline。
  */
 
+const propDoodleEntry = require('./companion-prop-doodle-entry');
+
 const ROUTE_TYPE = 'propPaper';
 const SHARE_ELEMENT_KEY = 'propPaperCard';
-const ACTIVITY_PROP_DOODLE_URL = '/pages/doodle/doodle?entry=companion&mode=prop&source=activity';
+const ACTIVITY_PROP_DOODLE_URL = propDoodleEntry.buildPropDoodleUrl({ source: 'activity' });
 /** 与 prop-paper-stage 的 88vw / 120vw 一致，列表占位用同一宽高比。 */
 const PROP_PAPER_WIDTH_OVER_HEIGHT = 88 / 120;
 const PROP_PAPER_TRANSITION_MS = 320;

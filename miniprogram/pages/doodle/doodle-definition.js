@@ -304,10 +304,11 @@ const doodleDefinition = {
     if (this.companionStartRequested) return Promise.resolve();
     this.companionStartRequested = true;
     if (!this.companionPropMode) {
+      // 旧自由涂鸦（画一画）入口已下线；保留草稿逻辑供开发回溯，不再对用户开放。
       companionAdapter.setCompanionDraft(this.shellArt);
       companionAdapter.markCompanionDraftStarted();
     }
-    // 仅画布就绪，不算活动完成；星星与日数在“画好了”成功导出后统一结算。
+    // 破壳后一起画：进入 0✦；道具临摹在解锁层点「好的」才 +10✦（见 companion-prop-doodle）。
     return Promise.resolve({ ok: true, awardedStars: 0, effectiveAdded: false });
   },
   clearCompanionFeedback() {

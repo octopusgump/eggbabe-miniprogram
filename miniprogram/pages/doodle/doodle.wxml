@@ -1,4 +1,5 @@
 <view class="page page--{{pageTransitionPhase}} {{companionPropMode ? 'page--companion-prop' : ''}} {{companionReducedMotion ? 'page--reduced-motion' : ''}} {{propUnlockVisible ? 'page--prop-unlock' : ''}}">
+  <!-- 旧自由涂鸦「进页发星」UI 已停用；一起画仅在道具解锁层结算 +10✦ -->
   <view wx:if="{{companionDrawing && companionStartAwardVisible}}" class="companion-drawing-award" aria-label="获得{{companionStartAward}}星"><companion-star mode="award" size="150" reduced-motion="{{companionReducedMotion}}"></companion-star><text>+{{companionStartAward}}</text></view>
   <view class="doodle-nav">
     <view class="doodle-status-bar" style="height:{{statusBarHeight}}px"></view>

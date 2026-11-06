@@ -4,6 +4,7 @@ const stars = require('../../services/iaa-star-unlock-adapter');
 const pageModel = require('../../services/companion-activities-page');
 const propEntryPrefetch = require('../../services/companion-prop-entry-prefetch');
 const propPaperRoute = require('../../services/doodle-prop-share-route');
+const propDoodleEntry = require('../../services/companion-prop-doodle-entry');
 
 Page({
   data: {
@@ -29,9 +30,9 @@ Page({
     this.wishPressTimers = {};
     this.wishBurstTimers = [];
     const pet = this.currentPet();
-    if (!pet || petStore.getStage(pet) !== 'hatched') {
+    if (!pet) {
       this.setData({ playable: [], comingSoon: [] });
-      this.showNotice('破壳后才能打开活动。', 'warning');
+      this.showNotice('还没有绑定蛋宝宝。', 'warning');
       return;
     }
     stars.configureRoom(pet.id, pet);
@@ -40,7 +41,7 @@ Page({
 
   onShow() {
     const pet = this.currentPet();
-    if (!pet || petStore.getStage(pet) !== 'hatched') return;
+    if (!pet) return;
     stars.configureRoom(pet.id, pet);
     this.refresh();
   },
@@ -65,7 +66,7 @@ Page({
         })
       });
       propEntryPrefetch.warmPropDoodleEntry({
-        pageUrl: '/pages/doodle/doodle?entry=companion&mode=prop&source=activity'
+        pageUrl: propDoodleEntry.buildPropDoodleUrl({ source: 'activity' })
       });
     });
   },
@@ -90,19 +91,19 @@ Page({
       return;
     }
     if (item.key === 'drawing') {
-      const route = item.route;
-      propEntryPrefetch.warmPropDoodleEntry({ pageUrl: route });
-      stars.beginCompanionPropDrawing().then(result => {
-        if (!result.ok) {
+      propDoodleEntry.openPropDoodleNavigation({
+        wx,
+        url: item.route,
+        source: 'activity',
+        stars,
+        prefetch: propEntryPrefetch,
+        propPaperRoute,
+        renderer: this.renderer,
+        onFail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
+      }).then(result => {
+        if (result && !result.ok) {
           this.showNotice(result.error && result.error.message || '暂时打不开，请稍后再试。', 'warning');
-          return;
         }
-        propPaperRoute.navigateToActivityPropDoodle({
-          wx,
-          url: route,
-          renderer: this.renderer,
-          onFail: () => this.showNotice('暂时打不开，请稍后再试。', 'warning')
-        });
       });
       return;
     }

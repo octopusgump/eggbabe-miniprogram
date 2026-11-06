@@ -92,7 +92,8 @@ async function main(){
   assert.match(p.data.contextActionIcon, /30-character\/jade-rabbit\/stare\.png/, '开信后展示玉兔头像');
   assert.equal(p.data.contextEntryOpensChat, true, '开信后左下进入聊天');
   p.onTodayCompanionRevealTomorrow();assert.equal(p.data.todayCompanionTomorrowVisible,false,'未进入小游戏时不能展开明日内容');
-  p.onTodayCompanionAction();navigation.success();
+  await p.onTodayCompanionAction();
+  navigation.success();
   p.setData({companionNavigating:false,todayCompanionVisible:true});navigation=undefined;
   assert.equal(p.data.todayCompanionTomorrowAvailable,true,'成功进入后返回才出现明天入口');
   p.onTodayCompanionRevealTomorrow();assert.equal(p.data.companionRoleEntering,false,'小游戏宠物固定显示，不滑入');
@@ -108,7 +109,8 @@ async function main(){
   adapter.configureRoom('full-drawing-chain');
   adapter.getDailyInvitation(['drawing'], () => 0);
   const parent=page();await parent.onOpenTodayCompanion();
-  parent.onTodayCompanionAction();const route=navigation;
+  await parent.onTodayCompanionAction();
+  const route = navigation;
   assert.equal((await adapter.getRoomStarView()).data.star.balance,13,'开信已发基础星，仅导航不再加星');
   route.fail();assert.equal(parent.data.companionNavigating,false);
   const gate=require('../companion-drawing-gate');

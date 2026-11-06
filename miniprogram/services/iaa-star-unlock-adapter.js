@@ -80,7 +80,7 @@ function getActivityCompleted(kind) {
   ensureDaily(roomPreviewView);
   const star = roomPreviewView.star;
   if (kind === 'listen') return Boolean(listeningState.day && listeningState.day.date === shanghaiDate() && listeningState.day.categories.length);
-  if (kind === 'drawing') return false;
+  if (kind === 'drawing') return Boolean(star.drawingCompleted);
   return Boolean(star.noteCollected);
 }
 function getMemories() { return clone(collectedMemories); }
@@ -334,6 +334,7 @@ function recordPropDrawingComplete(view, drawingId) {
       refreshDailyBasis(star);
     }
     completedDrawingIds.add(drawingId);
+    star.drawingCompleted = true;
   }
   const giftStars = duplicate ? 0 : PROP_DRAWING_REWARD;
   if (giftStars > 0) {

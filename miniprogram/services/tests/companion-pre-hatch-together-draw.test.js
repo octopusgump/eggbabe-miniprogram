@@ -16,8 +16,14 @@ assert.match(
   /pendingPropDoodleReturn[\s\S]*companionNavigationPending = false/,
   '从一起画返回后须解除导航锁，允许再次短按一起画'
 );
-assert.match(homeLogic, /onCompanionLongPress[\s\S]*key === 'draw'[\s\S]*openDoodleEditor\(\)/, '长按仍保留画我的蛋壳编辑器');
-assert.match(homeTemplate, /star-balance="\{\{companionStarBalance\}\}"/);
+assert.match(homeLogic, /togetherDrawDockLabel/, '底栏须展示一起画赚星/去玩标签');
+assert.match(homeTemplate, /home-star-chip/, '破壳前星星余额须在左上独立展示');
+assert.match(homeTemplate, /companion-draw-dock-label/);
+assert.match(homeTemplate, /companion-draw-caption/);
+assert.match(homeTemplate, /togetherDrawDockLabel/);
+assert.match(homeLogic, /togetherDrawDockLabel: '一起画 · 赚 10✦'/);
+const roomStar = fs.readFileSync(path.join(root, 'services/companion-room-star-controller.js'), 'utf8');
+assert.match(roomStar, /一起画 · 去玩/);
 assert.equal(entry.buildPropDoodleUrl({ source: 'home' }).includes('source=home'), true);
 
 (async () => {
@@ -32,6 +38,8 @@ assert.equal(entry.buildPropDoodleUrl({ source: 'home' }).includes('source=home'
   assert.equal((await stars.getRoomStarView()).data.star.balance, before);
   const done = await stars.recordPropDrawingComplete(await stars.getRoomStarView().then(r => r.data), 'pre-hatch-work-1');
   assert.equal(done.awardedStars, 10);
+  assert.equal(stars.getActivityCompleted('drawing'), true);
+  assert.equal((await stars.getRoomStarView()).data.star.drawingCompleted, true);
   stars.configureRoom('pre-hatch-pet', { id: 'pre-hatch-pet', ownerId: 'owner-a', prototype: '玉兔', lifecycleStage: 'HATCHED' });
   assert.equal((await stars.getRoomStarView()).data.star.balance, before + 10, '破壳后同一 pet 余额不清零');
   console.log('破壳前一起画入口与星星累计口径通过。');

@@ -35,7 +35,8 @@ Component({
     overlayLocked: { type: Boolean, value: false },
     reducedMotion: { type: Boolean, value: false },
     nameInteractive: { type: Boolean, value: false },
-    todayCompanionEntry: { type: Boolean, value: false }
+    todayCompanionEntry: { type: Boolean, value: false },
+    starSummaryHidden: { type: Boolean, value: false }
   },
 
   data: {

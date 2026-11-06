@@ -236,6 +236,7 @@ Page({
     companionStarGainLabel: '',
     companionStarClaimed: false,
     companionStarProgressText: '',
+    togetherDrawDockLabel: '一起画 · 赚 10✦',
     companionDays: 0,
     isDemo: config.localDemoEnabled,
     acceptanceToolsOpen: false,
@@ -1318,7 +1319,6 @@ Page({
     this.showCompanionHint(key);
     if (key === 'draw') {
       this.companionLongPressTapKey = key;
-      this.openDoodleEditor();
     }
   },
 

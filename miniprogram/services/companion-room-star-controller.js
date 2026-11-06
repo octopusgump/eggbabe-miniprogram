@@ -55,11 +55,13 @@ function loadCompanionStar(page, starAdapter, options) {
     const claimed = result.data.star.dailyClaimStatus !== 'AVAILABLE';
     const fromDisplay = displayValue(page);
     const balanceChanged = fromDisplay >= 0 && balance !== fromDisplay;
+    const drawingDone = Boolean(result.data.star.drawingCompleted);
     const patch = {
       companionStarBalance: balance,
       companionDays: Number(result.data.star.companionDays || 0),
       companionStarClaimed: claimed,
-      companionStarProgressText: ''
+      companionStarProgressText: '',
+      togetherDrawDockLabel: drawingDone ? '一起画 · 去玩' : '一起画 · 赚 10✦'
     };
     if (balanceChanged) {
       page.companionStarAwardPending = true;

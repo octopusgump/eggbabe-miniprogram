@@ -20,6 +20,11 @@
   ></scene-feedback-stack>
 
   <view wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" class="home-status-stack home-stage home-stage--{{homeStagePhase}}" style="top:{{nameTopPx}}px;">
+    <view wx:if="{{companionStarBalance >= 0}}" class="home-star-chip {{companionStarAwardVisible ? 'home-star-chip--award' : ''}}" aria-label="陪伴星星 {{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}">
+      <companion-star mode="room" size="30" pulse="{{companionStarAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star>
+      <companion-roll-number class="home-star-chip__amount" value="{{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}" reduced-motion="{{reducedMotion}}"></companion-roll-number>
+      <text wx:if="{{companionStarAwardVisible && companionStarGainLabel}}" class="home-star-chip__gain">{{companionStarGainLabel}}</text>
+    </view>
     <view class="home-status-tab">
       <pet-mood-tab
         id="petMoodTab"
@@ -30,6 +35,7 @@
         star-award-visible="{{companionStarAwardVisible}}"
         star-claimed="{{companionStarClaimed}}"
         star-progress-text="{{companionStarProgressText}}"
+        star-summary-hidden="{{true}}"
         intro-ready="{{homeStagePhase === 'visible' && !fullSceneImageLoading && !fullSceneImageFailed}}"
         reduced-motion="{{reducedMotion}}"
         name-interactive="{{true}}"
@@ -156,6 +162,7 @@
       </view>
 
       <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
+        <text class="companion-draw-dock-label">{{togetherDrawDockLabel}}</text>
         <view class="companion-grid">
           <text wx:if="{{companionHintKey === 'wish' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--wish {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">许愿池</text>
           <text wx:if="{{companionHintKey === 'learn' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--learn {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">早教班</text>
@@ -178,6 +185,7 @@
                   <image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image>
                   <text wx:if="{{item.key === 'draw'}}" class="draw-action-spark">✦</text>
                 </view>
+                <text wx:if="{{item.key === 'draw'}}" class="companion-draw-caption">一起画</text>
               </view>
             </block>
           </view>

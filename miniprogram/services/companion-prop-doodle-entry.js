@@ -1,5 +1,5 @@
 /**
- * 破壳后「一起画」（道具临摹）统一入口。
+ * 破壳前/后「一起画」（道具临摹）统一入口。
  * 旧自由涂鸦（entry=companion 且无 mode=prop）入口已下线，页面逻辑仍保留在 doodle-definition。
  */
 const LEGACY_COMPANION_FREE_DOODLE_ENTRY_ENABLED = false;

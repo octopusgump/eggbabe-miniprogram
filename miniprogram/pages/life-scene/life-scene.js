@@ -2075,20 +2075,18 @@ Page({
       const memory = this.completedCompanionDrawing;
       if (memory.kind === 'prop') {
         this.completedCompanionDrawing = null;
-        const awardedStars = Number(memory.awardedStars) || 0;
         return starAdapter.getRoomStarView().then(viewResult => {
           if (!viewResult.ok || !this.pageActive) return;
           this.setData({
-            todayCompanionVisible: true,
+            todayCompanionVisible: false,
             pendingCompanionMemory: null,
             todayCompanionStarView: viewResult.data,
             todayCompanionInteractionDone: true,
-            todayCompanionInteractionFeedback: memory.line || '这个小道具，送给你。',
-            todayCompanionAwardedStars: awardedStars,
+            todayCompanionInteractionFeedback: '',
+            todayCompanionAwardedStars: 0,
             companionStarBalance: Number(viewResult.data.star.balance || 0),
             companionDays: Number(viewResult.data.star.companionDays || 0)
           });
-          if (awardedStars > 0) this.playStarAwardFeedback();
           return this.loadCompanionStar({ deferAward: true });
         });
       }

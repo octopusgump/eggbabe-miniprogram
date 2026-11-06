@@ -140,7 +140,8 @@ async function main(){
   parent.startClock=()=>{};parent.refreshEnvironment=()=>{};parent.loadSnapshot=()=>{};parent.scheduleEnvironmentRefresh=()=>{};
   parent.onShow();await new Promise(resolve=>setImmediate(resolve));
   assert.equal(parent.data.pendingCompanionMemory,null,'道具临摹无收下/纪念册 pending');
-  assert.equal(parent.data.todayCompanionAwardedStars,10);assert.equal(parent.data.todayCompanionInteractionFeedback,'这个小道具，送给你。');
+  assert.equal(parent.data.todayCompanionVisible,false,'道具临摹完成回房间不弹信件卡片');
+  assert.equal(parent.data.todayCompanionAwardedStars,0);assert.equal(parent.data.todayCompanionInteractionFeedback,'');
   assert.equal(parent.data.companionStarBalance,23);assert.equal(parent.data.companionDays,1);
   parent.clearStarAwardFeedback();editor.clearCompanionFeedback();
   adapter.configureRoom('background-note');

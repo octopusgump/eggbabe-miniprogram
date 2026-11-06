@@ -7,6 +7,7 @@ const stars = require('../iaa-star-unlock-adapter');
 const root = path.resolve(__dirname, '../..');
 const homeLogic = fs.readFileSync(path.join(root, 'pages/home/home.js'), 'utf8');
 const homeTemplate = fs.readFileSync(path.join(root, 'pages/home/home.wxml'), 'utf8');
+const homeStyles = fs.readFileSync(path.join(root, 'pages/home/home.wxss'), 'utf8');
 
 assert.match(homeLogic, /title: '一起画'/);
 assert.match(homeLogic, /openPropTogetherDraw\(\)/);
@@ -17,13 +18,20 @@ assert.match(
   '从一起画返回后须解除导航锁，允许再次短按一起画'
 );
 assert.match(homeLogic, /togetherDrawDockLabel/, '底栏须展示一起画赚星/去玩标签');
-assert.match(homeTemplate, /home-star-chip/, '破壳前星星余额须在左上独立展示');
-assert.match(homeTemplate, /companion-draw-dock-label/);
+assert.match(homeTemplate, /home-star-card/, '破壳前左上竖向星卡');
+assert.match(homeTemplate, /home-star-card__days/, '星卡须展示一起 X 天');
+assert.match(homeTemplate, /companion-draw-entry-pill/);
 assert.match(homeTemplate, /companion-draw-caption/);
+assert.match(homeTemplate, /room-clock--hud/);
 assert.match(homeTemplate, /togetherDrawDockLabel/);
-assert.match(homeLogic, /togetherDrawDockLabel: '一起画 · 赚 10✦'/);
+assert.match(homeLogic, /togetherDrawDockLabel: '赚 10✦'/);
+assert.match(homeLogic, /hudRowTopPx/);
+assert.match(homeLogic, /hudClockRightPx/);
 const roomStar = fs.readFileSync(path.join(root, 'services/companion-room-star-controller.js'), 'utf8');
-assert.match(roomStar, /一起画 · 去玩/);
+assert.match(roomStar, /'去玩'/);
+assert.match(roomStar, /'赚 10✦'/);
+assert.match(homeStyles, /height: 136rpx/, '底栏高度 68px');
+assert.match(homeStyles, /\.companion-draw-caption[\s\S]*#696356/);
 assert.equal(entry.buildPropDoodleUrl({ source: 'home' }).includes('source=home'), true);
 
 (async () => {

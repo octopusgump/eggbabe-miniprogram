@@ -19,13 +19,21 @@
     reduced-motion="{{reducedMotion}}"
   ></scene-feedback-stack>
 
-  <view wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" class="home-status-stack home-stage home-stage--{{homeStagePhase}}" style="top:{{nameTopPx}}px;">
-    <view wx:if="{{companionStarBalance >= 0}}" class="home-star-chip {{companionStarAwardVisible ? 'home-star-chip--award' : ''}}" aria-label="陪伴星星 {{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}">
-      <companion-star mode="room" size="30" pulse="{{companionStarAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star>
-      <companion-roll-number class="home-star-chip__amount" value="{{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}" reduced-motion="{{reducedMotion}}"></companion-roll-number>
-      <text wx:if="{{companionStarAwardVisible && companionStarGainLabel}}" class="home-star-chip__gain">{{companionStarGainLabel}}</text>
+  <view wx:if="{{!doodleEditorVisible && pet && stage !== 'hatched'}}" class="home-hud-layer home-stage home-stage--{{homeStagePhase}}">
+    <view
+      wx:if="{{companionStarBalance >= 0}}"
+      class="home-star-card {{companionStarAwardVisible ? 'home-star-card--award' : ''}}"
+      style="left:{{hudStarLeftPx}}px;top:{{hudRowTopPx}}px;"
+      aria-label="陪伴星星 {{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}，一起 {{companionDays}} 天"
+    >
+      <view class="home-star-card__row">
+        <companion-star class="home-star-card__icon" mode="room" size="28" pulse="{{companionStarAwardVisible}}" reduced-motion="{{reducedMotion}}"></companion-star>
+        <companion-roll-number class="home-star-card__amount" value="{{companionStarRollValue >= 0 ? companionStarRollValue : companionStarBalance}}" reduced-motion="{{reducedMotion}}"></companion-roll-number>
+        <text wx:if="{{companionStarAwardVisible && companionStarGainLabel}}" class="home-star-card__gain">{{companionStarGainLabel}}</text>
+      </view>
+      <text class="home-star-card__days">一起 {{companionDays}} 天</text>
     </view>
-    <view class="home-status-tab">
+    <view class="home-status-tab" style="left:{{hudStarLeftPx}}px;top:{{hudMoodTopPx}}px;">
       <pet-mood-tab
         id="petMoodTab"
         pet-name="{{pet.name || '还没有名字'}}"
@@ -43,12 +51,13 @@
       ></pet-mood-tab>
     </view>
     <view
-      class="room-clock room-clock--{{clockMode}}"
+      class="room-clock room-clock--hud room-clock--{{clockMode}}"
+      style="top:{{hudRowTopPx}}px;right:{{hudClockRightPx}}px;"
       aria-role="button"
       aria-label="{{clockMode === 'analog' ? '当前时间 ' + clockTimeText + '，点击显示数字时间' : '当前时间 ' + clockTimeText + '，点击显示指针时钟'}}"
       catchtap="onClockTap"
     >
-      <view wx:if="{{clockMode === 'analog'}}" class="clock-face">
+      <view wx:if="{{clockMode === 'analog'}}" class="clock-face clock-face--hud">
         <text class="clock-number clock-number--twelve">12</text>
         <text class="clock-number clock-number--three">3</text>
         <text class="clock-number clock-number--six">6</text>
@@ -58,7 +67,7 @@
         <view class="clock-hand clock-hand--second" style="{{clockSecondStyle}}"></view>
         <view class="clock-pin"></view>
       </view>
-      <view wx:else class="clock-digital">
+      <view wx:else class="clock-digital clock-digital--hud">
         <text class="clock-time">{{clockTimeText}}</text>
         <text class="clock-date">{{clockDateText}}</text>
       </view>
@@ -162,7 +171,6 @@
       </view>
 
       <view wx:if="{{stage !== 'hatched' && stage !== 'ready'}}" class="companion-section companion-section--incubating">
-        <text class="companion-draw-dock-label">{{togetherDrawDockLabel}}</text>
         <view class="companion-grid">
           <text wx:if="{{companionHintKey === 'wish' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--wish {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">许愿池</text>
           <text wx:if="{{companionHintKey === 'learn' || companionHintKey === 'all'}}" class="companion-icon-hint companion-icon-hint--learn {{companionHintVisible ? 'companion-icon-hint--visible' : ''}}">早教班</text>
@@ -181,6 +189,7 @@
                 bindlongpress="onCompanionLongPress"
                 bindtap="onCompanionTap"
               >
+                <text wx:if="{{item.key === 'draw'}}" class="companion-draw-entry-pill">{{togetherDrawDockLabel}}</text>
                 <view class="companion-icon-wrap">
                   <image class="companion-icon" src="{{item.icon}}" mode="aspectFit"></image>
                   <text wx:if="{{item.key === 'draw'}}" class="draw-action-spark">✦</text>

@@ -61,7 +61,7 @@ function loadCompanionStar(page, starAdapter, options) {
       companionDays: Number(result.data.star.companionDays || 0),
       companionStarClaimed: claimed,
       companionStarProgressText: '',
-      togetherDrawDockLabel: drawingDone ? '一起画 · 去玩' : '一起画 · 赚 10✦'
+      togetherDrawDockLabel: drawingDone ? '去玩' : '赚 10✦'
     };
     if (balanceChanged) {
       page.companionStarAwardPending = true;

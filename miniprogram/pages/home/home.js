@@ -236,7 +236,11 @@ Page({
     companionStarGainLabel: '',
     companionStarClaimed: false,
     companionStarProgressText: '',
-    togetherDrawDockLabel: '一起画 · 赚 10✦',
+    togetherDrawDockLabel: '赚 10✦',
+    hudStarLeftPx: 12,
+    hudRowTopPx: 101,
+    hudMoodTopPx: 170,
+    hudClockRightPx: 14,
     companionDays: 0,
     isDemo: config.localDemoEnabled,
     acceptanceToolsOpen: false,
@@ -719,18 +723,44 @@ Page({
       const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
       const menuRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null;
       const statusBarHeight = Number(windowInfo.statusBarHeight || 20);
+      const windowWidth = Number(windowInfo.windowWidth || 390);
+      const scale = windowWidth / 390;
       const nameTopPx = menuRect && Number(menuRect.bottom)
         ? Number(menuRect.bottom) + 8
         : statusBarHeight + 42;
+      const hudRowTopPx = menuRect && Number(menuRect.bottom)
+        ? Math.round(Number(menuRect.bottom) + 12)
+        : Math.round(101 * scale);
+      const hudStarLeftPx = Math.round(12 * scale);
+      const hudMoodTopPx = Math.round(hudRowTopPx + 62 * scale + 7 * scale);
+      let hudClockRightPx = Math.round(14 * scale);
+      if (menuRect && Number.isFinite(Number(menuRect.left))) {
+        const clockLeft = Math.min(Math.round(320 * scale), Number(menuRect.left) - Math.round(56 * scale) - 8);
+        hudClockRightPx = Math.max(Math.round(8 * scale), windowWidth - clockLeft - Math.round(56 * scale));
+      }
       this.setData({
         nameTopPx: Math.round(nameTopPx),
+        hudStarLeftPx,
+        hudRowTopPx,
+        hudMoodTopPx,
+        hudClockRightPx,
         acceptanceTesterTopPx: Math.round(nameTopPx),
         sceneTesterTopPx: Math.round(nameTopPx + 44),
         stageTesterTopPx: Math.round(nameTopPx + 88),
         moodTesterTopPx: Math.round(nameTopPx + 132)
       });
     } catch (error) {
-      this.setData({ nameTopPx: 88, acceptanceTesterTopPx: 88, sceneTesterTopPx: 132, stageTesterTopPx: 176, moodTesterTopPx: 220 });
+      this.setData({
+        nameTopPx: 88,
+        hudStarLeftPx: 12,
+        hudRowTopPx: 101,
+        hudMoodTopPx: 170,
+        hudClockRightPx: 14,
+        acceptanceTesterTopPx: 88,
+        sceneTesterTopPx: 132,
+        stageTesterTopPx: 176,
+        moodTesterTopPx: 220
+      });
     }
   },
 
@@ -1446,30 +1476,6 @@ Page({
         this.showSystemNotice(result.error && result.error.message || '一起画没有打开，请重试', 'warning', 'prop-doodle');
       }
     });
-  },
-
-  openDoodleEditor() {
-    if (this.doodleEditorPending || this.data.doodleEditorVisible) return;
-    this.doodleEditorPending = true;
-    const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.setData({ selected: 0, hidden: true, elevated: false });
-    const transitionDuration = this.prefersReducedMotion() ? 20 : HOME_STAGE_TRANSITION_MS;
-    this.clearHomeStageTransition();
-    this.setData({ homeStagePhase: 'exiting' });
-    this.runSceneEffect('scene--draw', 'egg--talk-color', transitionDuration);
-    clearTimeout(this.doodleOpenTimer);
-    this.doodleOpenTimer = setTimeout(() => {
-      this.doodleOpenTimer = null;
-      if (!this.pageActive || !this.doodleEditorPending) return;
-      this.doodleEditorPending = false;
-      this.clearEffectTimers();
-      this.suspendHomeForDoodle();
-      this.setData({
-        doodleEditorVisible: true,
-        sceneEffect: '',
-        eggMotion: ''
-      });
-    }, transitionDuration);
   },
 
   showDoodleReturnNotice(text = '蛋壳已更新', tone = 'info') {
